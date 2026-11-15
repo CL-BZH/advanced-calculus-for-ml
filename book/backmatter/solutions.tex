@@ -1774,3 +1774,113 @@ $\partial L/\partial w_2 = \rho w_1$.
         spanned by $(w_1, -w_2)$, the direction of the scaling symmetry:
         the minima form the curve $w_1w_2 = 3$.
 \end{enumerate}
+
+\section{\nameref*{ch:riemannian-optimization}}
+
+\solution{riemannian-optimization:exr:1}
+$[\dd f] = [2r\theta\ \ r^2]$ and $G^{-1} = \diag(1, 1/r^2)$, so
+$[\operatorname{grad}f] = (2r\theta, 1)$, that is,
+$\operatorname{grad}f = 2r\theta\,\partial_r + \partial_\theta$. Its
+squared norm is $[\dd f]G^{-1}[\dd f]^\top = 4r^2\theta^2 + r^2$.
+
+\solution{riemannian-optimization:exr:2}
+Let $s = \abs t^2 + 1$, so that $\psi = (2t/s,\ 1 - 2/s)$. Then
+$\partial_i(2t_j/s) = 2\delta_{ij}/s - 4t_it_j/s^2$ and
+$\partial_i(1 - 2/s) = 4t_i/s^2$, and
+\[
+  g_{ij} = \frac{4\delta_{ij}}{s^2} - \frac{16t_it_j}{s^3}
+  + \frac{16t_it_j\abs t^2}{s^4} + \frac{16t_it_j}{s^4}
+  = \frac{4\delta_{ij}}{s^2} ,
+\]
+since $\abs t^2 + 1 = s$. In the chart, $f = 1 - 2/s$, so
+$[\dd f] = 4t^\top/s^2$ and
+$[\operatorname{grad}f] = G^{-1}[\dd f]^\top = t$: in this chart the
+components of the gradient of the height are the coordinates themselves.
+As a check, its squared norm $t^\top Gt = 4\abs t^2/s^2$ equals
+$1 - x_n^2$, the squared norm of $e_n - x_nx$.
+
+\solution{riemannian-optimization:exr:3}
+Let $s = \norm v$. From $(1 + s^2)^{-1/2} = 1 - \frac12s^2 + O(s^4)$,
+\[
+  R_x(v) = x + v - \tfrac12s^2x - \tfrac12s^2v + O(s^4) .
+\]
+From $\cos s = 1 - \frac12s^2 + O(s^4)$ and
+$\sin s/s = 1 - \frac16s^2 + O(s^4)$,
+\[
+  \operatorname{Exp}_x(v) = x + v - \tfrac12s^2x - \tfrac16s^2v + O(s^4) .
+\]
+The difference is $-\frac13s^2v + O(s^4)$: the two retractions agree to
+second order.
+
+\solution{riemannian-optimization:exr:4}
+\begin{enumerate}[nosep]
+  \item From the chart $(\mu, \sigma)$ to the chart $(\mu, s)$,
+        $J = \diag(1, 1/\sigma)$. The metric with Gram matrix $I$ in
+        $(\mu, s)$ has $G = J^\top J = \diag(1, 1/\sigma^2)$ in
+        $(\mu, \sigma)$. A vector with components $(a, b)$ in
+        $(\mu, \sigma)$ has components $(a, b/\sigma)$ in $(\mu, s)$,
+        and the retraction of the chart adds them to $(\mu, \ln\sigma)$:
+        $R_{(\mu, \sigma)}(a, b) = (\mu + a,\ \sigma e^{b/\sigma})$.
+  \item $[\operatorname{grad}L] = G^{-1}[\dd L]^\top
+        = \diag(1, 4)(\frac14, \frac14) = (\frac14, 1)$. The step is
+        $-1.2\cdot(\frac14, 1) = (-0.3, -1.2)$, and
+        $R_{(1, 2)}(-0.3, -1.2) = (0.7,\ 2e^{-0.6})\approx(0.7, 1.098)$:
+        the step of the chart $(\mu, \ln\sigma)$ in
+        \cref{tangent-bundles:fig:steps}.
+\end{enumerate}
+
+\solution{riemannian-optimization:exr:5}
+$f(x_0) = \frac12(3 + 1) = 2$ and
+$\operatorname{grad}f(x_0) = 2(Ax_0 - 2x_0)
+= \frac2{\sqrt2}\bigl((3, 1) - (2, 2)\bigr) = \sqrt2\,(1, -1)$. The step
+gives $x_0 + \frac14\sqrt2\,(1, -1) = \frac1{\sqrt2}(1.5, 0.5)$, and the
+retraction normalizes it: $x_1 = (3, 1)/\sqrt{10}$, with
+$f(x_1) = (27 + 1)/10 = 2.8$. Here $2\eta\inner{x_0}{Ax_0} = 1$, so the
+shift of \cref{riemannian-optimization:ex:power} is zero and $x_1$ is
+$Ax_0 = (3, 1)/\sqrt2$ normalized.
+
+\solution{riemannian-optimization:exr:6}
+$X^\top Z = \begin{bsmallmatrix}1 & 2\\ 3 & 4\end{bsmallmatrix}$, whose
+symmetric part is
+$\begin{bsmallmatrix}1 & 2.5\\ 2.5 & 4\end{bsmallmatrix}$, so
+\[
+  \Pi_X(Z) = Z - X\operatorname{sym}(X^\top Z)
+  = \begin{bmatrix}0 & -0.5\\ 0.5 & 0\\ 5 & 6\end{bmatrix} ,
+\]
+and $X^\top\Pi_X(Z)
+= \begin{bsmallmatrix}0 & -0.5\\ 0.5 & 0\end{bsmallmatrix}$ is
+antisymmetric. For $W$, $X^\top W = 0$, so $W$ is tangent;
+$W^\top W = \diag(1, 0)$ and
+$(I + W^\top W)^{-1/2} = \diag(1/\sqrt2, 1)$, hence
+\[
+  R_X(W) = \begin{bmatrix}1 & 0\\ 0 & 1\\ 1 & 0\end{bmatrix}
+  \begin{bmatrix}1/\sqrt2 & 0\\ 0 & 1\end{bmatrix}
+  = \begin{bmatrix}1/\sqrt2 & 0\\ 0 & 1\\ 1/\sqrt2 & 0\end{bmatrix} ,
+\]
+whose columns are orthonormal.
+
+\solution{riemannian-optimization:exr:7}
+\begin{enumerate}[nosep]
+  \item $[\dd L] = [1\ \ 0]$ and $G^{-1} = \frac14(1 - \abs x^2)^2I$, so
+        $\operatorname{grad}L(x) = \frac14(1 - \abs x^2)^2e_1$. Its norm
+        for the metric is $\lambda(x)$ times its Euclidean norm:
+        $\frac12(1 - \abs x^2)$. It tends to $0$ at the boundary.
+  \item $2\operatorname{artanh}\rho = 3$ gives
+        $\rho = \tanh1.5\approx0.905$. The circle has length
+        $2\pi\sinh3\approx62.9$, against $2\pi\cdot3\approx18.8$.
+\end{enumerate}
+
+\solution{riemannian-optimization:exr:8}
+$c''(t) = -a^2(\cos at, \sin at, 0)$. At the point $(x, y, z)$ of the
+cylinder, the normal space is spanned by the gradient $(2x, 2y, 0)$ of
+$x^2 + y^2 - 1$, so $c''$ is normal and $\Pi_cc'' = 0$. In the chart
+$(\theta, z)$ the curve is $t\mapsto(at, bt)$, a straight line run at
+constant speed, as it must be in a chart where $G = I$. These geodesics
+are helices, circles ($b = 0$) and vertical lines ($a = 0$).
+
+\solution{riemannian-optimization:exr:9}
+The critical points are $\pm e_1$, $\pm e_2$, $\pm e_3$. By
+\cref{riemannian-optimization:thm:saddles} the eigenvalues at $\pm e_i$
+are $2(\lambda_j - \lambda_i)$, $j\neq i$: at $\pm e_1$, $-2$ and $-4$
+(maxima, $f = 3$); at $\pm e_2$, $2$ and $-2$ (saddles, $f = 2$); at
+$\pm e_3$, $4$ and $2$ (minima, $f = 1$).

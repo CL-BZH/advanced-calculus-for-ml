@@ -4,20 +4,892 @@
 \chaptersubtitle{%
   Gradient descent without $\theta + v$}
 
-\begin{chapterplan}
+\begin{chapterintro}
+Gradient descent, $a_{k+1} = a_k - \eta\nabla f(a_k)$, uses two things
+that a manifold does not have. The gradient needs an inner product, to
+turn the covector $\dd f(a)$ into a vector; the update needs an affine
+structure, to add that vector to a point. This chapter supplies a
+replacement for each. An inner product on every tangent space, a
+\emph{Riemannian metric}, gives gradients, lengths and distances. A
+\emph{retraction} moves a point along a tangent vector and stays on the
+manifold. With the two, gradient descent and its convergence proof go
+through almost word for word. You will learn
 \begin{itemize}[nosep]
-  \item Riemannian metrics; the Riemannian gradient; for a submanifold of a
-        Euclidean affine space, the projection of the ambient gradient.
-  \item Retractions and the exponential map; Riemannian gradient descent and its
-        convergence.
-  \item Geodesics and curvature, and what ``flat'' means precisely.
-  \item Worked examples: the sphere (Rayleigh quotient, PCA) and the Stiefel
-        manifold.
+  \item Riemannian metrics, their Gram matrices in a chart, and the
+        metrics induced on submanifolds;
+  \item the Riemannian gradient, $G^{-1}[\dd f]^\top$ in a chart, and why
+        gradient descent in a chart is the Riemannian method of a metric
+        that the chart chooses;
+  \item retractions, Riemannian gradient descent and its convergence;
+  \item the sphere and the Stiefel manifold worked out: the Rayleigh
+        quotient, principal components, and why they have no spurious
+        local minima;
+  \item geodesics, and the precise meaning of ``flat'';
+  \item what this says about normalized and orthogonal weights and about
+        hyperbolic embeddings.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:inner-products}, \cref{ch:spectral-svd},
+\cref{ch:gradient-hessian}, \cref{ch:submanifolds} and
+\cref{ch:tangent-bundles}. Manifolds and maps are smooth.}
+\end{chapterintro}
+
+\section{Riemannian metrics}\label{riemannian-optimization:sec:metric}
+
+\begin{definition}[Riemannian metric]\label{riemannian-optimization:def:metric}
+A \emph{Riemannian metric} on a manifold $M$ is the choice, for every
+$p\in M$, of an inner product $\inner\cdot\cdot_p$ on $T_pM$, such that
+in every chart the functions
+\[
+  g_{ij}(p) = \inner{\partial_i|_p}{\partial_j|_p}_p
+\]
+are smooth. The matrix $G = [g_{ij}]$ is the \emph{Gram matrix} of the
+metric in the chart: it is symmetric positive definite and
+$\inner vw_p = [v]^\top G\,[w]$. A manifold with a Riemannian metric is a
+\emph{Riemannian manifold}, and $\norm v_p = \inner vv_p^{1/2}$.
+\end{definition}
+
+Under a change of chart with Jacobian matrix $J$, the columns become
+$J[v]$ (\cref{tangent-bundles:thm:change}), so the Gram matrix becomes
+\[
+  G' = J^{-\top}GJ^{-1} ,
+\]
+the last line of \cref{tangent-bundles:tab:change}. It is enough to check
+smoothness in the charts of one atlas.
+
+\begin{example}[Five metrics]\label{riemannian-optimization:ex:metrics}
+\begin{enumerate}[nosep]
+  \item \emph{Euclidean affine space.} In the chart of an orthonormal
+        frame, $G = I$ at every point. In polar coordinates on the plane,
+        with $J$ the Jacobian matrix of $(r, \theta)\mapsto(x, y)$,
+        $G = J^\top J = \diag(1, r^2)$: the same metric, another Gram
+        matrix.
+  \item \emph{Submanifolds.} If $M$ is a submanifold of a Euclidean
+        affine space, each $T_pM$ is a subspace of $V$ and inherits its
+        inner product: the \emph{induced metric}. In the chart
+        $\varphi = \psi^{-1}$ of a parametrization,
+        $g_{ij} = \inner{\partial_i\psi}{\partial_j\psi}$. For the unit
+        sphere and the stereographic parametrization
+        $\psi(t) = (2t, \abs t^2 - 1)/(\abs t^2 + 1)$,
+        \[
+          G(t) = \frac4{(1 + \abs t^2)^2}\,I .
+        \]
+  \item \emph{The metric of a chart.} On the domain of a chart, declare
+        the coordinate basis orthonormal: $G = I$ in that chart. Seen
+        from another chart $x' = \tau(x)$ this metric has the Gram matrix
+        $J^{-\top}J^{-1}$, which is not the identity. Every chart carries
+        such a metric, and different charts carry different ones.
+  \item \emph{Pull-back.} If $F:M\to N$ is an immersion and $N$ is
+        Riemannian, $\inner vw_p = \inner{DF(p)v}{DF(p)w}_{F(p)}$ is a
+        Riemannian metric on $M$. Cases 2 and 3 are of this kind.
+  \item \emph{The hyperbolic ball.} On the open unit ball of $\R^d$, with
+        its single chart,
+        \[
+          G(x) = \lambda(x)^2I , \qquad
+          \lambda(x) = \frac2{1 - \abs x^2} .
+        \]
+        A vector of Euclidean length $\epsilon$ at $x$ has the length
+        $\lambda(x)\epsilon$, which grows without bound near the boundary
+        (\cref{riemannian-optimization:fig:ball}).
+\end{enumerate}
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=2.4]
+  \draw[thick] (0,0) circle [radius=1];
+  \foreach \r/\n in {0/1, 0.45/6, 0.72/10, 0.88/16} {
+    \foreach \k in {1,...,\n} {
+      \pgfmathsetmacro{\a}{360*\k/\n + 17*\r}
+      \pgfmathsetmacro{\s}{0.22*(1 - \r*\r)}
+      \draw[bookaccent, thick] ({\r*cos(\a)}, {\r*sin(\a)})
+        circle [radius=\s];
+    }
+  }
+  \node[circle, fill, inner sep=1pt] at (0,0) {};
+  \draw[bookpitfall, thick] (0,0) -- (0.72,0);
+  \node[right, align=left] at (1.15,0.35)
+    {each small circle is a ball of the\\same radius for the metric};
+  \node[right, align=left, bookpitfall] at (1.15,-0.3)
+    {the boundary is at infinite distance:\\
+     $d(0, x) = 2\operatorname{artanh}\abs x$};
+\end{tikzpicture}
+\caption{The hyperbolic disc in its chart. The balls of a fixed small
+radius for the metric $G = \lambda^2I$ look smaller and smaller towards
+the boundary: there is more and more room.}
+\label{riemannian-optimization:fig:ball}
+\end{figure}
+
+\begin{definition}[Length and distance]
+\label{riemannian-optimization:def:length}
+The \emph{length} of a curve $c:[a, b]\to M$ is
+$\ell(c) = \int_a^b\norm{c'(t)}_{c(t)}\,\dd t$. The \emph{distance}
+$d(p, q)$ is the infimum of the lengths of the piecewise smooth curves
+from $p$ to $q$.
+\end{definition}
+
+The length does not depend on the parametrization of the curve, by the
+change of variable in the integral. In a Euclidean affine space the
+distance is $\norm{q - p}$. That $d$ is a distance on a connected
+Riemannian manifold, in particular that $d(p, q) > 0$ for $p\neq q$, is
+true in general; we only use it in the examples, where it is checked.
+
+\begin{example}[Distance to the centre of the hyperbolic ball]
+\label{riemannian-optimization:ex:radial}
+Let $c$ be a curve from $0$ to $x$ in the hyperbolic ball and
+$\rho(t) = \abs{c(t)}$. Where $\rho\neq0$,
+$\abs{\rho'}\leq\abs{c'}$ (the Euclidean norm of the velocity), so
+\[
+  \ell(c) = \int\lambda(c(t))\,\abs{c'(t)}\,\dd t
+  \geq\int\frac{2\abs{\rho'(t)}}{1 - \rho(t)^2}\,\dd t
+  \geq\int_0^{\abs x}\frac{2\,\dd s}{1 - s^2}
+  = 2\operatorname{artanh}\abs x ,
+\]
+with equality for the straight segment. Hence
+$d(0, x) = 2\operatorname{artanh}\abs x$, which tends to infinity as
+$\abs x\to1$.
+\end{example}
+
+\section{The Riemannian gradient}\label{riemannian-optimization:sec:gradient}
+
+\begin{definition}[Gradient]\label{riemannian-optimization:def:gradient}
+Let $f:M\to\R$ be smooth on a Riemannian manifold. The \emph{gradient} of
+$f$ at $p$ is the vector $\operatorname{grad}f(p)\in T_pM$ that
+represents the covector $\dd f(p)$ for the inner product of $T_pM$
+(\cref{inner-products:thm:riesz}):
+\[
+  \inner{\operatorname{grad}f(p)}v_p = \dd f(p)\,v
+  \qquad\text{for all } v\in T_pM .
+\]
+\end{definition}
+
+\begin{proposition}\label{riemannian-optimization:prop:gradient}
+\begin{enumerate}[nosep]
+  \item In a chart,
+        $[\operatorname{grad}f] = G^{-1}[\dd f]^\top$, and this column
+        changes with the chart as a tangent vector must:
+        $G'^{-1}[\dd f]'^\top = J\,G^{-1}[\dd f]^\top$.
+  \item $\operatorname{grad}f$ is a vector field, and
+        $\operatorname{grad}f(p) = 0$ if and only if $\dd f(p) = 0$: the
+        critical points do not depend on the metric.
+  \item Among the vectors with $\norm v_p = 1$, the derivative
+        $\dd f(p)v$ is largest for
+        $v = \operatorname{grad}f(p)/\norm{\operatorname{grad}f(p)}_p$,
+        where it equals $\norm{\operatorname{grad}f(p)}_p$.
+  \item If $M$ is a submanifold of a Euclidean affine space with the
+        induced metric, $\operatorname{grad}f(p) = \Pi_p\nabla F(p)$ for
+        any local extension $F$ of $f$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) $[v]^\top G[\operatorname{grad}f] = [\dd f][v]$ for all $[v]$ gives
+$G[\operatorname{grad}f] = [\dd f]^\top$. With $G' = J^{-\top}GJ^{-1}$
+and $[\dd f]' = [\dd f]J^{-1}$,
+$G'^{-1}[\dd f]'^\top = JG^{-1}J^\top J^{-\top}[\dd f]^\top$.
+(2) The components are smooth, and $G$ is invertible. (3) By the
+Cauchy--Schwarz inequality,
+$\dd f(p)v = \inner{\operatorname{grad}f(p)}v_p
+\leq\norm{\operatorname{grad}f(p)}_p$, with equality for the stated $v$.
+(4) is \cref{submanifolds:prop:gradient}.
+\end{proof}
+
+\begin{keyidea}
+In a chart, the row $[\dd f]$ is given by the function alone. The column
+$G^{-1}[\dd f]^\top$ is given by the function and the metric. Gradient
+descent ``in the parameters'', which uses $[\dd f]^\top$, is the
+Riemannian gradient of the metric of that chart
+(\cref{riemannian-optimization:ex:metrics}, case 3). The three steps of
+\cref{tangent-bundles:fig:steps} were three Riemannian gradients, for
+three metrics that nobody chose.
+\end{keyidea}
+
+\begin{example}[Polar coordinates again]
+In the polar chart, $f = x$ has $[\dd f] = [\cos\theta\ \ {-r\sin\theta}]$
+and $G = \diag(1, r^2)$, so
+$[\operatorname{grad}f] = (\cos\theta, -\frac1r\sin\theta)$: the polar
+components of $\partial_x$ found in \cref{tangent-bundles:ex:polar}. The
+discrepancy noticed there was a missing $G^{-1}$.
+\end{example}
+
+\begin{example}[The Rayleigh quotient]
+\label{riemannian-optimization:ex:rayleigh}
+Let $A$ be a self-adjoint operator on a Euclidean space, and
+$f(x) = \inner x{Ax}$ on the unit sphere $S$. The extension
+$F(x) = \inner x{Ax}$ has $\nabla F(x) = 2Ax$, and the projection onto
+$T_xS = x^\perp$ is $v\mapsto v - \inner xvx$, so
+\[
+  \operatorname{grad}f(x) = 2\bigl(Ax - \inner x{Ax}x\bigr) .
+\]
+It vanishes exactly when $Ax$ is proportional to $x$: the critical points
+of $f$ on the sphere are the unit eigenvectors of $A$, and the critical
+values are the eigenvalues (\cref{spectral-svd:thm:minmax}).
+\end{example}
+
+\section{Retractions}\label{riemannian-optimization:sec:retraction}
+
+\begin{definition}[Retraction]\label{riemannian-optimization:def:retraction}
+A \emph{retraction} on a manifold $M$ is a smooth map
+$R:(p, v)\mapsto R_p(v)$ from an open subset of $TM$ containing all the
+pairs $(p, 0)$ into $M$, such that for every $(p, v)\in TM$ the curve
+\[
+  t\mapsto R_p(tv)
+\]
+passes through $p$ at $t = 0$ with velocity $v$.
+\end{definition}
+
+A retraction is what remains of $p + v$: a way of leaving $p$ in the
+direction $v$, correct to first order. For any retraction and any smooth
+$f$, $f(R_p(tv)) = f(p) + t\,\dd f(p)v + o(t)$, by the definition of the
+differential.
+
+\begin{proposition}[Three sources of retractions]
+\label{riemannian-optimization:prop:retractions}
+\begin{enumerate}[nosep]
+  \item On an affine space, $R_p(v) = p + v$ is a retraction.
+  \item On the domain of a chart $\varphi$,
+        $R_p(v) = \varphi^{-1}\bigl(\varphi(p) + [v]\bigr)$ is a
+        retraction, defined where $\varphi(p) + [v]\in\varphi(U)$.
+  \item Let $M$ be a submanifold of an affine space $\Aff$ and let
+        $\rho:W\to M$ be a smooth map on an open set $W\supset M$ with
+        $\rho(x) = x$ for $x\in M$. Then $R_p(v) = \rho(p + v)$ is a
+        retraction, defined where $p + v\in W$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) is clear. (2) The curve $t\mapsto\varphi^{-1}(\varphi(p) + t[v])$ has
+the velocity $[v]$ in the chart, so its class is $v$; in the charts
+$T\varphi$ and $\varphi$ the map $R$ is $(x, a)\mapsto x + a$. (3) The
+velocity of $t\mapsto\rho(p + tv)$ at $0$ is $D\rho(p)v$. If $v = c'(0)$
+for a curve $c$ in $M$, then $\rho\circ c = c$ gives $D\rho(p)v = v$. In
+charts $R$ is $(x, a)\mapsto\varphi\bigl(\rho(\psi(x) + D\psi(x)a)\bigr)$,
+which is smooth.
+\end{proof}
+
+\begin{example}[Sphere, Stiefel manifold, orthogonal group]
+\label{riemannian-optimization:ex:retractions}
+\begin{enumerate}[nosep]
+  \item On the unit sphere, $\rho(y) = y/\norm y$ gives
+        $R_x(v) = (x + v)/\norm{x + v} = (x + v)/\sqrt{1 + \norm v^2}$,
+        defined on all of $TS$.
+  \item On $\mathrm{St}(n, k)$, the map
+        $\rho(Y) = Y(Y^\top Y)^{-1/2}$ is smooth on the matrices of rank
+        $k$ and fixes the matrices with orthonormal columns. For
+        $Z\in T_X\mathrm{St}(n, k)$, $X^\top Z$ is antisymmetric, so
+        $(X + Z)^\top(X + Z) = I + Z^\top Z$ and
+        \[
+          R_X(Z) = (X + Z)(I + Z^\top Z)^{-1/2} ,
+        \]
+        the \emph{polar retraction}, defined on the whole tangent bundle.
+        The first factor of the decomposition $Y = QR$, with $R$ upper
+        triangular with positive diagonal, is another choice of $\rho$,
+        cheaper to compute.
+  \item On $\mathrm O(n)$, with $\Omega$ antisymmetric,
+        $R_Q(Q\Omega) = Q(I - \frac12\Omega)^{-1}(I + \frac12\Omega)$ is a
+        retraction: the product is orthogonal and its derivative at
+        $t = 0$ along $t\Omega$ is $Q\Omega$.
+\end{enumerate}
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=3.0]
+  \draw[thick] (-20:1) arc (-20:140:1);
+  \draw[gray] (0,0) -- (1.0,0);
+  \draw[bookdef, thick] (1,-0.35) -- (1,1.45);
+  \draw[->, very thick, bookdef] (1,0) -- (1,1.2);
+  \draw[dashed, gray] (0,0) -- (1,1.2);
+  \node[circle, fill, inner sep=1.4pt] at (1,0) {};
+  \node[circle, fill, inner sep=1.4pt] at (1,1.2) {};
+  \node[circle, fill=bookaccent, inner sep=1.6pt] at (0.640,0.768) {};
+  \node[circle, fill=bookpitfall, inner sep=1.6pt] at (0.362,0.932) {};
+  \draw[bookpitfall, thick, ->] (0:1.08) arc (0:68.75:1.08);
+  \node[circle, fill, inner sep=1pt] at (0,0) {};
+  \node[below right] at (1,0) {$p$};
+  \node[right] at (1,1.2) {$p + v$};
+  \node[bookdef, right] at (1,0.6) {$v$};
+  \node[bookdef, right] at (1,1.45) {$p + T_pM$};
+  \node[bookaccent] at (0.36,0.6) {$R_p(v)$};
+  \node[bookpitfall, above left] at (0.34,0.95)
+    {$\operatorname{Exp}_p(v)$};
+  \node at (-0.55,0.45) {$M$};
+\end{tikzpicture}
+\caption{Two retractions on the circle, for a long step $\norm v = 1.2$.
+The projection $R_p(v)$ brings $p + v$ back along the ray through the
+centre. The exponential map $\operatorname{Exp}_p(v)$ follows the circle
+for a length $\norm v$ (\cref{riemannian-optimization:sec:geodesics}).
+Both leave $p$ with the velocity $v$; they differ at third order in
+$\norm v$.}
+\label{riemannian-optimization:fig:retraction}
+\end{figure}
+
+\section{Riemannian gradient descent}\label{riemannian-optimization:sec:rgd}
+
+On a Riemannian manifold with a retraction, \emph{Riemannian gradient
+descent} with step $\eta > 0$ is the iteration
+\begin{equation}\label{riemannian-optimization:eq:rgd}
+  p_{k+1} = R_{p_k}\bigl(-\eta\operatorname{grad}f(p_k)\bigr) .
+\end{equation}
+On a Euclidean affine space with $R_p(v) = p + v$ it is
+\eqref{gradient-hessian:eq:gd}. The convergence proof of
+\cref{gradient-hessian:thm:rates} used one inequality, the descent lemma.
+Here it becomes a hypothesis on the function seen through the retraction.
+
+\begin{theorem}[Convergence of Riemannian gradient descent]
+\label{riemannian-optimization:thm:rgd}
+Let $f$ be bounded below on $M$, with infimum $f_*$, and let $L > 0$ be
+such that, for every $p\in M$ and $s = -\frac1L\operatorname{grad}f(p)$,
+\begin{equation}\label{riemannian-optimization:eq:descent}
+  f\bigl(R_p(s)\bigr)\leq f(p) + \dd f(p)s + \frac L2\norm s_p^2 .
+\end{equation}
+Then the iterates of \eqref{riemannian-optimization:eq:rgd} with
+$\eta = 1/L$ satisfy
+\[
+  f(p_{k+1})\leq f(p_k) - \frac1{2L}\norm{\operatorname{grad}f(p_k)}^2 ,
+  \qquad
+  \min_{0\leq k < K}\norm{\operatorname{grad}f(p_k)}^2
+  \leq\frac{2L\bigl(f(p_0) - f_*\bigr)}K .
+\]
+\end{theorem}
+
+\begin{proof}
+With $s = -\frac1L\operatorname{grad}f(p_k)$,
+$\dd f(p_k)s = -\frac1L\norm{\operatorname{grad}f(p_k)}^2$ and
+$\frac L2\norm s^2 = \frac1{2L}\norm{\operatorname{grad}f(p_k)}^2$, which
+gives the first inequality. Summing it for $k < K$,
+$\frac1{2L}\sum_{k<K}\norm{\operatorname{grad}f(p_k)}^2
+\leq f(p_0) - f(p_K)\leq f(p_0) - f_*$, and the smallest term of a sum is
+at most its average.
+\end{proof}
+
+The hypothesis holds on the manifolds of
+\cref{riemannian-optimization:ex:retractions}.
+
+\begin{proposition}[Compact submanifolds]
+\label{riemannian-optimization:prop:compact}
+Let $M$ be a compact submanifold of a Euclidean affine space, with the
+induced metric and a retraction $R_p(v) = \rho(p + v)$ as in
+\cref{riemannian-optimization:prop:retractions}, defined on all of $TM$.
+For every smooth $f:M\to\R$ there is an $L$ such that
+\eqref{riemannian-optimization:eq:descent} holds for every $p$ and
+$s = -\frac1L\operatorname{grad}f(p)$.
+\end{proposition}
+
+\begin{proof}
+For $r > 0$ let $K_r$ be the set of triples $(p, u, t)$ with $p\in M$,
+$u\in T_pM$, $\norm u = 1$ and $0\leq t\leq r$. It is bounded, and
+closed: if $(p_n, u_n)\to(p, u)$ then $p\in M$, and near $p$ the tangent
+spaces are the kernels of $Dg(p_n)$ for a submersion $g$, so
+$Dg(p)u = \lim Dg(p_n)u_n = 0$ and $u\in T_pM$. So $K_r$ is compact. The
+function $h(p, u, t) = f(\rho(p + tu))$ is smooth on an open set
+containing $K_r$; let $L_r$ be the maximum of
+$\abs{\partial^2h/\partial t^2}$ on $K_r$. By Taylor's formula in the
+variable $t$
+(\cref{gradient-hessian:thm:taylor}), for $s = tu$ with $t\leq r$,
+\[
+  f\bigl(R_p(s)\bigr)\leq f(p) + t\,\dd f(p)u + \frac{L_r}2t^2
+  = f(p) + \dd f(p)s + \frac{L_r}2\norm s^2 .
+\]
+Let $g_{\max}$ be the maximum of $\norm{\operatorname{grad}f}$ on $M$,
+$r = \max(1, g_{\max}/L_1)$ and $L = L_r$. Since $L\geq L_1$, the vector
+$s = -\frac1L\operatorname{grad}f(p)$ has norm at most
+$g_{\max}/L_1\leq r$.
+\end{proof}
+
+\begin{example}[The sphere: a power iteration with a shift]
+\label{riemannian-optimization:ex:power}
+To maximize the Rayleigh quotient on the sphere, step along the gradient
+and retract by normalization:
+\[
+  x + 2\eta\bigl(Ax - \inner x{Ax}x\bigr)
+  = 2\eta\,\Bigl(A + \frac{1 - 2\eta\inner x{Ax}}{2\eta}\,I\Bigr)x ,
+\]
+followed by a division by the norm. One step of Riemannian gradient
+ascent is one step of the power iteration for a shifted operator
+$A + cI$, with a shift that depends on the current point; for
+$2\eta\inner x{Ax} = 1$ it is the power iteration itself.
+\end{example}
+
+\begin{proposition}[Projection on the Stiefel manifold]
+\label{riemannian-optimization:prop:stiefel}
+For the Frobenius inner product, the orthogonal projection onto
+$T_X\mathrm{St}(n, k)$ is
+\[
+  \Pi_X(Z) = Z - X\operatorname{sym}(X^\top Z) , \qquad
+  \operatorname{sym}(S) = \tfrac12(S + S^\top) .
+\]
+\end{proposition}
+
+\begin{proof}
+$X^\top\Pi_X(Z) = X^\top Z - \operatorname{sym}(X^\top Z)$ is the
+antisymmetric part of $X^\top Z$, so $\Pi_X(Z)$ is tangent
+(\cref{submanifolds:thm:stiefel}). The difference $Z - \Pi_X(Z) = XS$,
+with $S$ symmetric, is orthogonal to every tangent $W$:
+$\inner{XS}W = \tr(SX^\top W) = 0$, as the trace of the product of a
+symmetric and an antisymmetric matrix.
+\end{proof}
+
+\begin{example}[Principal components]\label{riemannian-optimization:ex:pca}
+Let $A$ be symmetric of size $n$ and $f(X) = \tr(X^\top AX)$ on
+$\mathrm{St}(n, k)$: for a covariance matrix $A$, the variance captured
+by the $k$ orthonormal directions in $X$
+(\cref{spectral-svd:prop:pca}). The ambient gradient is $2AX$ and
+\[
+  \operatorname{grad}f(X) = 2\bigl(AX - XX^\top AX\bigr) ,
+\]
+since $X^\top AX$ is symmetric. It vanishes when $AX = X(X^\top AX)$,
+that is, when the columns of $X$ span a subspace stable by $A$.
+The classical subspace iteration, which replaces $X$ by the first factor
+of the QR decomposition of $AX$, aims at the same subspaces. The
+function depends on $X$ only
+through the subspace spanned by its columns, $f(XQ) = f(X)$ for
+$Q\in\mathrm O(k)$: a symmetry in the sense of \cref{ch:tangent-bundles}.
+\end{example}
+
+\section{The Hessian at a critical point}
+\label{riemannian-optimization:sec:hessian}
+
+At a critical point the Hessian is defined without any metric
+(\cref{tangent-bundles:prop:hessian}). A retraction gives a convenient
+way to compute it, and the metric turns it into an operator with
+eigenvalues.
+
+\begin{proposition}\label{riemannian-optimization:prop:hessian}
+Let $p$ be a critical point of $f$ and $R$ a retraction. Then
+$H_pf(v, v) = \frac{\dd^2}{\dd t^2}f\bigl(R_p(tv)\bigr)\big|_{t=0}$: the
+Hessian of $f$ at $p$ is the second differential at $0$ of the function
+$f\circ R_p$ on the vector space $T_pM$. On a Riemannian manifold, the
+self-adjoint operator $\operatorname{Hess}f(p)$ with
+$\inner{\operatorname{Hess}f(p)v}w_p = H_pf(v, w)$ has the matrix
+$G^{-1}H$ in a chart, and its eigenvalues do not depend on the chart.
+\end{proposition}
+
+\begin{proof}
+The curve $t\mapsto R_p(tv)$ has velocity $v$, so the first claim is
+\cref{tangent-bundles:prop:hessian}. The operator is the one of
+\cref{spectral-svd:prop:form-operator}, with matrix $G^{-1}H$; under a
+change of chart it becomes
+$JG^{-1}J^\top J^{-\top}HJ^{-1} = J(G^{-1}H)J^{-1}$, a similar matrix.
+\end{proof}
+
+\begin{theorem}[The Rayleigh quotient has no spurious minima]
+\label{riemannian-optimization:thm:saddles}
+Let $A$ be self-adjoint with eigenvalues
+$\lambda_1\geq\dots\geq\lambda_n$ and orthonormal eigenvectors
+$u_1,\dots,u_n$, and let $f(x) = \inner x{Ax}$ on the unit sphere. At the
+critical point $u_i$, the Hessian operator has the eigenvectors $u_j$,
+$j\neq i$, with the eigenvalues $2(\lambda_j - \lambda_i)$. If the
+eigenvalues are distinct, $\pm u_n$ are the only local minima, $\pm u_1$
+the only local maxima, and all other critical points are saddles.
+\end{theorem}
+
+\begin{proof}
+For a unit $v\perp u_i$, the curve $c(t) = \cos t\,u_i + \sin t\,v$ lies
+on the sphere with $c'(0) = v$, and since $\inner{u_i}{Av} = 0$,
+\[
+  f(c(t)) = \lambda_i\cos^2t + \inner v{Av}\sin^2t , \qquad
+  (f\circ c)''(0) = 2\bigl(\inner v{Av} - \lambda_i\bigr) .
+\]
+So $H_{u_i}f(v, w) = 2\inner v{(A - \lambda_i)w}$ on
+$T_{u_i}S = u_i^\perp$, which is spanned by the $u_j$, $j\neq i$, and
+stable by $A$. For $1 < i < n$ the Hessian has eigenvalues of both signs.
+\end{proof}
+
+\begin{intuition}
+The sphere is not convex and the Rayleigh quotient is not a convex
+function of anything, yet a descent method can only be trapped at the
+global minimum: every other critical point has a direction of descent.
+The same holds for the principal subspaces of
+\cref{riemannian-optimization:ex:pca}.
+\end{intuition}
+
+Away from critical points, a second-order object on a manifold needs a
+way of differentiating vector fields, a \emph{connection}, which we do
+not develop. For a submanifold with the induced metric the result is
+simple to state: $\operatorname{Hess}f(p)v = \Pi_p\,D\bar G(p)v$, where
+$\bar G$ is an extension of the vector field $\operatorname{grad}f$ to a
+neighbourhood.
+
+\section{Geodesics, and what flat means}
+\label{riemannian-optimization:sec:geodesics}
+
+\begin{definition}[Geodesic]\label{riemannian-optimization:def:geodesic}
+Let $M$ be a submanifold of a Euclidean affine space, with the induced
+metric. A curve $c$ in $M$ is a \emph{geodesic} if its acceleration has
+no tangential part:
+\[
+  \Pi_{c(t)}\,c''(t) = 0 \qquad\text{for all } t .
+\]
+\end{definition}
+
+A geodesic does not turn inside $M$; it bends only as much as $M$ forces
+it to. Its speed is constant, since
+$\frac{\dd}{\dd t}\inner{c'}{c'} = 2\inner{c''}{c'}
+= 2\inner{\Pi_cc''}{c'} = 0$. In an affine subspace the geodesics are the
+straight lines run at constant speed. On the unit sphere they are the
+great circles: for $x\in S$ and $v\in T_xS$,
+\[
+  c(t) = \cos(t\norm v)\,x + \sin(t\norm v)\,\frac v{\norm v}
+\]
+satisfies $c(0) = x$, $c'(0) = v$ and $c'' = -\norm v^2c$, which is
+normal to the sphere.
+
+Three facts complete the picture; we state them without proof. A geodesic
+is determined by its initial point and velocity. Geodesics depend only on
+the metric, not on the way $M$ sits in the ambient space: in a chart
+they are the solutions of a differential equation whose coefficients are
+computed from $G$ and its partial derivatives. And short pieces of
+geodesics are the shortest curves between their end points.
+
+\begin{definition}[Exponential map]\label{riemannian-optimization:def:exp}
+$\operatorname{Exp}_p(v) = c(1)$, where $c$ is the geodesic with
+$c(0) = p$ and $c'(0) = v$, when it is defined up to $t = 1$.
+\end{definition}
+
+Since $t\mapsto\operatorname{Exp}_p(tv)$ is the geodesic with initial
+velocity $v$, the exponential map is a retraction. On the sphere,
+$\operatorname{Exp}_x(v) = \cos\norm v\,x
++ \sin\norm v\,v/\norm v$. It is the most natural retraction and rarely
+the cheapest; \cref{riemannian-optimization:thm:rgd} does not prefer it.
+
+\begin{definition}[Flat]\label{riemannian-optimization:def:flat}
+A Riemannian manifold is \emph{flat} if every point has a chart around it
+in which the Gram matrix is the identity at every point of the chart.
+\end{definition}
+
+In such a chart, lengths, angles and gradients are those of $\R^d$, the
+geodesics are straight lines, and Riemannian gradient descent with the
+retraction of the chart is ordinary gradient descent.
+
+\begin{example}[Flat and not flat]\label{riemannian-optimization:ex:flat}
+\begin{enumerate}[nosep]
+  \item A Euclidean affine space is flat.
+  \item The cylinder $\{x^2 + y^2 = 1\}\subset\R^3$ is flat: for
+        $\psi(\theta, z) = (\cos\theta, \sin\theta, z)$ the Gram matrix is
+        $I$. It is curved in space and flat as a Riemannian manifold; a
+        sheet of paper rolls onto it without stretching.
+  \item The torus $\R^2/\Z^2$, with the metric that is $I$ in the charts
+        of \cref{tangent-bundles:ex:circle}, is flat. This is consistent
+        because the transition maps are translations, with $J = I$.
+  \item The torus of \cref{submanifolds:exr:7}, a submanifold of $\R^3$
+        with the induced metric, has
+        $G = \diag\bigl((2 + \cos\varphi)^2, 1\bigr)$ and is not flat
+        (we omit the verification). It is the same manifold as the
+        previous one with another metric: flatness is a property of the
+        metric.
+  \item The sphere is not flat
+        (\cref{riemannian-optimization:prop:sphere}).
+\end{enumerate}
+\end{example}
+
+\begin{proposition}[Circles measure curvature]
+\label{riemannian-optimization:prop:sphere}
+In a flat manifold of dimension $2$, the points at a small distance $r$
+from $p$ form a curve of length $2\pi r$. On the unit sphere they form a
+curve of length $2\pi\sin r$, and in the hyperbolic disc, of length
+$2\pi\sinh r$. Hence neither is flat.
+\end{proposition}
+
+\begin{proof}
+\emph{Flat.} In a chart with $G = I$ containing a Euclidean ball of
+radius $2r$ around $\varphi(p)$, lengths of curves are Euclidean lengths.
+A curve from $p$ that stays in the ball has length at least the Euclidean
+distance between its end points, and a curve that leaves the ball has
+length at least $2r$. So the points at distance $r$ from $p$ are those of
+the Euclidean circle of radius $r$.
+
+\emph{Sphere.} Let $c$ be a curve from $x$ and
+$\theta(t) = \arccos\inner x{c(t)}$. Writing
+$c = \cos\theta\,x + \sin\theta\,u$ with $u(t)$ a unit vector orthogonal
+to $x$, one finds
+$\norm{c'}^2 = \theta'^2 + \sin^2\theta\,\norm{u'}^2\geq\theta'^2$, so
+the length of $c$ is at least the final value of $\theta$, with equality
+along great circles: $d(x, y) = \arccos\inner xy$. The points at distance
+$r < \pi$ form the circle $\cos r\,x + \sin r\,u$, $\norm u = 1$,
+$u\perp x$, of Euclidean radius $\sin r$.
+
+\emph{Hyperbolic disc.} By \cref{riemannian-optimization:ex:radial}, the
+points at distance $r$ from $0$ form the Euclidean circle of radius
+$\rho = \tanh(r/2)$, whose length for the metric is
+$\lambda\cdot2\pi\rho = 4\pi\rho/(1 - \rho^2) = 2\pi\sinh r$.
+\end{proof}
+
+For a Riemannian manifold of dimension $2$, the number
+\[
+  K(p) = \lim_{r\to0}\frac{3\bigl(2\pi r - C(r)\bigr)}{\pi r^3} ,
+\]
+where $C(r)$ is the length of the circle of radius $r$ around $p$, is the
+\emph{curvature} at $p$. From $\sin r = r - r^3/6 + \dots$ and
+$\sinh r = r + r^3/6 + \dots$, it is $1$ on the unit sphere, $-1$ in the
+hyperbolic disc and $0$ in a flat manifold
+(\cref{riemannian-optimization:fig:circles}). In higher dimension
+curvature is a more complicated object, again built from $G$ and its
+derivatives.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \draw[thick] (0,0) circle [radius=1.5];
+    \draw[bookaccent, very thick] (0,0.95) ellipse
+      [x radius=1.16, y radius=0.25];
+    \draw[bookpitfall, thick] (0,1.5) arc (90:39.3:1.5);
+    \node[circle, fill, inner sep=1.3pt] at (0,1.5) {};
+    \node[above] at (0,1.5) {$p$};
+    \node[bookpitfall, right] at (0.75,1.45) {$r$};
+    \node at (0,-1.9) {sphere: $C(r) = 2\pi\sin r$};
+  \end{scope}
+  \begin{scope}[xshift=5.0cm]
+    \draw[thick] (-1.6,-1.2) rectangle (1.6,1.5);
+    \draw[bookaccent, very thick] (0,0.15) circle [radius=1.0];
+    \draw[bookpitfall, thick] (0,0.15) -- (1.0,0.15);
+    \node[circle, fill, inner sep=1.3pt] at (0,0.15) {};
+    \node[left] at (0,0.15) {$p$};
+    \node[bookpitfall, above] at (0.5,0.15) {$r$};
+    \node at (0,-1.9) {flat: $C(r) = 2\pi r$};
+  \end{scope}
+  \begin{scope}[xshift=10.2cm]
+    \draw[thick] (0,0.15) circle [radius=1.5];
+    \draw[bookaccent, very thick] (0,0.15) circle [radius=0.95];
+    \draw[bookpitfall, thick] (0,0.15) -- (0.95,0.15);
+    \node[circle, fill, inner sep=1.3pt] at (0,0.15) {};
+    \node[left] at (0,0.15) {$p$};
+    \node[bookpitfall, above] at (0.48,0.15) {$r$};
+    \node at (0,-1.9) {hyperbolic disc: $C(r) = 2\pi\sinh r$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The circle of radius $r$ around $p$, where both the radius and
+the length of the circle are measured with the metric. On the sphere it
+is shorter than $2\pi r$, in the hyperbolic disc it is longer.}
+\label{riemannian-optimization:fig:circles}
+\end{figure}
+
+\begin{keyidea}
+Three different things have been called flat. A manifold with an atlas
+whose transition maps are translations, such as $\R/\Z$: a property of
+the atlas (\cref{tangent-bundles:ex:flat}). A Riemannian manifold with
+charts in which $G = I$: a property of the metric. A minimum at which the
+Hessian has small eigenvalues: a property of a function and of a metric,
+or of a chart when no metric was chosen. An affine space with an inner
+product is flat in the first two senses, and it is more: its flat chart
+is global.
+\end{keyidea}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+ & Euclidean affine space & Riemannian manifold \\
+\midrule
+directions at $p$ & $V$, the same for all $p$ & $T_pM$ \\
+differential of $f$ & $\dd f(p)\in V^*$ & $\dd f(p)\in T_p^*M$ \\
+gradient & $G^{-1}[\dd f]^\top$, constant $G$
+  & $G(x)^{-1}[\dd f]^\top$; $\Pi_p\nabla F(p)$ if induced \\
+moving from $p$ along $v$ & $p + v$ & $R_p(v)$ \\
+straight path & $t\mapsto p + tv$ & geodesic, $\operatorname{Exp}_p(tv)$ \\
+descent step & $a - \eta\nabla f(a)$
+  & $R_p(-\eta\operatorname{grad}f(p))$ \\
+descent inequality & from $L$-smoothness
+  & assumed for $f\circ R_p$ \\
+Hessian & everywhere & at critical points; elsewhere a connection \\
+\bottomrule
+\end{tabular}
+\caption{What replaces what. The left column is
+\cref{ch:gradient-hessian}; the right column is this chapter.}
+\label{riemannian-optimization:tab:dictionary}
+\end{table}
+
+\section{Curved parameter spaces in machine learning}
+\label{riemannian-optimization:sec:ml}
+
+\begin{mlthread}[Machine learning: normalized and orthogonal weights]
 \begin{itemize}[nosep]
-  \item Orthogonality constraints and weight normalization.
-  \item Hyperbolic embeddings.
+  \item \emph{Weight normalization is Riemannian descent on the sphere.}
+        With $w = v/\norm v$, a gradient step on $v$ is
+        $v - \frac\eta{\norm v}\Pi_w g = \norm v\bigl(w
+        - \frac\eta{\norm v^2}\Pi_wg\bigr)$, where $g$ is the gradient
+        with respect to $w$
+        (\cref{submanifolds:ex:normalization}). After normalization, the
+        new direction is
+        \[
+          w^+ = R_w\Bigl(-\frac\eta{\norm v^2}\operatorname{grad}f(w)\Bigr)
+        \]
+        for the projection retraction of the sphere: Riemannian gradient
+        descent with the effective step $\eta/\norm v^2$, which decreases
+        as $\norm v$ grows.
+  \item \emph{Oja's rule.} For a data point $x$ and $y = \inner wx$, the
+        update $w + \eta(yx - y^2w)$ is a step along the Riemannian
+        gradient of $\frac12\inner w{Aw}$ on the sphere, for the
+        one-sample estimate $A = xx^\top$ of the covariance; the
+        retraction is replaced by its first-order approximation. By
+        \cref{riemannian-optimization:thm:saddles}, for the true
+        covariance the only local maxima are $\pm$ the first principal
+        direction.
+  \item \emph{Orthogonality constraints.} For a weight matrix with
+        orthonormal columns: project the ambient gradient by
+        \cref{riemannian-optimization:prop:stiefel}, step, and retract by
+        a QR or polar decomposition, at a cost of order $nk^2$ per step.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: hyperbolic embeddings]
+To embed a tree with small distortion one needs room: the number of nodes
+at distance $r$ from the root grows like $b^r$, while a ball of radius
+$r$ in $\R^d$ has a volume of order $r^d$. In the hyperbolic ball of
+\cref{riemannian-optimization:ex:metrics} the circle of radius $r$ has
+length $2\pi\sinh r$, which grows like $e^r$.
+\begin{itemize}[nosep]
+  \item The Riemannian gradient in the chart is
+        $G^{-1}[\dd L]^\top = \frac14(1 - \abs x^2)^2[\dd L]^\top$:
+        the Euclidean gradient, scaled down near the boundary, where the
+        same Euclidean displacement is a longer move.
+  \item Training with the ordinary gradient $[\dd L]^\top$ in this chart
+        would be Riemannian descent for the flat metric of the chart, and
+        would ignore the geometry that the embedding is supposed to use.
+  \item The retraction of the chart, $x + v$, may leave the ball; in
+        practice the result is pulled back inside, or the exponential
+        map is used.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{riemannian-optimization:sec:outlook}
+
+The metric was given: induced by an ambient space, or chosen by a chart.
+A family of probability distributions comes with a metric of its own, the
+Fisher information, which no chart has to choose and which every
+reparametrization respects. The Riemannian gradient for that metric,
+$G^{-1}[\dd L]^\top$ with $G$ the Fisher matrix, is the natural gradient
+of \cref{ch:natural-gradient}. The Gram matrix returns in
+\cref{ch:change-of-variables} through $\sqrt{\det G}$, which measures
+volumes.
+
+\paragraph{Sources.} This chapter follows N.~Boumal, \emph{An
+Introduction to Optimization on Smooth Manifolds}, Cambridge University
+Press, 2023: retractions (Definition~3.47, and Example~3.49 for the
+sphere), Riemannian metrics and submanifolds (Definitions~3.52 and
+3.55), the Riemannian gradient (Definition~3.58) and its expression as a
+projection (Proposition~3.61), Riemannian gradient descent
+(Algorithm~4.1) with the descent inequality as an assumption on
+$f\circ R$ (A4.3) and the resulting rate (Proposition~4.8,
+Corollary~4.9), the Hessian through retractions at critical points
+(Propositions~5.44 and 5.45) and as a projected derivative
+(Corollary~5.16), geodesics (Definition~5.38), and the projection on the
+Stiefel manifold (\S7.3, equation (7.26)). See also P.-A.~Absil,
+R.~Mahony and R.~Sepulchre, \emph{Optimization Algorithms on Matrix
+Manifolds}, Princeton University Press, 2008. Oja's rule: E.~Oja,
+Simplified neuron model as a principal component analyzer, \emph{Journal
+of Mathematical Biology}, 1982. Hyperbolic embeddings: M.~Nickel and
+D.~Kiela, Poincar\'e embeddings for learning hierarchical
+representations, NeurIPS, 2017.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{14-riemannian-optimization.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A Riemannian metric is an inner product on each tangent space,
+        with Gram matrix $G(x)$ in a chart, $G' = J^{-\top}GJ^{-1}$ in
+        another. A submanifold of a Euclidean affine space has an induced
+        metric; every chart has a metric of its own.
+  \item The gradient is the vector representing $\dd f(p)$:
+        $G^{-1}[\dd f]^\top$ in a chart, $\Pi_p\nabla F(p)$ for an
+        induced metric. Critical points do not depend on the metric;
+        gradients do.
+  \item A retraction replaces $p + v$. Riemannian gradient descent
+        $p_{k+1} = R_{p_k}(-\eta\operatorname{grad}f(p_k))$ converges at
+        the rate of \cref{ch:gradient-hessian} when $f\circ R_p$
+        satisfies the descent inequality, which holds on compact
+        submanifolds.
+  \item On the sphere the method is a shifted power iteration, and the
+        Rayleigh quotient has only saddles besides its global extrema.
+  \item Geodesics are the curves without tangential acceleration. A
+        metric is flat when some chart makes $G = I$; the sphere and the
+        hyperbolic disc are not flat, as their circles show.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{riemannian-optimization:exr:1}
+In the polar chart of the Euclidean plane, let $f(r, \theta) = r^2\theta$.
+Compute the components of $\dd f$ and of $\operatorname{grad}f$, and
+$\norm{\operatorname{grad}f}^2$.
+\solutionlink{riemannian-optimization:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{riemannian-optimization:exr:2}
+For the stereographic parametrization of the unit sphere of
+\cref{riemannian-optimization:ex:metrics}, check that
+$G(t) = 4(1 + \abs t^2)^{-2}I$. Let $f$ be the height, $f(x) = x_n$.
+Compute its expression in the chart, the row $[\dd f]$ and the column
+$[\operatorname{grad}f]$.
+\solutionlink{riemannian-optimization:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{riemannian-optimization:exr:3}
+On the unit sphere, expand $R_x(v) = (x + v)/\sqrt{1 + \norm v^2}$ and
+$\operatorname{Exp}_x(v)$ to third order in $v$, and show that
+$R_x(v) - \operatorname{Exp}_x(v) = -\frac13\norm v^2v + O(\norm v^4)$.
+\solutionlink{riemannian-optimization:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{riemannian-optimization:exr:4}
+On the Gaussian family of \cref{tangent-bundles:exr:5}, consider the
+metric of the chart $(\mu, s)$, $s = \ln\sigma$, and the retraction of
+that chart.
+\begin{enumerate}[nosep]
+  \item Write the Gram matrix of this metric and the retraction in the
+        chart $(\mu, \sigma)$.
+  \item Compute $\operatorname{grad}L$ at $(1, 2)$ in the chart
+        $(\mu, \sigma)$ and one step of Riemannian gradient descent with
+        $\eta = 1.2$. Compare with \cref{tangent-bundles:fig:steps}.
+\end{enumerate}
+\solutionlink{riemannian-optimization:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{riemannian-optimization:exr:5}
+Let $A = \diag(3, 1)$ and $x_0 = (1, 1)/\sqrt2$ on the unit circle.
+Compute $\operatorname{grad}f(x_0)$ for $f(x) = \inner x{Ax}$, one step
+of Riemannian gradient ascent with $\eta = \frac14$ and the projection
+retraction, and the value of $f$ before and after. Check that this step
+is a step of the power iteration.
+\solutionlink{riemannian-optimization:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{riemannian-optimization:exr:6}
+Let $X\in\mathrm{St}(3, 2)$ have the columns $e_1, e_2$, and let
+$Z = \begin{bsmallmatrix}1 & 2\\ 3 & 4\\ 5 & 6\end{bsmallmatrix}$.
+Compute $\Pi_X(Z)$, check that it is tangent, and compute the polar
+retraction $R_X(W)$ for
+$W = \begin{bsmallmatrix}0 & 0\\ 0 & 0\\ 1 & 0\end{bsmallmatrix}$.
+\solutionlink{riemannian-optimization:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{riemannian-optimization:exr:7}
+In the hyperbolic disc, let $L(x) = x_1$.
+\begin{enumerate}[nosep]
+  \item Compute $\operatorname{grad}L(x)$ in the chart and its norm for
+        the metric.
+  \item At what Euclidean distance from the centre is a point at
+        distance $3$ for the metric? What is the length of the circle of
+        radius $3$ around the centre, compared with $2\pi\cdot3$?
+\end{enumerate}
+\solutionlink{riemannian-optimization:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{riemannian-optimization:exr:8}
+On the cylinder of \cref{riemannian-optimization:ex:flat}, show that the
+curves $c(t) = (\cos at, \sin at, bt)$ are geodesics, and describe them
+in the flat chart $(\theta, z)$.
+\solutionlink{riemannian-optimization:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{riemannian-optimization:exr:9}
+Let $A = \diag(3, 2, 1)$ and $f(x) = \inner x{Ax}$ on the unit sphere of
+$\R^3$. List the critical points, the eigenvalues of the Hessian
+operator at each, and their nature.
+\solutionlink{riemannian-optimization:exr:9}
+\end{exercise}
 \end{notechapter}

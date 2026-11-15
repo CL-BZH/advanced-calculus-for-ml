@@ -19,7 +19,7 @@ book keeps three such pairs apart from beginning to end:
 and it applies two tests to every formula and algorithm: does it change
 when the **origin** moves, and does it change when the **basis** changes?
 
-**Status: work in progress.** Chapters 1 to 13 are drafted. The other
+**Status: work in progress.** Chapters 1 to 14 are drafted. The other
 chapters contain their planned contents.
 
 The PDF is rebuilt by GitHub Actions on every push to `main`:
@@ -51,7 +51,7 @@ Each part adds one layer of structure.
 
 12. Submanifolds of an Affine Space *(drafted)*
 13. Abstract Manifolds, Tangent and Cotangent Bundles *(drafted)*
-14. Riemannian Metrics and Optimization on Manifolds
+14. Riemannian Metrics and Optimization on Manifolds *(drafted)*
 15. Information Geometry and the Natural Gradient
 
 **Part IV — Measure and Integration**
