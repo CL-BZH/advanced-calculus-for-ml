@@ -1233,3 +1233,136 @@ two. The function $2x - (1 + x^2)\arctan x$ equals
 $2 - \frac\pi2 > 0$ at $x = 1$ and $3 - 3.194 < 0$ at $x = 1.5$, so
 $x_c$ lies between them ($x_c\approx1.3917$). Starting below $x_c$ the
 iterates shrink in absolute value; starting above, they grow.
+
+\section{\nameref*{ch:inverse-implicit}}
+
+\solution{inverse-implicit:exr:1}
+\begin{enumerate}[nosep]
+  \item The Jacobian matrix is
+        $e^x\begin{bsmallmatrix}\cos y & -\sin y\\\sin y & \cos y
+        \end{bsmallmatrix}$, with determinant $e^{2x}\neq0$. But
+        $f(x, y + 2\pi) = f(x, y)$.
+  \item On the strip $\R\times(-\pi, \pi)$ the map is injective: $e^x$
+        is the distance of $f(x, y)$ to the origin and $y$ its angle. By
+        \cref{inverse-implicit:cor:open} it is a diffeomorphism onto its
+        image, the plane minus the half-line $\{u\leq0, v = 0\}$, with
+        inverse
+        $(u, v)\mapsto\bigl(\frac12\ln(u^2 + v^2), \theta(u, v)\bigr)$,
+        where $\theta$ is the angle in $(-\pi, \pi)$. Since
+        $f(0, 0) = (1, 0)$ and $Df(0, 0) = I$, the theorem gives
+        $D(f^{-1})(1, 0) = I$. Directly: the partial derivatives of
+        $\frac12\ln(u^2 + v^2)$ are $u/(u^2 + v^2)$ and $v/(u^2 + v^2)$,
+        equal to $1$ and $0$ at $(1, 0)$; those of the angle are
+        $-v/(u^2 + v^2)$ and $u/(u^2 + v^2)$, equal to $0$ and $1$.
+\end{enumerate}
+
+\solution{inverse-implicit:exr:2}
+For $x\neq0$, $f'(x) = \frac12 + 2x\sin\frac1x - \cos\frac1x$, and
+$f'(0) = \lim_{x\to0}(\frac12 + x\sin\frac1x) = \frac12$. At
+$x_k = 1/(2\pi k)$, $f'(x_k) = \frac12 - 1 = -\frac12$, and at
+$y_k = 1/((2k + 1)\pi)$, $f'(y_k) = \frac32$: on $(0, \infty)$ the
+continuous function $f'$ changes sign between $x_k$ and $y_k$, so $f$ has
+strict local extrema arbitrarily close to $0$, and a continuous function
+is not injective near a strict local extremum. The hypothesis that fails
+is the continuity of the differential: $f'(x_k)\to-\frac12\neq f'(0)$.
+
+\solution{inverse-implicit:exr:3}
+$Df(a) = I$, so the iteration is $x_{k+1} = x_k + (y - f(x_k))$ with
+$y = (0.1, 0.2)$. From $x_0 = (0, 0)$: $x_1 = (0.1, 0.2)$. Then
+$f(x_1) = (0.14, 0.21)$ and
+$x_2 = x_1 + (-0.04, -0.01) = (0.06, 0.19)$. Then
+$f(x_2) = (0.0961, 0.1936)$ and
+$x_3 = x_2 + (0.0039, 0.0064) = (0.0639, 0.1964)$. The residual
+$y - f(x_k)$ has gone from $(0.1, 0.2)$ to about $(-0.0025, -0.0005)$;
+the solution is $(0.0615, 0.1962)$ to four decimals.
+
+\solution{inverse-implicit:exr:4}
+$G(\frac32, \frac32) = \frac{27}4 - \frac{27}4 = 0$, and
+$\partial G/\partial y = 3y^2 - 3x = \frac94\neq0$ there, so the theorem
+applies. With $\partial G/\partial x = 3x^2 - 3y = \frac94$,
+$\varphi'(\frac32) = -1$. At $(0, 0)$ both partial derivatives vanish, so
+the theorem applies to neither variable; the curve (the folium of
+Descartes) crosses itself at the origin and is not a graph near it.
+
+\solution{inverse-implicit:exr:5}
+\begin{enumerate}[nosep]
+  \item With $G = (x^2 + y^2 + z^2 - 3,\ x + 2y + 3z - 6)$, the Jacobian
+        matrix at $(1, 1, 1)$ is
+        $\begin{bsmallmatrix}2 & 2 & 2\\1 & 2 & 3\end{bsmallmatrix}$. The
+        block of the unknowns $(y, z)$,
+        $B = \begin{bsmallmatrix}2 & 2\\2 & 3\end{bsmallmatrix}$, has
+        determinant $2$, so the theorem applies, and
+        \[
+          \begin{bmatrix}y'\\z'\end{bmatrix}
+          = -B^{-1}\begin{bmatrix}2\\1\end{bmatrix}
+          = -\frac12\begin{bmatrix}3 & -2\\-2 & 2\end{bmatrix}
+            \begin{bmatrix}2\\1\end{bmatrix}
+          = \begin{bmatrix}-2\\1\end{bmatrix} .
+        \]
+        The solution curve has the velocity $(1, -2, 1)$, orthogonal to
+        $(1, 1, 1)$ and to $(1, 2, 3)$ for the dot product.
+  \item The Jacobian matrix becomes
+        $\begin{bsmallmatrix}2 & 2 & 2\\1 & 1 & 1\end{bsmallmatrix}$, of
+        rank $1$: every $2\times2$ block is singular and the theorem
+        never applies. The plane is tangent to the sphere at $(1, 1, 1)$,
+        and the system has this single solution.
+\end{enumerate}
+
+\solution{inverse-implicit:exr:6}
+\begin{enumerate}[nosep]
+  \item The derivative of the loss in $w$ is
+        $G(\lambda, w) = \sum_ix_i(wx_i - y_i) + \lambda w
+        = (4 + \lambda)w - 6$. With $\partial G/\partial\lambda = w$ and
+        $\partial G/\partial w = 4 + \lambda$,
+        $\dd w^*/\dd\lambda = -w^*/(4 + \lambda)$.
+  \item $w^* = 6/(4 + \lambda)$ has the derivative
+        $-6/(4 + \lambda)^2 = -w^*/(4 + \lambda)$. At $\lambda = 2$,
+        $w^* = 1$ and the derivative is $-\frac16$.
+  \item The derivative of the validation loss is
+        $(w^* - 2)\cdot(-\frac16) = \frac16 > 0$: it decreases when
+        $\lambda$ decreases, which moves $w^*$ up towards $2$.
+\end{enumerate}
+
+\solution{inverse-implicit:exr:7}
+Let $G(w, x, z) = z - \tanh(wz + x)$ and $u = 1 - z^2$, the derivative
+of $\tanh$ at $wz + x$ when $z = z^*$. Then
+$\partial G/\partial z = 1 - wu$, $\partial G/\partial w = -zu$ and
+$\partial G/\partial x = -u$, so
+\[
+  \frac{\partial z^*}{\partial w} = \frac{z^*u}{1 - wu},
+  \qquad
+  \frac{\partial z^*}{\partial x} = \frac u{1 - wu} .
+\]
+Since $0 < u\leq1$ and $\abs w < 1$, $1 - wu\geq1 - \abs w > 0$. This is
+the scalar case of $\id - D_zg$ being invertible when
+$\norm{D_zg} < 1$.
+
+\solution{inverse-implicit:exr:8}
+\begin{enumerate}[nosep]
+  \item $[\dd f] = [2x\ \ 2y\ \ {-2z}]$ is non-zero, hence surjective
+        onto $\R$, except at the origin. The level set through the origin
+        is the cone $x^2 + y^2 = z^2$: near the origin it consists of two
+        sheets meeting at a point, and it is not a surface there.
+  \item $c'(t) = (2t, 3t^2)$ is non-zero for $t\neq0$: an immersion
+        except at $t = 0$, where the curve has a cusp.
+  \item $t\mapsto(\cos t, \sin t)$: its velocity never vanishes, and it
+        covers the circle infinitely many times.
+\end{enumerate}
+
+\solution{inverse-implicit:exr:9}
+\begin{enumerate}[nosep]
+  \item $x_1 = y_1$ and $x_2 = (y_2 - t(y_1))e^{-s(y_1)}$. The Jacobian
+        matrix
+        $\begin{bsmallmatrix}1 & 0\\\ast & e^{s(x_1)}\end{bsmallmatrix}$
+        is triangular, with determinant $e^{s(x_1)} > 0$, whatever $s$
+        and $t$ are.
+  \item Fix $y$. The map $g(x) = y - F(x)$ is Lipschitz with constant
+        $\kappa < 1$ on $\R^n$, which is complete, so it has a unique
+        fixed point (\cref{norms-banach:thm:contraction}): a unique $x$
+        with $x + F(x) = y$. Hence $f$ is bijective, and the iteration
+        $x_{k+1} = g(x_k)$ converges to $f^{-1}(y)$ at the rate
+        $\kappa^k$. Finally
+        $\norm{f(x) - f(x')}\geq\norm{x - x'} - \norm{F(x) - F(x')}
+        \geq(1 - \kappa)\norm{x - x'}$, so $f^{-1}$ is Lipschitz with
+        constant $1/(1 - \kappa)$.
+\end{enumerate}

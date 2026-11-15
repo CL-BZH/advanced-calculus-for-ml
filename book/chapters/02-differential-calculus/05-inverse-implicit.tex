@@ -4,21 +4,667 @@
 \chaptersubtitle{%
   When the linear approximation can be trusted to solve equations}
 
-\begin{chapterplan}
+\begin{chapterintro}
+A linear system $Ah = k$ has one solution for every $k$ exactly when $A$
+is invertible. This chapter proves that a nonlinear equation
+$f(x) = y$ inherits this property near a point where the differential is
+invertible: it can be solved, the solution is unique nearby, and it
+depends differentiably on $y$. The same idea solves equations with
+parameters, $G(x, y) = 0$, for $y$ as a function of $x$, and it gives the
+differential of that function without a formula for the function. This is
+what lets one differentiate through the solution of an optimization
+problem or through a fixed point, and it is the tool that will turn
+solution sets of equations into manifolds. You will learn
 \begin{itemize}[nosep]
-  \item The inverse function theorem, proved with the contraction principle;
-        diffeomorphisms.
-  \item The implicit function theorem and the derivative of the implicit
-        function.
-  \item The rank theorem; immersions and submersions, in preparation for
-        \cref{ch:submanifolds}.
+  \item the inverse function theorem, proved with the contraction
+        principle, and the notion of diffeomorphism;
+  \item the implicit function theorem and the formula for the
+        differential of the implicit function;
+  \item the local form of submersions and immersions, which prepares
+        \cref{ch:submanifolds};
+  \item implicit differentiation, with its uses for fixed-point layers
+        and for gradients with respect to hyperparameters;
+  \item why invertible networks are built to be invertible globally, which
+        the theorem does not provide.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:differential,ch:chain-rule-autodiff,%
+ch:contractions-newton}. All spaces are finite-dimensional.}
+\end{chapterintro}
+
+\section{The inverse function theorem}\label{inverse-implicit:sec:inverse}
+
+Let $\Aff$ and $\Bff$ be normed affine spaces with directions $V$ and $W$
+of the same dimension.
+
+\begin{definition}[Diffeomorphism]\label{inverse-implicit:def:diffeo}
+Let $U_0\subset\Aff$ and $V_0\subset\Bff$ be open. A map
+$f:U_0\to V_0$ is a \emph{diffeomorphism} (of class $C^1$) if it is
+bijective and both $f$ and $f^{-1}$ are of class $C^1$.
+\end{definition}
+
+If $f$ is a diffeomorphism, $Df(x)$ is invertible at every point and
+$D(f^{-1})(f(x)) = Df(x)^{-1}$
+(\cref{chain-rule-autodiff:cor:consequences}). The theorem is a local
+converse.
+
+\begin{theorem}[Inverse function theorem]\label{inverse-implicit:thm:inverse}
+Let $U\subset\Aff$ be open, $f:U\to\Bff$ of class $C^1$, and $a\in U$ a
+point where $Df(a)$ is invertible. Then there are open sets $U_0\ni a$
+and $V_0\ni f(a)$ such that $f:U_0\to V_0$ is a diffeomorphism. Its
+inverse satisfies
+\[
+  D(f^{-1})(y) = Df\bigl(f^{-1}(y)\bigr)^{-1}
+  \qquad\text{for all } y\in V_0 .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $A = Df(a)$ and $b = f(a)$. For $y\in\Bff$ define
+\[
+  g_y(x) = x + A^{-1}\bigl(y - f(x)\bigr), \qquad x\in U .
+\]
+A point $x$ is a fixed point of $g_y$ if and only if $f(x) = y$.
+
+\emph{Step 1: $g_y$ is a contraction.}
+$Dg_y(x) = \id - A^{-1}Df(x) = A^{-1}\bigl(A - Df(x)\bigr)$, which
+vanishes at $a$. Since $Df$ is continuous, there is $r > 0$ such that
+$\bar B(a, r)\subset U$ and $\norm{A^{-1}}\norm{A - Df(x)}\leq\frac12$ on
+that ball. By \cref{contractions-newton:cor:mvi}, every $g_y$ is Lipschitz
+with constant $\frac12$ on $\bar B(a, r)$.
+
+\emph{Step 2: existence and uniqueness.} Let
+$\rho = r/(2\norm{A^{-1}})$ and $\norm{y - b} < \rho$. For
+$x\in\bar B(a, r)$,
+\[
+  \norm{g_y(x) - a}\leq\norm{g_y(x) - g_y(a)} + \norm{A^{-1}(y - b)}
+  < \tfrac r2 + \tfrac r2 = r .
+\]
+So $g_y$ maps the closed ball into the open ball $B(a, r)$. By the
+contraction principle (\cref{norms-banach:thm:contraction}) it has a
+unique fixed point there, which we call $\varphi(y)$: for each
+$y\in B(b, \rho)$ the equation $f(x) = y$ has exactly one solution in
+$\bar B(a, r)$, and it lies in $B(a, r)$.
+
+\emph{Step 3: $\varphi$ is Lipschitz.} Let $x_i = \varphi(y_i)$. Then
+$x_1 - x_2 = g_{y_1}(x_1) - g_{y_1}(x_2) + A^{-1}(y_1 - y_2)$, so
+$\norm{x_1 - x_2}\leq\frac12\norm{x_1 - x_2}
++ \norm{A^{-1}}\norm{y_1 - y_2}$, that is,
+\begin{equation}\label{inverse-implicit:eq:lipschitz}
+  \norm{\varphi(y_1) - \varphi(y_2)}
+  \leq2\norm{A^{-1}}\,\norm{y_1 - y_2} .
+\end{equation}
+
+\emph{Step 4: the open sets.} Let $V_0 = B(b, \rho)$ and
+$U_0 = B(a, r)\cap f^{-1}(V_0)$, which is open because $f$ is continuous.
+By Step~2, $f$ maps $U_0$ bijectively onto $V_0$, with inverse $\varphi$.
+
+\emph{Step 5: $\varphi$ is differentiable.} For $x\in\bar B(a, r)$,
+$Df(x) = A(\id - T)$ with $T = A^{-1}(A - Df(x))$ of norm at most
+$\frac12$, so $Df(x)$ is invertible and
+$\norm{Df(x)^{-1}}\leq2\norm{A^{-1}}$
+(\cref{differential:lem:neumann}). Fix $y_0\in V_0$ and
+$x_0 = \varphi(y_0)$; for $y_0 + k\in V_0$ write
+$\varphi(y_0 + k) = x_0 + h$. Differentiability of $f$ at $x_0$ gives
+$k = Df(x_0)h + r(h)$ with $r(h) = o(h)$, hence
+\[
+  \varphi(y_0 + k) - \varphi(y_0) = h
+  = Df(x_0)^{-1}k - Df(x_0)^{-1}r(h) .
+\]
+By \eqref{inverse-implicit:eq:lipschitz},
+$\norm h\leq2\norm{A^{-1}}\norm k$, so $r(h) = o(k)$ and the last term is
+$o(k)$: $\varphi$ is differentiable at $y_0$ with
+$D\varphi(y_0) = Df(x_0)^{-1}$.
+
+\emph{Step 6: $\varphi$ is of class $C^1$.} The map
+$y\mapsto Df(\varphi(y))^{-1}$ is the composition of the continuous maps
+$\varphi$, $Df$ and the inversion of operators
+(\cref{differential:prop:inverse}).
+\end{proof}
+
+\begin{intuition}
+Near $a$ the map $f$ is its tangent affine map plus a small error, and
+the tangent affine map is invertible. The proof solves $f(x) = y$ by
+repeatedly correcting $x$ with the \emph{inverse of the tangent map at
+$a$} applied to the current residual $y - f(x)$. This is Newton's method
+with the differential frozen at $a$; it converges at a fixed linear rate
+instead of quadratically, but it needs nothing more than the continuity of
+$Df$ (\cref{inverse-implicit:fig:chord}).
+\end{intuition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, xscale=9.0, yscale=2.4]
+  \draw[->, gray] (0.85,0.75) -- (1.85,0.75);
+  \draw[->, gray] (0.9,0.7) -- (0.9,2.9);
+  \draw[bookaccent, very thick, domain=0.92:1.68, samples=40]
+    plot (\x, {\x*\x});
+  \draw[bookpitfall, dashed] (0.9,2.2) -- (1.8,2.2);
+  \node[bookpitfall, left] at (0.9,2.2) {$y$};
+  \draw[bookdef, thick] (1,1) -- (1.6,2.2);
+  \draw[bookdef, thick] (1.6,2.56) -- (1.42,2.2);
+  \draw[bookdef, thick] (1.42,2.0164) -- (1.5118,2.2);
+  \draw[densely dotted] (1.6,2.2) -- (1.6,2.56);
+  \draw[densely dotted] (1.42,2.2) -- (1.42,2.0164);
+  \draw[densely dotted] (1,0.75) -- (1,1);
+  \draw[densely dotted] (1.6,0.75) -- (1.6,2.2);
+  \draw[densely dotted] (1.42,0.75) -- (1.42,2.0164);
+  \node[circle, fill, inner sep=1.2pt] at (1,1) {};
+  \node[circle, fill, inner sep=1.2pt] at (1.6,2.56) {};
+  \node[circle, fill, inner sep=1.2pt] at (1.42,2.0164) {};
+  \node[below] at (1,0.75) {$a = x_0$};
+  \node[below] at (1.6,0.75) {$x_1$};
+  \node[below] at (1.42,0.75) {$x_2$};
+  \node[bookaccent, right] at (1.66,2.75) {$f$};
+\end{tikzpicture}
+\caption{The iteration of the proof for $f(x) = x^2$, $a = 1$ and
+$y = 2.2$: from each point of the graph, a line with the \emph{fixed}
+slope $f'(a) = 2$ is followed to the level $y$. The green segments are
+parallel. The iterates $1$, $1.6$, $1.42$, $1.512,\dots$ converge to
+$\sqrt{2.2}\approx1.483$.}
+\label{inverse-implicit:fig:chord}
+\end{figure}
+
+\begin{remark}\label{inverse-implicit:rem:remarks}
+\begin{enumerate}[nosep]
+  \item \emph{The theorem is local.} The map
+        $f(x, y) = (e^x\cos y, e^x\sin y)$ has an invertible differential
+        at every point of $\R^2$ and is not injective:
+        $f(x, y + 2\pi) = f(x, y)$ (\cref{inverse-implicit:exr:1}).
+  \item \emph{Continuity of the differential is needed.} There are
+        differentiable functions of one variable with $f'(0)\neq0$ that
+        are not injective on any neighbourhood of $0$
+        (\cref{inverse-implicit:exr:2}).
+  \item \emph{Smoothness is inherited.} If $f$ has continuous partial
+        derivatives up to order $k$, so has its local inverse, by the
+        formula for $D(f^{-1})$ and induction on $k$.
+\end{enumerate}
+\end{remark}
+
+\begin{corollary}\label{inverse-implicit:cor:open}
+Let $f:U\to\Bff$ be of class $C^1$ with $Df(x)$ invertible at every point
+of the open set $U$. Then $f(U)$ is open, and if $f$ is injective, it is a
+diffeomorphism from $U$ onto $f(U)$.
+\end{corollary}
+
+\begin{proof}
+Every point $f(a)$ of $f(U)$ has a neighbourhood $V_0\subset f(U)$ by the
+theorem, so $f(U)$ is open. If $f$ is injective, its inverse coincides
+near each point with a local inverse, which is of class $C^1$.
+\end{proof}
+
+A diffeomorphism from an open set of $\Aff$ onto an open set of $\R^n$ is
+a system of \emph{curvilinear coordinates}: it labels points by $n$
+numbers, as an affine frame does, without being affine. Polar coordinates
+are the standard example (\cref{differential:ex:polar}): the Jacobian
+determinant is $\rho$, so the map is a local diffeomorphism where
+$\rho > 0$, and a diffeomorphism once $\theta$ is restricted to an
+interval of length less than $2\pi$.
+
+\section{The implicit function theorem}\label{inverse-implicit:sec:implicit}
+
+Consider a system of $m$ equations in $n + m$ unknowns, written
+$G(x, y) = 0$ with $x\in\Aff$ of dimension $n$ and $y\in\Bff$ of dimension
+$m$. One expects to be able to choose $x$ freely and solve for $y$. In
+the affine case $G(x, y) = Ax + By - c$ this works exactly when the
+$m\times m$ block $B$ is invertible, and then
+$y = -B^{-1}(Ax - c)$.
+
+Let $\Omega\subset\Aff\times\Bff$ be open and $G:\Omega\to X$ of class
+$C^1$, where $X$ is a vector space with $\dim X = \dim W = m$. The
+differential of $G$ splits into two \emph{partial differentials},
+\[
+  DG(a, b)(h, k) = D_1G(a, b)\,h + D_2G(a, b)\,k ,
+  \qquad D_1G(a, b):V\to X,\quad D_2G(a, b):W\to X ,
+\]
+whose matrices are the two blocks of the Jacobian matrix of $G$.
+
+\begin{theorem}[Implicit function theorem]\label{inverse-implicit:thm:implicit}
+Let $G(a, b) = 0$ and suppose that $D_2G(a, b)$ is invertible. Then there
+are open sets $U_0\ni a$ in $\Aff$ and $W_0\ni b$ in $\Bff$, with
+$U_0\times W_0\subset\Omega$, and a map $\varphi:U_0\to W_0$ of class
+$C^1$ such that, for $(x, y)\in U_0\times W_0$,
+\[
+  G(x, y) = 0 \iff y = \varphi(x) .
+\]
+Moreover $D_2G(x, \varphi(x))$ is invertible for $x\in U_0$, and
+\begin{equation}\label{inverse-implicit:eq:implicit}
+  D\varphi(x) = -D_2G\bigl(x, \varphi(x)\bigr)^{-1}
+  D_1G\bigl(x, \varphi(x)\bigr) .
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Let $\Phi:\Omega\to\Aff\times X$, $\Phi(x, y) = (x, G(x, y))$. It is of
+class $C^1$, and
+$D\Phi(a, b)(h, k) = \bigl(h,\ D_1G(a, b)h + D_2G(a, b)k\bigr)$. If this
+vanishes then $h = 0$, hence $D_2G(a, b)k = 0$ and $k = 0$: the linear map
+$D\Phi(a, b)$ is injective between spaces of the same dimension, so it is
+invertible. By \cref{inverse-implicit:thm:inverse}, $\Phi$ is a
+diffeomorphism from an open set $O\ni(a, b)$ onto an open set
+$O'\ni(a, 0)$. Shrinking $O$, we may assume $O = U_1\times W_0$ with
+$U_1$ and $W_0$ open. Let $\Psi = \Phi^{-1}:O'\to O$. Since $\Phi$ does
+not change the first component, neither does $\Psi$:
+$\Psi(x, z) = (x, \psi(x, z))$ with $\psi$ of class $C^1$.
+
+The set $O'$ is open and contains $(a, 0)$, so there is an open
+$U_0\ni a$, $U_0\subset U_1$, with $U_0\times\{0\}\subset O'$. Put
+$\varphi(x) = \psi(x, 0)$ for $x\in U_0$: it is of class $C^1$ with values
+in $W_0$, and $\Phi(x, \varphi(x)) = (x, 0)$, that is,
+$G(x, \varphi(x)) = 0$. Conversely, if $(x, y)\in U_0\times W_0$ and
+$G(x, y) = 0$, then $\Phi(x, y) = (x, 0) = \Phi(x, \varphi(x))$, and
+$y = \varphi(x)$ because $\Phi$ is injective on $O$.
+
+At a point $(x, \varphi(x))$ the differential $D\Phi$ is invertible, which
+forces $D_2G$ to be injective there, hence invertible. Differentiating
+$G(x, \varphi(x)) = 0$ with the chain rule gives
+$D_1G + D_2G\,D\varphi(x) = 0$, which is
+\eqref{inverse-implicit:eq:implicit}.
+\end{proof}
+
+\begin{keyidea}
+The differential of the implicit function is obtained without solving the
+equation: differentiate $G(x, \varphi(x)) = 0$ and solve the resulting
+\emph{linear} equation for $D\varphi(x)$. The nonlinear problem has to be
+solved once, to find the point; its sensitivity to $x$ then costs one
+linear system.
+\end{keyidea}
+
+\begin{example}[The circle]\label{inverse-implicit:ex:circle}
+Let $G(x, y) = x^2 + y^2 - 1$ on $\R^2$. Then $D_2G = 2y$. At
+$(a, b) = (0.6, 0.8)$ it is non-zero: near this point the circle is the
+graph of a function $y = \varphi(x)$, here $\sqrt{1 - x^2}$, and
+\eqref{inverse-implicit:eq:implicit} gives
+$\varphi'(x) = -2x/2y = -x/y = -0.75$ at $a$, with no need of the formula
+for $\varphi$. At $(1, 0)$, $D_2G = 0$: the theorem does not apply, and
+indeed no neighbourhood of $(1, 0)$ meets the circle in the graph of a
+function of $x$. But $D_1G = 2\neq0$ there, so the circle is locally the
+graph of a function $x = \chi(y)$
+(\cref{inverse-implicit:fig:circle}).
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.9]
+  \draw[->, gray] (-1.35,0) -- (1.6,0) node[right] {$x$};
+  \draw[->, gray] (0,-1.25) -- (0,1.35) node[above] {$y$};
+  \draw[bookaccent, thick] (0,0) circle (1);
+  \draw[bookdef, thick, fill=bookdef!10, fill opacity=0.5]
+    (0.3,0.55) rectangle (0.9,1.05);
+  \draw[bookaccent, very thick] ({cos(72.5)},{sin(72.5)})
+    arc[start angle=72.5, end angle=33.4, radius=1];
+  \fill (0.6,0.8) circle (1pt);
+  \node[bookdef, font=\small, anchor=south west] at (0.9,0.95)
+    {graph of $y = \varphi(x)$};
+  \draw[bookpitfall, thick, fill=bookpitfall!10, fill opacity=0.5]
+    (0.75,-0.3) rectangle (1.25,0.3);
+  \draw[bookaccent, very thick] ({cos(-17.5)},{sin(-17.5)})
+    arc[start angle=-17.5, end angle=17.5, radius=1];
+  \fill (1,0) circle (1pt);
+  \node[bookpitfall, font=\small, anchor=north west, align=left]
+    at (1.05,-0.32) {two values of $y$\\for each $x < 1$};
+\end{tikzpicture}
+\caption{The circle $x^2 + y^2 = 1$. In the green box around
+$(0.6, 0.8)$, where $\partial G/\partial y\neq0$, it is the graph of a
+function of $x$. In any box around $(1, 0)$, where
+$\partial G/\partial y = 0$, it is not: the tangent is vertical.}
+\label{inverse-implicit:fig:circle}
+\end{figure}
+
+In coordinates, the hypothesis is that the $m\times m$ block of the
+Jacobian matrix of $G$ formed by the columns of the unknowns $y$ is
+invertible. If the whole $m\times(n + m)$ Jacobian matrix has rank $m$,
+some $m$ of its columns are independent, and the corresponding $m$
+unknowns can be expressed in terms of the others. Which ones is a matter
+of choice; that it can be done is the content of the next section.
+
+\section{Submersions and immersions}\label{inverse-implicit:sec:rank}
+
+Let $f:U\to\Bff$ be of class $C^1$ on an open set of $\Aff$, with
+$\dim V = n$ and $\dim W = m$, no longer assumed equal.
+
+\begin{definition}\label{inverse-implicit:def:sub-imm}
+The map $f$ is a \emph{submersion at} $a$ if $Df(a)$ is surjective, and
+an \emph{immersion at} $a$ if $Df(a)$ is injective.
+\end{definition}
+
+A linear surjection is, in suitable bases, the projection
+$(x_1,\dots,x_n)\mapsto(x_1,\dots,x_m)$, and a linear injection is the
+inclusion $(x_1,\dots,x_n)\mapsto(x_1,\dots,x_n, 0,\dots,0)$. The next two
+theorems say that submersions and immersions have these forms locally,
+after a change of curvilinear coordinates.
+
+\begin{theorem}[Local form of a submersion]
+\label{inverse-implicit:thm:submersion}
+Let $f$ be a submersion at $a$ and $K = \ker Df(a)$, of dimension
+$n - m$. There is a diffeomorphism $\Theta$ from an open set $U_0\ni a$
+onto an open subset of $\Bff\times K$ such that
+\[
+  f(x) = \mathrm{pr}_1\bigl(\Theta(x)\bigr) \qquad\text{for } x\in U_0 ,
+\]
+where $\mathrm{pr}_1$ is the projection onto the first factor.
+\end{theorem}
+
+\begin{proof}
+Choose a linear projection $\pi:V\to K$ (a linear map with
+$\pi(v) = v$ for $v\in K$), and let
+$\Theta(x) = \bigl(f(x), \pi(x - a)\bigr)$. It is of class $C^1$, and
+$D\Theta(a)h = (Df(a)h, \pi h)$. If this is zero then $h\in K$, so
+$h = \pi h = 0$: $D\Theta(a)$ is injective between spaces of dimension
+$n = m + (n - m)$, hence invertible. Apply
+\cref{inverse-implicit:thm:inverse}.
+\end{proof}
+
+\begin{theorem}[Local form of an immersion]
+\label{inverse-implicit:thm:immersion}
+Let $f$ be an immersion at $a$ and $C$ a complement of $\im Df(a)$ in
+$W$, of dimension $m - n$. There is a diffeomorphism $\Xi$ from an open
+set containing $f(a)$ onto an open subset of $\Aff\times C$ such that
+\[
+  \Xi\bigl(f(x)\bigr) = (x, 0) \qquad\text{for } x \text{ near } a .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $F(x, c) = f(x) + c$ on $U\times C$. Then
+$DF(a, 0)(h, c) = Df(a)h + c$, which is injective because $Df(a)$ is and
+$\im Df(a)\cap C = \{0\}$, and surjective because
+$\im Df(a) + C = W$. By \cref{inverse-implicit:thm:inverse}, $F$ is a
+diffeomorphism from an open set containing $(a, 0)$ onto an open set
+containing $f(a)$. Let $\Xi$ be its inverse: since $F(x, 0) = f(x)$,
+$\Xi(f(x)) = (x, 0)$ for $x$ near $a$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \clip (-1.9,-1.5) rectangle (1.9,1.5);
+    \foreach \c in {-1.2,-0.6,0,0.6,1.2}
+      \draw[bookaccent, thick, domain=-2:2, samples=40]
+        plot (\x, {\c + 0.25*\x*\x + 0.2*sin(90*\x)});
+    \draw[gray] (-1.9,-1.5) rectangle (1.9,1.5);
+  \end{scope}
+  \fill (0,0) circle (1.4pt) node[below right] {$a$};
+  \node[anchor=north, font=\small] at (0,-1.6) {level sets of $f$ in $U_0$};
+  \draw[->, thick, gray] (2.3,0) -- (3.9,0) node[midway, above] {$\Theta$};
+  \begin{scope}[xshift=6.2cm]
+    \foreach \c in {-1.2,-0.6,0,0.6,1.2}
+      \draw[bookaccent, thick] (-1.9,\c) -- (1.9,\c);
+    \draw[gray] (-1.9,-1.5) rectangle (1.9,1.5);
+    \fill (0,0) circle (1.4pt);
+    \draw[->, bookdef, thick] (2.2,-1.5) -- (2.2,1.5)
+      node[right, font=\small] {$\Bff$};
+    \draw[->, bookdef, thick] (-1.9,-1.8) -- (1.9,-1.8)
+      node[below left, font=\small] {$K$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The local form of a submersion. The diffeomorphism $\Theta$
+straightens the level sets of $f$ into the slices
+$\{y\}\times K$ of a product, on which $f$ becomes the projection onto
+the first factor.}
+\label{inverse-implicit:fig:submersion}
+\end{figure}
+
+\begin{corollary}[What these theorems say about sets]
+\label{inverse-implicit:cor:sets}
+\begin{enumerate}[nosep]
+  \item If $f$ is a submersion at $a$, the level set
+        $f^{-1}(f(a))$ is, near $a$, the image by the diffeomorphism
+        $\Theta^{-1}$ of an open piece of the vector space
+        $K = \ker Df(a)$, of dimension $n - m$.
+  \item If $f$ is an immersion at $a$, the image by $f$ of a small
+        neighbourhood of $a$ is, after the diffeomorphism $\Xi$, an open
+        piece of the affine space $\Aff\times\{0\}$, of dimension $n$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) $f(x) = f(a)$ if and only if $\Theta(x)\in\{f(a)\}\times K$. (2) is
+\cref{inverse-implicit:thm:immersion}.
+\end{proof}
+
+Sets that locally look like an open piece of a vector space, up to a
+diffeomorphism, are \emph{submanifolds}: the subject of
+\cref{ch:submanifolds}. The corollary gives the two standard ways of
+producing them, by equations and by parametrizations, and identifies the
+tangent space in the first case as $\ker Df(a)$.
+
+\begin{remark}[Constant rank]
+Submersions and immersions are the two extreme cases of the \emph{rank
+theorem}: if the rank of $Df(x)$ is equal to the same number $r$ at all
+points near $a$, then in suitable curvilinear coordinates on both sides
+$f$ reads $(x_1,\dots,x_n)\mapsto(x_1,\dots,x_r, 0,\dots,0)$. We shall
+only use the two cases proved above.
+\end{remark}
+
+\section{Differentiating through a solution}
+\label{inverse-implicit:sec:ml}
+
+\begin{mlthread}[Machine learning: implicit differentiation]
+Suppose that a quantity $z^*(\theta)$ is defined as the solution of an
+equation $G(\theta, z) = 0$, computed by some iterative solver, and that a
+loss $\ell(z^*(\theta))$ depends on it. By
+\cref{inverse-implicit:thm:implicit},
+\[
+  Dz^*(\theta) = -D_zG^{-1}D_\theta G ,
+  \qquad
+  \dd(\ell\circ z^*)(\theta)
+  = -\dd\ell(z^*)\circ D_zG^{-1}\circ D_\theta G ,
+\]
+the differentials of $G$ being taken at $(\theta, z^*)$. In reverse mode
+this is computed from the right-hand side inwards, with covectors
+(\cref{ch:chain-rule-autodiff}):
+\begin{enumerate}[nosep]
+  \item solve the linear system $\dual{(D_zG)}\lambda = \dd\ell(z^*)$ for
+        the covector $\lambda$;
+  \item return $-\dual{(D_\theta G)}\lambda$.
+\end{enumerate}
+One linear system is solved, whatever the number of parameters, and
+neither the iterations of the solver nor their intermediate values are
+needed: the memory cost does not grow with the number of iterations. The
+alternative, backpropagating through the solver's iterations, stores all
+of them and differentiates an approximation.
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: three uses]
 \begin{itemize}[nosep]
-  \item Implicit differentiation.
-  \item Deep equilibrium models.
-  \item Bilevel optimization and gradients with respect to hyperparameters.
-  \item Invertible networks.
+  \item \emph{Fixed-point layers.} For a layer defined by
+        $z^* = g(\theta, z^*)$ (\cref{ch:contractions-newton}), take
+        $G = z - g(\theta, z)$. Then $D_zG = \id - D_zg$, which is
+        invertible as soon as $\norm{D_zg} < 1$
+        (\cref{differential:lem:neumann}): the condition that makes the
+        layer well defined also makes it differentiable, and
+        $Dz^*(\theta) = (\id - D_zg)^{-1}D_\theta g$.
+  \item \emph{Hyperparameters.} Let $w^*(\lambda)$ minimize a training
+        loss $f(\lambda, w)$ in $w$, where $\lambda$ is a hyperparameter
+        such as a regularization strength. It solves
+        $\dd_wf(\lambda, w) = 0$, an equation whose partial differential
+        in $w$ is the second differential of $f$ in $w$. At a
+        non-degenerate minimum the theorem applies, and the derivative
+        of a validation loss with respect to $\lambda$ costs one linear
+        system with the Hessian matrix, solved with Hessian--vector
+        products (\cref{ch:gradient-hessian}). This is the basis of
+        gradient-based hyperparameter tuning and of bilevel
+        optimization.
+  \item \emph{Sensitivity analysis.} The same formula says how the
+        solution of any problem moves when its data move: the
+        conditioning factor is $\norm{D_zG^{-1}}$, the quantity
+        $\beta$ of \cref{ch:contractions-newton}.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: invertible networks]
+Normalizing flows need maps that are invertible on the whole space, with
+a Jacobian determinant that is cheap to compute. The inverse function
+theorem does not help: it is local, and
+\cref{inverse-implicit:rem:remarks} shows that an invertible differential
+everywhere does not make a map injective. Global invertibility is built
+into the architecture instead.
+\begin{itemize}[nosep]
+  \item A \emph{coupling layer} splits $x = (x_1, x_2)$ and sets
+        $y_1 = x_1$, $y_2 = x_2\odot e^{s(x_1)} + t(x_1)$, with arbitrary
+        networks $s$ and $t$. It is inverted in closed form, and its
+        Jacobian matrix is triangular, with determinant
+        $\exp\sum_is_i(x_1)$ (Dinh, Sohl-Dickstein and Bengio, 2017).
+  \item A \emph{residual layer} $f(x) = x + F(x)$ with $F$ Lipschitz of
+        constant $\kappa < 1$ is a bijection of the whole space, and its
+        inverse is computed by the iteration $x\leftarrow y - F(x)$
+        (Behrmann et al., 2019). This is the argument of
+        \cref{inverse-implicit:thm:inverse}, with the contraction given
+        globally instead of being obtained near a point
+        (\cref{inverse-implicit:exr:9}).
+\end{itemize}
+How such maps transform probability densities is the change of variables
+formula of \cref{ch:change-of-variables}.
+\end{mlthread}
+
+\section{Where the chapter leads}\label{inverse-implicit:sec:outlook}
+
+\Cref{ch:constrained-optimization} uses the implicit function theorem to
+derive the conditions of optimality under constraints, the Lagrange
+multipliers being covectors. \Cref{ch:submanifolds} takes
+\cref{inverse-implicit:cor:sets} as the definition of a submanifold and
+develops the tangent space; the curvilinear coordinates introduced here
+become the charts of \cref{ch:tangent-bundles}.
+
+\paragraph{Sources.} Loomis and Sternberg prove the implicit function
+theorem first, by a fixed-point argument (\S3.11 of \emph{Advanced
+Calculus}, Theorem~11.2; the formula for the differential is
+Theorem~11.1), and deduce the inverse mapping theorem from it
+(Theorem~11.3). Hubbard and Hubbard prove the inverse function theorem
+with Kantorovich's theorem, which gives explicit sizes for the
+neighbourhoods (Theorem~2.10.7), and deduce the implicit function
+theorem (Theorem~2.10.14). The order followed here, and the proof by the
+contraction principle with the differential frozen at one point, are the
+most common in textbooks. Coupling layers: L.~Dinh, J.~Sohl-Dickstein
+and S.~Bengio, Density estimation using Real NVP, ICLR, 2017. Invertible
+residual layers: J.~Behrmann, W.~Grathwohl, R.~T.~Q.~Chen, D.~Duvenaud
+and J.-H.~Jacobsen, Invertible residual networks, ICML, 2019. Fixed-point
+layers: S.~Bai, J.~Z.~Kolter and V.~Koltun, Deep equilibrium models,
+NeurIPS, 2019.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{10-inverse-implicit.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item Inverse function theorem: a $C^1$ map with invertible
+        differential at $a$ is a diffeomorphism between neighbourhoods of
+        $a$ and $f(a)$, and $D(f^{-1})(y) = Df(f^{-1}(y))^{-1}$. The proof
+        solves $f(x) = y$ by a contraction built from $Df(a)^{-1}$. The
+        statement is local.
+  \item Implicit function theorem: if $G(a, b) = 0$ and $D_2G(a, b)$ is
+        invertible, then near $(a, b)$ the equation $G(x, y) = 0$ defines
+        $y = \varphi(x)$, with
+        $D\varphi = -D_2G^{-1}D_1G$.
+  \item A submersion is locally a projection and an immersion is locally
+        an inclusion, after a diffeomorphism. Level sets of submersions
+        and images of immersions are locally pieces of vector spaces bent
+        by a diffeomorphism.
+  \item Implicit differentiation: the sensitivity of a solution to its
+        parameters costs one linear system, in reverse mode with the dual
+        operator of $D_zG$, and does not require differentiating the
+        solver.
+  \item Invertible networks obtain global invertibility by construction,
+        not from the theorem.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{inverse-implicit:exr:1}
+Let $f(x, y) = (e^x\cos y, e^x\sin y)$ on $\R^2$.
+\begin{enumerate}[nosep]
+  \item Show that $Df(x, y)$ is invertible at every point and that $f$ is
+        not injective.
+  \item Find a neighbourhood of $(0, 0)$ on which $f$ is a
+        diffeomorphism onto its image, write the inverse, and compute
+        $D(f^{-1})(1, 0)$ in two ways.
+\end{enumerate}
+\solutionlink{inverse-implicit:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{inverse-implicit:exr:2}
+Let $f(x) = \frac x2 + x^2\sin\frac1x$ for $x\neq0$ and $f(0) = 0$. Show
+that $f$ is differentiable on $\R$ with $f'(0) = \frac12$, that $f'$ takes
+negative values in every neighbourhood of $0$, and that $f$ is not
+injective on any neighbourhood of $0$. Which hypothesis of
+\cref{inverse-implicit:thm:inverse} fails?
+\solutionlink{inverse-implicit:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{inverse-implicit:exr:3}
+Let $f(x_1, x_2) = (x_1 + x_2^2,\ x_2 + x_1^2)$ and $a = (0, 0)$. Carry
+out three steps of the iteration of the proof of
+\cref{inverse-implicit:thm:inverse} to solve $f(x) = (0.1, 0.2)$, starting
+from $a$.
+\solutionlink{inverse-implicit:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{inverse-implicit:exr:4}
+Let $G(x, y) = x^3 + y^3 - 3xy$. Show that near
+$(\frac32, \frac32)$ the equation $G = 0$ defines $y$ as a function of
+$x$, and compute its derivative at $x = \frac32$. What happens at
+$(0, 0)$?
+\solutionlink{inverse-implicit:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{inverse-implicit:exr:5}
+Consider the system $x^2 + y^2 + z^2 = 3$, $x + 2y + 3z = 6$ near the
+solution $(1, 1, 1)$.
+\begin{enumerate}[nosep]
+  \item Show that $y$ and $z$ can be expressed as functions of $x$, and
+        compute their derivatives at $x = 1$.
+  \item Replace the second equation by $x + y + z = 3$. Does the theorem
+        apply, for any choice of two unknowns?
+\end{enumerate}
+\solutionlink{inverse-implicit:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{inverse-implicit:exr:6}
+For data with $\sum_ix_i^2 = 4$ and $\sum_ix_iy_i = 6$, the ridge
+regression weight $w^*(\lambda)$ minimizes
+$\frac12\sum_i(wx_i - y_i)^2 + \frac\lambda2w^2$.
+\begin{enumerate}[nosep]
+  \item Write the equation $G(\lambda, w) = 0$ satisfied by $w^*$ and
+        compute $\dd w^*/\dd\lambda$ by implicit differentiation.
+  \item Check the result on the explicit formula for $w^*(\lambda)$, and
+        give its value at $\lambda = 2$.
+  \item For the validation loss $\frac12(w - 2)^2$, should $\lambda$ be
+        increased or decreased from $\lambda = 2$?
+\end{enumerate}
+\solutionlink{inverse-implicit:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{inverse-implicit:exr:7}
+A scalar fixed-point layer is defined by $z = \tanh(wz + x)$ with
+$\abs w < 1$. Compute $\partial z^*/\partial w$ and
+$\partial z^*/\partial x$ in terms of $z^*$, and explain why the
+denominators do not vanish.
+\solutionlink{inverse-implicit:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{inverse-implicit:exr:8}
+\begin{enumerate}[nosep]
+  \item At which points is $f(x, y, z) = x^2 + y^2 - z^2$ a submersion?
+        Describe the level set through a point where it is not.
+  \item At which $t$ is the curve $c(t) = (t^2, t^3)$ an immersion?
+  \item Give an immersion of $\R$ into $\R^2$ that is not injective.
+\end{enumerate}
+\solutionlink{inverse-implicit:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{inverse-implicit:exr:9}
+\begin{enumerate}[nosep]
+  \item Write the inverse of the coupling layer
+        $y_1 = x_1$, $y_2 = x_2e^{s(x_1)} + t(x_1)$ for scalar $x_1, x_2$,
+        and its Jacobian determinant.
+  \item Let $F:\R^n\to\R^n$ be Lipschitz with a constant $\kappa < 1$ and
+        $f(x) = x + F(x)$. Show that $f$ is a bijection of $\R^n$, that
+        $\norm{f(x) - f(x')}\geq(1 - \kappa)\norm{x - x'}$, and that the
+        iteration $x_{k+1} = y - F(x_k)$ converges to $f^{-1}(y)$.
+\end{enumerate}
+\solutionlink{inverse-implicit:exr:9}
+\end{exercise}
 \end{notechapter}
