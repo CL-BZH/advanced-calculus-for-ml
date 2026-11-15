@@ -22,10 +22,9 @@ when the **origin** moves, and does it change when the **basis** changes?
 **Status: work in progress.** Chapters 1 to 5 are drafted. The other
 chapters contain their planned contents.
 
-The PDF is built by GitHub Actions on every push (see the *Actions* tab)
-and attached to each tagged release:
-[latest release PDF](https://github.com/CL-BZH/advanced-calculus-for-ml/releases/latest/download/Advanced_Calculus_for_Machine_Learning.pdf)
-(available once the first `v*` tag is pushed).
+The PDF is rebuilt by GitHub Actions on every push to `main`:
+[PDF of the latest push](https://github.com/CL-BZH/advanced-calculus-for-ml/releases/download/latest/Advanced_Calculus_for_Machine_Learning.pdf).
+Tagged versions (`v*`) also get a release of their own.
 
 ## Contents
 
