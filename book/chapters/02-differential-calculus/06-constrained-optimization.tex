@@ -4,21 +4,683 @@
 \chaptersubtitle{%
   Lagrange multipliers are coefficients of covectors}
 
-\begin{chapterplan}
+\begin{chapterintro}
+At an unconstrained minimum the differential vanishes. When the points
+are restricted to a set defined by equations, only the displacements that
+stay in the set matter, and the differential need only vanish on those.
+The linear algebra of \cref{ch:duality} turns this into a statement about
+covectors: the differential of the function is a combination of the
+differentials of the constraints. The coefficients are the Lagrange
+multipliers. They are not auxiliary unknowns; they form a covector on the
+space where the constraints take their values, and they measure how the
+optimal value responds when a constraint is relaxed. Inequality
+constraints add signs to the multipliers, and convexity turns the
+necessary conditions into sufficient ones. You will learn
 \begin{itemize}[nosep]
-  \item Extrema on level sets; the Lagrange multiplier theorem as a statement in
-        $V^*$: $\dd f_a$ is a linear combination of the differentials of the
-        constraints.
-  \item Second-order conditions on the tangent space.
-  \item Inequality constraints and the Karush--Kuhn--Tucker conditions; a first
-        look at duality.
-  \item Projected gradient descent.
+  \item the Lagrange multiplier theorem and the meaning of the
+        multipliers;
+  \item the second-order conditions, which involve the Lagrangian on the
+        tangent space of the constraint set;
+  \item the Karush--Kuhn--Tucker conditions for inequality constraints,
+        and a first look at duality;
+  \item the projection on a convex set and projected gradient descent;
+  \item where the softmax and the dual of the support vector machine come
+        from, and how constraints compare with penalties.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:duality} (annihilators),
+\cref{ch:gradient-hessian,ch:contractions-newton,ch:inverse-implicit}.
+All spaces are finite-dimensional.}
+\end{chapterintro}
+
+\section{Lagrange multipliers}\label{constrained-optimization:sec:lagrange}
+
+Let $U\subset\Aff$ be open, with $\dim V = n$, let $X$ be a vector space
+of dimension $m\leq n$, and let $g:U\to X$ and $f:U\to\R$ be of class
+$C^1$. The \emph{constraint set} is
+\[
+  S = \{x\in U : g(x) = 0\} .
+\]
+In coordinates $g = (g_1,\dots,g_m)$: $m$ scalar constraints. A point
+$a\in S$ is \emph{regular} if $g$ is a submersion at $a$, that is, if
+$Dg(a)$ is surjective, or equivalently if the covectors
+$\dd g_1(a),\dots,\dd g_m(a)$ are linearly independent.
+
+\begin{lemma}[Directions that stay in the constraint set]
+\label{constrained-optimization:lem:tangent}
+Let $a\in S$ be regular. A vector $v$ is the velocity at $a$ of a $C^1$
+curve lying in $S$ if and only if $Dg(a)v = 0$.
+\end{lemma}
+
+\begin{proof}
+If $c$ is a curve in $S$ with $c(0) = a$, then $g\circ c = 0$ and
+$Dg(a)c'(0) = 0$ (\cref{differential:thm:velocity}). Conversely let
+$K = \ker Dg(a)$ and let $\Theta(x) = (g(x), \pi(x - a))$ be the
+diffeomorphism of \cref{inverse-implicit:thm:submersion}, from a
+neighbourhood of $a$ onto an open subset of $X\times K$, with
+$\Theta(a) = (0, 0)$. For $v\in K$ put $c(t) = \Theta^{-1}(0, tv)$ for
+small $t$. Then $g(c(t)) = 0$, so $c$ lies in $S$, and
+$c'(0) = D\Theta(a)^{-1}(0, v) = v$ because
+$D\Theta(a)v = (Dg(a)v, \pi v) = (0, v)$.
+\end{proof}
+
+The subspace $T_aS = \ker Dg(a)$, of dimension $n - m$, is the
+\emph{tangent space} of $S$ at $a$; \cref{ch:submanifolds} studies it in
+general.
+
+\begin{theorem}[Lagrange multipliers]
+\label{constrained-optimization:thm:lagrange}
+Let $a\in S$ be a regular point at which the restriction of $f$ to $S$
+has a local minimum or maximum. Then there is a unique covector
+$\lambda\in X^*$ such that
+\[
+  \dd f(a) + \lambda\circ Dg(a) = 0 .
+\]
+In coordinates,
+$\dd f(a) + \lambda_1\,\dd g_1(a) + \dots + \lambda_m\,\dd g_m(a) = 0$.
+\end{theorem}
+
+\begin{proof}
+Let $v\in T_aS$ and let $c$ be a curve in $S$ with $c(0) = a$ and
+$c'(0) = v$ (\cref{constrained-optimization:lem:tangent}). The function
+$f\circ c$ has a local extremum at $0$, so
+$\dd f(a)(v) = (f\circ c)'(0) = 0$. Hence $\dd f(a)$ vanishes on
+$\ker Dg(a)$: it belongs to the annihilator
+$(\ker Dg(a))^\circ$, which is the image of the dual operator
+$\dual{Dg(a)}$ (\cref{duality:thm:four}). So
+$\dd f(a) = \dual{Dg(a)}(-\lambda) = -\lambda\circ Dg(a)$ for some
+$\lambda\in X^*$. It is unique because $\dual{Dg(a)}$ is injective: its
+kernel is $(\im Dg(a))^\circ = X^\circ = \{0\}$.
+\end{proof}
+
+\begin{keyidea}
+The theorem is one line of duality: a covector that vanishes on the kernel
+of a linear map is a pull-back by that map. The multiplier $\lambda$ is a
+covector on the space $X$ of constraint values, and the condition is an
+equality in $V^*$ between the differential of $f$ and a pull-back. No
+inner product is involved. With an inner product it reads
+$\nabla f(a) = -\sum_i\lambda_i\nabla g_i(a)$: the gradient of $f$ is
+orthogonal to the tangent space.
+\end{keyidea}
+
+A convenient way to remember the conditions is the \emph{Lagrangian}
+\[
+  \mathcal L(x, \lambda) = f(x) + \lambda\bigl(g(x)\bigr) ,
+  \qquad x\in U,\ \lambda\in X^* .
+\]
+Its differential in $x$ vanishes exactly when
+$\dd f(x) + \lambda\circ Dg(x) = 0$, and its differential in $\lambda$
+vanishes exactly when $g(x) = 0$: the pair $(a, \lambda)$ of the theorem
+is a critical point of $\mathcal L$, an unconstrained problem in $n + m$
+unknowns.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.35]
+  \clip (-2.3,-2.05) rectangle (3.4,2.25);
+  \foreach \c in {-3,-2,-1,0,1,2,3}
+    \draw[bookpitfall, dashed, thin] (-3,{\c + 3}) -- (4,{\c - 4});
+  \draw[bookaccent, very thick] (0,0) circle (1.4142);
+  \draw[bookpitfall, thick] (-0.6,2.6) -- (2.6,-0.6);
+  \fill (1,1) circle (1.5pt) node[above right] {$a$};
+  \fill (1.4142,0) circle (1.5pt) node[right] {$a'$};
+  \draw[->, very thick, bookdef] (1,1) -- (1.55,0.45);
+  \draw[->, very thick, bookdef] (1.4142,0) -- (1.4142,-0.75);
+  \node[bookaccent, font=\small] at (-0.75,0.55) {$S$};
+  \node[bookpitfall, font=\small, anchor=west] at (1.55,1.2)
+    {level sets of $f$};
+\end{tikzpicture}
+\caption{Maximizing $f(x, y) = x + y$ on the circle $S$ of radius
+$\sqrt2$. Green arrows are velocities of curves in $S$. At $a' $ such a
+velocity crosses the level lines of $f$ (red, dashed), so $f$ can still
+increase along $S$. At $a = (1, 1)$ the level line of $f$ (solid) and $S$
+have the same tangent: $\dd f(a)$ and $\dd g(a)$ have the same kernel, so
+they are proportional.}
+\label{constrained-optimization:fig:lagrange}
+\end{figure}
+
+\begin{example}\label{constrained-optimization:ex:first}
+\begin{enumerate}[nosep]
+  \item \emph{A linear form on a sphere.} In an inner product space,
+        maximize $\phi(x)$ on $\inner xx = 1$. With
+        $g(x) = \inner xx - 1$, the condition
+        $\phi + 2\lambda\inner x\cdot = 0$ says that $R_V^{-1}\phi$ is
+        proportional to $x$: $x = \pm R_V^{-1}\phi/\norm\phi_*$, with
+        the values $\pm\norm\phi_*$. This is
+        \cref{inner-products:prop:riesz-geometry} again.
+  \item \emph{Eigenvalues.} For a self-adjoint operator $A$, the critical
+        points of $x\mapsto\inner x{Ax}$ on the unit sphere satisfy
+        $2\inner{Ax}\cdot + 2\lambda\inner x\cdot = 0$, that is,
+        $Ax = -\lambda x$: they are the unit eigenvectors, and the
+        multipliers are minus the eigenvalues.
+\end{enumerate}
+\end{example}
+
+\begin{pitfall}[Regularity cannot be dropped]
+Minimize $f(x, y) = x$ on the curve $y^2 = x^3$, with
+$g(x, y) = y^2 - x^3$. On the curve $x\geq0$, so the minimum is at the
+origin. There $\dd g = 0$ and $[\dd f] = [1\ \ 0]$: no multiplier
+satisfies $\dd f + \lambda\,\dd g = 0$. The origin is not a regular point,
+and the curve has a cusp there.
+\end{pitfall}
+
+\begin{proposition}[Multipliers are sensitivities]
+\label{constrained-optimization:prop:sensitivity}
+Suppose that for every $c$ in a neighbourhood of $0$ in $X$ the problem
+``extremize $f$ subject to $g(x) = c$'' has a solution $a(c)$ which is a
+regular point, depends on $c$ in a $C^1$ way, and has the multiplier
+$\lambda(c)$. Let $v(c) = f(a(c))$ be the optimal value. Then
+\[
+  \dd v(c) = -\lambda(c) .
+\]
+\end{proposition}
+
+\begin{proof}
+Differentiating $g(a(c)) = c$ gives $Dg(a(c))\,Da(c) = \id_X$. By the
+chain rule and \cref{constrained-optimization:thm:lagrange} applied to the
+constraint $g - c$,
+$\dd v(c) = \dd f(a(c))\circ Da(c)
+= -\lambda(c)\circ Dg(a(c))\circ Da(c) = -\lambda(c)$.
+\end{proof}
+
+So $-\lambda_i$ is the rate at which the optimal value changes when the
+$i$th constraint level is raised: the multiplier is the price of the
+constraint. A covector on $X$ is exactly an object that turns a change of
+constraint level into a change of value.
+
+\section{Second-order conditions}\label{constrained-optimization:sec:second}
+
+At a constrained critical point the second differential of $f$ alone does
+not decide, because the constraint set is curved. The right object is the
+second differential of the Lagrangian, restricted to the tangent space.
+
+\begin{theorem}[Second-order conditions]
+\label{constrained-optimization:thm:second}
+Let $f$ and $g$ be of class $C^2$, $a\in S$ a regular point and
+$\lambda\in X^*$ with $\dd f(a) + \lambda\circ Dg(a) = 0$. Let
+$\ell(x) = f(x) + \lambda(g(x))$ and let $Q$ be the restriction of
+$D^2\ell(a)$ to $T_aS = \ker Dg(a)$.
+\begin{enumerate}[nosep]
+  \item If $f$ has a local minimum on $S$ at $a$, then $Q$ is positive
+        semidefinite.
+  \item If $Q$ is positive definite, then $f$ has a strict local minimum
+        on $S$ at $a$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+On $S$ the functions $f$ and $\ell$ coincide, and $\dd\ell(a) = 0$. By
+Taylor's formula (\cref{gradient-hessian:thm:taylor}), for $a + h\in S$,
+\begin{equation}\label{constrained-optimization:eq:taylor}
+  f(a + h) - f(a) = \tfrac12D^2\ell(a)(h, h) + r(h),
+  \qquad r(h)/\norm h^2\to0 .
+\end{equation}
+(1) Let $v\in T_aS$ and $c$ a curve in $S$ with $c(0) = a$, $c'(0) = v$
+(\cref{constrained-optimization:lem:tangent}). With
+$h_t = c(t) - a = tv + o(t)$,
+\eqref{constrained-optimization:eq:taylor} gives
+$f(c(t)) - f(a) = \frac{t^2}2Q(v, v) + o(t^2)$, which is non-negative for
+small $t$; hence $Q(v, v)\geq0$.
+
+(2) Choose a complement $T'$ of $T_aS$ in $V$ and write $h = v + w$ with
+$v\in T_aS$, $w\in T'$. The restriction of $Dg(a)$ to $T'$ is an
+isomorphism onto $X$, so $\norm w\leq C\norm{Dg(a)w}$ for a constant $C$.
+If $a + h\in S$, then
+$0 = g(a + h) - g(a) = Dg(a)w + o(h)$, hence $\norm w = o(\norm h)$: a
+displacement that stays in $S$ is tangent up to a negligible part. Then
+$\norm v/\norm h\to1$ and
+$D^2\ell(a)(h, h) = Q(v, v) + o(\norm h^2)$. Since $Q$ is positive
+definite, $Q(v, v)\geq\gamma\norm v^2$ for some $\gamma > 0$, and
+\eqref{constrained-optimization:eq:taylor} gives
+$f(a + h) - f(a)\geq\frac\gamma4\norm h^2 > 0$ for $a + h\in S$,
+$h\neq0$ small enough.
+\end{proof}
+
+\begin{example}\label{constrained-optimization:ex:second}
+Minimize $f(x, y) = y$ on the parabola $y = x^2$, with
+$g(x, y) = y - x^2$. At the origin $[\dd f] = [0\ \ 1]$ and
+$[\dd g] = [0\ \ 1]$, so $\lambda = -1$ and
+$\ell = y - (y - x^2) = x^2$. The second differential of $f$ is zero, but
+$D^2\ell$ has the matrix $\diag(2, 0)$, and on the tangent space, spanned
+by $(1, 0)$, $Q = 2 > 0$: a strict minimum. The curvature that makes the
+origin a minimum is that of the constraint, and the multiplier carries
+it into $\ell$.
+\end{example}
+
+\section{Inequality constraints}\label{constrained-optimization:sec:kkt}
+
+Consider now the problem
+\begin{equation}\label{constrained-optimization:eq:problem}
+  \text{minimize } f(x)
+  \quad\text{subject to}\quad g(x) = 0,\quad
+  h_j(x)\leq0\ \ (j = 1,\dots,p) ,
+\end{equation}
+with $f$, $g:U\to X$ and $h_j:U\to\R$ of class $C^1$. A point satisfying
+the constraints is \emph{feasible}. At a feasible point $a$ the
+constraint $h_j$ is \emph{active} if $h_j(a) = 0$ and \emph{inactive} if
+$h_j(a) < 0$; let $J(a)$ be the set of active indices. An inactive
+constraint remains satisfied near $a$ and plays no role locally. The
+point $a$ is \emph{regular} if the map made of $g$ and of the active
+$h_j$ is a submersion at $a$.
+
+\begin{theorem}[Karush--Kuhn--Tucker conditions]
+\label{constrained-optimization:thm:kkt}
+Let $a$ be a regular feasible point which is a local minimum of
+\eqref{constrained-optimization:eq:problem}. Then there are
+$\lambda\in X^*$ and numbers $\mu_1,\dots,\mu_p$ such that
+\begin{enumerate}[nosep]
+  \item \emph{(stationarity)}
+        $\dd f(a) + \lambda\circ Dg(a) + \sum_j\mu_j\,\dd h_j(a) = 0$;
+  \item \emph{(sign)} $\mu_j\geq0$ for all $j$;
+  \item \emph{(complementary slackness)} $\mu_jh_j(a) = 0$ for all $j$:
+        the multiplier of an inactive constraint is zero.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Near $a$ the inactive constraints hold automatically, so $a$ is a local
+minimum of $f$ on the set
+$\{g = 0,\ h_j = 0 \text{ for } j\in J(a)\}$, which is contained in the
+feasible set. \Cref{constrained-optimization:thm:lagrange} gives
+$\lambda$ and $\mu_j$, $j\in J(a)$, satisfying (1); put $\mu_j = 0$ for
+the other indices, which gives (3). For the sign, fix $k\in J(a)$. By
+regularity there is $v\in V$ with $Dg(a)v = 0$, $\dd h_j(a)(v) = 0$ for
+$j\in J(a)\setminus\{k\}$ and $\dd h_k(a)(v) = -1$. The map made of $g$
+and of the $h_j$, $j\in J(a)\setminus\{k\}$, is still a submersion at
+$a$, and $v$ is in the kernel of its differential, so by
+\cref{constrained-optimization:lem:tangent} there is a curve $c$ with
+$c(0) = a$, $c'(0) = v$, on which $g = 0$ and these $h_j$ vanish.
+Moreover $h_k(c(t)) = -t + o(t) < 0$ for small $t > 0$. So $c(t)$ is
+feasible for small $t\geq0$, and $f(c(t))\geq f(a)$ there, which gives
+$\dd f(a)(v)\geq0$. By (1), $\dd f(a)(v) = -\mu_k\,\dd h_k(a)(v) = \mu_k$.
+\end{proof}
+
+\begin{intuition}
+An active inequality constraint is a wall. Moving away from the wall into
+the feasible region must not decrease $f$, otherwise $a$ would not be a
+minimum: that is the sign condition. An inactive constraint is a wall
+that the point does not touch, and it exerts no force: that is
+complementary slackness (\cref{constrained-optimization:fig:kkt}).
+\end{intuition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.3]
+  \begin{scope}
+    \clip (-1.5,-1.5) rectangle (2.7,1.7);
+    \fill[bookaccent!12] (0,0) circle (1);
+    \draw[bookaccent, thick] (0,0) circle (1);
+    \foreach \r in {0.6,1.236,1.9,2.6}
+      \draw[bookpitfall, dashed, thin] (2,1) circle (\r);
+    \fill (2,1) circle (1.2pt) node[above right, font=\small] {$c$};
+    \fill (0.894,0.447) circle (1.5pt);
+    \node[font=\small, anchor=north east] at (0.89,0.42) {$a$};
+    \node[bookaccent, font=\small] at (-0.35,-0.3) {$h\leq0$};
+  \end{scope}
+  \node[anchor=north, font=\small] at (0.6,-1.55) {active: $\mu > 0$};
+  \begin{scope}[xshift=5.2cm]
+    \clip (-1.5,-1.5) rectangle (2.0,1.7);
+    \fill[bookaccent!12] (0,0) circle (1);
+    \draw[bookaccent, thick] (0,0) circle (1);
+    \foreach \r in {0.3,0.7,1.2,1.8}
+      \draw[bookpitfall, dashed, thin] (0.3,0.2) circle (\r);
+    \fill (0.3,0.2) circle (1.5pt) node[above right, font=\small]
+      {$a = c$};
+    \node[bookaccent, font=\small] at (-0.45,-0.45) {$h\leq0$};
+  \end{scope}
+  \node[anchor=north, font=\small] at (5.4,-1.55) {inactive: $\mu = 0$};
+\end{tikzpicture}
+\caption{Minimizing the squared distance to a point $c$ (level sets in
+red) over the disk $h\leq0$. Left: $c$ is outside, the minimum $a$ is on
+the boundary, the constraint is active and its multiplier is positive.
+Right: $c$ is inside, the constraint is inactive, the minimum is the
+unconstrained one and the multiplier is zero.}
+\label{constrained-optimization:fig:kkt}
+\end{figure}
+
+\begin{theorem}[The convex case]\label{constrained-optimization:thm:convex}
+Suppose that $U$ is convex, $f$ and the $h_j$ are convex and
+differentiable, and $g$ is affine. If a feasible point $a$ satisfies the
+conditions of \cref{constrained-optimization:thm:kkt} for some $\lambda$
+and $\mu$, then $a$ is a global minimum of
+\eqref{constrained-optimization:eq:problem}.
+\end{theorem}
+
+\begin{proof}
+The function
+$\ell(x) = f(x) + \lambda(g(x)) + \sum_j\mu_jh_j(x)$ is convex, as a sum
+of convex functions with non-negative coefficients and of an affine
+function, and $\dd\ell(a) = 0$. So $a$ is a global minimum of $\ell$ on
+$U$ (\cref{gradient-hessian:cor:global}). For every feasible $x$,
+$f(x)\geq\ell(x)$ because $g(x) = 0$ and $\mu_jh_j(x)\leq0$, and
+$\ell(a) = f(a)$ by complementary slackness. Hence
+$f(x)\geq\ell(x)\geq\ell(a) = f(a)$.
+\end{proof}
+
+\paragraph{A first look at duality.} With the Lagrangian
+$\mathcal L(x, \lambda, \mu) = f(x) + \lambda(g(x)) + \sum_j\mu_jh_j(x)$,
+define the \emph{dual function}
+\[
+  q(\lambda, \mu) = \inf_{x\in U}\mathcal L(x, \lambda, \mu) ,
+  \qquad \lambda\in X^*,\ \mu\in\R^p,\ \mu\geq0 .
+\]
+The argument of the last proof shows that
+$q(\lambda, \mu)\leq f(x)$ for every feasible $x$: each value of the dual
+function is a lower bound for the problem (\emph{weak duality}). The
+\emph{dual problem} is to find the best lower bound, that is, to maximize
+$q$ over $\mu\geq0$. In the convex case, at a point satisfying the
+conditions of \cref{constrained-optimization:thm:kkt},
+$q(\lambda, \mu) = \mathcal L(a, \lambda, \mu) = f(a)$: the best lower
+bound is attained and equals the minimum (\emph{strong duality}). The
+multipliers are called \emph{dual variables}; they live in the dual space
+$X^*$, and the word is exact.
+
+\section{Projected gradient descent}\label{constrained-optimization:sec:pgd}
+
+Let $\Aff$ be a Euclidean affine space and $C\subset\Aff$ a non-empty
+closed convex set.
+
+\begin{proposition}[Projection on a convex set]
+\label{constrained-optimization:prop:projection}
+\begin{enumerate}[nosep]
+  \item Every $a\in\Aff$ has a unique closest point in $C$, written
+        $P_C(a)$.
+  \item $p = P_C(a)$ if and only if $p\in C$ and
+        $\inner{a - p}{c - p}\leq0$ for all $c\in C$.
+  \item $P_C$ is Lipschitz with constant $1$:
+        $\norm{P_C(a) - P_C(b)}\leq\norm{a - b}$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(2) Let $p\in C$ be a closest point, $c\in C$ and $t\in(0, 1]$. The point
+$p + t(c - p)$ is in $C$, so
+$\norm{a - p - t(c - p)}^2\geq\norm{a - p}^2$, that is,
+$-2t\inner{a - p}{c - p} + t^2\norm{c - p}^2\geq0$; dividing by $t$ and
+letting $t\to0$ gives the inequality. Conversely, if it holds, then
+$\norm{a - c}^2 = \norm{a - p}^2 - 2\inner{a - p}{c - p}
++ \norm{c - p}^2\geq\norm{a - p}^2 + \norm{c - p}^2$, so $p$ is the unique
+closest point. (1) Uniqueness has just been proved. For existence, fix
+$c_0\in C$: the set of points of $C$ at distance at most
+$\norm{a - c_0}$ from $a$ is closed, bounded and non-empty, hence
+compact (\cref{norms-banach:cor:finite}), and the distance to $a$ has a
+minimum on it (\cref{norms-banach:thm:extreme}). (3) Let $p = P_C(a)$ and
+$q = P_C(b)$. By (2), $\inner{a - p}{q - p}\leq0$ and
+$\inner{b - q}{p - q}\leq0$. Adding,
+$\inner{(a - b) - (p - q)}{q - p}\leq0$, so
+$\norm{p - q}^2\leq\inner{a - b}{p - q}\leq\norm{a - b}\norm{p - q}$.
+\end{proof}
+
+The projection on a subspace of \cref{ch:inner-products} is the case
+where the inequality in (2) is an equality. Other projections with a
+formula: on a ball (rescale the vector from the centre), on a box (clip
+each coordinate, for the dot product), on a half-space
+(\cref{inner-products:prop:margin}).
+
+\begin{proposition}[Optimality on a convex set]
+\label{constrained-optimization:prop:optimality}
+Let $f$ be convex and differentiable on an open convex set containing
+$C$, and $a^*\in C$. The following are equivalent:
+\begin{enumerate}[nosep]
+  \item $a^*$ minimizes $f$ on $C$;
+  \item $\dd f(a^*)(c - a^*)\geq0$ for all $c\in C$;
+  \item $a^* = P_C\bigl(a^* - \eta\nabla f(a^*)\bigr)$ for some (and then
+        every) $\eta > 0$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1)$\Rightarrow$(2): the function $t\mapsto f(a^* + t(c - a^*))$ on
+$[0, 1]$ has a minimum at $0$, so its derivative there,
+$\dd f(a^*)(c - a^*)$, is non-negative. (2)$\Rightarrow$(1):
+$f(c)\geq f(a^*) + \dd f(a^*)(c - a^*)$ by
+\cref{gradient-hessian:thm:convex}. (2)$\Leftrightarrow$(3): by
+\cref{constrained-optimization:prop:projection}(2) with
+$a = a^* - \eta\nabla f(a^*)$ and $p = a^*$, statement (3) says
+$\inner{-\eta\nabla f(a^*)}{c - a^*}\leq0$ for all $c\in C$.
+\end{proof}
+
+\begin{theorem}[Projected gradient descent]
+\label{constrained-optimization:thm:pgd}
+Let $f:\Aff\to\R$ be of class $C^2$, $L$-smooth and $\mu$-strongly
+convex, and $0 < \eta < 2/L$. The iteration
+\[
+  a_{k+1} = P_C\bigl(a_k - \eta\nabla f(a_k)\bigr)
+\]
+converges, from every starting point, to the unique minimizer $a^*$ of
+$f$ on $C$, with $\norm{a_k - a^*}\leq\kappa(\eta)^k\norm{a_0 - a^*}$ and
+$\kappa(\eta) = \max(\abs{1 - \eta\mu}, \abs{1 - \eta L})$.
+\end{theorem}
+
+\begin{proof}
+The map $a\mapsto a - \eta\nabla f(a)$ is Lipschitz with constant
+$\kappa(\eta) < 1$ (\cref{contractions-newton:thm:gd}) and $P_C$ with
+constant $1$, so their composition is a contraction of $\Aff$. It has a
+unique fixed point, to which the iterates converge at the stated rate
+(\cref{norms-banach:thm:contraction}), and by
+\cref{constrained-optimization:prop:optimality} its fixed points are the
+minimizers of $f$ on $C$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.5]
+  \fill[bookaccent!12] (0,0) -- (2.6,0) -- (3.0,1.2) -- (1.6,2.0)
+    -- (0.2,1.5) -- cycle;
+  \draw[bookaccent, thick] (0,0) -- (2.6,0) -- (3.0,1.2) -- (1.6,2.0)
+    -- (0.2,1.5) -- cycle;
+  \node[bookaccent] at (1.0,0.9) {$C$};
+  \fill (2.2,0.5) circle (1.3pt) node[below left, font=\small] {$a_k$};
+  \draw[->, thick, bookpitfall] (2.2,0.5) -- (3.5,0.6);
+  \fill[bookpitfall] (3.5,0.6) circle (1.3pt);
+  \node[bookpitfall, font=\small, anchor=west] at (3.55,0.6)
+    {$a_k - \eta\nabla f(a_k)$};
+  \draw[->, thick, bookdef] (3.5,0.6) -- (2.870,0.810);
+  \fill[bookdef] (2.870,0.810) circle (1.3pt);
+  \node[bookdef, font=\small, anchor=south east] at (2.84,0.84)
+    {$a_{k+1}$};
+\end{tikzpicture}
+\caption{One step of projected gradient descent: a gradient step, which
+may leave $C$, followed by the projection back onto $C$. Both the
+gradient and the projection are taken for the same inner product.}
+\label{constrained-optimization:fig:pgd}
+\end{figure}
+
+\section{Constraints in machine learning}
+\label{constrained-optimization:sec:ml}
+
+\begin{mlthread}[Machine learning: maximum entropy and the softmax]
+Among the probability vectors $p$ on $n$ outcomes with a prescribed mean
+$\sum_ip_iE_i = e$ of a quantity $E$, which one is the least committal?
+Maximize the entropy $H(p) = -\sum_ip_i\log p_i$ on the open set
+$p_i > 0$, under the two constraints $\sum_ip_i = 1$ and
+$\sum_ip_iE_i = e$. \Cref{constrained-optimization:thm:lagrange} gives
+multipliers $\lambda_0$, $\beta$ with
+\[
+  -\log p_i - 1 + \lambda_0 + \beta E_i = 0 ,
+  \qquad\text{that is,}\qquad
+  p_i = \frac{e^{\beta E_i}}{\sum_ke^{\beta E_k}} .
+\]
+The solution is the softmax of the scores $\beta E_i$; the multiplier
+$\beta$ of the mean constraint is the inverse temperature, and
+$\lambda_0$ is fixed by normalization. Since $-H$ is convex and the
+constraints are affine, this critical point is the maximum
+(\cref{constrained-optimization:thm:convex}). With several constrained
+means the exponent is a linear combination of the features: the form of
+the output layer of a classifier.
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: the dual of the support vector
+machine]
+Let $(x_i, y_i)$ be points of a Euclidean space with labels $y_i = \pm1$.
+The maximum-margin classifier is the affine form
+$\ell(x) = \phi(x) + b$ of smallest $\norm\phi_*$ such that
+$y_i\ell(x_i)\geq1$ for all $i$: by \cref{inner-products:prop:margin} the
+margin is $1/\norm\phi_*$. Write $\phi = \inner w\cdot$, so that
+$\norm\phi_* = \norm w$, and minimize $\frac12\norm w^2$ under the
+constraints $h_i = 1 - y_i(\inner w{x_i} + b)\leq0$. The problem is
+convex, so the conditions of \cref{constrained-optimization:thm:kkt} are
+necessary and sufficient:
+\[
+  w = \sum_i\alpha_iy_ix_i, \qquad \sum_i\alpha_iy_i = 0, \qquad
+  \alpha_i\geq0, \qquad \alpha_i\bigl(1 - y_i\ell(x_i)\bigr) = 0 .
+\]
 \begin{itemize}[nosep]
-  \item The dual problem of support vector machines.
-  \item Maximum entropy and the softmax.
-  \item Constraints versus penalties in training.
+  \item By complementary slackness, $\alpha_i > 0$ only for the points
+        that lie exactly on the margin, the \emph{support vectors}. The
+        classifier is determined by them alone.
+  \item Substituting $w$ in the Lagrangian gives the dual problem:
+        maximize
+        $\sum_i\alpha_i
+        - \frac12\sum_{i,j}\alpha_i\alpha_jy_iy_j\inner{x_i}{x_j}$
+        over $\alpha\geq0$ with $\sum_i\alpha_iy_i = 0$. The data enter
+        only through the Gram matrix of the inner products
+        $\inner{x_i}{x_j}$ (\cref{ch:inner-products}), which is what
+        allows the inner product to be replaced by a kernel
+        (\cref{ch:norms-banach}).
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: constraints or penalties?]
+A constraint $g(x) = 0$ can be enforced exactly, by projecting or by
+solving the multiplier conditions, or approximately, by adding a penalty
+$\frac\rho2\norm{g(x)}^2$ to the loss.
+\begin{itemize}[nosep]
+  \item The minimizer $a_\rho$ of the penalized loss satisfies
+        $\dd f + \rho\inner{g}{Dg\,\cdot} = 0$: it is a multiplier
+        condition with $\lambda_\rho = \rho\,R_X g(a_\rho)$. The
+        constraint is violated by about $\norm\lambda/\rho$ and is met
+        only as $\rho\to\infty$, at the price of a condition number
+        growing with $\rho$ (\cref{ch:gradient-hessian}).
+  \item Weight decay is the penalty $\frac\lambda2\norm w^2$. For a
+        convex loss it is equivalent to the constraint
+        $\norm w\leq r$, the coefficient $\lambda$ being the multiplier
+        of that constraint: each radius corresponds to a coefficient, and
+        the correspondence is not known in advance.
+  \item When the multiplier itself is wanted (fairness or safety
+        constraints with a prescribed level, constrained reinforcement
+        learning), one descends in $x$ and ascends in the multipliers on
+        the Lagrangian, keeping $\mu\geq0$ by projection.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}
+\label{constrained-optimization:sec:outlook}
+
+This chapter closes Part~II. The constraint sets $S$ met here, with their
+tangent spaces $\ker Dg(a)$, are the first examples of the manifolds of
+Part~III. \Cref{ch:submanifolds} studies them for their own sake;
+\cref{ch:riemannian-optimization} replaces ``step, then project'' by
+moving along the constraint set itself.
+
+\paragraph{Sources.} Loomis and Sternberg state the multiplier theorem
+with a functional on the target space of the constraints, as here, and
+prove it with the implicit function theorem (\S3.12 of \emph{Advanced
+Calculus}, Theorem~12.2). Hubbard and Hubbard treat constrained critical
+points in \S3.7 (Theorem~3.7.5 for the multipliers, Theorem~3.7.13 for
+the signature of a constrained critical point). For inequality
+constraints, convexity and duality, see S.~Boyd and L.~Vandenberghe,
+\emph{Convex Optimization}, Cambridge University Press, 2004, Chapter~5.
+The conditions for inequality constraints are due to W.~Karush (1939)
+and to H.~W.~Kuhn and A.~W.~Tucker (1951). Support vector machines:
+C.~Cortes and V.~Vapnik, Support-vector networks, \emph{Machine
+Learning}, 1995. Maximum entropy: E.~T.~Jaynes, Information theory and
+statistical mechanics, \emph{Physical Review}, 1957.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{11-constrained-optimization.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item At a regular point of $S = \{g = 0\}$, the velocities of curves
+        in $S$ form $T_aS = \ker Dg(a)$.
+  \item Lagrange: at a constrained extremum,
+        $\dd f(a) + \lambda\circ Dg(a) = 0$ for a unique covector
+        $\lambda\in X^*$, because a covector vanishing on $\ker Dg(a)$ is
+        a pull-back by $Dg(a)$. The optimal value varies with the
+        constraint level at the rate $-\lambda$.
+  \item Second order: the second differential of the Lagrangian,
+        restricted to $T_aS$, must be positive semidefinite at a minimum,
+        and positive definite is sufficient.
+  \item Inequalities: stationarity, $\mu_j\geq0$, and
+        $\mu_jh_j(a) = 0$. In the convex case these conditions are
+        sufficient, and the dual function gives lower bounds that are
+        attained.
+  \item The projection on a closed convex set is unique, characterized
+        by $\inner{a - p}{c - p}\leq0$, and $1$-Lipschitz. Projected
+        gradient descent converges at the rate of gradient descent.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{constrained-optimization:exr:1}
+Find the extrema of $f(x, y) = x + 2y$ on the circle $x^2 + y^2 = 5$ and
+the multiplier at each of them.
+\solutionlink{constrained-optimization:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{constrained-optimization:exr:2}
+On $\R^2$ with the inner product of Gram matrix $M = \diag(1, 4)$, use
+\cref{constrained-optimization:thm:lagrange} to maximize the form $\phi$
+with row $[1\ \ 2]$ on the unit sphere $x^\top Mx = 1$. Compare with
+\cref{gradient-hessian:ex:two}.
+\solutionlink{constrained-optimization:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{constrained-optimization:exr:3}
+Let $A = \begin{bsmallmatrix}2 & 1\\1 & 2\end{bsmallmatrix}$ and
+$f(x) = x^\top Ax$ on the unit circle $x^\top x = 1$. Find the critical
+points and their multipliers, and use
+\cref{constrained-optimization:thm:second} to decide which are minima.
+\solutionlink{constrained-optimization:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{constrained-optimization:exr:4}
+Find the points of the hyperbola $xy = 1$ closest to the origin, and
+check the second-order condition.
+\solutionlink{constrained-optimization:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{constrained-optimization:exr:5}
+For $c\in\R$, minimize $x^2 + y^2$ subject to $x + y = c$. Compute the
+solution $a(c)$, the optimal value $v(c)$ and the multiplier, and verify
+\cref{constrained-optimization:prop:sensitivity}.
+\solutionlink{constrained-optimization:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{constrained-optimization:exr:6}
+Minimize $(x - 2)^2 + (y - 1)^2$ subject to $x^2 + y^2\leq1$: write the
+conditions of \cref{constrained-optimization:thm:kkt}, solve them, and
+give the multiplier. Do the same with the centre $(0.3, 0.2)$ instead of
+$(2, 1)$.
+\solutionlink{constrained-optimization:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{constrained-optimization:exr:7}
+Let $f(x) = (x_1 - 2)^2 + 4(x_2 - 1)^2$ on $\R^2$ with the dot product,
+and $C = [0, 1]^2$.
+\begin{enumerate}[nosep]
+  \item Carry out projected gradient descent from $(0, 0)$ with
+        $\eta = \frac18$ until it stops moving.
+  \item Check that the limit satisfies
+        \cref{constrained-optimization:prop:optimality}, and give the
+        multiplier of the constraint $x_1\leq1$.
+\end{enumerate}
+\solutionlink{constrained-optimization:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{constrained-optimization:exr:8}
+Three outcomes have the energies $E = (0, 1, 2)$. Find the probability
+vector of maximum entropy with mean energy $\frac12$.
+\solutionlink{constrained-optimization:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{constrained-optimization:exr:9}
+Two points on the real line, $x_1 = 1$ with label $+1$ and $x_2 = -1$
+with label $-1$, are to be separated by $\ell(x) = wx + b$. Write the
+conditions of the support vector machine and solve them. What changes if
+a third point $x_3 = 3$ with label $+1$ is added?
+\solutionlink{constrained-optimization:exr:9}
+\end{exercise}
 \end{notechapter}
