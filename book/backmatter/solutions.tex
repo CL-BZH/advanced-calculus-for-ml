@@ -327,3 +327,158 @@ $2$, with two positive eigenvalues: symmetry, rank and signs are what a
 bilinear form or a map $V^*\to V$ keeps under a change of basis. (Here the
 three determinants also agree, because $\det P = 1$; in general the last
 two are multiplied by $(\det P)^2$ and $(\det P)^{-2}$.)
+
+% =====================================================================
+\section{\nameref*{ch:inner-products}}
+
+\solution{inner-products:exr:1}
+With $v_1 = (1, 0)$ and $v_2 = (0, 1)$: $\norm{v_1}^2 = M_{11} = 2$, so
+$e_1 = \frac1{\sqrt2}(1, 0)$. Then
+$\inner{e_1}{v_2} = \frac1{\sqrt2}M_{12} = \frac1{\sqrt2}$ and
+$u_2 = v_2 - \frac1{\sqrt2}e_1 = (-\frac12, 1)$, with
+$\norm{u_2}^2 = 2\cdot\frac14 + 2\cdot(-\frac12)(1) + 2 = \frac32$. So
+$e_2 = \sqrt{\tfrac23}\,(-\frac12, 1) = \frac1{\sqrt6}(-1, 2)$ and
+\[
+  P = \begin{bmatrix}\frac1{\sqrt2} & -\frac1{\sqrt6}\\[2pt]
+      0 & \frac2{\sqrt6}\end{bmatrix},
+  \qquad
+  P^{-1} = \begin{bmatrix}\sqrt2 & \frac1{\sqrt2}\\[2pt]
+      0 & \frac{\sqrt6}2\end{bmatrix},
+  \qquad
+  L = P^{-\top} = \begin{bmatrix}\sqrt2 & 0\\[2pt]
+      \frac1{\sqrt2} & \frac{\sqrt6}2\end{bmatrix}.
+\]
+$P^\top MP = I$ says that $(e_1, e_2)$ is orthonormal: for instance
+$\inner{e_1}{e_2} = \frac1{\sqrt{12}}\bigl(2\cdot(-1) + 1\cdot2\bigr) = 0$.
+And $LL^\top = \begin{bsmallmatrix}2 & 1\\1 & \frac12 + \frac32
+\end{bsmallmatrix} = M$.
+
+\solution{inner-products:exr:2}
+By \cref{inner-products:thm:riesz}, $[R^{-1}\phi] = M^{-1}(2, 1)$ and
+$\norm\phi_*^2 = \phi(R^{-1}\phi)$.
+\begin{itemize}[nosep]
+  \item Dot product: $R^{-1}\phi = (2, 1)$, $\norm\phi_* = \sqrt5$;
+        $(2, 1)\cdot(1, 1) = 3 = \phi(1, 1)$.
+  \item $M = \diag(\frac14, 1)$: $R^{-1}\phi = (8, 1)$,
+        $\norm\phi_* = \sqrt{17}$;
+        $\inner{(8, 1)}{(1, 1)}_M = \frac14\cdot8 + 1 = 3$.
+  \item $M = \begin{bsmallmatrix}2 & 1\\1 & 2\end{bsmallmatrix}$:
+        $M^{-1} = \frac13\begin{bsmallmatrix}2 & -1\\-1 & 2
+        \end{bsmallmatrix}$, so $R^{-1}\phi = (1, 0)$ and
+        $\norm\phi_* = \sqrt2$;
+        $\inner{(1, 0)}{(1, 1)}_M = 2 + 1 = 3$.
+\end{itemize}
+
+\solution{inner-products:exr:3}
+\begin{enumerate}[nosep]
+  \item $\inner11 = 2$, $\inner1t = 0$, $\inner tt = \frac23$, so
+        $M = \diag(2, \frac23)$. The matrix of $D$ is
+        $\begin{bsmallmatrix}0 & 1\\0 & 0\end{bsmallmatrix}$, and by
+        \cref{inner-products:thm:matrix}
+        \[
+          [\adj D] = M^{-1}[D]^\top M
+          = \begin{bmatrix}\frac12 & 0\\0 & \frac32\end{bmatrix}
+            \begin{bmatrix}0 & 0\\1 & 0\end{bmatrix}
+            \begin{bmatrix}2 & 0\\0 & \frac23\end{bmatrix}
+          = \begin{bmatrix}0 & 0\\3 & 0\end{bmatrix} .
+        \]
+        So $\adj D(1) = 3t$ and $\adj D(t) = 0$. Check:
+        $\inner{Dt}1 = \inner11 = 2$ and
+        $\inner t{\adj D1} = \inner t{3t} = 2$.
+  \item Integration by parts gives
+        $\inner{Dp}q = \bigl[pq\bigr]_{-1}^1 - \inner p{Dq}$, and the
+        boundary term does not vanish on this space (for $p = t$, $q = 1$
+        it equals $2$). The identity $\adj D = -D$ holds on functions that
+        vanish at the endpoints. Besides, $-D$ sends $1$ to $0$, whereas
+        $\adj D(1) = 3t$.
+\end{enumerate}
+
+\solution{inner-products:exr:4}
+\begin{enumerate}[nosep]
+  \item For the dot product in the standard basis, self-adjoint means
+        $[A] = [A]^\top$, and $[A]$ is not symmetric.
+  \item We need a symmetric positive definite
+        $M = \begin{bsmallmatrix}a & b\\b & c\end{bsmallmatrix}$ with
+        $M[A]$ symmetric. Since
+        $M[A] = \begin{bsmallmatrix}a & a + 2b\\b & b + 2c
+        \end{bsmallmatrix}$, the condition is $a + 2b = b$, i.e.\
+        $b = -a$. Take $a = 1$, $b = -1$, $c = 2$:
+        $M = \begin{bsmallmatrix}1 & -1\\-1 & 2\end{bsmallmatrix}$ is
+        positive definite ($x^\top Mx = (x_1 - x_2)^2 + x_2^2$), and
+        $M[A] = \begin{bsmallmatrix}1 & -1\\-1 & 3\end{bsmallmatrix}$ is
+        symmetric. The eigenvectors of $A$ are $(1, 0)$ (eigenvalue $1$)
+        and $(1, 1)$ (eigenvalue $2$), and
+        $\inner{(1, 0)}{(1, 1)}_M = 1 - 1 = 0$.
+\end{enumerate}
+
+\solution{inner-products:exr:5}
+By \cref{inner-products:prop:rules},
+$\adj{(\adj AA)} = \adj A\,\adj{(\adj A)} = \adj AA$, and
+$\inner v{\adj AAv} = \norm{Av}^2\geq0$, with $\ker\adj AA = \ker A$. An
+operator on a finite-dimensional space is invertible if and only if its
+kernel is $\{0\}$, hence the third claim. If $A$ is injective, let
+$\Pi = A(\adj AA)^{-1}\adj A$. For $w\in W$, $\Pi w\in\im A$, and
+$\adj A(w - \Pi w) = \adj Aw - \adj AA(\adj AA)^{-1}\adj Aw = 0$, so
+$w - \Pi w\in\ker\adj A = (\im A)^\perp$
+(\cref{inner-products:thm:four}). By the uniqueness in
+\cref{inner-products:thm:projection}, $\Pi w$ is the orthogonal
+projection of $w$ on $\im A$.
+
+\solution{inner-products:exr:6}
+$A = \begin{bsmallmatrix}1 & 0\\1 & 1\\1 & 2\end{bsmallmatrix}$ and
+$b = (1, 2, 2)$.
+\begin{enumerate}[nosep]
+  \item[(a)] $A^\top A = \begin{bsmallmatrix}3 & 3\\3 & 5\end{bsmallmatrix}$
+        and $A^\top b = (5, 6)$. Subtracting the equations
+        $3x_1 + 3x_2 = 5$ and $3x_1 + 5x_2 = 6$ gives $x_2 = \frac12$, then
+        $x_1 = \frac76$: the line $t\mapsto\frac76 + \frac12t$.
+  \item[(b)] $A^\top NA = \begin{bsmallmatrix}6 & 9\\9 & 17
+        \end{bsmallmatrix}$ and $A^\top Nb = (11, 18)$. The determinant is
+        $21$, and $x_1 = (11\cdot17 - 9\cdot18)/21 = \frac{25}{21}$,
+        $x_2 = (6\cdot18 - 9\cdot11)/21 = \frac37$. The line passes closer
+        to the third point: its value at $t = 2$ is
+        $\frac{25}{21} + \frac67 = \frac{43}{21}\approx2.05$, against
+        $\frac{13}6\approx2.17$ in (a).
+\end{enumerate}
+
+\solution{inner-products:exr:7}
+$M' = P^\top MP = \diag(4, 1)$ and $\gamma' = P^\top\gamma = (4, 1)$, so
+$M'^{-1}\gamma' = (1, 1)$: the step is $-\eta(1, 1)$ in the basis $e'$,
+that is, $-\eta P(1, 1) = -\eta(2, 1)$ in the basis $e$. This is the step
+$-\eta M^{-1}\gamma = -\eta(2, 1)$ computed directly in $e$, as
+\cref{inner-products:prop:basis-test} asserts. In
+\cref{duality:ex:sign} the computation in $e'$ used $M' = I$ instead of
+$\diag(4, 1)$, that is, another inner product, and gave $-\eta(8, 1)$.
+
+\solution{inner-products:exr:8}
+\begin{enumerate}[nosep]
+  \item The closest solution is $x_0 + r$ with $r\in\im\adj X$ and
+        $X(x_0 + r) = 2$. Here $Xx_0 = 0$. For the dot product,
+        $\adj X = X^\top$ has image spanned by $(1, 1)$; $r = c(1, 1)$
+        with $2c = 2$, so the solution is $(1.5, 0.5)$. For
+        $M = \diag(1, 4)$, $\adj X = M^{-1}X^\top$ has image spanned by
+        $(1, \frac14)$; $r = c(1, \frac14)$ with $\frac54c = 2$, so
+        $c = 1.6$ and the solution is $(2.1, -0.1)$. Check of the
+        distances for $M$: $\norm{(1.6, 0.4)}_M^2 = 2.56 + 0.64 = 3.2$,
+        whereas $\norm{(1, 1)}_M^2 = 5$.
+  \item $x_{k+1} = x_k - \eta(\theta_1 + \theta_2 - 2)(1, 1)$, where
+        $(\theta_1, \theta_2) = x_k$. The iterates stay on the line
+        through $x_0$ with direction $(1, 1)$, and the residual
+        $\rho_k = \theta_1 + \theta_2 - 2$ satisfies
+        $\rho_{k+1} = (1 - 2\eta)\rho_k$. It tends to $0$ if and only if
+        $\abs{1 - 2\eta} < 1$, that is, $0 < \eta < 1$ (or $\rho_0 = 0$).
+        The limit is the point of that line with
+        $\theta_1 + \theta_2 = 2$: $(1.5, 0.5)$.
+\end{enumerate}
+
+\solution{inner-products:exr:9}
+Use \cref{inner-products:prop:margin} with $\ell(x) = 3x_1 + 4x_2$,
+$c = 5$, $[\phi] = [3\ \ 4]$ and $a = (0, 0)$, so $\ell(a) - c = -5$. For
+the dot product, $\norm\phi_* = 5$: the distance is $1$ and the closest
+point is $\frac5{25}(3, 4) = (\frac35, \frac45)$. For $M = \diag(1, 4)$,
+$R^{-1}\phi = M^{-1}(3, 4) = (3, 1)$ and
+$\norm\phi_*^2 = \phi(3, 1) = 13$: the distance is
+$5/\sqrt{13}\approx1.39$ and the closest point is
+$\frac5{13}(3, 1) = (\frac{15}{13}, \frac5{13})$. It lies on $H$, since
+$\frac{45 + 20}{13} = 5$, and its squared $M$-norm is
+$\frac{225 + 100}{169} = \frac{25}{13}$.

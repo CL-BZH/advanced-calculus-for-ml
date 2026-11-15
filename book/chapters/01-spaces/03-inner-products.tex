@@ -4,27 +4,938 @@
 \chaptersubtitle{%
   Riesz, the adjoint, and how a metric turns covectors into vectors}
 
-\begin{chapterplan}
+\begin{chapterintro}
+\Cref{ch:duality} ended on a gap. The variation of a loss is a covector, an
+update is a vector, and nothing leads from $V^*$ to $V$. This chapter adds
+the missing structure: an \emph{inner product}, which measures lengths and
+angles and, through the Riesz map, turns covectors into vectors. The
+structure is a choice, and the chapter keeps track of everything that
+depends on it: the vector that represents a covector, the adjoint of a
+linear map, orthogonal projections, the solution selected by least
+squares, and the distance between two points. You will learn
 \begin{itemize}[nosep]
-  \item Inner products, norms, Cauchy--Schwarz, orthogonality, Gram--Schmidt;
-        the Gram matrix $M$ of an inner product in a basis.
-  \item The Riesz representation theorem and the Riesz map $R_V:V\to V^*$.
-  \item The adjoint $\adj A = R_V^{-1}\circ\dual A\circ R_W$: it maps vectors to
-        vectors and depends on both inner products. Its matrix is $M^{-1}A^\top
-        N$; it reduces to $A^\top$ exactly in orthonormal bases (conjugate
-        transpose over $\C$).
-  \item Dual versus adjoint, side by side: what each one needs, where each one
-        lives, and why identifying $(\K^n)^*$ with $\K^n$ through the dual basis
-        agrees with the Riesz identification only for an orthonormal basis.
-  \item Orthogonal projections, least squares and the normal equations.
-  \item Euclidean affine spaces: distances, angles and isometries.
+  \item what an inner product is, why ``the dot product of the components''
+        is a different inner product in each basis, and what orthonormal
+        bases are;
+  \item the Riesz map $R_V:V\to V^*$, and the picture of the vector that
+        represents a covector: it points to where the unit ball touches the
+        highest level set;
+  \item the adjoint $\adj A = R_V^{-1}\circ\dual A\circ R_W$, whose matrix is
+        $M^{-1}A^\top N$, side by side with the dual operator $\dual A$;
+  \item why the update $x - \eta M^{-1}\gamma$ passes the basis test that
+        $x - \eta\gamma$ fails, and why preconditioning is a change of
+        inner product;
+  \item orthogonal projection, least squares, and how gradient descent
+        chooses among several solutions;
+  \item distances in a Euclidean affine space, with the margin of a linear
+        classifier as an example of a dual norm.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:affine-spaces,ch:duality}. All vector spaces are
+real and finite-dimensional.}
+\end{chapterintro}
+
+\section{Inner products}\label{inner-products:sec:definition}
+
+\begin{definition}[Inner product]\label{inner-products:def:inner}
+An \emph{inner product} on $V$ is a bilinear form
+$\inner\cdot\cdot:V\times V\to\R$ (\cref{duality:def:bilinear}) that is
+\begin{enumerate}[nosep]
+  \item \emph{symmetric}: $\inner uv = \inner vu$ for all $u, v$;
+  \item \emph{positive definite}: $\inner vv > 0$ for all $v\neq0$.
+\end{enumerate}
+The \emph{norm} of $v$ is $\norm v = \sqrt{\inner vv}$. A vector space with
+an inner product is an \emph{inner product space}.
+\end{definition}
+
+In a basis $e$, an inner product has a Gram matrix $M$, with
+$M_{ij} = \inner{e_i}{e_j}$ and
+\[
+  \inner uv = [u]^\top M[v] .
+\]
+$M$ is symmetric, and positive definite in the sense that
+$x^\top Mx > 0$ for every non-zero column $x$. Conversely every symmetric
+positive definite matrix defines an inner product by this formula. Under
+a change of basis, $M$ becomes $P^\top MP$ (\cref{duality:prop:three}).
+
+\begin{example}[Inner products in practice]\label{inner-products:ex:examples}
+\begin{enumerate}[nosep]
+  \item \emph{The dot product} on $\R^n$, $x\cdot y = \sum_ix_iy_i$: the
+        Gram matrix in the standard basis is $I$.
+  \item \emph{Weighted products} on $\R^n$, $\inner xy_M = x^\top My$. With
+        $M = \diag(1/s_1^2,\dots,1/s_n^2)$, each coordinate is measured in
+        units of its own scale $s_i$. With $M = \Sigma^{-1}$, the inverse
+        of a covariance matrix, the norm of $x - \mu$ is the
+        \emph{Mahalanobis distance} of $x$ to $\mu$.
+  \item \emph{Functions.} On polynomials of degree at most $d$,
+        $\inner pq = \int_{-1}^1p(t)q(t)\,dt$. It is positive definite
+        because a polynomial whose square has integral zero is zero.
+  \item \emph{Matrices.} On $\R^{m\times n}$,
+        $\inner AB = \tr(A^\top B) = \sum_{i,j}A_{ij}B_{ij}$, the Frobenius
+        inner product.
+\end{enumerate}
+\end{example}
+
+\begin{pitfall}[There is no such thing as ``the'' dot product of a vector
+space]
+In a vector space with a basis $e$, the formula $\sum_iu_iv_i$ on the
+components defines an inner product, the form $b_e$ of
+\cref{duality:prop:identification}. In another basis the same formula
+defines \emph{another} inner product, unless the change of basis matrix
+satisfies $P^\top P = I$. On $\R^n$ the standard basis singles out one of
+them, and it is harmless to call it \emph{the} dot product. On a parameter
+space, the coordinates come from the way the model happens to be written
+(\cref{duality:ex:feature}), and using their dot product is a decision,
+usually an unexamined one.
+\end{pitfall}
+
+\begin{theorem}[Cauchy--Schwarz inequality]\label{inner-products:thm:cs}
+For all $u, v\in V$, $\abs{\inner uv}\leq\norm u\norm v$, with equality if
+and only if $u$ and $v$ are collinear.
+\end{theorem}
+
+\begin{proof}
+If $v = 0$ both sides vanish. Otherwise let $t = \inner uv/\norm v^2$.
+By bilinearity and symmetry,
+\[
+  0\leq\norm{u - tv}^2 = \norm u^2 - 2t\inner uv + t^2\norm v^2
+  = \norm u^2 - \frac{\inner uv^2}{\norm v^2} ,
+\]
+which is the inequality. Equality holds if and only if $u - tv = 0$.
+\end{proof}
+
+\begin{corollary}[The norm is a norm]\label{inner-products:cor:norm}
+For all $u, v\in V$ and $c\in\R$: $\norm v > 0$ if $v\neq0$,
+$\norm{cv} = \abs c\norm v$, and $\norm{u + v}\leq\norm u + \norm v$.
+\end{corollary}
+
+\begin{proof}
+The first two properties follow from the definition. For the third,
+$\norm{u + v}^2 = \norm u^2 + 2\inner uv + \norm v^2
+\leq\norm u^2 + 2\norm u\norm v + \norm v^2 = (\norm u + \norm v)^2$ by
+\cref{inner-products:thm:cs}.
+\end{proof}
+
+By \cref{inner-products:thm:cs}, for non-zero $u$ and $v$ the number
+$\inner uv/(\norm u\norm v)$ lies in $[-1, 1]$; it is the cosine of the
+\emph{angle} between $u$ and $v$. An inner product is recovered from its
+norm by the \emph{polarization identity}
+\begin{equation}\label{inner-products:eq:polarization}
+  \inner uv = \tfrac12\bigl(\norm{u + v}^2 - \norm u^2 - \norm v^2\bigr) ,
+\end{equation}
+so it is entirely described by its \emph{unit ball}
+$\{v : \norm v\leq1\}$. For the dot product of $\R^2$ the unit ball is a
+disc; for $\inner xy_M$ it is the region bounded by the ellipse
+$x^\top Mx = 1$ (\cref{inner-products:fig:balls}). Choosing an inner product
+is choosing which ellipsoid is called round.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.15]
+  \draw[bookaccent, thick] (0,0) circle (1);
+  \draw[->, very thick, bookaccent] (0,0) -- (1,0);
+  \draw[->, very thick, bookaccent] (0,0) -- (0,1);
+  \fill (0,0) circle (1.3pt);
+  \node[anchor=north] at (0,-1.25) {$x^2 + y^2 = 1$};
+  \begin{scope}[xshift=5cm]
+    \draw[bookpitfall, thick] (0,0) ellipse (2 and 1);
+    \draw[->, very thick, bookpitfall] (0,0) -- (2,0);
+    \draw[->, very thick, bookpitfall] (0,0) -- (0,1);
+    \fill (0,0) circle (1.3pt);
+    \node[anchor=north] at (0,-1.25) {$\frac14x^2 + y^2 = 1$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The unit balls of two inner products on $\R^2$: the dot product
+(left) and $\inner xy_M$ with $M = \diag(\frac14, 1)$ (right). In each
+picture the two arrows have length one and are orthogonal \emph{for that
+inner product}.}
+\label{inner-products:fig:balls}
+\end{figure}
+
+\section{Orthonormal bases}\label{inner-products:sec:orthonormal}
+
+\begin{definition}[Orthogonal, orthonormal]
+Two vectors are \emph{orthogonal} if $\inner uv = 0$. A family
+$(e_1,\dots,e_k)$ is \emph{orthonormal} if
+$\inner{e_i}{e_j} = \delta_{ij}$. A basis $e$ is orthonormal if and only if
+the Gram matrix of the inner product in $e$ is $I$.
+\end{definition}
+
+\begin{proposition}[Computing in an orthonormal basis]
+\label{inner-products:prop:onb}
+An orthonormal family is linearly independent. If $e$ is an orthonormal
+basis, then for all $u, v\in V$
+\[
+  v = \sum_i\inner{e_i}v\,e_i ,
+  \qquad
+  \inner uv = \sum_iu_iv_i ,
+  \qquad
+  \norm v^2 = \sum_iv_i^2 ,
+\]
+where $u_i, v_i$ are the components in $e$. In particular the dual basis is
+$e_i^* = \inner{e_i}\cdot$.
+\end{proposition}
+
+\begin{proof}
+If $\sum_ic_ie_i = 0$, taking the inner product with $e_j$ gives $c_j = 0$.
+If $v = \sum_iv_ie_i$, taking the inner product with $e_j$ gives
+$v_j = \inner{e_j}v$, which is also the statement about the dual basis.
+The other two formulas are $[u]^\top I[v]$.
+\end{proof}
+
+\begin{theorem}[Gram--Schmidt]\label{inner-products:thm:gs}
+Let $(v_1,\dots,v_n)$ be a basis of an inner product space $V$. Define
+recursively
+\[
+  u_k = v_k - \sum_{i<k}\inner{e_i}{v_k}e_i ,
+  \qquad
+  e_k = \frac{u_k}{\norm{u_k}} .
+\]
+Then $(e_1,\dots,e_n)$ is an orthonormal basis of $V$, and
+$\Span(e_1,\dots,e_k) = \Span(v_1,\dots,v_k)$ for every $k$. In particular
+every inner product space has an orthonormal basis.
+\end{theorem}
+
+\begin{proof}
+The proof is by induction on $k$. Suppose that $(e_1,\dots,e_{k-1})$ is
+orthonormal and spans the same subspace $U_{k-1}$ as
+$(v_1,\dots,v_{k-1})$. Then $u_k\neq0$, because $v_k\notin U_{k-1}$, so
+$e_k$ is defined and has norm $1$. For $j < k$,
+\[
+  \inner{e_j}{u_k} = \inner{e_j}{v_k} - \inner{e_j}{v_k} = 0 .
+\]
+Finally
+$e_k$ is a combination of $v_k$ and $e_1,\dots,e_{k-1}$ with a non-zero
+coefficient on $v_k$, and conversely, so the spans agree.
+\end{proof}
+
+\begin{corollary}[Cholesky factorization]\label{inner-products:cor:cholesky}
+Every symmetric positive definite matrix $M$ can be written $M = LL^\top$
+with $L$ lower triangular and invertible.
+\end{corollary}
+
+\begin{proof}
+Apply \cref{inner-products:thm:gs} to the standard basis of $\R^n$ with the
+inner product $\inner xy_M$. The change of basis matrix $P$ to the
+resulting orthonormal basis is upper triangular, since $e_k$ is a
+combination of $v_1,\dots,v_k$, and $P^\top MP = I$. Hence
+$M = P^{-\top}P^{-1} = LL^\top$ with $L = P^{-\top}$.
+\end{proof}
+
+\begin{keyidea}
+By \cref{inner-products:prop:onb}, an inner product \emph{is} the dot
+product of the components in any of its orthonormal bases, and by
+\cref{duality:prop:identification} two bases are orthonormal for the same
+inner product exactly when they are related by a matrix with
+$P^\top P = I$. Choosing an inner product amounts to declaring which bases
+are orthonormal.
+\end{keyidea}
+
+\section{The Riesz map}\label{inner-products:sec:riesz}
+
+\begin{definition}[Riesz map]\label{inner-products:def:riesz}
+Let $V$ be an inner product space. The \emph{Riesz map} is
+\[
+  R_V:V\to V^* ,\qquad R_V(u) = \inner u\cdot ,
+\]
+the form $v\mapsto\inner uv$.
+\end{definition}
+
+\begin{theorem}[Riesz representation]\label{inner-products:thm:riesz}
+$R_V$ is a linear isomorphism: for every $\phi\in V^*$ there is exactly one
+$u\in V$ such that $\phi(v) = \inner uv$ for all $v$. In a basis with Gram
+matrix $M$,
+\[
+  [R_Vu] = [u]^\top M ,
+  \qquad
+  [R_V^{-1}\phi] = M^{-1}[\phi]^\top .
+\]
+\end{theorem}
+
+\begin{proof}
+$R_V$ is linear because the inner product is linear in its first argument.
+It is injective: if $R_V(u) = 0$ then $\norm u^2 = R_V(u)(u) = 0$, so
+$u = 0$ by positive definiteness. Since $\dim V^* = \dim V$
+(\cref{duality:thm:dual-basis}), it is an isomorphism. The component
+formulas follow from $\inner uv = [u]^\top M[v]$: the row of $R_Vu$ is
+$[u]^\top M$, and solving $[\phi] = [u]^\top M$ gives
+$[u] = M^{-1}[\phi]^\top$ since $M$ is symmetric.
+\end{proof}
+
+\begin{intuition}
+The Riesz map is the identification of $V$ with $V^*$ that
+\cref{ch:duality} could not provide. In an orthonormal basis $M = I$, and
+$R_V^{-1}$ is ``transpose the row into a column'': it is the map $\Phi_e$
+of \cref{duality:prop:identification}. In any other basis the transposed
+row must also be multiplied by $M^{-1}$. This is the precise content of the
+warning of Hubbard and Hubbard quoted in \cref{duality:sec:notation}: the
+transpose of a row matrix is the Riesz representative for the dot product,
+and for no other inner product.
+\end{intuition}
+
+The vector $R_V^{-1}\phi$ has a geometric description, which does not
+mention components.
+
+\begin{proposition}[The vector that represents a covector]
+\label{inner-products:prop:riesz-geometry}
+Let $\phi\in V^*$ be non-zero and $u = R_V^{-1}\phi$.
+\begin{enumerate}[nosep]
+  \item $u$ is orthogonal to $\ker\phi$, hence to all the level sets of
+        $\phi$.
+  \item On the unit ball, $\phi$ takes its largest value at the single
+        point $u/\norm u$, and this value is $\norm u$.
+  \item The point of the level set $\{\phi = 1\}$ closest to $0$ is
+        $u/\norm u^2$, at distance $1/\norm u$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) If $\phi(v) = 0$ then $\inner uv = 0$. (2) For $\norm v\leq1$,
+$\phi(v) = \inner uv\leq\norm u\norm v\leq\norm u$ by
+\cref{inner-products:thm:cs}, with equality if and only if $v$ is a
+positive multiple of $u$ of norm $1$. (3) If $\phi(v) = 1$ then
+$1 = \inner uv\leq\norm u\norm v$, so $\norm v\geq1/\norm u$, with equality
+if and only if $v$ is a positive multiple of $u$, that is,
+$v = u/\norm u^2$.
+\end{proof}
+
+\begin{definition}[Dual norm]\label{inner-products:def:dual-norm}
+The \emph{dual norm} of $\phi\in V^*$ is
+$\norm\phi_* = \max_{\norm v\leq1}\phi(v)$. By
+\cref{inner-products:prop:riesz-geometry},
+$\norm\phi_* = \norm{R_V^{-1}\phi}$, and in a basis
+$\norm\phi_*^2 = [\phi]M^{-1}[\phi]^\top$.
+\end{definition}
+
+The formula for $\norm\phi_*^2$ is $\phi(u) = [\phi][u]$ with
+$[u] = M^{-1}[\phi]^\top$. It matches the picture of \cref{ch:duality}: a
+covector with tight level sets is a large covector, and the distance
+between consecutive unit levels is $1/\norm\phi_*$.
+
+\begin{example}[One covector, two representatives]
+\label{inner-products:ex:two-reps}
+On $\R^2$ let $\phi$ have the row $[2\ \ 1]$. For the dot product,
+$R^{-1}\phi = (2, 1)$ and $\norm\phi_* = \sqrt5$. For
+$M = \diag(\frac14, 1)$, $R^{-1}\phi = M^{-1}(2, 1) = (8, 1)$ and
+$\norm\phi_* = \sqrt{17}$. The two vectors point in different directions.
+Each one is orthogonal to the level sets of $\phi$ for its own inner
+product, and each one points to where its own unit ball touches the
+highest level set of $\phi$ (\cref{inner-products:fig:riesz}). The second
+one is the step $(8, 1)$ found in \cref{duality:ex:sign} for gradient
+descent computed in the basis $e' = (2e_1, e_2)$: that basis is
+orthonormal for $M$.
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.5]
+  \draw[bookaccent, thick] (0,0) circle (1);
+  \draw[bookpitfall, thick] (0,0) ellipse (2 and 1);
+  % level sets of phi = 2x + y tangent to each ball
+  \draw[bookaccent, thin] (1.868,-1.5) -- (0.368,1.5)
+    node[above, font=\small] {$\phi = \sqrt5$};
+  \draw[bookpitfall, thin] (2.812,-1.5) -- (1.312,1.5)
+    node[above right, font=\small] {$\phi = \sqrt{17}$};
+  \draw[gray, thin] (0.75,-1.5) -- (-0.75,1.5)
+    node[above, font=\small] {$\phi = 0$};
+  \draw[->, very thick, bookaccent] (0,0) -- (0.894,0.447);
+  \draw[->, very thick, bookpitfall] (0,0) -- (1.940,0.2425);
+  \fill (0,0) circle (1.2pt);
+\end{tikzpicture}
+\caption{The covector $\phi = [2\ \ 1]$ and its unit representatives
+$u/\norm u$ for the two inner products of \cref{inner-products:fig:balls}.
+Each arrow ends where its unit ball touches the highest level set of
+$\phi$: the direction of ``steepest increase of $\phi$ per unit length''
+depends on what a unit length is.}
+\label{inner-products:fig:riesz}
+\end{figure}
+
+\subsection{The basis test, passed}
+
+Return to the update of \cref{duality:sec:basis-test}. The loss has the
+linear part $\phi$ at the current point, with components stored in the
+column $\gamma = [\phi]^\top$. With an inner product on $V$, the covector
+can be turned into a vector before it is added:
+\begin{equation}\label{inner-products:eq:metric-gd}
+  x_+ = x - \eta\,[R_V^{-1}\phi] = x - \eta\,M^{-1}\gamma .
+\end{equation}
+
+\begin{proposition}[The metric update passes the basis test]
+\label{inner-products:prop:basis-test}
+Under a change of basis $P$, the three arrays of
+\eqref{inner-products:eq:metric-gd} become $x' = P^{-1}x$,
+$\gamma' = P^\top\gamma$ and $M' = P^\top MP$, and
+\[
+  x' - \eta\,M'^{-1}\gamma' = P^{-1}\bigl(x - \eta\,M^{-1}\gamma\bigr) .
+\]
+The update computed in the new basis is the same point.
+\end{proposition}
+
+\begin{proof}
+$M'^{-1}\gamma' = P^{-1}M^{-1}P^{-\top}P^\top\gamma = P^{-1}M^{-1}\gamma$.
+\end{proof}
+
+\begin{keyidea}
+The update \eqref{inner-products:eq:metric-gd} is
+$a_+ = a - \eta R_V^{-1}\phi$: a point, a covector and an inner product,
+with no basis in sight. The update $x - \eta\gamma$ of \cref{ch:duality} is
+the special case where $M = I$ in the basis of the computation, that is,
+where the inner product is the one for which \emph{that} basis is
+orthonormal. Computing it in two bases compares two different inner
+products, and this is why it failed the basis test.
+\end{keyidea}
+
+\begin{mlthread}[Machine learning: preconditioning is a choice of inner
+product]
+Methods of the form $x_+ = x - \eta\,M^{-1}\gamma$ with $M$ symmetric
+positive definite are called \emph{preconditioned}. Each of them is plain
+gradient descent for another inner product.
 \begin{itemize}[nosep]
-  \item Preconditioning is a change of inner product.
-  \item The gradient for the metric $M$ is $M^{-1}$ times the vector of partial
-        derivatives (\cref{ch:gradient-hessian}).
-  \item Whitening and the Mahalanobis distance.
+  \item $M = \diag(m_1,\dots,m_n)$: one learning rate $\eta/m_i$ per
+        coordinate. Standardizing the features before training has the
+        same effect as choosing such an $M$.
+  \item $M$ equal to the Hessian of the loss, when it is positive
+        definite: Newton's method (\cref{ch:gradient-hessian}).
+  \item $M$ equal to the Fisher information matrix: the natural gradient
+        (\cref{ch:natural-gradient}).
 \end{itemize}
-\end{chapterplan}
+In the last two cases $M$ depends on the current point: the inner product
+varies from point to point, which is the definition of a Riemannian metric
+(\cref{ch:riemannian-optimization}). Adaptive methods such as Adam can be
+read as estimating a diagonal $M$ from past gradients; being diagonal in a
+fixed basis is what ties them to that basis.
+\end{mlthread}
+
+\section{The adjoint}\label{inner-products:sec:adjoint}
+
+Let $V$ and $W$ be inner product spaces. A linear map $A:V\to W$ has a dual
+operator $\dual A:W^*\to V^*$. The Riesz maps of the two spaces convert it
+into a map between the spaces themselves.
+
+\begin{theorem}[Adjoint]\label{inner-products:thm:adjoint}
+For every linear map $A:V\to W$ there is a unique map $\adj A:W\to V$ such
+that
+\begin{equation}\label{inner-products:eq:adjoint}
+  \inner{Av}w_W = \inner v{\adj Aw}_V
+  \qquad\text{for all }v\in V,\ w\in W .
+\end{equation}
+It is linear, and
+\[
+  \adj A = R_V^{-1}\circ\dual A\circ R_W .
+\]
+The map $\adj A$ is the \emph{adjoint} of $A$.
+\end{theorem}
+
+\begin{proof}
+Fix $w\in W$. The form $\dual A(R_Ww)$ is
+$v\mapsto(R_Ww)(Av) = \inner w{Av}_W$. By \cref{inner-products:thm:riesz}
+there is exactly one vector $u\in V$ that represents it:
+$\inner uv_V = \inner w{Av}_W$ for all $v$. By symmetry of the two inner
+products, this is \eqref{inner-products:eq:adjoint} with $\adj Aw = u$, and
+$u$ is the only vector with this property. So $\adj A$ exists, is unique,
+and equals $R_V^{-1}\circ\dual A\circ R_W$, a composition of linear maps.
+\end{proof}
+
+\begin{center}
+\begin{tikzcd}[row sep=large, column sep=huge]
+V \arrow[r, "A", shift left=1.2]
+  & W \arrow[l, "\adj A", shift left=1.2] \arrow[d, "R_W"] \\
+V^* \arrow[u, "R_V^{-1}"] & W^* \arrow[l, "\dual A"']
+\end{tikzcd}
+\end{center}
+
+\begin{intuition}
+To apply $\adj A$ to a vector $w$ of $W$: turn $w$ into a covector with the
+inner product of $W$, pull it back with the dual operator, and turn the
+result into a vector with the inner product of $V$. The adjoint goes
+``around the square''. The dual operator is the bottom side; it exists
+without the vertical arrows, and it does not change when the inner
+products do.
+\end{intuition}
+
+\begin{theorem}[Matrix of the adjoint]\label{inner-products:thm:matrix}
+Let $M$ and $N$ be the Gram matrices of the inner products of $V$ and $W$
+in bases $e$ and $f$. Then
+\[
+  [\adj A] = M^{-1}[A]^\top N .
+\]
+If both bases are orthonormal, $[\adj A] = [A]^\top$.
+\end{theorem}
+
+\begin{proof}
+Follow the square with components. $R_W$ sends the column $[w]$ to the row
+$[w]^\top N$ (\cref{inner-products:thm:riesz}); $\dual A$ multiplies rows by
+$[A]$ on the right (\cref{duality:thm:transpose}), giving
+$[w]^\top N[A]$; and $R_V^{-1}$ sends this row to the column
+$M^{-1}\bigl([w]^\top N[A]\bigr)^\top = M^{-1}[A]^\top N[w]$.
+\end{proof}
+
+\begin{example}[The adjoint is not the transpose]
+\label{inner-products:ex:adjoint}
+Let $A:\R^2\to\R^2$ have the matrix
+$\begin{bsmallmatrix}1 & 2\\0 & 1\end{bsmallmatrix}$ in the standard
+bases, with the inner product $M = \diag(1, 4)$ on the source and the dot
+product on the target. Then
+\[
+  [\adj A] = M^{-1}[A]^\top
+  = \begin{bmatrix}1 & 0\\0 & \frac14\end{bmatrix}
+    \begin{bmatrix}1 & 0\\2 & 1\end{bmatrix}
+  = \begin{bmatrix}1 & 0\\\frac12 & \frac14\end{bmatrix} .
+\]
+Check on $v = (1, 1)$ and $w = (1, 2)$: $Av = (3, 1)$ and
+$\inner{Av}w = 3 + 2 = 5$; $\adj Aw = (1, 1)$ and
+$\inner v{\adj Aw}_M = 1 + 4 = 5$. The matrix of the dual operator is
+$[A]^\top$ whatever the inner products.
+\end{example}
+
+\begin{proposition}[Rules for the adjoint]\label{inner-products:prop:rules}
+For linear maps $A, A':V\to W$ and $B:W\to X$ between inner product spaces,
+and $c\in\R$:
+\begin{enumerate}[nosep]
+  \item $\adj{(A + A')} = \adj A + \adj{A'}$ and $\adj{(cA)} = c\,\adj A$;
+  \item $\adj{(BA)} = \adj A\,\adj B$;
+  \item $\adj{(\adj A)} = A$;
+  \item $\norm{Av}^2 = \inner v{\adj AAv}$ for all $v$, so
+        $\ker\adj AA = \ker A$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) and (2) follow from \cref{duality:prop:rules} and the formula
+$\adj A = R_V^{-1}\dual AR_W$: for (2),
+$R_V^{-1}\dual A\,\dual BR_X = (R_V^{-1}\dual AR_W)(R_W^{-1}\dual BR_X)$.
+(3) By symmetry, \eqref{inner-products:eq:adjoint} reads
+$\inner{\adj Aw}v = \inner w{Av}$, which says that $A$ satisfies the
+defining property of the adjoint of $\adj A$. (4) Take $w = Av$ in
+\eqref{inner-products:eq:adjoint}. If $\adj AAv = 0$ then
+$\norm{Av}^2 = 0$, so $Av = 0$; the converse is clear.
+\end{proof}
+
+\Cref{inner-products:tab:dual-adjoint} puts the two operators side by
+side.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{3.6cm}p{5cm}p{5cm}@{}}
+\toprule
+ & Dual operator $\dual A$ & Adjoint $\adj A$ \\
+\midrule
+Acts on & covectors: $W^*\to V^*$ & vectors: $W\to V$ \\
+Definition & $(\dual A\psi)(v) = \psi(Av)$
+  & $\inner v{\adj Aw} = \inner{Av}w$ \\
+Needs & nothing & an inner product on $V$ and on $W$ \\
+Matrix & $[A]^\top$, in the dual bases
+  & $M^{-1}[A]^\top N$; $[A]^\top$ in orthonormal bases \\
+If the inner products change & unchanged & changes \\
+Over $\C$ & transpose, no conjugation & conjugate transpose (orthonormal
+  bases) \\
+Typical use & backpropagation, pull-back of forms
+  & least squares, projections, spectral theory \\
+Often written & $A^*$, $A'$, ${}^t\!A$, $A^\times$
+  (\cref{duality:tab:notation}) & $A^*$, $A^\dagger$, $A^{\mathsf H}$ \\
+Relation & \multicolumn{2}{l}{$\adj A = R_V^{-1}\circ\dual A\circ R_W$} \\
+\bottomrule
+\end{tabular}
+\caption{The dual operator and the adjoint.}
+\label{inner-products:tab:dual-adjoint}
+\end{table}
+
+\begin{remark}[The complex case]
+On a complex vector space an inner product is linear in one argument and
+conjugate-linear in the other, with $\inner uv = \overline{\inner vu}$. The
+Riesz map is then conjugate-linear, and in orthonormal bases the matrix of
+the adjoint is the conjugate transpose $\overline{[A]}^\top$, while the
+matrix of the dual operator remains the plain transpose
+(\cref{duality:thm:transpose}). This book works over $\R$.
+\end{remark}
+
+\subsection{Orthogonal complements}
+
+\begin{definition}[Orthogonal complement]
+The \emph{orthogonal complement} of a subspace $U\subset V$ is
+$U^\perp = \{v\in V : \inner vu = 0\text{ for all }u\in U\}$.
+\end{definition}
+
+\begin{proposition}[Orthogonal complement and annihilator]
+\label{inner-products:prop:perp}
+$U^\perp = R_V^{-1}(U^\circ)$. Consequently
+$\dim U^\perp = \dim V - \dim U$, $V = U\oplus U^\perp$ and
+$(U^\perp)^\perp = U$.
+\end{proposition}
+
+\begin{proof}
+$v\in U^\perp$ means that the form $R_Vv = \inner v\cdot$ vanishes on $U$,
+that is, $R_Vv\in U^\circ$. The dimension follows from
+\cref{duality:prop:annihilator}, since $R_V$ is an isomorphism. If
+$v\in U\cap U^\perp$ then $\inner vv = 0$, so $v = 0$; with the dimensions,
+this gives $V = U\oplus U^\perp$. Finally $U\subset(U^\perp)^\perp$ by
+definition, and both have dimension $\dim U$.
+\end{proof}
+
+\begin{theorem}[The four subspaces, metric form]\label{inner-products:thm:four}
+For a linear map $A:V\to W$ between inner product spaces,
+\[
+  \ker\adj A = (\im A)^\perp ,
+  \qquad
+  \im\adj A = (\ker A)^\perp .
+\]
+\end{theorem}
+
+\begin{proof}
+Transport \cref{duality:thm:four} by the Riesz maps. Since
+$\adj A = R_V^{-1}\dual AR_W$ and $R_V^{-1}$ is injective,
+$w\in\ker\adj A$ if and only if $R_Ww\in\ker\dual A = (\im A)^\circ$, that
+is, $w\in(\im A)^\perp$ by \cref{inner-products:prop:perp}. Since $R_W$ is
+surjective, $\im\adj A = R_V^{-1}(\im\dual A) = R_V^{-1}\bigl((\ker
+A)^\circ\bigr) = (\ker A)^\perp$.
+\end{proof}
+
+\begin{pitfall}[Self-adjoint is not ``symmetric matrix'']
+An operator $A:V\to V$ is \emph{self-adjoint} if $\adj A = A$. By
+\cref{inner-products:thm:matrix} this means $M[A] = [A]^\top M$: the array
+$M[A]$ is symmetric. It reduces to $[A] = [A]^\top$ only in an orthonormal
+basis. The same operator can be self-adjoint for one inner product and not
+for another (\cref{inner-products:exr:4}). Self-adjoint operators are the
+subject of \cref{ch:spectral-svd}.
+\end{pitfall}
+
+\section{Orthogonal projection and least squares}
+\label{inner-products:sec:projection}
+
+\begin{theorem}[Orthogonal projection]\label{inner-products:thm:projection}
+Let $U$ be a subspace of an inner product space $V$. Every $v\in V$ is
+uniquely $v = p + q$ with $p\in U$ and $q\in U^\perp$. The map
+$\Pi_U:v\mapsto p$ is linear, with $\Pi_U^2 = \Pi_U$ and
+$\adj{\Pi_U} = \Pi_U$, and $\Pi_Uv$ is the point of $U$ closest to $v$:
+\[
+  \norm{v - u}^2 = \norm{v - \Pi_Uv}^2 + \norm{\Pi_Uv - u}^2
+  \qquad\text{for all }u\in U .
+\]
+If $(e_1,\dots,e_k)$ is an orthonormal basis of $U$,
+$\Pi_Uv = \sum_{i\leq k}\inner{e_i}v\,e_i$.
+\end{theorem}
+
+\begin{proof}
+The decomposition exists and is unique because $V = U\oplus U^\perp$
+(\cref{inner-products:prop:perp}); $\Pi_U$ is the projection onto $U$
+along $U^\perp$, which is linear and idempotent. For $v = p + q$ and
+$v' = p' + q'$, $\inner{\Pi_Uv}{v'} = \inner p{p' + q'} = \inner p{p'}$,
+which is symmetric in $v$ and $v'$; hence
+$\inner{\Pi_Uv}{v'} = \inner v{\Pi_Uv'}$. For $u\in U$, the vectors
+$v - p = q\in U^\perp$ and $p - u\in U$ are orthogonal, and the identity is
+$\norm{q + (p - u)}^2 = \norm q^2 + \norm{p - u}^2$. For the last formula,
+$v - \sum_{i\leq k}\inner{e_i}v\,e_i$ is orthogonal to each $e_j$, hence to
+$U$.
+\end{proof}
+
+\begin{theorem}[Least squares]\label{inner-products:thm:ls}
+Let $A:V\to W$ be linear between inner product spaces and $b\in W$. A
+vector $x\in V$ minimizes $\norm{Ax - b}_W$ if and only if it satisfies the
+\emph{normal equations}
+\[
+  \adj AAx = \adj Ab ,
+  \qquad\text{in matrices}\qquad
+  [A]^\top N[A]\,[x] = [A]^\top N[b] .
+\]
+Solutions always exist. They form an affine subspace with direction
+$\ker A$, and the solution is unique if and only if $A$ is injective.
+\end{theorem}
+
+\begin{proof}
+By \cref{inner-products:thm:projection} with $U = \im A$, $Ax$ is closest
+to $b$ if and only if $Ax = \Pi_Ub$, that is, $Ax - b\in(\im A)^\perp$. By
+\cref{inner-products:thm:four} this is $\adj A(Ax - b) = 0$. Since
+$\Pi_Ub\in\im A$, solutions exist, and two solutions differ by an element
+of $\ker A$ (\cref{affine-spaces:prop:fibre}). In matrices,
+$\adj A = M^{-1}[A]^\top N$, and the invertible factor $M^{-1}$ cancels
+from both sides.
+\end{proof}
+
+\begin{intuition}
+The inner product of $W$ decides what ``closest'' means for the
+predictions, and it appears in the normal equations as the weight matrix
+$N$: this is weighted least squares. The inner product of $V$ has
+disappeared from the equations. It comes back as soon as the solution is
+not unique, to decide \emph{which} solution is meant.
+\end{intuition}
+
+\begin{theorem}[The closest solution]\label{inner-products:thm:min-norm}
+In the setting of \cref{inner-products:thm:ls}, let $S$ be the set of
+least-squares solutions and $x_0\in V$ any point. Then
+$S\cap(x_0 + \im\adj A)$ consists of a single point, and it is the point
+of $S$ closest to $x_0$.
+\end{theorem}
+
+\begin{proof}
+$S = s + \ker A$ for some $s$, and $\im\adj A = (\ker A)^\perp$
+(\cref{inner-products:thm:four}). Decompose
+$s - x_0 = k + r$ with $k\in\ker A$ and $r\in(\ker A)^\perp$. Then
+$x^* = x_0 + r = s - k$ belongs to both sets. If $x$ is another point of
+$S$, then $x - x^*\in\ker A$ is orthogonal to $x^* - x_0 = r$, so
+$\norm{x - x_0}^2 = \norm{x - x^*}^2 + \norm{x^* - x_0}^2$. This shows that
+$x^*$ is the closest point of $S$ to $x_0$, and that it is the only point
+of $S$ in $x_0 + (\ker A)^\perp$: for such a point, $x - x^*$ would be in
+$\ker A\cap(\ker A)^\perp = \{0\}$.
+\end{proof}
+
+\begin{mlthread}[Machine learning: which interpolating model does
+gradient descent find?]
+Consider least squares with more parameters than data, so that many
+parameter vectors fit the data exactly. The update
+\eqref{inner-products:eq:metric-gd} for the loss $\frac12\norm{Ax - b}^2$
+is
+\[
+  x_{k+1} = x_k - \eta\,\adj A(Ax_k - b) ,
+\]
+since the partial derivatives of this loss are
+$\gamma = [A]^\top N([A]x - b)$ and $M^{-1}\gamma$ is the column of
+$\adj A(Ax - b)$. Every step adds an element of $\im\adj A$, so all
+iterates stay in the affine subspace $x_0 + \im\adj A$. If they converge
+to a solution (conditions on $\eta$ are given in \cref{ch:spectral-svd}),
+\cref{inner-products:thm:min-norm} identifies the limit: it is the
+solution \emph{closest to the starting point, for the inner product of
+parameter space}. Two choices that the normal equations do not see, the
+origin $x_0$ (\cref{ch:affine-spaces}) and the metric $M$, decide which
+model is learned (\cref{inner-products:fig:interpolators}).
+\end{mlthread}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.25]
+  \draw[thick, gray] (-0.3,2.3) -- (3.0,-1.0)
+    node[right, black] {$S:\ \theta_1 + \theta_2 = 2$};
+  \fill (0.5,-0.5) circle (1.5pt) node[below left] {$x_0$};
+  \draw[->, very thick, bookaccent] (0.5,-0.5) -- (1.5,0.5);
+  \fill[bookaccent] (1.5,0.5) circle (1.5pt);
+  \node[bookaccent, anchor=south west] at (1.5,0.5) {dot product};
+  \draw[->, very thick, bookpitfall] (0.5,-0.5) -- (2.1,-0.1);
+  \fill[bookpitfall] (2.1,-0.1) circle (1.5pt);
+  \node[bookpitfall, anchor=south west] at (2.15,-0.1)
+    {$M = \diag(1, 4)$};
+\end{tikzpicture}
+\caption{One equation, two unknowns: $\theta_1 + \theta_2 = 2$. Starting
+from $x_0 = (0.5, -0.5)$, gradient descent for the dot product converges
+to $(1.5, 0.5)$ and gradient descent for $M = \diag(1, 4)$ to
+$(2.1, -0.1)$. Each limit is the solution closest to $x_0$ for its own
+inner product.}
+\label{inner-products:fig:interpolators}
+\end{figure}
+
+\section{Euclidean affine spaces}\label{inner-products:sec:euclidean}
+
+\begin{definition}[Euclidean affine space]\label{inner-products:def:euclidean}
+A \emph{Euclidean affine space} is an affine space $\Aff$ whose direction
+$V$ is an inner product space. The \emph{distance} between two points is
+$d(a, b) = \norm{b - a}$.
+\end{definition}
+
+The distance is computed on the vector $b - a$, so it passes the origin
+test of \cref{ch:affine-spaces}, and by
+\cref{inner-products:cor:norm} it satisfies $d(a, b) > 0$ for $a\neq b$,
+$d(a, b) = d(b, a)$ and $d(a, c)\leq d(a, b) + d(b, c)$. A Euclidean affine
+space has points, displacements, covectors, lengths and angles, and no
+preferred origin or basis. It is the setting of gradient descent, and of
+\cref{ch:differential,ch:gradient-hessian}.
+
+\begin{proposition}[Isometries]\label{inner-products:prop:isometry}
+An affine map $f:\Aff\to\Bff$ between Euclidean affine spaces preserves
+distances if and only if its linear part satisfies
+$\adj{(\lin f)}\lin f = \id_V$.
+\end{proposition}
+
+\begin{proof}
+$d(f(a), f(b)) = \norm{\lin f(b - a)}$, so $f$ preserves distances if and
+only if $\norm{\lin fv} = \norm v$ for all $v$. By
+\eqref{inner-products:eq:polarization} this is equivalent to
+$\inner{\lin fu}{\lin fv} = \inner uv$ for all $u, v$, that is,
+$\inner{\adj{(\lin f)}\lin fu - u}v = 0$ for all $u, v$, which means
+$\adj{(\lin f)}\lin f = \id_V$.
+\end{proof}
+
+\begin{proposition}[Distance to a hyperplane]\label{inner-products:prop:margin}
+Let $\ell:\Aff\to\R$ be an affine form with linear part $\phi\neq0$, and
+$H = \{\ell = c\}$. For every point $a$,
+\[
+  d(a, H) = \frac{\abs{\ell(a) - c}}{\norm\phi_*} ,
+\]
+and the closest point of $H$ is
+$a - \dfrac{\ell(a) - c}{\norm\phi_*^2}\,R_V^{-1}\phi$.
+\end{proposition}
+
+\begin{proof}
+The points of $H$ are the $a + v$ with $\phi(v) = c - \ell(a) = t$. Let
+$u = R_V^{-1}\phi$. Then $\abs t = \abs{\inner uv}\leq\norm u\norm v$, so
+$\norm v\geq\abs t/\norm u = \abs t/\norm\phi_*$, with equality if and only
+if $v$ is the multiple $tu/\norm u^2$ of $u$.
+\end{proof}
+
+\begin{mlthread}[Machine learning: margins, Mahalanobis distance,
+whitening]
+\begin{itemize}[nosep]
+  \item A linear classifier decides by the sign of an affine form
+        $\ell(x) = wx + \beta$. By \cref{inner-products:prop:margin} the
+        distance of a data point to the decision boundary, its
+        \emph{margin}, is $\abs{\ell(x)}/\norm w_*$. The norm in the
+        denominator is a dual norm: the weights are a covector. For the
+        dot product it is the familiar $\norm w$, and support vector
+        machines maximize the margin by minimizing it.
+  \item For $M = \Sigma^{-1}$, the Euclidean distance is the Mahalanobis
+        distance $\sqrt{(x - \mu)^\top\Sigma^{-1}(x - \mu)}$. Writing
+        $\Sigma = LL^\top$ (\cref{inner-products:cor:cholesky}), the
+        change of frame $z = L^{-1}(x - \mu)$ moves the origin to $\mu$
+        and passes to a basis that is orthonormal for $M$: in the
+        coordinates $z$ the distance is the ordinary one. This is
+        \emph{whitening}.
+  \item Nearest neighbours, $k$-means and every method based on distances
+        depend on the inner product. Standardizing features is choosing
+        one.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{inner-products:sec:outlook}
+
+The first three chapters have assembled the setting of the update
+$\theta\leftarrow\theta - \eta\nabla L(\theta)$: an affine space for the
+point, the dual of its direction for the variation of the loss, and an
+inner product to turn that variation into a displacement.
+\Cref{ch:norms-banach} adds the topology needed to speak of limits, and
+extends the Riesz theorem to infinite dimension, where it requires
+completeness. \Cref{ch:spectral-svd} studies self-adjoint operators and
+the singular value decomposition, which describes a linear map between
+inner product spaces completely. \Cref{ch:gradient-hessian} defines the
+gradient as $R_V^{-1}$ of the differential.
+
+\paragraph{Sources.} Loomis and Sternberg treat scalar products in \S5.1
+of \emph{Advanced Calculus} (the Schwarz inequality is their Theorem~1.1)
+and orthogonal projection, Gram--Schmidt and the map
+$\theta:V\to V^*$ in \S5.2; their Theorem~2.4 states that $\theta$ is an
+isomorphism if and only if $V$ is a Hilbert space, which contains
+\cref{inner-products:thm:riesz}. Their adjoint
+$\theta^{-1}\circ T^*\circ\theta$ (\S5.4) is the formula of
+\cref{inner-products:thm:adjoint} for an operator on one space. Hubbard and
+Hubbard work with the dot product of $\R^n$ (Definition~1.4.1, and
+Theorem~1.4.5 for the Schwarz inequality). The companion book \emph{Notes
+on Machine Learning} applies the same square diagram to least squares and
+projections in its chapter on adjoints.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{03-inner-products.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item An inner product is a symmetric positive definite bilinear form,
+        with Gram matrix $M$ in a basis. It is the dot product of the
+        components exactly in its orthonormal bases; choosing an inner
+        product is declaring which bases are orthonormal.
+  \item The Riesz map $R_V(u) = \inner u\cdot$ is an isomorphism
+        $V\to V^*$, with $[R_V^{-1}\phi] = M^{-1}[\phi]^\top$. The
+        representative of $\phi$ is orthogonal to its level sets and
+        points to where the unit ball touches the highest one.
+  \item The update $x - \eta M^{-1}\gamma$ passes the basis test.
+        Preconditioning is a choice of inner product.
+  \item The adjoint is $\adj A = R_V^{-1}\circ\dual A\circ R_W$, with
+        matrix $M^{-1}[A]^\top N$. It is the transpose only in orthonormal
+        bases; the dual operator's matrix is always the transpose.
+  \item $\ker\adj A = (\im A)^\perp$ and $\im\adj A = (\ker A)^\perp$.
+  \item Least squares: $\adj AAx = \adj Ab$. The inner product of the
+        target space weights the equations; that of the source space
+        selects among solutions. Gradient descent converges to the
+        solution closest to its starting point.
+  \item In a Euclidean affine space, $d(a, b) = \norm{b - a}$, and the
+        distance from a point to the hyperplane $\{\ell = c\}$ is
+        $\abs{\ell(a) - c}/\norm\phi_*$.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{inner-products:exr:1}
+On $\R^2$ consider the inner product with Gram matrix
+$M = \begin{bsmallmatrix}2 & 1\\1 & 2\end{bsmallmatrix}$ in the standard
+basis. Apply the Gram--Schmidt process to the standard basis, give the
+change of basis matrix $P$, verify that $P^\top MP = I$, and deduce the
+factorization $M = LL^\top$ of \cref{inner-products:cor:cholesky}.
+\solutionlink{inner-products:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{inner-products:exr:2}
+Let $\phi$ be the form on $\R^2$ with row $[2\ \ 1]$. Compute
+$R^{-1}\phi$ and $\norm\phi_*$ for the dot product, for
+$M = \diag(\frac14, 1)$ and for
+$M = \begin{bsmallmatrix}2 & 1\\1 & 2\end{bsmallmatrix}$. In each case
+check that $\inner{R^{-1}\phi}v = \phi(v)$ for $v = (1, 1)$.
+\solutionlink{inner-products:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{inner-products:exr:3}
+Let $V$ be the space of polynomials of degree at most $1$ with
+$\inner pq = \int_{-1}^1p(t)q(t)\,dt$, and $D:V\to V$ the derivative.
+\begin{enumerate}[nosep]
+  \item Compute the Gram matrix in the basis $(1, t)$ and the matrix of
+        $\adj D$. What are $\adj D(1)$ and $\adj D(t)$?
+  \item Integration by parts suggests $\adj D = -D$. Why is this false
+        here?
+\end{enumerate}
+\solutionlink{inner-products:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{inner-products:exr:4}
+Let $A$ be the operator on $\R^2$ with matrix
+$\begin{bsmallmatrix}1 & 1\\0 & 2\end{bsmallmatrix}$ in the standard basis.
+\begin{enumerate}[nosep]
+  \item Show that $A$ is not self-adjoint for the dot product.
+  \item Find an inner product for which $A$ is self-adjoint, and check
+        that the eigenvectors of $A$ are orthogonal for it.
+\end{enumerate}
+\solutionlink{inner-products:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{inner-products:exr:5}
+Let $A:V\to W$ be linear between inner product spaces. Show that
+$\adj AA$ is self-adjoint, that $\inner v{\adj AAv}\geq0$ for all $v$, and
+that $\adj AA$ is invertible if and only if $A$ is injective. Show that
+$\Pi = A(\adj AA)^{-1}\adj A$ is then the orthogonal projection of $W$ onto
+$\im A$.
+\solutionlink{inner-products:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{inner-products:exr:6}
+Fit a line $t\mapsto x_1 + x_2t$ to the points $(0, 1)$, $(1, 2)$,
+$(2, 2)$ by least squares: write $A$ and $b$, and solve the normal
+equations (a) for the dot product on $\R^3$; (b) for
+$N = \diag(1, 1, 4)$, which gives four times more weight to the third
+point.
+\solutionlink{inner-products:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{inner-products:exr:7}
+Let $\gamma = (2, 1)$ and suppose the inner product has $M = I$ in the
+basis $e$. For $P = \begin{bsmallmatrix}2 & 0\\0 & 1\end{bsmallmatrix}$,
+compute $M'$, $\gamma'$ and the step $-\eta M'^{-1}\gamma'$ in the basis
+$e'$, and express it in the basis $e$. Compare with
+\cref{duality:ex:sign}.
+\solutionlink{inner-products:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{inner-products:exr:8}
+Let $X = [1\ \ 1]$ and $y = 2$, so that the solutions of $X\theta = y$ are
+the points of the line $\theta_1 + \theta_2 = 2$, and let
+$x_0 = (0.5, -0.5)$.
+\begin{enumerate}[nosep]
+  \item Using \cref{inner-products:thm:min-norm}, find the solution
+        closest to $x_0$ for the dot product and for $M = \diag(1, 4)$.
+  \item For the dot product, write the iteration
+        $x_{k+1} = x_k - \eta\,\adj X(Xx_k - y)$ explicitly and show that
+        it converges to the point found in (1) when $0 < \eta < 1$.
+\end{enumerate}
+\solutionlink{inner-products:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{inner-products:exr:9}
+In $\R^2$ let $H$ be the line $3x_1 + 4x_2 = 5$. Compute the distance from
+the point $(0, 0)$ to $H$ and the closest point of $H$, for the dot
+product and for $M = \diag(1, 4)$.
+\solutionlink{inner-products:exr:9}
+\end{exercise}
 \end{notechapter}

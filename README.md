@@ -19,7 +19,7 @@ book keeps three such pairs apart from beginning to end:
 and it applies two tests to every formula and algorithm: does it change
 when the **origin** moves, and does it change when the **basis** changes?
 
-**Status: work in progress.** Chapters 1 and 2 are drafted. The other
+**Status: work in progress.** Chapters 1 to 3 are drafted. The other
 chapters contain their planned contents.
 
 The PDF is built by GitHub Actions on every push (see the *Actions* tab)
@@ -35,7 +35,7 @@ Each part adds one layer of structure.
 
 1. Affine Spaces *(drafted)*
 2. Vector Spaces and Duality *(drafted)*
-3. Inner Products and Euclidean Affine Spaces
+3. Inner Products and Euclidean Affine Spaces *(drafted)*
 4. Norms, Topology and Banach Spaces
 5. Symmetric Operators and the SVD
 
