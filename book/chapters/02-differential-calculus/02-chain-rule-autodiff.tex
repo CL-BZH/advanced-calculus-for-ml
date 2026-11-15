@@ -4,24 +4,822 @@
 \chaptersubtitle{%
   Vectors are pushed forward, covectors are pulled back}
 
-\begin{chapterplan}
+\begin{chapterintro}
+A network is a composition of many simple maps, and training it requires
+the differential of the loss with respect to millions of parameters. The
+chain rule says that the differential of a composition is the composition
+of the differentials. Read in one direction, it transports velocities
+from the input to the output. Read in the other, it transports covectors
+from the output back to the input. These two readings are the two modes of
+automatic differentiation, and the second one, applied to a network, is
+backpropagation. The transposed matrices that appear in it are matrices of
+dual operators: no inner product is involved, and what backpropagation
+computes is a covector. You will learn
 \begin{itemize}[nosep]
-  \item The chain rule, with proof; the product rule for bilinear maps.
-  \item Push-forward of velocities by $Df(a)$ (the Jacobian--vector product) and
-        pull-back of covectors by $\dual{Df(a)}$ (the vector--Jacobian product).
-  \item Forward mode and reverse mode as the two orders in which a composition
-        can be evaluated; their costs.
-  \item Backpropagation derived as reverse mode on a composition of layers; the
-        transposes that appear are dual operators, and no inner product is
-        involved.
-  \item Computational graphs: fan-out corresponds to the addition of covectors.
+  \item the chain rule for maps between affine spaces, with its proof, and
+        the product rule that follows from it;
+  \item the push-forward of velocities by $Df(a)$ and the pull-back of
+        covectors by $\dual{Df(a)}$;
+  \item forward mode and reverse mode, what each one computes in one pass
+        and what it costs;
+  \item backpropagation as reverse mode on a composition of layers;
+  \item differentiation on a computational graph: why contributions add
+        where a value is used several times.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:differential}, and the dual operator of
+\cref{ch:duality}. All spaces are finite-dimensional.}
+\end{chapterintro}
+
+\section{The chain rule}\label{chain-rule-autodiff:sec:chain}
+
+Throughout, $\Aff$, $\Bff$ and $\mathcal C$ are normed affine spaces with
+directions $V$, $W$ and $X$; $U\subset\Aff$ and $U'\subset\Bff$ are open,
+and $f:U\to\Bff$ and $g:U'\to\mathcal C$ are maps with $f(U)\subset U'$.
+
+\begin{theorem}[Chain rule]\label{chain-rule-autodiff:thm:chain}
+If $f$ is differentiable at $a$ and $g$ is differentiable at $b = f(a)$,
+then $g\circ f$ is differentiable at $a$, and
+\[
+  D(g\circ f)(a) = Dg\bigl(f(a)\bigr)\circ Df(a) .
+\]
+\end{theorem}
+
+\begin{proof}
+Write the two expansions
+\[
+  f(a + h) = b + Df(a)h + r(h), \qquad
+  g(b + k) = g(b) + Dg(b)k + s(k),
+\]
+with $r(h) = o(h)$ and $s(k) = o(k)$. Put $k(h) = Df(a)h + r(h)$, so that
+$f(a + h) = b + k(h)$. Then
+\[
+  g\bigl(f(a + h)\bigr)
+  = g(b) + Dg(b)Df(a)h + Dg(b)r(h) + s\bigl(k(h)\bigr) .
+\]
+The third term is $o(h)$ by \cref{differential:lem:little-o}. For the
+fourth, \cref{differential:prop:first} gives a constant
+$C = \norm{Df(a)} + 1$ and $\delta_1 > 0$ with $\norm{k(h)}\leq C\norm h$
+for $\norm h < \delta_1$. Let $\varepsilon > 0$, and choose $\delta_2$
+such that $\norm{s(k)}\leq\varepsilon\norm k$ for $\norm k < \delta_2$.
+For $\norm h < \min(\delta_1, \delta_2/C)$ we get
+$\norm{s(k(h))}\leq\varepsilon\norm{k(h)}\leq\varepsilon C\norm h$. So
+the fourth term is $o(h)$ as well, and the linear map $Dg(b)\circ Df(a)$
+satisfies the definition of the differential of $g\circ f$ at $a$.
+\end{proof}
+
+\begin{keyidea}
+The tangent affine map of a composition is the composition of the tangent
+affine maps. For affine maps this was
+\cref{affine-spaces:prop:composition}: the linear part of $g\circ f$ is
+$\lin g\circ\lin f$. The chain rule says that the statement survives when
+``is affine'' is replaced by ``is affine up to $o(h)$''.
+\end{keyidea}
+
+\begin{corollary}[In coordinates]\label{chain-rule-autodiff:cor:jacobian}
+In frames of the three spaces, the Jacobian matrix of $g\circ f$ at $a$ is
+the product $J_g(b)\,J_f(a)$ of the Jacobian matrices: with coordinates
+$x$, $y$ and $z$ in $\Aff$, $\Bff$ and $\mathcal C$,
+\[
+  \frac{\partial z_i}{\partial x_j}
+  = \sum_k\frac{\partial z_i}{\partial y_k}
+    \frac{\partial y_k}{\partial x_j} .
+\]
+\end{corollary}
+
+\begin{proof}
+The matrix of a composition of linear maps is the product of the matrices,
+and the matrices of the differentials are the Jacobian matrices
+(\cref{differential:thm:jacobian}).
+\end{proof}
+
+\begin{corollary}\label{chain-rule-autodiff:cor:consequences}
+\begin{enumerate}[nosep]
+  \item If $f$ and $g$ are of class $C^1$, so is $g\circ f$.
+  \item \emph{(Product rule.)} Let $B:W_1\times W_2\to X$ be bilinear and
+        let $f_1:U\to W_1$, $f_2:U\to W_2$ be differentiable at $a$. Then
+        $p(x) = B(f_1(x), f_2(x))$ is differentiable at $a$, and
+        \[
+          Dp(a)h = B\bigl(Df_1(a)h, f_2(a)\bigr)
+                 + B\bigl(f_1(a), Df_2(a)h\bigr) .
+        \]
+  \item \emph{(Inverse.)} If $f:U\to U'$ is a bijection, differentiable at
+        $a$, whose inverse is differentiable at $b = f(a)$, then $Df(a)$
+        is invertible and $D(f^{-1})(b) = Df(a)^{-1}$. In particular
+        $\dim V = \dim W$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) $D(g\circ f)(a) = Dg(f(a))\circ Df(a)$ depends continuously on $a$:
+$f$, $Df$ and $Dg$ are continuous, and so is the composition of linear
+maps, since
+$\norm{B'A' - BA}\leq\norm{B'}\norm{A' - A} + \norm{B' - B}\norm A$.
+(2) $p = B\circ(f_1, f_2)$. The pair $(f_1, f_2)$ is differentiable at
+$a$, and its differential sends $h$ to the pair of $Df_1(a)h$ and
+$Df_2(a)h$ (\cref{differential:prop:first}); moreover
+$DB(u, v)(h_1, h_2) = B(h_1, v) + B(u, h_2)$
+(\cref{differential:prop:bilinear}). (3) Differentiating
+$f^{-1}\circ f = \id$ at $a$ and $f\circ f^{-1} = \id$ at $b$ gives
+$D(f^{-1})(b)\circ Df(a) = \id_V$ and
+$Df(a)\circ D(f^{-1})(b) = \id_W$.
+\end{proof}
+
+\begin{example}\label{chain-rule-autodiff:ex:first}
+\begin{enumerate}[nosep]
+  \item \emph{The norm of an inner product space.} Away from $0$,
+        $\norm x = \sqrt{q(x)}$ with $q(x) = \inner xx$ and
+        $\dd q(x)(h) = 2\inner xh$ (\cref{differential:ex:quadratic}), so
+        \[
+          \dd(\norm\cdot)(x)(h) = \frac{\inner xh}{\norm x} .
+        \]
+  \item \emph{Along a curve.} If $c$ is a differentiable curve in $U$ and
+        $L:U\to\R$ is differentiable, then
+        $(L\circ c)'(t) = \dd L(c(t))\bigl(c'(t)\bigr)$: the rate of
+        change of the loss along a trajectory is the covector of the loss
+        applied to the velocity (\cref{differential:thm:velocity}). For a
+        differentiable curve $t\mapsto A(t)$ of invertible matrices, this
+        and \cref{differential:prop:det} give \emph{Jacobi's formula}
+        $\frac{\dd}{\dd t}\det A(t)
+        = \det A(t)\,\tr\bigl(A(t)^{-1}A'(t)\bigr)$.
+  \item \emph{Least squares.} Let $A:V\to W$ be linear between inner
+        product spaces and $f(x) = \frac12\norm{Ax - b}^2$. Then
+        $f = q\circ\ell$ with $\ell(x) = Ax - b$ affine and
+        $q(y) = \frac12\norm y^2$, so
+        \[
+          \dd f(x)(h) = \dd q(Ax - b)(Ah) = \inner{Ax - b}{Ah}
+          = \inner{\adj A(Ax - b)}h .
+        \]
+        The covector $\dd f(x)$ is $R_V\bigl(\adj A(Ax - b)\bigr)$. This
+        is the origin of the vector $\adj A(Ax - b)$ in the gradient
+        iteration of \cref{ch:inner-products,ch:spectral-svd}.
+\end{enumerate}
+\end{example}
+
+\section{Push-forward and pull-back}\label{chain-rule-autodiff:sec:push-pull}
+
+A linear map $A:V\to W$ acts on two kinds of objects, in two directions
+(\cref{ch:duality}): it sends vectors of $V$ to vectors of $W$, and its
+dual operator $\dual A$ sends covectors on $W$ to covectors on $V$, by
+$\dual A\psi = \psi\circ A$. Applied to $A = Df(a)$, this gives the two
+operations on which automatic differentiation is built.
+
+\begin{definition}[Push-forward, pull-back]
+\label{chain-rule-autodiff:def:push-pull}
+Let $f$ be differentiable at $a$.
 \begin{itemize}[nosep]
-  \item \texttt{torch.func.jvp}, \texttt{torch.func.vjp} and
-        \texttt{torch.autograd.grad}.
-  \item \texttt{loss.backward()} computes a covector; the optimizer then applies
-        a Riesz map without saying so.
+  \item The \emph{push-forward} of a velocity $v\in V$ at $a$ is the
+        velocity $Df(a)v\in W$ at $f(a)$.
+  \item The \emph{pull-back} of a covector $\psi\in W^*$ at $f(a)$ is the
+        covector $\dual{Df(a)}\psi = \psi\circ Df(a)\in V^*$ at $a$.
 \end{itemize}
-\end{chapterplan}
+\end{definition}
+
+By definition of the dual operator the two are linked by
+\begin{equation}\label{chain-rule-autodiff:eq:pairing}
+  \bigl(\dual{Df(a)}\psi\bigr)(v) = \psi\bigl(Df(a)v\bigr) :
+\end{equation}
+pulling $\psi$ back and applying it to $v$ gives the same number as
+pushing $v$ forward and applying $\psi$ to it.
+
+\begin{proposition}[The two readings of the chain rule]
+\label{chain-rule-autodiff:prop:two-readings}
+With the hypotheses of \cref{chain-rule-autodiff:thm:chain}:
+\begin{enumerate}[nosep]
+  \item for every velocity $v\in V$,
+        $D(g\circ f)(a)v = Dg(b)\bigl(Df(a)v\bigr)$;
+  \item for every covector $\chi\in X^*$,
+        $\dual{D(g\circ f)(a)}\chi
+        = \dual{Df(a)}\bigl(\dual{Dg(b)}\chi\bigr)$;
+  \item if $\mathcal C = \R$, so that $g$ is a function,
+        $\dd(g\circ f)(a) = \dual{Df(a)}\,\dd g(b)$: the differential of
+        $g\circ f$ is the pull-back of the differential of $g$. On rows of
+        components, $[\dd(g\circ f)(a)] = [\dd g(b)]\,J_f(a)$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) is the chain rule applied to $v$. (2) is its dual: the dual of a
+composition is the composition of the duals in reverse order
+(\cref{duality:prop:rules}). (3)
+$\dd(g\circ f)(a) = \dd g(b)\circ Df(a)$ is the definition of
+$\dual{Df(a)}\,\dd g(b)$, and a dual operator acts on rows by
+multiplication on the right (\cref{duality:thm:transpose}).
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzcd}[row sep=large, column sep=huge]
+  \Aff \arrow[r, "f"] & \Bff \arrow[r, "g"] & \mathcal C
+    & \text{points} \\
+  V \arrow[r, "Df(a)"] & W \arrow[r, "Dg(b)"] & X
+    & \text{velocities} \\
+  V^* & W^* \arrow[l, "\dual{Df(a)}"'] & X^* \arrow[l, "\dual{Dg(b)}"']
+    & \text{covectors}
+\end{tikzcd}
+\caption{The chain rule on its three levels. Points and velocities travel
+with the maps; covectors travel against them. The bottom row is the dual
+of the middle row, which is why its arrows are reversed.}
+\label{chain-rule-autodiff:fig:three-rows}
+\end{figure}
+
+\begin{intuition}
+A velocity answers the question ``if the input moves like this, how does
+the output move?'', and the answer is found by following the computation.
+A covector on the output is a measurement of the output, for instance the
+sensitivity of a loss to each output coordinate; pulled back, it becomes
+the corresponding measurement of the input: ``how sensitive is the loss to
+each input coordinate?''. This answer is found by going against the
+computation. Vectors cannot be pulled back and covectors cannot be pushed
+forward, because $Df(a)$ is not invertible in general.
+\end{intuition}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+ & Forward mode & Reverse mode \\
+\midrule
+transports & a velocity $v\in V$ & a covector $\psi\in W^*$ \\
+by & $Df(a):V\to W$ & $\dual{Df(a)}:W^*\to V^*$ \\
+on arrays & column $J[v]$ & row $[\psi]J$, stored as the column
+  $J^\top[\psi]^\top$ \\
+usual name & Jacobian--vector product & vector--Jacobian product \\
+in PyTorch & \texttt{torch.func.jvp} & \texttt{torch.func.vjp},
+  \texttt{autograd.grad}, \texttt{backward} \\
+\bottomrule
+\end{tabular}
+\caption{The two modes of automatic differentiation.}
+\label{chain-rule-autodiff:tab:modes}
+\end{table}
+
+\begin{pitfall}[The words ``adjoint'' and ``vector'' again]
+The literature on automatic differentiation calls reverse mode the
+\emph{adjoint mode} and writes $\bar x$ for the ``adjoint of the variable
+$x$''. In the vocabulary of this book (\cref{duality:tab:notation}),
+$\bar x$ is the row of components of a pulled-back covector, and the
+operator at work is the dual operator $\dual{Df(a)}$, whose matrix is the
+transpose $J^\top$ (\cref{duality:thm:transpose}). It is not the adjoint
+$\adj{Df(a)}$ of \cref{ch:inner-products}: no inner product has been
+chosen. Likewise the ``vector'' of a vector--Jacobian product is a
+covector. The transpose in backpropagation comes from storing rows as
+columns, not from a metric.
+\end{pitfall}
+
+\section{Forward mode and reverse mode}
+\label{chain-rule-autodiff:sec:modes}
+
+Let $f = f_N\circ\dots\circ f_1$ be a composition of differentiable maps
+between affine spaces $\Aff_0,\dots,\Aff_N$ with directions
+$V_0,\dots,V_N$ of dimensions $d_0 = n,\dots,d_N = m$. Evaluating $f$ at
+$a_0$ produces the intermediate points
+\[
+  a_k = f_k(a_{k-1}), \qquad k = 1,\dots,N,
+\]
+and we write $J_k = Df_k(a_{k-1}):V_{k-1}\to V_k$. By the chain rule and
+induction,
+\[
+  Df(a_0) = J_N\circ J_{N-1}\circ\dots\circ J_1 .
+\]
+
+\begin{proposition}[Two recursions]\label{chain-rule-autodiff:prop:modes}
+\begin{enumerate}[nosep]
+  \item \emph{Forward mode.} For $v\in V_0$, put $v_0 = v$ and
+        $v_k = J_kv_{k-1}$. Then $v_N = Df(a_0)v$.
+  \item \emph{Reverse mode.} For $\psi\in V_N^*$, put $\psi_N = \psi$ and
+        $\psi_{k-1} = \dual{J_k}\psi_k$. Then
+        $\psi_0 = \dual{Df(a_0)}\psi$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\Cref{chain-rule-autodiff:prop:two-readings}, applied $N - 1$ times.
+\end{proof}
+
+The two recursions do not use the same information at the same time.
+\begin{itemize}[nosep]
+  \item In forward mode, $v_k$ needs $J_k$, which depends on $a_{k-1}$:
+        the velocity can be carried \emph{along with} the evaluation, and
+        $a_{k-1}$, $v_{k-1}$ can be forgotten once $a_k$, $v_k$ are known.
+  \item In reverse mode, the first step needs $J_N$, which depends on
+        $a_{N-1}$, the last intermediate point. The function must be
+        evaluated first, and the points $a_0,\dots,a_{N-1}$ kept, before
+        the covector travels back (\cref{chain-rule-autodiff:fig:modes}).
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth,
+  box/.style={draw, bookaccent, thick, rounded corners=2pt,
+              minimum width=1.0cm, minimum height=0.7cm}]
+  \node (a0) at (0,0) {$a_0$};
+  \node[box] (f1) at (1.6,0) {$f_1$};
+  \node (a1) at (3.2,0) {$a_1$};
+  \node[box] (f2) at (4.8,0) {$f_2$};
+  \node (a2) at (6.4,0) {$\cdots$};
+  \node[box] (fN) at (8.0,0) {$f_N$};
+  \node (aN) at (9.6,0) {$a_N$};
+  \draw[->, thick] (a0) -- (f1); \draw[->, thick] (f1) -- (a1);
+  \draw[->, thick] (a1) -- (f2); \draw[->, thick] (f2) -- (a2);
+  \draw[->, thick] (a2) -- (fN); \draw[->, thick] (fN) -- (aN);
+  \node[bookdef] (v0) at (0,1.1) {$v_0$};
+  \node[bookdef] (v1) at (3.2,1.1) {$v_1$};
+  \node[bookdef] (v2) at (6.4,1.1) {$\cdots$};
+  \node[bookdef] (vN) at (9.6,1.1) {$v_N$};
+  \draw[->, bookdef, thick] (v0) -- (v1) node[midway, above] {$J_1$};
+  \draw[->, bookdef, thick] (v1) -- (v2) node[midway, above] {$J_2$};
+  \draw[->, bookdef, thick] (v2) -- (vN) node[midway, above] {$J_N$};
+  \node[bookpitfall] (p0) at (0,-1.1) {$\psi_0$};
+  \node[bookpitfall] (p1) at (3.2,-1.1) {$\psi_1$};
+  \node[bookpitfall] (p2) at (6.4,-1.1) {$\cdots$};
+  \node[bookpitfall] (pN) at (9.6,-1.1) {$\psi_N$};
+  \draw[->, bookpitfall, thick] (pN) -- (p2)
+    node[midway, below] {$\dual{J_N}$};
+  \draw[->, bookpitfall, thick] (p2) -- (p1)
+    node[midway, below] {$\dual{J_2}$};
+  \draw[->, bookpitfall, thick] (p1) -- (p0)
+    node[midway, below] {$\dual{J_1}$};
+  \node[bookdef, anchor=west, font=\small] at (10.1,1.1) {forward mode};
+  \node[bookpitfall, anchor=west, font=\small] at (10.1,-1.1)
+    {reverse mode};
+\end{tikzpicture}
+\caption{Evaluation of a composition (middle), forward mode (top) and
+reverse mode (bottom). Velocities are computed in the order of the
+evaluation; covectors in the opposite order, after the evaluation has
+produced and stored the intermediate points on which the $J_k$ depend.}
+\label{chain-rule-autodiff:fig:modes}
+\end{figure}
+
+\begin{example}[Both modes by hand]\label{chain-rule-autodiff:ex:hand}
+Let $f = f_2\circ f_1$ with
+$f_1(x_1, x_2) = (x_1x_2,\ x_1 - x_2)$ and
+$f_2(u_1, u_2) = u_1^2 + 3u_2$, at $a_0 = (2, 1)$. The evaluation gives
+$a_1 = (2, 1)$ and $a_2 = 7$, and
+\[
+  J_1 = \begin{bmatrix}x_2 & x_1\\1 & -1\end{bmatrix}_{(2, 1)}
+      = \begin{bmatrix}1 & 2\\1 & -1\end{bmatrix},
+  \qquad
+  J_2 = \begin{bmatrix}2u_1 & 3\end{bmatrix}_{(2, 1)}
+      = \begin{bmatrix}4 & 3\end{bmatrix} .
+\]
+\emph{Forward mode} with $v_0 = (1, 0)$: $v_1 = J_1v_0 = (1, 1)$ and
+$v_2 = J_2v_1 = 7$. A second pass with $v_0 = (0, 1)$ gives
+$v_1 = (2, -1)$ and $v_2 = 5$. Two passes, one partial derivative each.
+\emph{Reverse mode} with $\psi_2 = [1]$: $\psi_1 = [1]J_2 = [4\ \ 3]$ and
+$\psi_0 = [4\ \ 3]J_1 = [7\ \ 5]$. One pass gives the whole row
+$[\dd f(a_0)] = [7\ \ 5]$. Indeed
+$f(x) = x_1^2x_2^2 + 3x_1 - 3x_2$ has the partial derivatives
+$2x_1x_2^2 + 3 = 7$ and $2x_1^2x_2 - 3 = 5$ at $(2, 1)$.
+\end{example}
+
+\begin{proposition}[What one pass gives]\label{chain-rule-autodiff:prop:cost}
+Let $J$ be the $m\times n$ Jacobian matrix of $f$ at $a_0$.
+\begin{enumerate}[nosep]
+  \item One forward pass with $v = e_j$ gives the $j$th column of $J$. The
+        whole matrix takes $n$ passes.
+  \item One reverse pass with $\psi = e_i^*$ gives the $i$th row of $J$.
+        The whole matrix takes $m$ passes.
+  \item For a scalar function ($m = 1$), one reverse pass gives all $n$
+        partial derivatives.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+$J[e_j]$ is the $j$th column of $J$ and $[e_i^*]J$ its $i$th row.
+\end{proof}
+
+In terms of matrices, both modes compute the product
+$J_N\cdots J_2J_1$, and they differ by the order in which the
+multiplications are done: from the right, starting with a column, or from
+the left, starting with a row. Multiplying a row by $J_k$ costs about
+$d_kd_{k-1}$ operations, so one pass of either mode costs about
+$\sum_kd_kd_{k-1}$, the same order as evaluating $f$ when the $f_k$ are
+dense layers. For general programs the cost of one pass of either mode is
+bounded by a small constant times the cost of evaluating $f$,
+independently of $n$ and $m$ (Griewank and Walther call this, for reverse
+mode and $m = 1$, the \emph{cheap gradient principle}). The price of
+reverse mode is memory: the intermediate points must all be kept.
+
+\begin{mlthread}[Machine learning: why training uses reverse mode]
+A loss is a function of $n$ parameters with $m = 1$. With $n = 10^8$,
+forward mode would need $10^8$ passes to produce what reverse mode
+produces in one. This single fact is why deep learning is feasible.
+Forward mode remains the right tool when the roles are exchanged:
+\begin{itemize}[nosep]
+  \item a directional derivative $\dd L(a)(v)$ along one direction costs
+        one forward pass and no storage;
+  \item a map with few inputs and many outputs (a curve, a generator fed
+        with a low-dimensional code) has a Jacobian matrix with few
+        columns. In \texttt{torch.func}, \texttt{jacfwd} builds a Jacobian
+        matrix column by column and \texttt{jacrev} row by row;
+  \item products of a Hessian with a vector combine both modes
+        (\cref{ch:gradient-hessian}).
+\end{itemize}
+\end{mlthread}
+
+\section{Backpropagation}\label{chain-rule-autodiff:sec:backprop}
+
+Consider a network with $N$ layers. The input is $a_0 = x\in\R^{d_0}$,
+and for $k = 1,\dots,N$,
+\[
+  z_k = W_ka_{k-1} + b_k, \qquad a_k = \sigma_k(z_k),
+\]
+where $W_k$ is a $d_k\times d_{k-1}$ matrix, $b_k\in\R^{d_k}$, and
+$\sigma_k$ applies a function $s_k$ of class $C^1$ to each coordinate (for
+the last layer it may be the identity). The loss is
+$L = \ell(a_N)$ for a differentiable $\ell:\R^{d_N}\to\R$. The parameters
+are $\theta = (W_1, b_1,\dots,W_N, b_N)$, and for fixed $x$ the loss is a
+differentiable function $L(\theta)$: it is a composition of
+differentiable maps (\cref{chain-rule-autodiff:thm:chain}), the products
+$W_ka_{k-1}$ being bilinear (\cref{differential:prop:bilinear}).
+
+\begin{theorem}[Backpropagation]\label{chain-rule-autodiff:thm:backprop}
+After the evaluation of the network, define rows
+$\delta_k\in(\R^{d_k})^*$ for $k = N,\dots,1$ by
+\[
+  \delta_N = [\dd\ell(a_N)]\,\diag\bigl(s_N'(z_N)\bigr),
+  \qquad
+  \delta_{k-1} = \delta_k\,W_k\,\diag\bigl(s_{k-1}'(z_{k-1})\bigr) .
+\]
+Then the differential of the loss with respect to the parameters is
+\[
+  \dd L(\theta)(H_1, \beta_1,\dots,H_N, \beta_N)
+  = \sum_{k=1}^N\delta_k\bigl(H_ka_{k-1} + \beta_k\bigr) .
+\]
+In components,
+\[
+  \frac{\partial L}{\partial(b_k)_i} = (\delta_k)_i ,
+  \qquad
+  \frac{\partial L}{\partial(W_k)_{ij}} = (\delta_k)_i\,(a_{k-1})_j .
+\]
+\end{theorem}
+
+\begin{proof}
+\emph{The rows $\delta_k$.} For each $k$, let $\Lambda_k$ be the loss as a
+function of $z_k$, the later parameters being fixed:
+$\Lambda_N = \ell\circ\sigma_N$ and
+$\Lambda_{k-1}(z) = \Lambda_k\bigl(W_k\sigma_{k-1}(z) + b_k\bigr)$. We show
+by descending induction that $[\dd\Lambda_k(z_k)] = \delta_k$. For
+$k = N$, \cref{chain-rule-autodiff:prop:two-readings}(3) and
+$D\sigma_N(z_N) = \diag(s_N'(z_N))$ give the first formula. For the
+induction step, $\Lambda_{k-1}$ is the composition of $\sigma_{k-1}$, the
+affine map $a\mapsto W_ka + b_k$ with linear part $W_k$, and $\Lambda_k$;
+its differential at $z_{k-1}$ is the row
+$[\dd\Lambda_k(z_k)]\,W_k\,\diag(s_{k-1}'(z_{k-1}))$.
+
+\emph{The parameters.} The differential $\dd L(\theta)$ is linear in the
+increment, so it is the sum of its values on the increments that change
+one layer only. As a function of $(W_k, b_k)$ alone,
+$L = \Lambda_k(W_ka_{k-1} + b_k)$, where $a_{k-1}$ does not depend on
+$(W_k, b_k)$. The map $(W_k, b_k)\mapsto W_ka_{k-1} + b_k$ is linear, so
+its differential is $(H_k, \beta_k)\mapsto H_ka_{k-1} + \beta_k$, and by
+the chain rule the corresponding term is
+$\delta_k(H_ka_{k-1} + \beta_k)$. Its coefficient on $(\beta_k)_i$ is
+$(\delta_k)_i$ and on $(H_k)_{ij}$ it is $(\delta_k)_i(a_{k-1})_j$.
+\end{proof}
+
+Several remarks are in order.
+\begin{itemize}[nosep]
+  \item \emph{It is reverse mode.} The recursion for $\delta_k$ is that
+        of \cref{chain-rule-autodiff:prop:modes}(2): a row multiplied on
+        the right by the matrices of the layers, from the last to the
+        first. The evaluation of the network (the \emph{forward pass})
+        must come first, and its $z_k$ and $a_k$ must be kept.
+  \item \emph{No inner product is used.} Every step is a pull-back by a
+        dual operator. Written with columns, the recursion reads
+        $\delta_{k-1}^\top
+        = \diag(s_{k-1}'(z_{k-1}))\,W_k^\top\delta_k^\top$,
+        and $W_k^\top$ is the matrix of $\dual{W_k}$.
+  \item \emph{The array for $W_k$ is an outer product.} The partial
+        derivatives with respect to $W_k$ form the $d_k\times d_{k-1}$
+        array $\delta_k^\top a_{k-1}^\top$, of rank one for a single
+        example, and of rank at most the batch size for a batch. As a
+        linear form on matrices it is
+        $H\mapsto\delta_kHa_{k-1} = \tr(a_{k-1}\delta_k\,H)$: the
+        transpose between $a_{k-1}\delta_k$ and the stored array is the
+        one of \cref{differential:rem:frobenius}.
+  \item \emph{The cost} is one forward pass and one backward pass of the
+        same order, whatever the number of parameters.
+\end{itemize}
+
+\begin{mlthread}[Machine learning: \texttt{backward()}, then the optimizer]
+After \texttt{loss.backward()}, each parameter tensor holds in
+\texttt{.grad} an array of the same shape: the components of the covector
+$\dd L(\theta)$ in the dual of the basis in which the parameters are
+stored. Nothing metric has happened so far. The optimizer step
+\texttt{p -= lr * p.grad} then subtracts these components from the
+coordinates of the parameters. This treats a covector as a displacement:
+it applies the Riesz map of the dot product of the stored coordinates,
+without saying so. It is the update \eqref{duality:eq:gd}, which changes
+when the parameters are stored in another basis
+(\cref{duality:prop:gd}). Choosing that inner product on purpose is the
+subject of \cref{ch:gradient-hessian,ch:natural-gradient}.
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: vanishing, exploding and residual
+connections]
+By the recursion and \cref{norms-banach:prop:opnorm}, for the Euclidean
+norms,
+\[
+  \norm{\delta_{k-1}}\leq\norm{\delta_k}\,\norm{W_k}\,
+  \max_i\abs{s_{k-1}'(z_{k-1,i})} ,
+\]
+where $\norm{W_k}$ is the largest singular value of $W_k$
+(\cref{spectral-svd:cor:svd}). Through many layers the covector is
+multiplied by a product of such factors: it shrinks geometrically if they
+are below $1$ (saturated activations, small weights) and may grow
+geometrically if they are above $1$. A \emph{residual} layer
+$a_k = a_{k-1} + F_k(a_{k-1})$ has the differential $\id + DF_k(a_{k-1})$,
+so its pull-back is $\psi\mapsto\psi + \dual{DF_k(a_{k-1})}\psi$: the
+covector is passed back unchanged, plus a correction (He et al., 2016).
+\end{mlthread}
+
+\section{Computational graphs}\label{chain-rule-autodiff:sec:graphs}
+
+A program is rarely a chain: a value computed once is often used several
+times, and an operation often has several arguments. Two elementary linear
+maps account for this.
+
+\begin{lemma}[Copying and adding are dual]\label{chain-rule-autodiff:lem:copy}
+Identify $(V\times V)^*$ with $V^*\times V^*$ by
+$(\phi_1, \phi_2)(v_1, v_2) = \phi_1(v_1) + \phi_2(v_2)$.
+\begin{enumerate}[nosep]
+  \item The dual of the \emph{copy} map $\Delta:V\to V\times V$,
+        $\Delta v = (v, v)$, is the addition
+        $(\phi_1, \phi_2)\mapsto\phi_1 + \phi_2$.
+  \item The dual of the \emph{addition} $\Sigma:V\times V\to V$,
+        $\Sigma(v_1, v_2) = v_1 + v_2$, is the copy
+        $\phi\mapsto(\phi, \phi)$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+$(\phi_1, \phi_2)(\Delta v) = \phi_1(v) + \phi_2(v)$, and
+$\phi(\Sigma(v_1, v_2)) = \phi(v_1) + \phi(v_2)
+= (\phi, \phi)(v_1, v_2)$.
+\end{proof}
+
+\begin{proposition}[A value used twice]\label{chain-rule-autodiff:prop:fanout}
+Let $G:U\times U\to\R$ be differentiable at $(a, a)$ and $g(x) = G(x, x)$.
+Then
+\[
+  \dd g(a) = \partial_1G(a, a) + \partial_2G(a, a) ,
+\]
+where $\partial_1G(a, a)(h) = \dd G(a, a)(h, 0)$ and
+$\partial_2G(a, a)(h) = \dd G(a, a)(0, h)$ are the partial differentials
+of $G$.
+\end{proposition}
+
+\begin{proof}
+$g = G\circ\Delta$, where $\Delta(x) = (x, x)$ is affine with linear part
+the copy map. By \cref{chain-rule-autodiff:prop:two-readings}(3) and
+\cref{chain-rule-autodiff:lem:copy},
+$\dd g(a) = \dual\Delta\,\dd G(a, a)$ is the sum of the two components of
+$\dd G(a, a)$.
+\end{proof}
+
+\begin{keyidea}
+In reverse mode, where the computation forks, the covectors add; where the
+computation adds, the covector is copied. The covector of a variable is
+the sum, over all the places where the variable is used, of the covectors
+pulled back from those places.
+\end{keyidea}
+
+This is the rule applied by a reverse-mode library on the graph of the
+operations it has recorded. Each elementary operation comes with its
+pull-back (\cref{chain-rule-autodiff:tab:local}), the nodes are visited in
+the reverse of the order of evaluation, and contributions are accumulated
+by addition. \Cref{chain-rule-autodiff:fig:graph} shows it on
+\cref{chain-rule-autodiff:ex:hand}, where each input is used twice.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Operation & Differential & Pull-back \\
+\midrule
+copy $x\mapsto(x, x)$ & $h\mapsto(h, h)$
+  & $(\psi_1, \psi_2)\mapsto\psi_1 + \psi_2$ \\
+sum $(x, y)\mapsto x + y$ & $(h, k)\mapsto h + k$
+  & $\psi\mapsto(\psi, \psi)$ \\
+product of numbers $(x, y)\mapsto xy$ & $(h, k)\mapsto yh + xk$
+  & $\psi\mapsto(y\psi,\ x\psi)$ \\
+linear map $x\mapsto Wx$ & $h\mapsto Wh$ & $[\psi]\mapsto[\psi]W$ \\
+$\sigma$ on each coordinate & $h\mapsto\diag(s'(x))h$
+  & $[\psi]\mapsto[\psi]\diag(s'(x))$ \\
+\bottomrule
+\end{tabular}
+\caption{Elementary operations with their differentials and pull-backs.}
+\label{chain-rule-autodiff:tab:local}
+\end{table}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth,
+  var/.style={draw, bookaccent, thick, circle, minimum size=0.95cm,
+              inner sep=1pt},
+  lab/.style={font=\small, align=center},
+  bar/.style={bookpitfall}]
+  \node[var] (x1) at (0,1.5) {$x_1$};
+  \node[var] (x2) at (0,-1.5) {$x_2$};
+  \node[var] (p) at (3.4,1.5) {$p$};
+  \node[var] (d) at (3.4,-1.5) {$d$};
+  \node[var] (s) at (6.6,1.5) {$s$};
+  \node[var] (t) at (6.6,-1.5) {$t$};
+  \node[var] (y) at (9.2,0) {$y$};
+  \draw[->, thick] (x1) -- (p); \draw[->, thick] (x2) -- (p);
+  \draw[->, thick] (x1) -- (d); \draw[->, thick] (x2) -- (d);
+  \draw[->, thick] (p) -- (s); \draw[->, thick] (d) -- (t);
+  \draw[->, thick] (s) -- (y); \draw[->, thick] (t) -- (y);
+  \node[lab, above=2pt of x1]
+    {$x_1 = 2$\\\textcolor{bookpitfall}{$\bar x_1 = x_2\bar p + \bar d = 7$}};
+  \node[lab, below=2pt of x2]
+    {$x_2 = 1$\\\textcolor{bookpitfall}{$\bar x_2 = x_1\bar p - \bar d = 5$}};
+  \node[lab, above=2pt of p]
+    {$p = x_1x_2 = 2$\\\textcolor{bookpitfall}{$\bar p = 2p\,\bar s = 4$}};
+  \node[lab, below=2pt of d]
+    {$d = x_1 - x_2 = 1$\\\textcolor{bookpitfall}{$\bar d = 3\,\bar t = 3$}};
+  \node[lab, above=2pt of s]
+    {$s = p^2 = 4$\\\textcolor{bookpitfall}{$\bar s = \bar y = 1$}};
+  \node[lab, below=2pt of t]
+    {$t = 3d = 3$\\\textcolor{bookpitfall}{$\bar t = \bar y = 1$}};
+  \node[lab, right=2pt of y]
+    {$y = s + t = 7$\\\textcolor{bookpitfall}{$\bar y = 1$}};
+\end{tikzpicture}
+\caption{Reverse mode on the graph of
+$y = (x_1x_2)^2 + 3(x_1 - x_2)$ at $(2, 1)$. Values (black) are computed
+from left to right, covector components (red, with bars) from right to
+left. Each input is used by two operations, and its component is the sum
+of two contributions.}
+\label{chain-rule-autodiff:fig:graph}
+\end{figure}
+
+\begin{mlthread}[Machine learning: three faces of the same rule]
+\begin{itemize}[nosep]
+  \item \emph{Weight sharing.} A convolution uses the same kernel at every
+        position, and a recurrent network the same matrix at every time
+        step. The parameter is copied to each use, so its covector is the
+        sum of the contributions of all positions or time steps
+        (\cref{chain-rule-autodiff:prop:fanout}). For a recurrent network
+        this is \emph{backpropagation through time}.
+  \item \emph{Accumulation.} In PyTorch, \texttt{backward()} adds to
+        \texttt{.grad} instead of overwriting it. Calling it for two
+        losses yields the covector of their sum, which is correct since
+        $\dd(L_1 + L_2) = \dd L_1 + \dd L_2$, and it is the reason why
+        \texttt{zero\_grad()} must be called between steps.
+  \item \emph{Detaching.} \texttt{detach()} cuts an edge of the graph:
+        the value is used, and no covector is pulled back through it. The
+        result is the differential of a different function, in which that
+        value is a constant.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{chain-rule-autodiff:sec:outlook}
+
+Backpropagation delivers the covector $\dd L(\theta)$.
+\Cref{ch:gradient-hessian} turns it into a displacement by choosing an
+inner product, studies how the choice matters, and differentiates once
+more to obtain the Hessian, whose products with vectors are computed by
+combining the two modes of this chapter.
+\Cref{ch:contractions-newton} bounds the error of the first-order
+approximation, and \cref{ch:inverse-implicit} proves that a $C^1$ map
+with invertible differential is locally invertible, the converse of
+\cref{chain-rule-autodiff:cor:consequences}(3).
+
+\paragraph{Sources.} The chain rule is Theorem~6.2 of Chapter~3 of
+Loomis and Sternberg, \emph{Advanced Calculus}, proved with the calculus
+of $o$ and $O$ as here; their Theorem~8.4 is the product rule for a
+bounded bilinear map. Hubbard and Hubbard give the rules of
+differentiation in Theorem~1.8.1 and the chain rule in Theorem~1.8.3 of
+\emph{Vector Calculus, Linear Algebra, and Differential Forms}. Neither
+book treats the dual statement or automatic differentiation. For the
+latter, the reference is A.~Griewank and A.~Walther, \emph{Evaluating
+Derivatives}, 2nd ed., SIAM, 2008; a survey for machine learning is
+A.~G.~Baydin, B.~A.~Pearlmutter, A.~A.~Radul and J.~M.~Siskind, Automatic
+differentiation in machine learning: a survey, \emph{J.\ Mach.\ Learn.\
+Res.}\ 18(153), 2018. Backpropagation was made popular by
+D.~E.~Rumelhart, G.~E.~Hinton and R.~J.~Williams, Learning
+representations by back-propagating errors, \emph{Nature}, 1986. Residual
+connections: K.~He, X.~Zhang, S.~Ren and J.~Sun, Deep residual learning
+for image recognition, CVPR, 2016.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{07-chain-rule-autodiff.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item Chain rule: $D(g\circ f)(a) = Dg(f(a))\circ Df(a)$. Jacobian
+        matrices multiply. The product rule and the differential of an
+        inverse follow.
+  \item $Df(a)$ pushes velocities forward; $\dual{Df(a)}$ pulls covectors
+        back; $(\dual{Df(a)}\psi)(v) = \psi(Df(a)v)$. For a function $g$,
+        $\dd(g\circ f)(a) = \dual{Df(a)}\,\dd g(f(a))$.
+  \item Forward mode carries a velocity along the evaluation: one pass
+        gives one column of the Jacobian matrix. Reverse mode carries a
+        covector against it, after the evaluation: one pass gives one
+        row, hence all partial derivatives of a scalar loss.
+  \item Backpropagation is reverse mode on a network:
+        $\delta_{k-1} = \delta_kW_k\diag(s_{k-1}'(z_{k-1}))$, and
+        $\dd L(\theta)$ pairs $\delta_k$ with $H_ka_{k-1} + \beta_k$. It
+        uses dual operators only, and returns a covector.
+  \item On a graph, copy and addition are dual: covectors add where a
+        value is used several times.
+  \item The optimizer step that subtracts the stored array from the
+        parameters applies a Riesz map implicitly.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{chain-rule-autodiff:exr:1}
+Let $f(x, y) = (x + y^2, xy)$ and $g(u, v) = (uv, u - v, v^2)$.
+\begin{enumerate}[nosep]
+  \item Compute the Jacobian matrix of $g\circ f$ at $(1, 2)$ as a product
+        of two matrices.
+  \item Recover its first column by forward mode and its third row by
+        reverse mode, without forming the product.
+\end{enumerate}
+\solutionlink{chain-rule-autodiff:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{chain-rule-autodiff:exr:2}
+Let $f$ be a differentiable function on $\R^2$ and
+$g(\rho, \theta) = f(\rho\cos\theta, \rho\sin\theta)$ for $\rho > 0$.
+Express the row $[\dd g]$ in terms of $[\dd f]$, then invert the relation
+to express $\partial f/\partial x$ and $\partial f/\partial y$ in terms of
+$\partial g/\partial\rho$ and $\partial g/\partial\theta$.
+\solutionlink{chain-rule-autodiff:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{chain-rule-autodiff:exr:3}
+In an inner product space, let $n(x) = x/\norm x$ for $x\neq0$.
+\begin{enumerate}[nosep]
+  \item Show that $Dn(x)h = \frac1{\norm x}\bigl(h - \inner uh\,u\bigr)$
+        with $u = x/\norm x$.
+  \item Describe the kernel and the image of $Dn(x)$, and explain the
+        result geometrically.
+\end{enumerate}
+\solutionlink{chain-rule-autodiff:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{chain-rule-autodiff:exr:4}
+Let $A_0 = \begin{bsmallmatrix}2 & 1\\1 & 1\end{bsmallmatrix}$ and
+$A(t) = A_0 + tI$. Compute the derivative of $\det A(t)$ at $t = 0$ by
+Jacobi's formula, and check it directly.
+\solutionlink{chain-rule-autodiff:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{chain-rule-autodiff:exr:5}
+\begin{enumerate}[nosep]
+  \item Let $u$ and $v$ be differentiable curves in an inner product
+        space. Show that
+        $\inner uv' = \inner{u'}v + \inner u{v'}$, and that if
+        $\norm{u(t)}$ is constant then $u'(t)$ is orthogonal to $u(t)$.
+  \item Let $L$ be a differentiable function on $V\setminus\{0\}$ such
+        that $L(cw) = L(w)$ for all $c > 0$ (as for the weights feeding a
+        normalization layer). Show that $\dd L(w)(w) = 0$.
+\end{enumerate}
+\solutionlink{chain-rule-autodiff:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{chain-rule-autodiff:exr:6}
+A map is a composition $\R^{1000}\to\R^{100}\to\R^{100}\to\R$, with
+Jacobian matrices $J_1$ ($100\times1000$), $J_2$ ($100\times100$) and
+$J_3$ ($1\times100$). Count the multiplications of numbers needed to
+compute the $1\times1000$ matrix $J_3J_2J_1$ as $J_3(J_2J_1)$ and as
+$(J_3J_2)J_1$, taking $pqr$ multiplications for the product of a
+$p\times q$ matrix by a $q\times r$ matrix. Which order is forward mode?
+\solutionlink{chain-rule-autodiff:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{chain-rule-autodiff:exr:7}
+A network with scalar input $x$ has $a_1 = (w_1x + b_1)^2$,
+$\hat y = w_2a_1$ and loss $L = \frac12(\hat y - y)^2$. For $x = 1$,
+$y = 1$, $w_1 = 1$, $b_1 = 1$ and $w_2 = \frac12$, carry out the forward
+pass and backpropagation by hand, and give the three partial derivatives
+of $L$.
+\solutionlink{chain-rule-autodiff:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{chain-rule-autodiff:exr:8}
+Draw the graph of $y = (x_1 + x_2)\,x_1$ with one intermediate variable
+$u = x_1 + x_2$, and compute $\bar x_1$ and $\bar x_2$ by reverse mode at
+$(x_1, x_2) = (3, 2)$. Which input is used twice?
+\solutionlink{chain-rule-autodiff:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{chain-rule-autodiff:exr:9}
+\begin{enumerate}[nosep]
+  \item A layer uses the same weight $w$ twice:
+        $L(w) = G(w, w)$ with $G(w_1, w_2) = w_2\tanh(w_1x)$. Compute
+        $\dd L(w)$ with \cref{chain-rule-autodiff:prop:fanout} and check
+        it by differentiating $w\tanh(wx)$ directly.
+  \item For a residual layer $f(x) = x + F(x)$, write the pull-back of a
+        covector $\psi$, and deduce the pull-back through $N$ residual
+        layers when all the $DF_k$ vanish.
+\end{enumerate}
+\solutionlink{chain-rule-autodiff:exr:9}
+\end{exercise}
 \end{notechapter}

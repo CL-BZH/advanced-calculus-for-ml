@@ -867,3 +867,140 @@ $[\dd\ell(z)] = (p - e_3)^\top = [\frac14\ \ \frac14\ \ {-\frac12}]$.
         $\tanh x$, plus a fixed function. The features depend on the
         point $w^0$ of linearization.
 \end{enumerate}
+
+\section{\nameref*{ch:chain-rule-autodiff}}
+
+\solution{chain-rule-autodiff:exr:1}
+\begin{enumerate}[nosep]
+  \item $f(1, 2) = (5, 2)$, and
+        \[
+          J_f = \begin{bmatrix}1 & 2y\\y & x\end{bmatrix}_{(1, 2)}
+          = \begin{bmatrix}1 & 4\\2 & 1\end{bmatrix},
+          \qquad
+          J_g = \begin{bmatrix}v & u\\1 & -1\\0 & 2v\end{bmatrix}_{(5, 2)}
+          = \begin{bmatrix}2 & 5\\1 & -1\\0 & 4\end{bmatrix},
+        \]
+        so
+        $J_gJ_f = \begin{bsmallmatrix}12 & 13\\-1 & 3\\8 & 4
+        \end{bsmallmatrix}$.
+  \item Forward mode with $v_0 = (1, 0)$: $v_1 = J_fv_0 = (1, 2)$ and
+        $v_2 = J_gv_1 = (2 + 10, 1 - 2, 8) = (12, -1, 8)$, the first
+        column. Reverse mode with $\psi_2 = [0\ \ 0\ \ 1]$:
+        $\psi_1 = \psi_2J_g = [0\ \ 4]$ and
+        $\psi_0 = \psi_1J_f = [8\ \ 4]$, the third row.
+\end{enumerate}
+
+\solution{chain-rule-autodiff:exr:2}
+$g = f\circ P$ with $P(\rho, \theta) = (\rho\cos\theta, \rho\sin\theta)$,
+so $[\dd g] = [\dd f]J_P$ with the matrix $J_P$ of
+\cref{differential:ex:polar}:
+\[
+  \frac{\partial g}{\partial\rho}
+  = \cos\theta\,\frac{\partial f}{\partial x}
+  + \sin\theta\,\frac{\partial f}{\partial y},
+  \qquad
+  \frac{\partial g}{\partial\theta}
+  = -\rho\sin\theta\,\frac{\partial f}{\partial x}
+  + \rho\cos\theta\,\frac{\partial f}{\partial y} .
+\]
+$J_P$ has determinant $\rho\neq0$ and
+$J_P^{-1} = \begin{bsmallmatrix}\cos\theta & \sin\theta\\
+-\sin\theta/\rho & \cos\theta/\rho\end{bsmallmatrix}$, so
+$[\dd f] = [\dd g]J_P^{-1}$:
+\[
+  \frac{\partial f}{\partial x}
+  = \cos\theta\,\frac{\partial g}{\partial\rho}
+  - \frac{\sin\theta}\rho\,\frac{\partial g}{\partial\theta},
+  \qquad
+  \frac{\partial f}{\partial y}
+  = \sin\theta\,\frac{\partial g}{\partial\rho}
+  + \frac{\cos\theta}\rho\,\frac{\partial g}{\partial\theta} .
+\]
+Check with $f = x^2 + y^2$: $g = \rho^2$, and the first formula gives
+$2\rho\cos\theta = 2x$.
+
+\solution{chain-rule-autodiff:exr:3}
+\begin{enumerate}[nosep]
+  \item $n(x) = \phi(x)\,x$ with $\phi(x) = 1/\norm x$. By the chain rule
+        and \cref{chain-rule-autodiff:ex:first},
+        $\dd\phi(x)(h) = -\inner xh/\norm x^3$. The product rule
+        (\cref{chain-rule-autodiff:cor:consequences}) for the bilinear
+        map $(c, v)\mapsto cv$ gives
+        \[
+          Dn(x)h = \frac h{\norm x} - \frac{\inner xh}{\norm x^3}\,x
+          = \frac1{\norm x}\bigl(h - \inner uh\,u\bigr) .
+        \]
+  \item $h\mapsto h - \inner uh\,u$ is the orthogonal projection on
+        $\{u\}^\perp$ (\cref{inner-products:thm:projection}). So the
+        kernel of $Dn(x)$ is the line $\R x$ and its image is the
+        hyperplane $\{x\}^\perp$. The kernel reflects that $n$ is constant
+        on the ray through $x$: moving along $x$ does not change $n$. The
+        image reflects that $n$ takes its values on the unit sphere:
+        velocities of curves of constant norm are orthogonal to the
+        position (\cref{chain-rule-autodiff:exr:5}).
+\end{enumerate}
+
+\solution{chain-rule-autodiff:exr:4}
+$A'(t) = I$, $\det A_0 = 1$ and
+$A_0^{-1} = \begin{bsmallmatrix}1 & -1\\-1 & 2\end{bsmallmatrix}$, so the
+derivative is $\det(A_0)\tr(A_0^{-1}) = 3$. Directly,
+$\det A(t) = (2 + t)(1 + t) - 1 = 1 + 3t + t^2$, with derivative $3$ at
+$t = 0$.
+
+\solution{chain-rule-autodiff:exr:5}
+\begin{enumerate}[nosep]
+  \item The inner product is bilinear, so by the product rule applied to
+        the curves $u$ and $v$ (increments $h\in\R$, with
+        $Du(t)h = h\,u'(t)$),
+        $\inner uv' = \inner{u'}v + \inner u{v'}$. If
+        $\inner uu$ is constant, $0 = 2\inner u{u'}$.
+  \item The function $c\mapsto L(cw)$ is constant on $(0, \infty)$, so its
+        derivative at $c = 1$ is $0$. It is the composition of $L$ with
+        the curve $c\mapsto cw$, whose velocity is $w$; by
+        \cref{chain-rule-autodiff:ex:first}(2) the derivative is
+        $\dd L(w)(w)$. The covector of a scale-invariant loss vanishes on
+        the weight itself: to first order, such a loss does not see a
+        change of the norm of $w$.
+\end{enumerate}
+
+\solution{chain-rule-autodiff:exr:6}
+$J_3(J_2J_1)$: the product $J_2J_1$ costs
+$100\cdot100\cdot1000 = 10^7$, then $J_3(J_2J_1)$ costs
+$1\cdot100\cdot1000 = 10^5$; total $1.01\times10^7$.
+$(J_3J_2)J_1$: $1\cdot100\cdot100 = 10^4$, then
+$1\cdot100\cdot1000 = 10^5$; total $1.1\times10^5$, about $92$ times
+less. The first order is forward mode applied to the $1000$ basis vectors
+at once (all the columns are carried through the layers); the second is
+reverse mode, which carries a single row.
+
+\solution{chain-rule-autodiff:exr:7}
+Forward pass: $z_1 = w_1x + b_1 = 2$, $a_1 = z_1^2 = 4$,
+$\hat y = w_2a_1 = 2$, $L = \frac12$. Backward pass:
+$\partial L/\partial\hat y = \hat y - y = 1$. Then
+$\partial L/\partial w_2 = 1\cdot a_1 = 4$ and
+$\partial L/\partial a_1 = 1\cdot w_2 = \frac12$. Through the square,
+$\delta_1 = \partial L/\partial z_1 = \frac12\cdot2z_1 = 2$. Finally
+$\partial L/\partial w_1 = \delta_1x = 2$ and
+$\partial L/\partial b_1 = \delta_1 = 2$.
+
+\solution{chain-rule-autodiff:exr:8}
+The graph has the edges $x_1\to u$, $x_2\to u$, $u\to y$ and $x_1\to y$:
+$x_1$ is used twice. Forward: $u = 5$, $y = ux_1 = 15$. Backward:
+$\bar y = 1$; the product gives $\bar u = x_1\bar y = 3$ and a first
+contribution $u\,\bar y = 5$ to $\bar x_1$; the sum copies $\bar u$ to
+both its arguments. Hence $\bar x_1 = 5 + 3 = 8$ and $\bar x_2 = 3$.
+Check: $y = x_1^2 + x_1x_2$ has the partial derivatives
+$2x_1 + x_2 = 8$ and $x_1 = 3$.
+
+\solution{chain-rule-autodiff:exr:9}
+\begin{enumerate}[nosep]
+  \item $\partial_1G = w_2x\bigl(1 - \tanh^2(w_1x)\bigr)$ and
+        $\partial_2G = \tanh(w_1x)$. At $w_1 = w_2 = w$ their sum is
+        $\dd L(w) = wx\bigl(1 - \tanh^2(wx)\bigr) + \tanh(wx)$, which is
+        the derivative of $w\tanh(wx)$ by the product rule.
+  \item $Df(x) = \id + DF(x)$, so the pull-back is
+        $\psi\mapsto\psi + \dual{DF(x)}\psi$. If all the $DF_k$ vanish,
+        each layer pulls $\psi$ back to itself and $\psi_0 = \psi_N$: the
+        covector reaches the first layer unchanged, however deep the
+        network is.
+\end{enumerate}
