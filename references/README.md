@@ -25,6 +25,7 @@ ignored by git.
 | --- | --- | --- | --- |
 | S. Axler, *Linear Algebra Done Right*, 4th ed., Springer, 2024 | Ch. 2 | [linear.axler.net](https://linear.axler.net/) | Open access, CC BY-NC |
 | S. Rea, lecture notes for F. Schuller's *Lectures on Quantum Theory* (Erlangen, 2015) | Ch. 4 | [the author's announcement](https://mathswithphysics.blogspot.de/2016/07/frederic-schullers-lectures-on-quantum.html), with the LaTeX source in the GitHub repository `sreahw/schuller-quantum` | Free; no licence stated on the pages seen; the notes say they are not endorsed by F. Schuller. |
+| N. Boumal, *An Introduction to Optimization on Smooth Manifolds*, Cambridge University Press, 2023 | Ch. 12, 13 | [the author's page](https://www.nicolasboumal.net/book/), with the recorded lectures of his course; DOI 10.1017/9781009166164 | Free pre-publication PDF from the author's page; no licence stated there |
 | A. Griewank and A. Walther, *Evaluating Derivatives*, 2nd ed., SIAM, 2008 | Ch. 7 | DOI 10.1137/1.9780898717761 | Commercial |
 
 ## Papers

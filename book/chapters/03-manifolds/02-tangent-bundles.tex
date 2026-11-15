@@ -4,19 +4,1061 @@
 \chaptersubtitle{%
   When there is no ambient space}
 
-\begin{chapterplan}
+\begin{chapterintro}
+The set of straight lines of the plane, the set of angles, the set of
+Gaussian distributions, the set of functions that a network can compute:
+none of these comes inside an affine space. Each can still be described,
+piece by piece, by $d$ real coordinates, and two descriptions of the same
+piece are related by a diffeomorphism. This is all that
+\cref{ch:submanifolds} really used, and it is taken here as the
+definition. The price is that a point can no longer be moved by a vector
+and that velocities can no longer be computed by subtracting points. What
+survives is the tangent space at each point, now a vector space attached
+to that point alone, its dual, and the rule that says how components
+change with the coordinates: one rule for vectors, the inverse rule for
+covectors. You will learn
 \begin{itemize}[nosep]
-  \item Charts, atlases and transition maps; the circle $\R/\Z$ and the torus
-        again: flat, but not affine.
-  \item Tangent vectors as velocities of curves; cotangent vectors; $\dd f_p\in
-        T_p^*M$.
-  \item Push-forward and pull-back; vector fields and covector fields.
-  \item How components change with the chart: vectors versus covectors.
+  \item charts, atlases and manifolds, with examples that have no ambient
+        space: the lines of the plane, the circle $\R/\Z$;
+  \item tangent vectors as classes of curves, and why the tangent spaces
+        at two points are unrelated;
+  \item the differential of a map, the differential $\dd f(p)$ of a
+        function as a cotangent vector, push-forward and pull-back;
+  \item how the components of vectors, of covectors and of the Hessian at
+        a critical point change with the chart;
+  \item the tangent and cotangent bundles, vector fields and covector
+        fields;
+  \item what this says about reparametrizing a model and about the
+        symmetries of its parameters.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:duality}, \cref{ch:chain-rule-autodiff},
+\cref{ch:inverse-implicit} and \cref{ch:submanifolds}. From this chapter
+on, \emph{smooth} means infinitely differentiable; all manifolds, maps
+and curves are smooth.}
+\end{chapterintro}
+
+\section{Charts and atlases}\label{tangent-bundles:sec:charts}
+
+Two parametrizations of a submanifold differ by a diffeomorphism between
+open subsets of $\R^d$ (\cref{submanifolds:cor:transition}). Reading the
+parametrizations backwards, from the set to $\R^d$, gives the notion that
+needs no ambient space.
+
+\begin{definition}[Chart, atlas]\label{tangent-bundles:def:atlas}
+Let $M$ be a set. A \emph{chart} of dimension $d$ on $M$ is a pair
+$(U, \varphi)$ where $U\subset M$ and $\varphi:U\to\R^d$ is injective
+with an open image. Two charts $(U, \varphi)$ and $(U', \varphi')$ are
+\emph{compatible} if $\varphi(U\cap U')$ and $\varphi'(U\cap U')$ are
+open and the \emph{transition map}
+\[
+  \tau = \varphi'\circ\varphi^{-1} :
+  \varphi(U\cap U')\to\varphi'(U\cap U')
+\]
+is a diffeomorphism. An \emph{atlas} is a set of pairwise compatible
+charts whose domains cover $M$.
+\end{definition}
+
+The components $x_1,\dots,x_d$ of $\varphi$ are functions on $U$, the
+\emph{coordinates} of the chart; one writes $\varphi = (x_1,\dots,x_d)$.
+The transition map expresses the coordinates $x'$ of one chart in terms
+of the coordinates $x$ of the other (\cref{tangent-bundles:fig:charts}).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \clip (-0.6,0.1) ellipse [x radius=1.6, y radius=1.0];
+    \fill[bookaccent!18] (0.9,0.1) ellipse [x radius=1.6, y radius=1.0];
+  \end{scope}
+  \draw[thick] (0.15,0.1) ellipse [x radius=3.1, y radius=1.5];
+  \draw[bookdef, thick] (-0.6,0.1) ellipse [x radius=1.6, y radius=1.0];
+  \draw[bookpitfall, thick] (0.9,0.1) ellipse [x radius=1.6, y radius=1.0];
+  \node at (-2.5,1.35) {$M$};
+  \node[bookdef] at (-1.6,0.1) {$U$};
+  \node[bookpitfall] at (1.95,0.1) {$U'$};
+  \node[circle, fill, inner sep=1.2pt] at (0.15,0.25) {};
+  \node[right] at (0.15,0.25) {$p$};
+  % images
+  \begin{scope}[yshift=-4.2cm, xshift=-4.6cm]
+    \draw[bookdef, thick] (0,0) rectangle (2.8,1.8);
+    \fill[bookaccent!18] (1.5,0.02) rectangle (2.78,1.78);
+    \node[circle, fill, inner sep=1.2pt] at (2.0,1.0) {};
+    \node[below] at (2.0,1.0) {$x$};
+    \node[bookdef, below] at (1.0,0) {$\varphi(U)\subset\R^d$};
+  \end{scope}
+  \begin{scope}[yshift=-4.2cm, xshift=1.8cm]
+    \draw[bookpitfall, thick] (0,0) rectangle (2.8,1.8);
+    \fill[bookaccent!18] (0.02,0.02) rectangle (1.3,1.78);
+    \node[circle, fill, inner sep=1.2pt] at (0.7,0.8) {};
+    \node[below] at (0.7,0.8) {$x'$};
+    \node[bookpitfall, below] at (1.8,0) {$\varphi'(U')\subset\R^d$};
+  \end{scope}
+  \draw[->, thick, bookdef] (-1.5,-0.95) -- (-2.9,-2.3);
+  \node[bookdef, left] at (-2.25,-1.6) {$\varphi$};
+  \draw[->, thick, bookpitfall] (1.8,-0.95) -- (3.2,-2.3);
+  \node[bookpitfall, right] at (2.55,-1.6) {$\varphi'$};
+  \draw[->, thick] (-1.6,-3.3) -- (1.6,-3.3);
+  \node[above] at (0,-3.3) {$\tau = \varphi'\circ\varphi^{-1}$};
+\end{tikzpicture}
+\caption{Two charts on a set $M$. On the overlap $U\cap U'$ (shaded) a
+point $p$ has two sets of coordinates, $x = \varphi(p)$ and
+$x' = \varphi'(p) = \tau(x)$.}
+\label{tangent-bundles:fig:charts}
+\end{figure}
+
+An atlas decides which subsets are open: $W\subset M$ is \emph{open} if
+$\varphi(W\cap U)$ is open in $\R^d$ for every chart $(U, \varphi)$ of
+the atlas.
+
+\begin{proposition}\label{tangent-bundles:prop:topology}
+Unions and finite intersections of open sets are open. The domain of
+every chart is open, and a subset $W$ of the domain of a chart
+$(U, \varphi)$ is open if and only if $\varphi(W)$ is open in $\R^d$.
+\end{proposition}
+
+\begin{proof}
+Since $\varphi$ is injective, it commutes with unions and intersections
+of subsets of $U$, which gives the first claim. The domain $U'$ of a
+chart is open because $\varphi(U'\cap U)$ is open for every chart, by
+compatibility. Let $W\subset U$. If $W$ is open then $\varphi(W)$ is
+open, by definition. Conversely, if $\varphi(W)$ is open, then for any
+chart $(U', \varphi')$ the set
+$\varphi'(W\cap U') = \tau\bigl(\varphi(W)\cap\varphi(U\cap U')\bigr)$
+is the image of an open set by a diffeomorphism, hence open.
+\end{proof}
+
+So each chart is a homeomorphism from its domain onto its image, and
+continuity, limits and compactness make sense on $M$.
+
+\begin{definition}[Manifold]\label{tangent-bundles:def:manifold}
+A \emph{manifold} of dimension $d$ is a set $M$ with an atlas of
+dimension $d$ such that
+\begin{enumerate}[nosep]
+  \item any two distinct points have disjoint open neighbourhoods (the
+        \emph{Hausdorff} property);
+  \item countably many charts of the atlas cover $M$.
+\end{enumerate}
+A chart compatible with all the charts of the atlas may be added to it;
+two atlases whose union is an atlas define the same manifold.
+\end{definition}
+
+The two conditions exclude pathologies. Without the first, a sequence
+could have two limits: take two copies of $\R$ and glue them along
+$\R\setminus\{0\}$; the result has an atlas with two charts and two
+origins that cannot be separated. The second will be needed to integrate
+(\cref{ch:change-of-variables}).
+
+\begin{proposition}[Submanifolds are manifolds]
+\label{tangent-bundles:prop:submanifold}
+Let $M$ be a smooth submanifold of dimension $d$ of an affine space
+$\Aff$. The inverses $\varphi = \psi^{-1}$ of its parametrizations
+(\cref{submanifolds:thm:four}\,(d)) form an atlas which makes $M$ a
+manifold of dimension $d$, whose open sets are the sets $M\cap O$ with
+$O$ open in $\Aff$.
+\end{proposition}
+
+\begin{proof}
+The charts are compatible by \cref{submanifolds:cor:transition}. If
+$\psi:\Omega\to M\cap U$ is a parametrization and $O$ is open in $\Aff$,
+then $\varphi(M\cap O\cap U) = \psi^{-1}(O)$ is open; so the sets
+$M\cap O$ are open, and $M$ is Hausdorff because $\Aff$ is. Conversely,
+if $W\subset M$ is open and $p\in W$, then $\varphi(W\cap U)$ is open,
+and since $\varphi$ is the restriction of a continuous map defined on an
+open set of $\Aff$ (proof of \cref{submanifolds:prop:charts}), $W$
+contains $M\cap B$ for a ball $B$ centred at $p$; $W$ is the intersection
+of $M$ with the union of these balls. Finally, each point of $M$ lies in
+a ball with rational radius, centred at a point with rational coordinates
+in some frame, contained in the open set $U$ of a parametrization;
+countably many such balls cover $M$.
+\end{proof}
+
+\begin{example}[Affine spaces]\label{tangent-bundles:ex:affine}
+A frame $(o; e_1,\dots,e_n)$ of an affine space $\Aff$ gives a single
+chart defined on all of $\Aff$, the affine coordinates. Two frames give
+compatible charts, and the transition map is affine,
+$x' = P^{-1}x + c$ (\cref{duality:prop:vector-change}). An affine space
+is thus a manifold with a privileged family of global charts whose
+transition maps are affine. An open subset of $\Aff$ is a manifold with
+the same charts, restricted.
+\end{example}
+
+\begin{example}[The lines of the plane]\label{tangent-bundles:ex:lines}
+Let $\mathcal L$ be the set of straight lines of $\R^2$. A non-vertical
+line is $y = ax + b$ for a unique $(a, b)$; a non-horizontal line is
+$x = a'y + b'$ for a unique $(a', b')$. This gives two charts,
+$\varphi_1 = (a, b)$ on the set $U_1$ of non-vertical lines and
+$\varphi_2 = (a', b')$ on the set $U_2$ of non-horizontal lines, each
+with image $\R^2$. A line in $U_1\cap U_2$ has $a\neq0$, and
+$y = ax + b$ reads $x = y/a - b/a$:
+\[
+  \tau(a, b) = \Bigl(\frac1a,\ -\frac ba\Bigr) ,
+\]
+a diffeomorphism of $\{a\neq0\}$ onto $\{a'\neq0\}$, equal to its own
+inverse. The two charts form an atlas, and $\mathcal L$ is a manifold of
+dimension $2$ (the Hausdorff property is checked in
+\cref{tangent-bundles:exr:3}). The slope and intercept of a regression
+line are the coordinates of the first chart; no single chart covers all
+lines.
+\end{example}
+
+\begin{example}[The circle $\R/\Z$]\label{tangent-bundles:ex:circle}
+Let $\mathcal C = \R/\Z$ be the set of classes $[x] = x + \Z$: the set of
+angles, counted in turns. Each class has exactly one representative in
+$(0, 1)$, except $[0]$, and exactly one in $(-\frac12, \frac12)$, except
+$[\frac12]$. This gives two charts, $\varphi_1[x] = x\in(0, 1)$ and
+$\varphi_2[x] = x\in(-\frac12, \frac12)$. Their domains overlap on two
+arcs, and
+\[
+  \tau(x) = x \ \text{ for } 0 < x < \tfrac12 ,
+  \qquad
+  \tau(x) = x - 1 \ \text{ for } \tfrac12 < x < 1 .
+\]
+The transition map is a translation on each piece. The same construction
+on $\R^2/\Z^2$ gives the torus, with four charts.
+\end{example}
+
+\begin{pitfall}[The same set can carry incompatible charts]
+On the set $\R$, the chart $\varphi(x) = x$ and the chart
+$\varphi'(x) = x^3$ are each an atlas, but they are not compatible:
+$\varphi\circ\varphi'^{-1}(u) = u^{1/3}$ is not differentiable at $0$. A
+manifold is a set \emph{with} an atlas. In the first, the function
+$f(x) = x$ is smooth and has no critical point. In the second,
+$f\circ\varphi'^{-1}(u) = u^{1/3}$: the same function is not even
+differentiable. A change of parameters that is not a diffeomorphism
+changes the calculus.
+\end{pitfall}
+
+\begin{definition}[Smooth map]\label{tangent-bundles:def:smooth}
+Let $M$ and $N$ be manifolds. A map $F:M\to N$ is \emph{smooth} if it is
+continuous and if, for all charts $(U, \varphi)$ of $M$ and $(W, \chi)$
+of $N$, the \emph{local representative}
+\[
+  \chi\circ F\circ\varphi^{-1} :
+  \varphi\bigl(U\cap F^{-1}(W)\bigr)\to\R^{\dim N}
+\]
+is smooth. A \emph{diffeomorphism} is a smooth bijection with a smooth
+inverse.
+\end{definition}
+
+It is enough to check this for the charts of one atlas of each manifold,
+around each point, because transition maps are diffeomorphisms.
+Compositions of smooth maps are smooth. A function $f:M\to\R$ is smooth
+when each $f\circ\varphi^{-1}$ is, and a curve is a smooth map from an
+open interval into $M$. For submanifolds, this agrees with
+\cref{submanifolds:def:c1} by \cref{submanifolds:prop:charts}.
+
+\section{Tangent vectors}\label{tangent-bundles:sec:tangent}
+
+On a manifold the quotient $(c(t) - c(0))/t$ has no meaning: points
+cannot be subtracted. But whether two curves through $p$ have the same
+velocity can still be decided, in a chart.
+
+\begin{definition}[Tangent vector]\label{tangent-bundles:def:tangent}
+Let $p\in M$. Two curves $c$ and $\tilde c$ with $c(0) = \tilde c(0) = p$
+are \emph{tangent at $p$} if, in a chart $(U, \varphi)$ around $p$,
+\[
+  (\varphi\circ c)'(0) = (\varphi\circ\tilde c)'(0) .
+\]
+This is an equivalence relation. A class is a \emph{tangent vector} at
+$p$, written $c'(0)$, and the set of classes is the \emph{tangent space}
+$T_pM$.
+\end{definition}
+
+\begin{theorem}[The tangent space]\label{tangent-bundles:thm:tangent}
+\begin{enumerate}[nosep]
+  \item Tangency at $p$ does not depend on the chart.
+  \item For each chart $(U, \varphi)$ around $p$, the map
+        \[
+          \theta_\varphi:T_pM\to\R^d , \qquad
+          c'(0)\mapsto(\varphi\circ c)'(0) ,
+        \]
+        is a bijection, and for two charts
+        $\theta_{\varphi'} = D\tau\bigl(\varphi(p)\bigr)\circ\theta_\varphi$.
+  \item There is a unique structure of vector space on $T_pM$ for which
+        every $\theta_\varphi$ is linear. Its dimension is $d$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Near $t = 0$, $\varphi'\circ c = \tau\circ(\varphi\circ c)$, so by the
+chain rule
+\[
+  (\varphi'\circ c)'(0)
+  = D\tau\bigl(\varphi(p)\bigr)\,(\varphi\circ c)'(0) .
+\]
+Since $D\tau(\varphi(p))$ is invertible, two curves have the same
+velocity in the chart $\varphi$ if and only if they have the same
+velocity in the chart $\varphi'$: this is (1), and the formula of (2).
+The map $\theta_\varphi$ is injective by definition of the classes, and
+surjective because, for $a\in\R^d$, the curve
+$c(t) = \varphi^{-1}(\varphi(p) + ta)$ has $(\varphi\circ c)'(0) = a$.
+For (3), transport the operations of $\R^d$ by $\theta_\varphi$. Another
+chart gives the same operations, because
+$\theta_{\varphi'}\circ\theta_\varphi^{-1} = D\tau(\varphi(p))$ is
+linear.
+\end{proof}
+
+\begin{intuition}
+A tangent vector is what all curves that leave $p$ ``in the same
+direction at the same speed'' have in common. A chart turns it into a
+column of $d$ numbers; another chart turns it into another column, and
+the two columns are related by the Jacobian matrix of the change of
+coordinates (\cref{tangent-bundles:fig:tangent}).
+\end{intuition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \draw[thick] (0,0) ellipse [x radius=2.6, y radius=1.4];
+    \node at (-2.1,1.2) {$M$};
+    \draw[bookaccent, thick] (-1.8,-0.6) .. controls (-1.2,-0.6) and
+      (-0.6,-0.36) .. (0,0) .. controls (0.6,0.36) and (1.2,0.5) ..
+      (1.8,0.5);
+    \draw[bookpitfall, thick] (-1.3,-1.15) .. controls (-0.9,-0.9) and
+      (-0.5,-0.3) .. (0,0) .. controls (0.5,0.3) and (0.75,0.75) ..
+      (0.9,1.15);
+    \node[circle, fill, inner sep=1.3pt] at (0,0) {};
+    \node[below right] at (0,-0.05) {$p$};
+    \node[bookaccent, below] at (1.6,0.45) {$c$};
+    \node[bookpitfall, left] at (0.8,1.0) {$\tilde c$};
+  \end{scope}
+  \draw[->, thick] (2.9,0) -- (4.3,0);
+  \node[above] at (3.6,0) {$\varphi$};
+  \begin{scope}[xshift=7.0cm]
+    \draw[thick] (-2.4,-1.3) rectangle (2.4,1.3);
+    \node at (1.7,-1.0) {$\varphi(U)$};
+    \draw[bookaccent, thick] (-1.9,-0.9) .. controls (-1.2,-0.8) and
+      (-0.5,-0.39) .. (0,0) .. controls (0.5,0.39) and (1.2,0.55) ..
+      (1.9,0.6);
+    \draw[bookpitfall, thick] (-1.4,-1.15) .. controls (-0.9,-1.0) and
+      (-0.4,-0.31) .. (0,0) .. controls (0.4,0.31) and (0.8,0.8) ..
+      (1.1,1.15);
+    \draw[->, very thick] (0,0) -- (1.0,0.78);
+    \node[circle, fill, inner sep=1.3pt] at (0,0) {};
+    \node[below right] at (0,-0.05) {$\varphi(p)$};
+    \node[above left] at (0.6,0.5) {$a$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Two curves through $p$ that are tangent at $p$: in a chart, they
+have the same velocity $a = \theta_\varphi(c'(0))\in\R^d$. The class of
+all such curves is one tangent vector.}
+\label{tangent-bundles:fig:tangent}
+\end{figure}
+
+\begin{definition}[Coordinate basis]\label{tangent-bundles:def:basis}
+For a chart $\varphi = (x_1,\dots,x_d)$ around $p$, the vectors
+$\partial_i|_p = \theta_\varphi^{-1}(e_i)$, also written
+$\frac{\partial}{\partial x_i}\big|_p$, form the \emph{coordinate basis}
+of $T_pM$. The vector $\partial_i|_p$ is the velocity of the curve along
+which $x_i$ increases at unit speed and the other coordinates stay
+fixed. The \emph{components} of $v\in T_pM$ in the chart are the entries
+of the column $[v] = \theta_\varphi(v)$: $v = \sum_iv_i\,\partial_i|_p$.
+\end{definition}
+
+\begin{proposition}[Tangent spaces of submanifolds and of affine spaces]
+\label{tangent-bundles:prop:consistent}
+Let $M$ be a submanifold of an affine space $\Aff$ with direction $V$.
+The map that sends the class of a curve $c$ in $M$ to its velocity
+$c'(0)\in V$ is a linear isomorphism from the tangent space of
+\cref{tangent-bundles:def:tangent} onto the subspace $T_pM\subset V$ of
+\cref{submanifolds:def:tangent}. It sends $\partial_i|_p$ to
+$\partial_i\psi(t)$, where $\psi = \varphi^{-1}$ and $t = \varphi(p)$. In
+particular, if $M$ is an open subset of $\Aff$, every tangent space
+$T_pM$ is identified with the same vector space $V$.
+\end{proposition}
+
+\begin{proof}
+A curve in $M$ is $c = \psi\circ(\varphi\circ c)$ near $0$, so its
+velocity in $V$ is $D\psi(t)\,\theta_\varphi(c'(0))$. It depends only on
+the class of $c$, and the map is $D\psi(t)\circ\theta_\varphi$: linear,
+injective, with image $\im D\psi(t) = T_pM$
+(\cref{submanifolds:thm:tangent}).
+\end{proof}
+
+\begin{keyidea}
+On an affine space all tangent spaces are one vector space $V$: a vector
+at $p$ can be compared with a vector at $q$, and added to any point. On a
+manifold, $T_pM$ and $T_qM$ are different vector spaces with no given
+map between them, and nothing like $p + v$ exists. For a submanifold the
+ambient $V$ still contains them all, and the tangent flat $p + T_pM$ can
+be drawn; without an ambient space there is no tangent flat, only
+$T_pM$.
+\end{keyidea}
+
+\section{The differential of a map}\label{tangent-bundles:sec:differential}
+
+\begin{definition}[Differential]\label{tangent-bundles:def:differential}
+Let $F:M\to N$ be smooth and $p\in M$. The \emph{differential} of $F$ at
+$p$ is the map
+\[
+  DF(p):T_pM\to T_{F(p)}N , \qquad c'(0)\mapsto(F\circ c)'(0) .
+\]
+It is also called the \emph{tangent map}, or the \emph{push-forward} of
+tangent vectors by $F$.
+\end{definition}
+
+\begin{proposition}\label{tangent-bundles:prop:differential}
+The differential is well defined and linear. In charts $\varphi$ around
+$p$ and $\chi$ around $F(p)$, its matrix in the coordinate bases is the
+Jacobian matrix of the local representative:
+\[
+  \theta_\chi\circ DF(p)
+  = D\bigl(\chi\circ F\circ\varphi^{-1}\bigr)\bigl(\varphi(p)\bigr)
+    \circ\theta_\varphi .
+\]
+For smooth maps $F:M\to N$ and $G:N\to P$,
+$D(G\circ F)(p) = DG\bigl(F(p)\bigr)\circ DF(p)$.
+\end{proposition}
+
+\begin{proof}
+Near $0$, $\chi\circ F\circ c
+= (\chi\circ F\circ\varphi^{-1})\circ(\varphi\circ c)$, and the chain
+rule gives
+$(\chi\circ F\circ c)'(0)
+= D(\chi\circ F\circ\varphi^{-1})(\varphi(p))\,(\varphi\circ c)'(0)$. So
+the class of $F\circ c$ depends only on the class of $c$, and the
+displayed formula holds; $DF(p)$ is linear as a composition of linear
+maps. The chain rule is immediate from the definition:
+$(G\circ F\circ c)'(0) = DG(F(p))\,(F\circ c)'(0)$.
+\end{proof}
+
+For submanifolds this is the differential of
+\cref{submanifolds:prop:differential}, under the identification of
+\cref{tangent-bundles:prop:consistent}. The theorems of
+\cref{ch:inverse-implicit} are local and carry over through charts.
+
+\begin{theorem}[Inverse function theorem on manifolds]
+\label{tangent-bundles:thm:inverse}
+Let $F:M\to N$ be smooth. If $DF(p)$ is invertible, there are open sets
+$U\ni p$ and $W\ni F(p)$ such that $F$ is a diffeomorphism from $U$ onto
+$W$.
+\end{theorem}
+
+\begin{proof}
+The local representative $\chi\circ F\circ\varphi^{-1}$ has an invertible
+differential at $\varphi(p)$, so it is a diffeomorphism between open
+subsets of $\R^d$, with a smooth inverse
+(\cref{inverse-implicit:thm:inverse,inverse-implicit:rem:remarks}).
+Compose with the charts, which are diffeomorphisms onto their images.
+\end{proof}
+
+\begin{example}[The circle is the circle]\label{tangent-bundles:ex:s1}
+The map $F[x] = (\cos2\pi x, \sin2\pi x)$ from $\R/\Z$ to the unit circle
+$S^1\subset\R^2$ is well defined and bijective. In the charts of
+\cref{tangent-bundles:ex:circle} and with the velocity in $\R^2$, its
+differential sends $\partial_x$ to
+$2\pi(-\sin2\pi x, \cos2\pi x)\neq0$, so it is invertible at every point:
+$F$ is a diffeomorphism near each point, hence a diffeomorphism. The
+abstract circle and the embedded circle are the same manifold; the first
+description has no ambient space and its transition maps are
+translations.
+\end{example}
+
+\section{Cotangent vectors}\label{tangent-bundles:sec:cotangent}
+
+\begin{definition}[Cotangent space, differential of a function]
+\label{tangent-bundles:def:cotangent}
+The \emph{cotangent space} at $p$ is the dual $T_p^*M = (T_pM)^*$. For a
+smooth function $f:M\to\R$, the \emph{differential} of $f$ at $p$ is the
+cotangent vector
+\[
+  \dd f(p)\in T_p^*M , \qquad \dd f(p)\,c'(0) = (f\circ c)'(0) .
+\]
+\end{definition}
+
+This is the differential of \cref{tangent-bundles:def:differential} for
+$N = \R$, whose tangent spaces are all $\R$. Applied to the coordinates
+themselves, it gives the dual of the coordinate basis.
+
+\begin{proposition}[Components of a differential]
+\label{tangent-bundles:prop:components}
+Let $\varphi = (x_1,\dots,x_d)$ be a chart around $p$. The covectors
+$\dd x_1(p),\dots,\dd x_d(p)$ form the basis of $T_p^*M$ dual to
+$\partial_1|_p,\dots,\partial_d|_p$, and for a smooth function $f$
+\[
+  \dd f(p) = \sum_i\frac{\partial f}{\partial x_i}(p)\,\dd x_i(p) ,
+  \qquad
+  \frac{\partial f}{\partial x_i}(p)
+  = \dd f(p)\,\partial_i|_p
+  = \partial_i\bigl(f\circ\varphi^{-1}\bigr)\bigl(\varphi(p)\bigr) .
+\]
+\end{proposition}
+
+\begin{proof}
+Along the curve $c(t) = \varphi^{-1}(\varphi(p) + te_j)$, whose class is
+$\partial_j|_p$, the coordinate $x_i$ is $x_i(p) + t\delta_{ij}$, so
+$\dd x_i(p)\,\partial_j|_p = \delta_{ij}$. Along the same curve,
+$f\circ c(t) = (f\circ\varphi^{-1})(\varphi(p) + te_j)$, whose derivative
+at $0$ is the partial derivative of $f\circ\varphi^{-1}$. The expansion
+of $\dd f(p)$ in the dual basis follows from
+\cref{duality:thm:dual-basis}.
+\end{proof}
+
+The row of partial derivatives of $f$ in a chart is thus the row of
+components of the covector $\dd f(p)$, as in
+\cref{differential:prop:components}.
+
+\begin{theorem}[Change of chart]\label{tangent-bundles:thm:change}
+Let $x$ and $x'$ be the coordinates of two charts around $p$, and let
+$J = \bigl[\partial x'_i/\partial x_j\bigr]$ be the Jacobian matrix of
+the transition map at $\varphi(p)$. For $v\in T_pM$ and
+$\alpha\in T_p^*M$,
+\[
+  [v]' = J\,[v] , \qquad [\alpha]' = [\alpha]\,J^{-1} ,
+\]
+and the number $\alpha(v) = [\alpha][v] = [\alpha]'[v]'$ does not depend
+on the chart. The bases are related by
+\[
+  \partial'_j = \sum_i\frac{\partial x_i}{\partial x'_j}\,\partial_i ,
+  \qquad
+  \dd x'_i = \sum_j\frac{\partial x'_i}{\partial x_j}\,\dd x_j .
+\]
+\end{theorem}
+
+\begin{proof}
+$[v]' = \theta_{\varphi'}(v) = D\tau(\varphi(p))\theta_\varphi(v) = J[v]$
+by \cref{tangent-bundles:thm:tangent}. This is the rule
+$[v]' = P^{-1}[v]$ of \cref{duality:prop:vector-change} for the change of
+basis matrix $P = J^{-1}$ from the basis $(\partial_i)$ to the basis
+$(\partial'_j)$, whose columns hold the components of the $\partial'_j$;
+and $J^{-1}$ is the Jacobian matrix $[\partial x_i/\partial x'_j]$ of
+$\tau^{-1}$. Then $[\alpha]' = [\alpha]P = [\alpha]J^{-1}$ and
+$\dd x'_i = \sum_j(P^{-1})_{ij}\,\dd x_j$ by
+\cref{duality:prop:covector-change}.
+\end{proof}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Object at $p$ & In the chart $x$ & In the chart $x' = \tau(x)$ \\
+\midrule
+tangent vector $v$ & column $[v]$ & $J[v]$ \\
+cotangent vector $\alpha$, e.g.\ $\dd f(p)$ & row $[\alpha]$
+  & $[\alpha]J^{-1}$ \\
+pairing $\alpha(v)$ & $[\alpha][v]$ & the same number \\
+Hessian at a critical point & $H$ & $J^{-\top}HJ^{-1}$ \\
+inner product on $T_pM$ (\cref{ch:riemannian-optimization}) & $G$
+  & $J^{-\top}GJ^{-1}$ \\
+\bottomrule
+\end{tabular}
+\caption{How components change with the chart; $J$ is the Jacobian matrix
+of $x\mapsto x'$. Compare with \cref{duality:tab:tests}, where the change
+was linear and $J = P^{-1}$ was constant.}
+\label{tangent-bundles:tab:change}
+\end{table}
+
+\begin{example}[Polar coordinates]\label{tangent-bundles:ex:polar}
+On the plane without a closed half-line, take the charts $(r, \theta)$
+and $(x, y)$, with $x = r\cos\theta$, $y = r\sin\theta$
+(\cref{differential:ex:polar}). The Jacobian matrix of
+$(r, \theta)\mapsto(x, y)$ is
+$J = \begin{bsmallmatrix}\cos\theta & -r\sin\theta\\
+\sin\theta & r\cos\theta\end{bsmallmatrix}$. Its columns give the polar
+coordinate basis in terms of the Cartesian one, its rows give $\dd x$ and
+$\dd y$:
+\begin{align*}
+  \partial_r &= \cos\theta\,\partial_x + \sin\theta\,\partial_y , &
+  \dd x &= \cos\theta\,\dd r - r\sin\theta\,\dd\theta , \\
+  \partial_\theta &= -r\sin\theta\,\partial_x + r\cos\theta\,\partial_y , &
+  \dd y &= \sin\theta\,\dd r + r\cos\theta\,\dd\theta .
+\end{align*}
+For $f = x$, the row of partial derivatives in the polar chart is
+$[\cos\theta\ \ {-r\sin\theta}]$. The vector $\partial_x$ has the polar
+components $J^{-1}e_1 = (\cos\theta, -\frac1r\sin\theta)$. Row and column
+agree only where $r = 1$ or $\sin\theta = 0$: in the polar chart the
+transposed row of partial derivatives is not the vector $\partial_x$,
+although it is in the Cartesian chart.
+\end{example}
+
+\begin{pitfall}[There is no gradient yet]
+A manifold has differentials, which are covectors. To turn $\dd f(p)$
+into a tangent vector one needs an inner product on $T_pM$, and a
+manifold does not come with one. Reading the row of partial derivatives
+as a column is choosing, silently, the inner product for which the
+coordinate basis of the current chart is orthonormal; another chart makes
+another choice. \Cref{ch:riemannian-optimization} makes the choice
+explicit.
+\end{pitfall}
+
+\begin{definition}[Pull-back of a covector]\label{tangent-bundles:def:pullback}
+Let $F:M\to N$ be smooth. The \emph{pull-back} by $F$ at $p$ is the dual
+of the differential,
+\[
+  \dual{DF(p)}:T_{F(p)}^*N\to T_p^*M , \qquad
+  \beta\mapsto\beta\circ DF(p) .
+\]
+\end{definition}
+
+For a smooth function $g$ on $N$, the chain rule reads
+$\dd(g\circ F)(p) = \dd g(F(p))\circ DF(p)$: the differential of
+$g\circ F$ is the pull-back of the differential of $g$. Tangent vectors
+are pushed forward and covectors are pulled back; in charts these are the
+products of a Jacobian matrix with a column on its right and with a row
+on its left, the two modes of \cref{chain-rule-autodiff:tab:modes}.
+
+The second differential has no such general rule, because the second
+derivative of a composition involves the first derivative
+(\cref{gradient-hessian:rem:nonlinear}). At a critical point the extra
+term vanishes.
+
+\begin{proposition}[The Hessian at a critical point]
+\label{tangent-bundles:prop:hessian}
+Let $f:M\to\R$ be smooth and let $p$ be a critical point:
+$\dd f(p) = 0$. There is a unique symmetric bilinear form $H_pf$ on
+$T_pM$ such that
+\[
+  H_pf(v, v) = (f\circ c)''(0)
+  \qquad\text{for every curve $c$ with $c'(0) = v$.}
+\]
+In a chart, its matrix is the matrix of second partial derivatives of
+$f\circ\varphi^{-1}$ at $\varphi(p)$. Its signature does not depend on
+the chart.
+\end{proposition}
+
+\begin{proof}
+Let $g = f\circ\varphi^{-1}$, $x = \varphi(p)$ and
+$\gamma = \varphi\circ c$. Differentiating
+$(g\circ\gamma)'(t) = Dg(\gamma(t))\gamma'(t)$ once more,
+\[
+  (f\circ c)''(0) = D^2g(x)\bigl(\gamma'(0), \gamma'(0)\bigr)
+  + Dg(x)\,\gamma''(0) ,
+\]
+and $Dg(x) = 0$ because $p$ is critical. So $(f\circ c)''(0)$ depends
+only on $\gamma'(0) = \theta_\varphi(v)$, and it is the value at $[v]$ of
+the quadratic form with matrix $[D^2g(x)]$. The left-hand side does not
+mention the chart, and a quadratic form determines its symmetric bilinear
+form. The signature is defined by \cref{spectral-svd:thm:sylvester}.
+\end{proof}
+
+At a point that is not critical, the term $Dg(x)\gamma''(0)$ remains, and
+$\gamma''(0)$ can be changed at will by changing the chart: the matrix of
+second partial derivatives is then not the matrix of any bilinear form on
+$T_pM$. Whether a critical point is a non-degenerate minimum, a saddle,
+or degenerate, is a property of $f$; the \emph{eigenvalues} of the matrix
+$H$ are not, since $J^{-\top}HJ^{-1}$ has other eigenvalues.
+
+\section{Bundles and fields}\label{tangent-bundles:sec:bundles}
+
+\begin{definition}[Tangent and cotangent bundles]
+\label{tangent-bundles:def:bundle}
+The \emph{tangent bundle} $TM$ is the set of pairs $(p, v)$ with
+$p\in M$ and $v\in T_pM$, with the projection $\pi(p, v) = p$. The
+\emph{cotangent bundle} $T^*M$ is the set of pairs $(p, \alpha)$ with
+$\alpha\in T_p^*M$.
+\end{definition}
+
+\begin{theorem}\label{tangent-bundles:thm:bundle}
+The tangent bundle of a manifold of dimension $d$ is a manifold of
+dimension $2d$. Each chart $(U, \varphi)$ of $M$ gives the chart
+\[
+  T\varphi:\pi^{-1}(U)\to\varphi(U)\times\R^d , \qquad
+  (p, v)\mapsto\bigl(\varphi(p), \theta_\varphi(v)\bigr) ,
+\]
+and the transition maps are
+$(x, a)\mapsto\bigl(\tau(x), D\tau(x)a\bigr)$. The same holds for $T^*M$,
+with the transition maps
+$(x, a)\mapsto\bigl(\tau(x), a\circ D\tau(x)^{-1}\bigr)$.
+\end{theorem}
+
+\begin{proof}
+$T\varphi$ is a bijection onto the open set $\varphi(U)\times\R^d$ of
+$\R^{2d}$ by \cref{tangent-bundles:thm:tangent}, which also gives the
+transition maps. They are smooth, because $\tau$ is, with inverses of the
+same form, and the images of the overlaps
+$\varphi(U\cap U')\times\R^d$ are open. Countably many of these charts
+cover $TM$. The projection $\pi$ is continuous, since
+$T\varphi(\pi^{-1}(W)\cap\pi^{-1}(U)) = \varphi(W\cap U)\times\R^d$. Two
+points of $TM$ over distinct points of $M$ are separated by the preimages
+of disjoint open sets of $M$; two points over the same point lie in one
+set $\pi^{-1}(U)$, which is homeomorphic to an open set of $\R^{2d}$. For
+$T^*M$, use the components of covectors and
+\cref{tangent-bundles:thm:change}.
+\end{proof}
+
+The differential of a smooth map $F$ is then a smooth map
+$DF:TM\to TN$, $(p, v)\mapsto(F(p), DF(p)v)$: in charts it is
+$(x, a)\mapsto(\hat F(x), D\hat F(x)a)$, with $\hat F$ the local
+representative. A program that computes a value together with a
+directional derivative computes $DF$.
+
+\begin{definition}[Vector fields and covector fields]
+\label{tangent-bundles:def:fields}
+A \emph{vector field} is a smooth map $X:M\to TM$ with $X(p)\in T_pM$
+for every $p$. A \emph{covector field} is a smooth map
+$\alpha:M\to T^*M$ with $\alpha(p)\in T_p^*M$. In a chart,
+\[
+  X = \sum_iX_i\,\partial_i , \qquad \alpha = \sum_i\alpha_i\,\dd x_i ,
+\]
+and smoothness means that the component functions $X_i$, $\alpha_i$ are
+smooth.
+\end{definition}
+
+The differential $\dd f:p\mapsto\dd f(p)$ of a smooth function is a
+covector field, with components $\partial f/\partial x_i$. A covector
+field applied to a vector field gives a function,
+$\alpha(X)(p) = \alpha(p)X(p)$; in particular $\dd f(X)$ is the
+derivative of $f$ along $X$.
+
+\begin{proposition}[Pull-back of a covector field]
+\label{tangent-bundles:prop:pullback}
+Let $F:M\to N$ be smooth and $\beta$ a covector field on $N$. Then
+\[
+  (F^*\beta)(p) = \beta\bigl(F(p)\bigr)\circ DF(p)
+\]
+is a covector field on $M$, and $F^*(\dd g) = \dd(g\circ F)$ for every
+smooth function $g$ on $N$.
+\end{proposition}
+
+\begin{proof}
+In charts, with $\hat F$ the local representative, the row of components
+of $F^*\beta$ at $x$ is $[\beta(\hat F(x))]\,[D\hat F(x)]$, a smooth
+function of $x$. The second claim is the chain rule.
+\end{proof}
+
+\begin{pitfall}[Vector fields cannot be pushed forward]
+Covector fields pull back along any smooth map. Vector fields do not
+push forward: for $F(t) = t^2$ on $\R$ and $X = \partial_t$, the point
+$1 = F(1) = F(-1)$ would receive both $DF(1)\partial_t = 2\partial_t$ and
+$DF(-1)\partial_t = -2\partial_t$, and the points $s < 0$ nothing. A
+vector field is pushed forward only by a diffeomorphism. This is why the
+differential of the loss, a covector field, travels backwards through
+every layer of a network, whatever the layer.
+\end{pitfall}
+
+\begin{example}[Flat, but not affine]\label{tangent-bundles:ex:flat}
+On the circle $\R/\Z$ the transition maps are translations, with
+Jacobian matrix $1$. So the coordinate vector $\partial_x$ is the same in
+both charts: it is a vector field defined on the whole circle, without
+zero, and $(p, a\,\partial_x)\mapsto(p, a)$ identifies $T(\R/\Z)$ with
+the product $(\R/\Z)\times\R$. All tangent spaces are identified with
+$\R$, as on an affine line, and $[x] + v = [x + v]$ moves every point by
+a displacement $v$. Yet $\R/\Z$ is not an affine space: the displacement
+from $[x]$ to $[y]$ is defined only up to an integer
+(\cref{affine-spaces:exr:7}), and no chart covers it. The same holds for
+the torus $\R^d/\Z^d$ (\cref{tangent-bundles:fig:flat}). On the sphere
+$S^2$, by contrast, every vector field vanishes somewhere, a theorem of
+topology that we do not prove; its tangent bundle is not a product.
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \draw[thick] (-2.6,1.6) -- (2.6,1.6);
+    \foreach \x/\l in {-1.6/{x - 1}, 0.4/{x}, 2.4/{x + 1}} {
+      \node[circle, fill=bookaccent, inner sep=1.4pt] at (\x,1.6) {};
+      \node[above] at (\x,1.65) {$\l$};
+    }
+    \foreach \x in {-2,0,2} \draw (\x,1.52) -- (\x,1.68);
+    \node[left] at (-2.6,1.6) {$\R$};
+    \draw[->, thick] (0,1.3) -- (0,0.75);
+    \draw[thick] (0,-1.0) circle [radius=1.0];
+    \node[circle, fill=bookaccent, inner sep=1.4pt] at (0.309,-0.049) {};
+    \node at (0.2,-0.4) {$[x]$};
+    \draw[bookdef, very thick] (0,-1.0) ++(10:1.15) arc (10:350:1.15);
+    \draw[bookpitfall, very thick] (0,-1.0) ++(-170:1.3) arc (-170:170:1.3);
+    \node[bookdef, right] at (1.2,-1.75) {$\varphi_1$};
+    \node[bookpitfall, left] at (-1.35,-1.75) {$\varphi_2$};
+    \node at (0,-2.8) {the circle $\R/\Z$ and its two charts};
+  \end{scope}
+  \begin{scope}[xshift=6.3cm, yshift=-2.1cm]
+    \draw[thick] (0,0) rectangle (3,3);
+    \draw[->, thick, bookdef] (1.3,0) -- (1.7,0);
+    \draw[->, thick, bookdef] (1.3,3) -- (1.7,3);
+    \draw[->>, thick, bookpitfall] (0,1.3) -- (0,1.75);
+    \draw[->>, thick, bookpitfall] (3,1.3) -- (3,1.75);
+    \foreach \x in {0.6,1.5,2.4} \foreach \y in {0.5,1.4,2.3}
+      \draw[->, bookaccent, thick] (\x-0.2,\y-0.1) -- (\x+0.2,\y+0.1);
+    \node at (1.5,-0.7) {the torus $\R^2/\Z^2$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Left: the points $x - 1$, $x$, $x + 1$ of the line are one point
+of the circle; each chart misses one point. Right: the torus is a square
+whose opposite sides are identified. A constant vector field on the
+square is a vector field on the torus, because the transition maps are
+translations.}
+\label{tangent-bundles:fig:flat}
+\end{figure}
+
+\section{Parameters as coordinates}\label{tangent-bundles:sec:ml}
+
+\begin{mlthread}[Machine learning: reparametrizing a model]
+The Gaussian distributions on $\R$ form a manifold of dimension $2$. The
+pairs $(\mu, \sigma)$, $(\mu, \ln\sigma)$ and $(\mu, \sigma^2)$ are three
+global charts on it, related by diffeomorphisms; a loss $L$ is a function
+on the manifold and $\dd L$ a covector field.
 \begin{itemize}[nosep]
-  \item Reparametrizations of a model.
-  \item Symmetries of the parameters and quotient spaces.
+  \item \emph{One covector, three rows.} At the same distribution the
+        three charts give three rows of partial derivatives, related by
+        $[\dd L]' = [\dd L]J^{-1}$. For the passage to
+        $s = \ln\sigma$: $\partial L/\partial s
+        = \sigma\,\partial L/\partial\sigma$.
+  \item \emph{Three gradient steps.} Gradient descent in a chart reads
+        the row as a column. A step $-\eta[\dd L]'^\top$ in the chart
+        $x'$ is, to first order in $\eta$ and seen from the chart $x$,
+        the step
+        \[
+          -\eta\,J^{-1}J^{-\top}[\dd L]^\top
+          = -\eta\,(J^\top J)^{-1}[\dd L]^\top .
+        \]
+        Changing the chart preconditions the step by $(J^\top J)^{-1}$:
+        each chart silently chooses the inner product with Gram matrix
+        $J^\top J$ (\cref{tangent-bundles:fig:steps}). Training in
+        $\ln\sigma$ multiplies the step on $\sigma$ by $\sigma^2$.
+  \item \emph{What does not depend on the chart.} The critical points of
+        $L$, and at each of them the signature of the Hessian
+        (\cref{tangent-bundles:prop:hessian}). The eigenvalues of the
+        Hessian at a minimum, often used to call a minimum ``sharp'' or
+        ``flat'', change with the chart.
+  \item \emph{Maps that are not charts.} Writing a weight as $w = u^3$,
+        or a matrix as $W = BA$, is not a change of chart: the map from
+        the new parameters is not a diffeomorphism. It creates critical
+        points, $u = 0$ or $B = 0$, $A = 0$, that the loss does not
+        have.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=2.6]
+  \draw[->] (-0.7,0.5) -- (1.8,0.5) node[right] {$\mu$};
+  \draw[->] (-0.6,0.4) -- (-0.6,2.4) node[above] {$\sigma$};
+  \foreach \y in {1,2} {
+    \draw (-0.63,\y) -- (-0.57,\y);
+    \node[left] at (-0.63,\y) {$\y$};
+  }
+  \foreach \x in {0,1} {
+    \draw (\x,0.47) -- (\x,0.53);
+    \node[below] at (\x,0.47) {$\x$};
+  }
+  \node[circle, fill=bookdef, inner sep=1.8pt] at (0,1) {};
+  \node[bookdef, below] at (0,0.95) {minimum};
+  \draw[->, very thick, bookaccent] (1,2) -- (0.7,1.7);
+  \draw[->, very thick, bookpitfall] (1,2) -- (0.7,1.098);
+  \draw[->, very thick, gray] (1,2) -- (0.7,1.981);
+  \node[circle, fill, inner sep=1.4pt] at (1,2) {};
+  \node[right] at (1.03,2.02) {$(1, 2)$};
+  \node[gray, above] at (0.6,2.03) {chart $(\mu, \sigma^2)$};
+  \node[bookaccent, left] at (0.67,1.66) {chart $(\mu, \sigma)$};
+  \node[bookpitfall, right] at (0.84,1.35) {chart $(\mu, \ln\sigma)$};
+\end{tikzpicture}
+\caption{One gradient step with the same step size $\eta = 1.2$ from the
+same Gaussian distribution $(\mu, \sigma) = (1, 2)$, for the same loss
+(the average negative log-likelihood of data with mean $0$ and variance
+$1$), computed in three charts and drawn in the chart $(\mu, \sigma)$.
+The covector $\dd L$ is the same; the three steps differ
+(\cref{tangent-bundles:exr:5}).}
+\label{tangent-bundles:fig:steps}
+\end{figure}
+
+\begin{mlthread}[Machine learning: symmetries and quotients]
+Different parameters often give the same model.
+\begin{itemize}[nosep]
+  \item \emph{Examples.} A line $\alpha x + \beta y + \gamma = 0$ is
+        unchanged when $(\alpha, \beta, \gamma)$ is multiplied by
+        $c\neq0$: the manifold $\mathcal L$ of
+        \cref{tangent-bundles:ex:lines} is the set of classes of
+        parameters, and the map from parameters to lines is a submersion
+        (\cref{tangent-bundles:exr:3}). In a network with a positively
+        homogeneous activation, multiplying the weights into a hidden
+        unit by $c > 0$ and those out of it by $1/c$ changes nothing;
+        neither does permuting hidden units, nor replacing $(B, A)$ by
+        $(BG^{-1}, GA)$ in a product $BA$.
+  \item \emph{The differential of an invariant loss vanishes along the
+        symmetry.} If $L(g\cdot\theta) = L(\theta)$ for a family of
+        transformations $g_c$ depending smoothly on a parameter $c$,
+        the velocity $\xi$ of the curve $c\mapsto g_c\cdot\theta$, taken
+        where $g_c$ is the identity, satisfies $\dd L(\theta)\xi = 0$.
+        For $L(w_1, w_2) = \ell(w_2w_1)$ with two scalar weights and the
+        scaling $(cw_1, w_2/c)$, $\xi = (w_1, -w_2)$ and
+        \[
+          w_1\,\frac{\partial L}{\partial w_1}
+          = w_2\,\frac{\partial L}{\partial w_2} .
+        \]
+        Along the gradient flow $\dot w = -[\dd L]^\top$ this gives
+        $\frac{\dd}{\dd t}(w_1^2 - w_2^2) = 0$: the difference of the
+        squared weights is conserved, and a gradient step of size $\eta$
+        changes it by a term of order $\eta^2$ only
+        (\cref{tangent-bundles:exr:9}).
+  \item \emph{The Hessian is degenerate along the symmetry.} At a
+        minimum, $H(\xi, \cdot) = 0$ for these directions $\xi$: the
+        minima of the loss are not isolated in parameter space.
+  \item \emph{The quotient.} The set of models is the set of classes of
+        parameters. A general theorem, which we do not prove, makes it
+        a manifold when the group of symmetries acts freely (only the
+        identity fixes a point) and properly. At parameters with extra
+        symmetry, such as two identical hidden units, the quotient is
+        singular.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{tangent-bundles:sec:outlook}
+
+A manifold has tangent vectors, covectors, differentials, and a Hessian
+at critical points. It has no gradient, no steepest direction, no notion
+of a small step, and no way to move a point along a tangent vector.
+\Cref{ch:riemannian-optimization} adds an inner product on each tangent
+space, which gives gradients and lengths, and retractions, which replace
+$p + v$. \Cref{ch:natural-gradient} shows that a family of
+probability distributions carries one inner product that no
+reparametrization can change. Covector fields come back in Part~V as the
+objects that are integrated along curves.
+
+\paragraph{Sources.} Loomis and Sternberg, \emph{Advanced Calculus},
+Chapter~9: atlases and transition functions (\S9.1), manifolds as sets
+with an equivalence class of atlases and the Hausdorff property
+(Definition~3.1), differentiable maps (Definition~3.2), and tangent
+vectors as classes of curves, with the change of chart and the induced
+map on tangent spaces (\S9.4, equations (4.3) and (4.4)); they also
+remark that on an open subset of a vector space the identity chart
+identifies every tangent space with that vector space. Hubbard and
+Hubbard stay with submanifolds of $\R^n$. N.~Boumal, \emph{An
+Introduction to Optimization on Smooth Manifolds}, Cambridge University
+Press, 2023, treats embedded submanifolds first (Chapter~3:
+Definition~3.10, tangent spaces by curves in Definition~3.14 and as a
+kernel in Theorem~3.15) and general manifolds in Chapter~8: charts and
+atlases (Definitions~8.1 to 8.3), the atlas topology (Definition~8.17),
+manifolds (Definition~8.21), tangent vectors as classes of curves
+(Definition~8.33, Theorem~8.34), differentials (Definition~8.37) and the
+tangent bundle (Theorem~8.43); his Chapter~9 treats quotient manifolds.
+The conservation of the difference of squared norms between layers is
+studied in S.~S.~Du, W.~Hu and J.~D.~Lee, Algorithmic regularization in
+learning deep homogeneous models, NeurIPS, 2018; the dependence of
+sharpness on the parametrization in L.~Dinh, R.~Pascanu, S.~Bengio and
+Y.~Bengio, Sharp minima can generalize for deep nets, ICML, 2017.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{13-tangent-bundles.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A manifold is a set with an atlas: charts into $\R^d$ whose
+        transition maps are diffeomorphisms. Submanifolds, affine spaces,
+        the lines of the plane and $\R/\Z$ are examples.
+  \item A tangent vector at $p$ is a class of curves with the same
+        velocity in a chart. $T_pM$ is a vector space of dimension $d$,
+        attached to $p$; tangent spaces at different points are
+        unrelated.
+  \item The differential $DF(p)$ pushes tangent vectors forward; its
+        matrix in coordinate bases is the Jacobian matrix of the local
+        representative. The differential $\dd f(p)$ of a function is a
+        cotangent vector, whose components are the partial derivatives.
+  \item Under a change of chart with Jacobian matrix $J$: columns
+        $[v]' = J[v]$, rows $[\alpha]' = [\alpha]J^{-1}$, and at a
+        critical point $H' = J^{-\top}HJ^{-1}$.
+  \item $TM$ and $T^*M$ are manifolds of dimension $2d$. Covector fields
+        pull back along any smooth map; vector fields do not push
+        forward.
+  \item Gradient descent in a chart depends on the chart; critical points
+        and the signature of the Hessian do not.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{tangent-bundles:exr:1}
+On the unit circle $S^1\subset\R^2$ let
+$\varphi_N(x, y) = x/(1 - y)$ on $S^1\setminus\{(0, 1)\}$ and
+$\varphi_S(x, y) = x/(1 + y)$ on $S^1\setminus\{(0, -1)\}$. Show that
+these two charts are compatible, with transition map $t\mapsto1/t$.
+\solutionlink{tangent-bundles:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{tangent-bundles:exr:2}
+Let $M_1$ be $\R$ with the chart $x$, and $M_2$ be $\R$ with the chart
+$x^3$. Show that the identity map $M_1\to M_2$ is smooth but not a
+diffeomorphism, and that $x\mapsto x^{1/3}$ is a diffeomorphism from
+$M_1$ onto $M_2$.
+\solutionlink{tangent-bundles:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{tangent-bundles:exr:3}
+Let $\mathcal L$ be the manifold of lines of
+\cref{tangent-bundles:ex:lines}.
+\begin{enumerate}[nosep]
+  \item Show that $\mathcal L$ has the Hausdorff property.
+  \item Let $Q(\alpha, \beta, \gamma)$ be the line
+        $\alpha x + \beta y + \gamma = 0$, for
+        $(\alpha, \beta)\neq(0, 0)$. Compute the local representative of
+        $Q$ in the chart $\varphi_1$, its Jacobian matrix, and the kernel
+        of its differential.
+\end{enumerate}
+\solutionlink{tangent-bundles:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{tangent-bundles:exr:4}
+In the setting of \cref{tangent-bundles:ex:polar}, at the point with
+$r = 2$ and $\theta = \pi/6$, compute the polar components of the vector
+$v = \partial_y$ and of the covector $\alpha = \dd y$, and check that
+$\alpha(v) = 1$ in both charts.
+\solutionlink{tangent-bundles:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{tangent-bundles:exr:5}
+Let $L(\mu, \sigma) = \ln\sigma + \dfrac{1 + \mu^2}{2\sigma^2}$, the loss
+of \cref{tangent-bundles:fig:steps}.
+\begin{enumerate}[nosep]
+  \item Compute the components of $\dd L$ at $(\mu, \sigma) = (1, 2)$ in
+        the charts $(\mu, \sigma)$, $(\mu, s)$ with $s = \ln\sigma$, and
+        $(\mu, v)$ with $v = \sigma^2$.
+  \item Compute the point reached by one gradient step with $\eta = 1.2$
+        in each chart, expressed in $(\mu, \sigma)$.
+  \item Check the first-order formula of the text for the chart
+        $(\mu, s)$.
+\end{enumerate}
+\solutionlink{tangent-bundles:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{tangent-bundles:exr:6}
+Let $F:\R/\Z\to\R/\Z$, $F[x] = [2x]$.
+\begin{enumerate}[nosep]
+  \item Show that $F$ is well defined and smooth, and that
+        $DF(p)\,\partial_x = 2\,\partial_x$ at every point.
+  \item Show that $F$ is a diffeomorphism near each point but not a
+        diffeomorphism.
+  \item Compute $F^*(\dd x)$.
+\end{enumerate}
+\solutionlink{tangent-bundles:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{tangent-bundles:exr:7}
+Let $F:\R\to\R^2$, $F(t) = (t^2, t^3)$, and let $\beta = x\,\dd y$ on
+$\R^2$. Compute $F^*\beta$, and $DF(t)\,\partial_t$ in the coordinate
+basis of $\R^2$. Where does $DF(t)$ fail to be injective?
+\solutionlink{tangent-bundles:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{tangent-bundles:exr:8}
+On $\R^2$ consider the charts $(x, y)$ and
+$(u, v) = (x + y + y^2, y)$.
+\begin{enumerate}[nosep]
+  \item For $f = x^2 - y^2$, which is critical at the origin, compute
+        the matrices of second partial derivatives at the origin in both
+        charts, check that $H' = J^{-\top}HJ^{-1}$, and compare the
+        eigenvalues and the signatures.
+  \item For $f = x$, compute the two matrices of second partial
+        derivatives at the origin. Why is this not a contradiction?
+\end{enumerate}
+\solutionlink{tangent-bundles:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{tangent-bundles:exr:9}
+Let $L(w_1, w_2) = \frac12(w_2w_1 - 3)^2$.
+\begin{enumerate}[nosep]
+  \item Check that $w_1\,\partial L/\partial w_1
+        = w_2\,\partial L/\partial w_2$ everywhere.
+  \item Show that one gradient step of size $\eta$ changes
+        $w_1^2 - w_2^2$ by
+        $\eta^2\bigl((\partial L/\partial w_1)^2
+        - (\partial L/\partial w_2)^2\bigr)$, and compute both sides for
+        $(w_1, w_2) = (2, 0.5)$ and $\eta = 0.1$.
+  \item Show that the Hessian of $L$ at a minimum is degenerate, and
+        find its kernel.
+\end{enumerate}
+\solutionlink{tangent-bundles:exr:9}
+\end{exercise}
 \end{notechapter}

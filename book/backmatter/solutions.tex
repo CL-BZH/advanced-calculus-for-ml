@@ -1625,3 +1625,152 @@ $\mathrm{St}(5, 2)$: $1 + 6 = 7 = 10 - 3$.
         immersion. So $s$ is a parametrization of $\Delta^\circ$, with
         $U = \R^n$ in \cref{submanifolds:thm:four}\,(d).
 \end{enumerate}
+
+\section{\nameref*{ch:tangent-bundles}}
+
+\solution{tangent-bundles:exr:1}
+Each map is injective with image $\R$: the inverse of $\varphi_N$ is
+$t\mapsto(2t, t^2 - 1)/(t^2 + 1)$, and that of $\varphi_S$ is
+$t\mapsto(2t, 1 - t^2)/(t^2 + 1)$. On the circle,
+$\varphi_N\varphi_S = x^2/(1 - y^2) = 1$. The overlap is the circle
+without its two poles, where $x\neq0$; its image by each chart is
+$\R\setminus\{0\}$, which is open, and the transition map is
+$t\mapsto1/t$, a diffeomorphism of $\R\setminus\{0\}$.
+
+\solution{tangent-bundles:exr:2}
+The local representative of the identity $M_1\to M_2$ is
+$x\mapsto x^3$, which is smooth; that of its inverse is
+$u\mapsto u^{1/3}$, which is not differentiable at $0$. The local
+representative of $x\mapsto x^{1/3}$ from $M_1$ to $M_2$ is
+$x\mapsto(x^{1/3})^3 = x$, and that of its inverse $y\mapsto y^3$ is
+$u\mapsto u$: both are smooth. The two manifolds are diffeomorphic, but
+not by the identity map.
+
+\solution{tangent-bundles:exr:3}
+\begin{enumerate}[nosep]
+  \item Two distinct lines that are both in $U_1$, or both in $U_2$, have
+        distinct coordinates in that chart, and are separated by the
+        preimages of two disjoint balls. The remaining case is a vertical
+        line $\ell$ and a horizontal line $\ell'$. The set
+        $\{\abs{a'} < 1\}$ of $U_2$ is an open neighbourhood of $\ell$,
+        the set $\{\abs a < 1\}$ of $U_1$ is one of $\ell'$, and a line
+        in both would have $\abs a < 1$ and $\abs{a'} = 1/\abs a < 1$.
+  \item Where $\beta\neq0$, the line is $y = -(\alpha/\beta)x
+        - \gamma/\beta$, so $\varphi_1\circ Q(\alpha, \beta, \gamma)
+        = (-\alpha/\beta, -\gamma/\beta)$, with Jacobian matrix
+        \[
+          \begin{bmatrix}
+            -1/\beta & \alpha/\beta^2 & 0\\
+            0 & \gamma/\beta^2 & -1/\beta
+          \end{bmatrix} .
+        \]
+        It has rank $2$, so $Q$ is a submersion there (and likewise on
+        $\alpha\neq0$ with $\varphi_2$). Its kernel is spanned by
+        $(\alpha, \beta, \gamma)$: the direction along which the
+        parameters are rescaled.
+\end{enumerate}
+
+\solution{tangent-bundles:exr:4}
+At $r = 2$, $\theta = \pi/6$,
+$J = \begin{bsmallmatrix}\sqrt3/2 & -1\\ 1/2 & \sqrt3\end{bsmallmatrix}$.
+The polar components of $\partial_y$ are
+$J^{-1}e_2 = (\sin\theta, \frac1r\cos\theta) = (\frac12, \frac{\sqrt3}4)$.
+The polar components of $\dd y$ are the second row of $J$,
+$[\frac12\ \ \sqrt3]$. Then
+$\alpha(v) = \frac12\cdot\frac12 + \sqrt3\cdot\frac{\sqrt3}4 = 1$, as in
+the Cartesian chart, where it is $[0\ \ 1](0, 1)^\top = 1$.
+
+\solution{tangent-bundles:exr:5}
+\begin{enumerate}[nosep]
+  \item $\partial L/\partial\mu = \mu/\sigma^2 = \frac14$ and
+        $\partial L/\partial\sigma = 1/\sigma - (1 + \mu^2)/\sigma^3
+        = \frac12 - \frac14 = \frac14$. With $\sigma = e^s$,
+        $\partial L/\partial s = \sigma\,\partial L/\partial\sigma
+        = \frac12$; with $\sigma = \sqrt v$,
+        $\partial L/\partial v = \frac1{2\sigma}\,\partial L/\partial\sigma
+        = \frac1{16}$. The rows are $[\frac14\ \ \frac14]$,
+        $[\frac14\ \ \frac12]$ and $[\frac14\ \ \frac1{16}]$.
+  \item In all three charts $\mu$ becomes $1 - 1.2\cdot\frac14 = 0.7$.
+        In $(\mu, \sigma)$: $\sigma = 2 - 0.3 = 1.7$. In $(\mu, s)$:
+        $s = \ln2 - 0.6$, so $\sigma = 2e^{-0.6}\approx1.098$. In
+        $(\mu, v)$: $v = 4 - 0.075 = 3.925$, so
+        $\sigma\approx1.981$.
+  \item For $x = (\mu, \sigma)$ and $x' = (\mu, s)$,
+        $J = \diag(1, 1/\sigma)$ and $(J^\top J)^{-1} = \diag(1, \sigma^2)
+        = \diag(1, 4)$. The formula gives the step
+        $-1.2\cdot(\frac14, 4\cdot\frac14) = (-0.3, -1.2)$, that is,
+        $\sigma\approx0.8$. The exact value $1.098$ differs from it by
+        $0.298$, a term of second order in the step:
+        $2(e^{-0.6} - 1 + 0.6)$.
+\end{enumerate}
+
+\solution{tangent-bundles:exr:6}
+\begin{enumerate}[nosep]
+  \item If $x$ is replaced by $x + k$ with $k\in\Z$, then $2x$ is
+        replaced by $2x + 2k$, in the same class. In the charts of
+        \cref{tangent-bundles:ex:circle} the local representatives are
+        $x\mapsto2x - m$ for integers $m$ depending on the piece, which
+        are smooth with derivative $2$; hence
+        $DF(p)\,\partial_x = 2\,\partial_x$.
+  \item $DF(p)$ is invertible, so \cref{tangent-bundles:thm:inverse}
+        applies at every point. But $F[0] = F[\frac12]$: $F$ is not
+        injective.
+  \item The covector field $\dd x$ is defined on the whole circle,
+        because the transition maps are translations. By
+        \cref{tangent-bundles:prop:pullback} its pull-back has the
+        component $1\cdot2$: $F^*(\dd x) = 2\,\dd x$.
+\end{enumerate}
+
+\solution{tangent-bundles:exr:7}
+Along $F$, $x = t^2$ and $y = t^3$, so
+$F^*\beta = t^2\,\dd(t^3) = 3t^4\,\dd t$. The differential sends
+$\partial_t$ to $2t\,\partial_x + 3t^2\,\partial_y$, the column of the
+Jacobian matrix. It vanishes at $t = 0$ only: there $DF$ is not
+injective, and the image of $F$ has a cusp
+(\cref{submanifolds:exr:2}).
+
+\solution{tangent-bundles:exr:8}
+The inverse change is $x = u - v - v^2$, $y = v$, and at the origin
+$J = \begin{bsmallmatrix}1 & 1\\ 0 & 1\end{bsmallmatrix}$,
+$J^{-1} = \begin{bsmallmatrix}1 & -1\\ 0 & 1\end{bsmallmatrix}$.
+\begin{enumerate}[nosep]
+  \item $H = \begin{bsmallmatrix}2 & 0\\ 0 & -2\end{bsmallmatrix}$. In
+        the second chart $f = (u - v - v^2)^2 - v^2 = u^2 - 2uv
+        + (\text{terms of degree}\geq3)$, so
+        $H' = \begin{bsmallmatrix}2 & -2\\ -2 & 0\end{bsmallmatrix}$, and
+        indeed
+        $J^{-\top}HJ^{-1}
+        = \begin{bsmallmatrix}1 & 0\\ -1 & 1\end{bsmallmatrix}
+        \begin{bsmallmatrix}2 & 0\\ 0 & -2\end{bsmallmatrix}
+        \begin{bsmallmatrix}1 & -1\\ 0 & 1\end{bsmallmatrix}
+        = \begin{bsmallmatrix}2 & -2\\ -2 & 0\end{bsmallmatrix}$. The
+        eigenvalues are $\pm2$ for $H$ and $1\pm\sqrt5$ for $H'$:
+        different numbers, the same signature $(1, 1)$.
+  \item In the first chart $f = x$ has second partial derivatives $0$.
+        In the second, $f = u - v - v^2$ and the matrix is
+        $\begin{bsmallmatrix}0 & 0\\ 0 & -2\end{bsmallmatrix}$, which is
+        not $J^{-\top}0J^{-1}$. There is no contradiction: the origin is
+        not a critical point of $f$, and
+        \cref{tangent-bundles:prop:hessian} does not apply.
+\end{enumerate}
+
+\solution{tangent-bundles:exr:9}
+Let $\rho = w_2w_1 - 3$, so that $\partial L/\partial w_1 = \rho w_2$ and
+$\partial L/\partial w_2 = \rho w_1$.
+\begin{enumerate}[nosep]
+  \item Both sides equal $\rho w_1w_2$.
+  \item With $g_i = \partial L/\partial w_i$,
+        $(w_1 - \eta g_1)^2 - (w_2 - \eta g_2)^2
+        = w_1^2 - w_2^2 - 2\eta(w_1g_1 - w_2g_2)
+        + \eta^2(g_1^2 - g_2^2)$, and the middle term vanishes by (1).
+        At $(2, 0.5)$: $\rho = -2$, $g = (-1, -4)$, the new point is
+        $(2.1, 0.9)$, and $w_1^2 - w_2^2$ goes from $3.75$ to
+        $4.41 - 0.81 = 3.6$: a change of
+        $-0.15 = 0.01\cdot(1 - 16)$.
+  \item At a minimum $\rho = 0$, and the matrix of second partial
+        derivatives is
+        $\begin{bsmallmatrix}w_2^2 & w_1w_2\\
+        w_1w_2 & w_1^2\end{bsmallmatrix}$, of rank $1$. Its kernel is
+        spanned by $(w_1, -w_2)$, the direction of the scaling symmetry:
+        the minima form the curve $w_1w_2 = 3$.
+\end{enumerate}
