@@ -4,22 +4,1136 @@
 \chaptersubtitle{%
   Graphs, level sets and parametrizations}
 
-\begin{chapterplan}
+\begin{chapterintro}
+Weights normalized to unit length, matrices with orthonormal columns,
+matrices of rank $r$, probability vectors, images that all show a face:
+many sets met in machine learning are not affine subspaces. Adding a
+displacement to one of their points leaves the set, so the update
+$\theta + v$ makes no sense on them as it stands. Yet each of these sets
+looks, near any of its points, like a piece of a vector space bent by a
+change of curvilinear coordinates, and this is enough to do calculus. The
+velocities of the curves that stay in the set form a vector space, the
+tangent space, which now changes from point to point. Everything is still
+seen from an ambient affine space; \cref{ch:tangent-bundles} will remove
+it. You will learn
 \begin{itemize}[nosep]
-  \item Three descriptions of a submanifold (locally a graph, a level set of a
-        submersion, the image of a parametrization) and their equivalence
-        through the implicit function theorem.
-  \item The tangent space $T_pM$, a subspace of $V$ that varies with $p$, and
-        the tangent flat $p + T_pM$.
-  \item Examples: spheres, the orthogonal group, Stiefel manifolds, matrices of
-        fixed rank, the open simplex.
-  \item Differentiable maps between submanifolds and their differentials.
+  \item four equivalent descriptions of a submanifold: a straightened
+        piece of a subspace, a set of independent equations, a graph, the
+        image of a parametrization;
+  \item the tangent space, defined by curves and computed as a kernel or
+        as an image, and the conormal space, which needs no inner product;
+  \item the standard examples: spheres, orthogonal groups, Stiefel
+        manifolds, matrices of fixed rank, the open simplex;
+  \item differentiable maps between submanifolds, and why a function
+        defined on a submanifold has a differential but no gradient until
+        an inner product and a projection are brought in;
+  \item how this bears on normalized weights, low-rank adapters and the
+        manifold hypothesis.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:duality} (annihilators), \cref{ch:differential},
+\cref{ch:inverse-implicit} and the first section of
+\cref{ch:constrained-optimization}. All spaces are finite-dimensional.
+Maps are of class $C^1$; every statement holds with ``$k$ times
+continuously differentiable'' throughout, by
+\cref{inverse-implicit:rem:remarks}.}
+\end{chapterintro}
+
+\section{Four descriptions of one object}\label{submanifolds:sec:definition}
+
+Let $\Aff$ be an affine space with direction $V$, of dimension $n$, and
+let $0\leq d\leq n$.
+
+\begin{definition}[Submanifold]\label{submanifolds:def:submanifold}
+A subset $M\subset\Aff$ is a \emph{submanifold of dimension $d$} if every
+point $p\in M$ has an open neighbourhood $U$ in $\Aff$ with a
+diffeomorphism $\Phi$ from $U$ onto an open subset of a vector space $Z$,
+such that
+\[
+  \Phi(M\cap U) = \Phi(U)\cap E
+\]
+for a linear subspace $E\subset Z$ of dimension $d$. Such a $\Phi$ is a
+\emph{straightening} of $M$ near $p$, and $n - d$ is the
+\emph{codimension} of $M$.
+\end{definition}
+
+\begin{intuition}
+In suitable curvilinear coordinates around any of its points, $M$ is a
+piece of a $d$-dimensional subspace: $n - d$ of the coordinates vanish on
+$M$ and the other $d$ are free.
+\end{intuition}
+
+Three cases are immediate. An open subset of $\Aff$ is a submanifold of
+dimension $n$, with $\Phi(x) = x - p$ and $E = Z = V$; conversely a
+submanifold of dimension $n$ is open, since then $M\cap U = U$. An affine
+subspace $b + W$ is a submanifold of dimension $\dim W$, with
+$\Phi(x) = x - b$ and $E = W$. A submanifold of dimension $0$ is a set of
+isolated points, since $E = \{0\}$ gives $M\cap U = \{p\}$.
+
+The definition is symmetric and convenient for proofs, but sets are
+rarely given with a straightening. They are given by equations, as
+graphs, or by parametrizations.
+
+\begin{theorem}[Four local descriptions]\label{submanifolds:thm:four}
+Let $M\subset\Aff$ and $p\in M$. The following are equivalent.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item \emph{Straightening.} There are an open $U\ni p$ and a
+        diffeomorphism $\Phi$ from $U$ onto an open subset of a vector
+        space $Z$ with $\Phi(M\cap U) = \Phi(U)\cap E$, where $E\subset Z$
+        is a subspace of dimension $d$.
+  \item \emph{Equations.} There are an open $U\ni p$ and a $C^1$ map
+        $g:U\to X$ into a vector space of dimension $n - d$, which is a
+        submersion at $p$, with $M\cap U = \{x\in U : g(x) = 0\}$.
+  \item \emph{Graph.} There are a decomposition $V = E\oplus F$ with
+        $\dim E = d$, open neighbourhoods $U_E$ of $0$ in $E$ and $U_F$
+        of $0$ in $F$, and a $C^1$ map $h:U_E\to U_F$ such that
+        \[
+          M\cap(p + U_E + U_F) = \{p + u + h(u) : u\in U_E\} .
+        \]
+  \item \emph{Parametrization.} There are an open $U\ni p$, an open
+        $\Omega\subset\R^d$ and a $C^1$ map $\psi:\Omega\to\Aff$ which is
+        an immersion at every point and a homeomorphism from $\Omega$
+        onto $M\cap U$: a bijection onto $M\cap U$ with a continuous
+        inverse.
+\end{enumerate}
+\end{theorem}
+
+In (c), $p + U_E + U_F$ denotes the set of points $p + u + w$ with
+$u\in U_E$ and $w\in U_F$; it is an open neighbourhood of $p$, and each of
+its points is written in this way uniquely.
+
+\begin{proof}
+\emph{(a) implies (b).} Choose a complement $F$ of $E$ in $Z$, let
+$\pi:Z\to F$ be the projection with kernel $E$, and put
+$g = \pi\circ\Phi:U\to F$. Then $Dg(p) = \pi\circ D\Phi(p)$ is surjective,
+as an invertible map followed by a surjective one, and $\dim F = n - d$.
+For $x\in U$, $g(x) = 0$ means $\Phi(x)\in\Phi(U)\cap E = \Phi(M\cap U)$,
+that is, $x\in M$, because $\Phi$ is injective.
+
+\emph{(b) implies (c).} Let $E = \ker Dg(p)$, of dimension $d$, and let
+$F$ be a complement of $E$ in $V$. The map $G(u, w) = g(p + u + w)$ is of
+class $C^1$ near $(0, 0)$ in $E\times F$, and $D_2G(0, 0)$ is the
+restriction of $Dg(p)$ to $F$. It is injective because
+$F\cap\ker Dg(p) = \{0\}$, hence invertible, since
+$\dim F = n - d = \dim X$. By \cref{inverse-implicit:thm:implicit} there
+are open sets $U_E\ni0$ and $U_F\ni0$ with $p + U_E + U_F\subset U$ and a
+$C^1$ map $h:U_E\to U_F$ such that, for $(u, w)\in U_E\times U_F$,
+$g(p + u + w) = 0$ if and only if $w = h(u)$.
+
+\emph{(c) implies (d).} Choose a linear isomorphism $L:\R^d\to E$, let
+$\Omega = L^{-1}(U_E)$, $U = p + U_E + U_F$ and
+$\psi(t) = p + Lt + h(Lt)$. By (c), $\psi$ maps $\Omega$ onto $M\cap U$.
+Let $\pi_E$ be the projection onto $E$ with kernel $F$. Since
+$\pi_E(\psi(t) - p) = Lt$, the map $\psi$ is injective, its inverse
+$x\mapsto L^{-1}\pi_E(x - p)$ is continuous, and
+$\pi_E D\psi(t)\tau = L\tau$ shows that $D\psi(t)$ is injective.
+
+\emph{(d) implies (a).} Let $t_0 = \psi^{-1}(p)$ and let $C$ be a
+complement of $\im D\psi(t_0)$ in $V$. By
+\cref{inverse-implicit:thm:immersion} there are an open set $O\ni p$, a
+diffeomorphism $\Xi$ from $O$ onto an open subset of $\R^d\times C$ and an
+open $\Omega_1\ni t_0$ in $\Omega$ such that $\psi(\Omega_1)\subset O$ and
+\[
+  \Xi\bigl(\psi(t)\bigr) = (t, 0) \qquad\text{for } t\in\Omega_1 .
+\]
+Since $\psi^{-1}:M\cap U\to\Omega$ is continuous, every point of
+$\psi(\Omega_1)$ is the centre of an open ball $B$ such that
+$\psi^{-1}(M\cap U\cap B)\subset\Omega_1$. Let $U_1$ be the union of the
+sets $U\cap B$: it is open and $M\cap U_1 = \psi(\Omega_1)$. Now let
+\[
+  U' = \bigl\{x\in O\cap U_1 : \mathrm{pr}_1\,\Xi(x)\in\Omega_1\bigr\} ,
+\]
+an open set containing $p$, and let $\Phi$ be the restriction of $\Xi$ to
+$U'$, with $Z = \R^d\times C$ and $E = \R^d\times\{0\}$. If
+$x\in M\cap U'$, then $x\in M\cap U_1$, so $x = \psi(t)$ with
+$t\in\Omega_1$ and $\Phi(x) = (t, 0)\in E$. Conversely, if $x\in U'$ and
+$\Phi(x) = (t, 0)$, then $t\in\Omega_1$ and
+$\Xi(\psi(t)) = (t, 0) = \Xi(x)$, so $x = \psi(t)\in M$ because $\Xi$ is
+injective. Hence $\Phi(M\cap U') = \Phi(U')\cap E$.
+\end{proof}
+
+\begin{intuition}
+(b) says that $M$ is cut out by $n - d$ independent equations; (c), that
+$n - d$ coordinates are functions of the $d$ others; (d), that $M$ is
+swept by $d$ free parameters. Going from equations to a graph is the
+implicit function theorem. Going from a parametrization back to equations
+is the local form of an immersion
+(\cref{submanifolds:fig:four}).
+\end{intuition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  % (a) straightening
+  \begin{scope}
+    \draw[bookaccent, very thick] (150:2) arc (150:30:2);
+    \draw[dashed] (70:2) ellipse [x radius=1.05, y radius=0.62];
+    \node[circle, fill, inner sep=1.2pt] at (70:2) {};
+    \node[above] at (0.72,1.92) {$p$};
+    \node[bookaccent] at (-1.75,0.62) {$M$};
+    \node at (1.95,2.25) {$U$};
+    \draw[->, thick] (2.25,1.55) -- (3.35,1.55);
+    \node[above] at (2.8,1.55) {$\Phi$};
+    \draw[dashed] (3.7,0.95) rectangle (5.9,2.15);
+    \draw[bookaccent, very thick] (3.7,1.55) -- (5.9,1.55);
+    \node[circle, fill, inner sep=1.2pt] at (4.8,1.55) {};
+    \node[bookaccent, below] at (5.55,1.55) {$E$};
+    \node at (2.0,0.25) {(a) straightening};
+  \end{scope}
+  % (b) equations
+  \begin{scope}[xshift=9.6cm]
+    \draw[dashed, gray] (150:1.65) arc (150:30:1.65);
+    \draw[dashed, gray] (150:2.35) arc (150:30:2.35);
+    \draw[bookaccent, very thick] (150:2) arc (150:30:2);
+    \node[circle, fill, inner sep=1.2pt] at (70:2) {};
+    \node[bookaccent, right] at (1.8,0.95) {$g = 0$};
+    \node[gray, above] at (90:2.35) {$g > 0$};
+    \node[gray, below] at (90:1.65) {$g < 0$};
+    \node at (0.2,0.25) {(b) equations};
+  \end{scope}
+  % (c) graph
+  \begin{scope}[yshift=-3.6cm]
+    \draw[bookaccent, very thick] (150:2) arc (150:30:2);
+    \draw[->, gray] (-1.9,1.879) -- (2.3,1.879);
+    \draw[->, gray] (0.684,0.75) -- (0.684,2.75);
+    \node[gray, right] at (2.3,1.879) {$p + E$};
+    \node[gray, right] at (0.684,2.65) {$p + F$};
+    \node[circle, fill, inner sep=1.2pt] at (70:2) {};
+    \node[above left] at (0.684,1.879) {$p$};
+    \draw[densely dotted] (1.384,1.879) -- (1.384,1.444);
+    \node[circle, fill, inner sep=1pt] at (1.384,1.879) {};
+    \node[circle, fill, inner sep=1pt] at (1.384,1.444) {};
+    \node[above] at (1.5,1.879) {$p + u$};
+    \node[right] at (1.45,1.3) {$p + u + h(u)$};
+    \node at (0.4,0.25) {(c) graph};
+  \end{scope}
+  % (d) parametrization
+  \begin{scope}[xshift=9.6cm, yshift=-3.6cm]
+    \draw[bookaccent, very thick] (150:2) arc (150:30:2);
+    \draw[bookdef, very thick] (-3.9,1.5) -- (-2.3,1.5);
+    \node[bookdef] at (-3.9,1.5) {$($};
+    \node[bookdef] at (-2.3,1.5) {$)$};
+    \node[bookdef, below] at (-3.1,1.4) {$\Omega\subset\R^d$};
+    \node[circle, fill=bookdef, inner sep=1.2pt] at (-2.9,1.5) {};
+    \node[bookdef, above] at (-2.9,1.5) {$t$};
+    \draw[->, thick] (-2.6,1.75) to[bend left=25] (-0.45,2.2);
+    \node[above] at (-1.6,2.25) {$\psi$};
+    \node[circle, fill, inner sep=1.2pt] at (100:2) {};
+    \node[above right] at (100:2) {$\psi(t)$};
+    \node at (-0.9,0.25) {(d) parametrization};
+  \end{scope}
+\end{tikzpicture}
+\caption{The four descriptions of \cref{submanifolds:thm:four} for a
+curve in the plane ($n = 2$, $d = 1$).}
+\label{submanifolds:fig:four}
+\end{figure}
+
+\begin{corollary}[Three ways to produce submanifolds]
+\label{submanifolds:cor:produce}
+\begin{enumerate}[nosep]
+  \item Let $g:U\to X$ be of class $C^1$ on an open set of $\Aff$. If $g$
+        is a submersion at every point of $M = g^{-1}(0)$, then $M$ is a
+        submanifold of dimension $n - \dim X$.
+  \item The graph of a $C^1$ map from an open subset of a vector space
+        $E$ to a vector space $F$ is a submanifold of $E\times F$ of
+        dimension $\dim E$.
+  \item Let $\psi:\Omega\to\Aff$ be an immersion at every point of an
+        open set $\Omega\subset\R^d$ and a homeomorphism from $\Omega$
+        onto $\psi(\Omega)$. Then $\psi(\Omega)$ is a submanifold of
+        dimension $d$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+Each point satisfies (b), (c) or (d) of \cref{submanifolds:thm:four},
+hence (a). In (2) the graph is the zero set of $(u, w)\mapsto w - h(u)$,
+a submersion. In (3) take $U = \Aff$.
+\end{proof}
+
+A map $\psi$ as in (3) is called an \emph{embedding}. The value $0$ in (1)
+plays no role: any level set $g^{-1}(c)$ on which $g$ is a submersion is a
+submanifold, as the zero set of $g - c$.
+
+\begin{example}[The circle, four times]\label{submanifolds:ex:circle}
+Let $M$ be the unit circle of $\R^2$ and $p = (0.6, 0.8)$.
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item On the half-plane $U = \{y > 0\}$, polar coordinates
+        $\Phi(x, y) = (\theta, \rho - 1)$ form a diffeomorphism onto
+        $(0, \pi)\times(-1, \infty)$, and $\Phi(M\cap U)$ is the part of
+        the line $\R\times\{0\}$ lying in $\Phi(U)$.
+  \item $g(x, y) = x^2 + y^2 - 1$ has $[\dd g(p)] = [1.2\ \ 1.6]\neq0$.
+  \item With $E$ and $F$ the two axes, $h(u) = \sqrt{1 - (0.6 + u)^2} - 0.8$
+        for $\abs u < 0.4$, with $h'(0) = -0.75$
+        (\cref{inverse-implicit:ex:circle}).
+  \item $\psi(\theta) = (\cos\theta, \sin\theta)$ on $\Omega = (0, \pi)$,
+        with the continuous inverse $(x, y)\mapsto\arccos x$ and the
+        velocity $\psi'(\theta) = (-\sin\theta, \cos\theta)\neq0$.
+\end{enumerate}
+No single parametrization covers the circle: a homeomorphism would make
+an open subset of $\R$ compact. Two are enough.
+\end{example}
+
+\begin{pitfall}[An injective immersion is not enough]
+In (d) the inverse of $\psi$ must be continuous. Let
+\[
+  \psi(t) = (\sin2t, \sin t), \qquad t\in(0, 2\pi) .
+\]
+The velocity $(2\cos2t, \cos t)$ never vanishes and $\psi$ is injective,
+yet its image, a figure eight, is not a submanifold
+(\cref{submanifolds:fig:eight}). The origin is $\psi(\pi)$, and the points
+$\psi(t)$ also tend to the origin when $t\to0$ and when $t\to2\pi$: points
+of the image arbitrarily close to $\psi(\pi)$ have parameters far from
+$\pi$, so $\psi^{-1}$ is not continuous. \Cref{submanifolds:ex:not} shows
+that no other description can repair this.
+\end{pitfall}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.5]
+  \draw[bookaccent, very thick, domain=0.06:6.223, samples=160,
+        smooth, variable=\t]
+    plot ({sin(2*\t r)}, {sin(\t r)});
+  \draw[bookpitfall, thick, ->] (0,0) -- (0.6,-0.3);
+  \draw[bookdef, thick, ->] (0,0) -- (0.6,0.3);
+  \node[circle, fill, inner sep=1.3pt] at (0,0) {};
+  \node[left] at (-0.08,0) {$\psi(\pi)$};
+  \node[bookpitfall, right] at (0.6,-0.32) {$(2, -1)$};
+  \node[bookdef, right] at (0.6,0.32) {$(2, 1)$};
+  \node[bookaccent, right] at (1.02,0.8) {$t = \frac\pi4$};
+  \node[bookaccent, left] at (-1.02,0.8) {$t = \frac{3\pi}4$};
+  \node[bookaccent, right] at (1.02,-0.8) {$t = \frac{5\pi}4$};
+  \node[bookaccent, left] at (-1.02,-0.8) {$t = \frac{7\pi}4$};
+  \begin{scope}[xshift=3.6cm]
+    \draw[bookdef, very thick] (0,0) -- (3,0);
+    \node[bookdef] at (0,0) {$($};
+    \node[bookdef] at (3,0) {$)$};
+    \node[below] at (0,-0.1) {$0$};
+    \node[below] at (3,-0.1) {$2\pi$};
+    \node[circle, fill, inner sep=1.3pt] at (1.5,0) {};
+    \node[below] at (1.5,-0.1) {$\pi$};
+    \draw[->, thick] (0.25,0.15) to[bend left=40] (1.4,0.15);
+    \draw[->, thick] (2.75,0.15) to[bend right=40] (1.6,0.15);
+    \node[align=center, font=\small] at (1.5,0.95)
+      {both ends are sent\\next to $\psi(\pi)$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The figure eight $t\mapsto(\sin2t, \sin t)$, $0 < t < 2\pi$. The
+curve passes through the origin once, at $t = \pi$, with the velocity
+$(2, -1)$, and approaches it at both ends of the interval along the
+direction $(2, 1)$. The image contains curves through the origin with two
+independent velocities.}
+\label{submanifolds:fig:eight}
+\end{figure}
+
+\section{The tangent space}\label{submanifolds:sec:tangent}
+
+\begin{definition}[Tangent space]\label{submanifolds:def:tangent}
+Let $M$ be a submanifold of $\Aff$ and $p\in M$. A vector $v\in V$ is
+\emph{tangent to $M$ at $p$} if it is the velocity $c'(0)$ of a $C^1$
+curve $c$ with $c(0) = p$ whose points all lie in $M$. The set of these
+vectors is the \emph{tangent space} $T_pM$, and the set of points
+$p + T_pM$ is the \emph{tangent flat} of $M$ at $p$.
+\end{definition}
+
+The definition uses curves in $M$ and nothing else. Each description of
+$M$ then gives a way to compute $T_pM$.
+
+\begin{theorem}[The tangent space]\label{submanifolds:thm:tangent}
+Let $M$ be a submanifold of dimension $d$ and $p\in M$. Then $T_pM$ is a
+linear subspace of $V$ of dimension $d$. With the notation of
+\cref{submanifolds:thm:four}, and $\psi(t_0) = p$,
+\begin{align*}
+  T_pM &= D\Phi(p)^{-1}(E)
+       & T_pM &= \ker Dg(p) \\
+  T_pM &= \{u + Dh(0)u : u\in E\}
+       & T_pM &= \im D\psi(t_0) .
+\end{align*}
+\end{theorem}
+
+\begin{proof}
+\emph{Straightening.} If $c$ is a curve in $M$ with $c(0) = p$, then
+$\Phi\circ c$ takes its values in $E$ for small $t$, so its velocity
+$D\Phi(p)c'(0)$ is in $E$ (\cref{differential:thm:velocity}). Conversely,
+for $e\in E$ the points $\Phi(p) + te$ are in $\Phi(U)\cap E$ for small
+$t$, so $c(t) = \Phi^{-1}(\Phi(p) + te)$ is a curve in $M$, with velocity
+$D\Phi(p)^{-1}e$. Hence $T_pM = D\Phi(p)^{-1}(E)$, a subspace of
+dimension $d$.
+
+\emph{Equations.} If $c$ is a curve in $M$ through $p$, then
+$g\circ c = 0$ near $0$ and $Dg(p)c'(0) = 0$. So
+$T_pM\subset\ker Dg(p)$, and both have dimension $d$.
+
+\emph{Parametrization.} For $\tau\in\R^d$, $s\mapsto\psi(t_0 + s\tau)$ is
+a curve in $M$ with velocity $D\psi(t_0)\tau$. So
+$\im D\psi(t_0)\subset T_pM$, and both have dimension $d$.
+
+\emph{Graph.} This is the previous case for $\psi(u) = p + u + h(u)$,
+with $h(0) = 0$.
+\end{proof}
+
+\begin{keyidea}
+Equations give the tangent space as a kernel and parametrizations give it
+as an image: the two ways of presenting a subspace, by what annihilates
+it and by what spans it (\cref{ch:duality}). The tangent space $T_pM$ is
+made of vectors and passes through $0$; it is a subspace of $V$ that
+depends on $p$. The tangent flat $p + T_pM$ is made of points
+(\cref{submanifolds:fig:tangent}).
+\end{keyidea}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \draw[bookaccent, very thick] (0,0) ellipse [x radius=2, y radius=1.2];
+    \draw[bookdef, thick] (2.134,0.646) -- (-0.134,1.432);
+    \draw[bookpitfall, thick] (-2.501,0.616) -- (-1.257,-1.436);
+    \node[circle, fill, inner sep=1.3pt] at (1,1.039) {};
+    \node[circle, fill, inner sep=1.3pt] at (-1.879,-0.410) {};
+    \node[below left] at (1,1.039) {$p$};
+    \node[right] at (-1.82,-0.36) {$q$};
+    \node[bookdef, above] at (1.7,0.95) {$p + T_pM$};
+    \node[bookpitfall, left] at (-2.55,0.75) {$q + T_qM$};
+    \node[bookaccent] at (0.9,-0.6) {$M$};
+    \node at (0,-1.9) {points: the affine space $\Aff$};
+  \end{scope}
+  \begin{scope}[xshift=7cm]
+    \draw[bookdef, thick] (1.512,-0.524) -- (-1.512,0.524);
+    \draw[bookpitfall, thick] (-0.829,1.368) -- (0.829,-1.368);
+    \draw[bookdef, very thick, ->] (0,0) -- (-0.945,0.327);
+    \node[circle, fill, inner sep=1.3pt] at (0,0) {};
+    \node[below left] at (0,0) {$0$};
+    \node[bookdef, right] at (1.5,-0.55) {$T_pM$};
+    \node[bookpitfall, right] at (0.75,-1.15) {$T_qM$};
+    \node[bookdef, below] at (-1.0,0.25) {$c'(0)$};
+    \node at (0,-1.9) {vectors: the direction $V$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Left: a submanifold of dimension $1$ and two of its tangent
+flats, which are sets of points. Right: the corresponding tangent spaces,
+two different subspaces of the same vector space $V$.}
+\label{submanifolds:fig:tangent}
+\end{figure}
+
+The tangent flat is the affine subspace that best approximates $M$ near
+$p$, in the sense that the differential gives the best affine
+approximation of a map.
+
+\begin{proposition}[First-order contact]\label{submanifolds:prop:contact}
+Fix a norm on $V$. For $x\in M$ tending to $p$, the distance from $x$ to
+the tangent flat satisfies
+\[
+  \operatorname{dist}(x,\ p + T_pM) = o(\norm{x - p}) ,
+\]
+and $T_pM$ is the only subspace of dimension $d$ with this property.
+\end{proposition}
+
+\begin{proof}
+The proof of \cref{submanifolds:thm:four} gives a graph description with
+$E = \ker Dg(p) = T_pM$. Then $\{u + Dh(0)u\} = E$ forces
+$Dh(0)u\in E\cap F$, so $Dh(0) = 0$ and $h(u) = o(u)$. A point of $M$
+near $p$ is $x = p + u + h(u)$, at distance at most $\norm{h(u)}$ from the
+point $p + u$ of the tangent flat, and
+$\norm u = \norm{\pi_E(x - p)}\leq\norm{\pi_E}\norm{x - p}$.
+
+Let $L$ be a subspace of dimension $d$ with the same property and
+$v = c'(0)\in T_pM$. Then $c(t) - p = tv + o(t)$, and the distance from
+$c(t) - p$ to $L$ is $o(t)$. Dividing by $t$, the distance from $v$ to $L$
+is $o(1)$, so it is zero and $v\in L$ because $L$ is closed. Hence
+$T_pM\subset L$, with equality since the dimensions agree.
+\end{proof}
+
+\begin{definition}[Conormal and normal spaces]
+\label{submanifolds:def:normal}
+The \emph{conormal space} of $M$ at $p$ is the annihilator
+$(T_pM)^\circ\subset V^*$: the covectors that vanish on all tangent
+vectors. If $V$ has an inner product, the \emph{normal space} is
+$N_pM = (T_pM)^\perp\subset V$.
+\end{definition}
+
+\begin{proposition}\label{submanifolds:prop:normal}
+Let $M\cap U = g^{-1}(0)$ with $g$ a submersion at $p$, and let
+$g_1,\dots,g_m$ be the components of $g$ in a basis of $X$.
+\begin{enumerate}[nosep]
+  \item The covectors $\dd g_1(p),\dots,\dd g_m(p)$ form a basis of the
+        conormal space: $(T_pM)^\circ = \im\dual{Dg(p)}$.
+  \item If $V$ has an inner product, the gradients
+        $\nabla g_1(p),\dots,\nabla g_m(p)$ form a basis of $N_pM$,
+        $V = T_pM\oplus N_pM$, and the orthogonal projection onto $T_pM$
+        is
+        \[
+          \Pi_p = \id - \adj A(A\adj A)^{-1}A , \qquad A = Dg(p) ,
+        \]
+        the adjoint being taken for any inner product on $X$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) $(\ker A)^\circ = \im\dual A$ by \cref{duality:thm:four}, and
+$\dual A$ sends the dual basis of $X^*$ to the covectors $\dd g_i(p)$,
+which are independent because $\dual A$ is injective. (2) The Riesz map
+sends $(T_pM)^\circ$ onto $(T_pM)^\perp$ (\cref{inner-products:prop:perp})
+and $\dd g_i(p)$ to $\nabla g_i(p)$. The operator $A\adj A$ is invertible
+because $A$ is surjective: if $A\adj Ay = 0$ then
+$\norm{\adj Ay}^2 = \inner y{A\adj Ay} = 0$ and $\adj A$ is injective. For
+$v\in V$, $A\Pi_pv = Av - Av = 0$, so $\Pi_pv\in T_pM$, and
+$v - \Pi_pv\in\im\adj A = (\ker A)^\perp$
+(\cref{inner-products:thm:four}). By uniqueness of the decomposition in
+\cref{inner-products:thm:projection}, $\Pi_p$ is the orthogonal
+projection.
+\end{proof}
+
+In matrices, with $J$ the Jacobian matrix of $g$ at $p$ and $G$ the Gram
+matrix of the inner product of $V$, the choice of the dot product on $X$
+gives
+\[
+  [\Pi_p] = I - G^{-1}J^\top\bigl(JG^{-1}J^\top\bigr)^{-1}J ,
+\]
+which reduces to $I - J^\top(JJ^\top)^{-1}J$ in an orthonormal basis. The
+conormal space is the row space of $J$ whatever the inner product; the
+normal space is spanned by the columns of $G^{-1}J^\top$ and changes with
+it.
+
+\begin{example}[Three sets that are not submanifolds]
+\label{submanifolds:ex:not}
+A set that contains curves through $p$ whose velocities span a space of
+dimension $k$ can only be a submanifold of dimension $d\geq k$ near $p$.
+\begin{enumerate}[nosep]
+  \item \emph{The figure eight and the cross.} The figure eight of
+        \cref{submanifolds:fig:eight} contains, through the origin, the
+        curves $s\mapsto(\pm2s\sqrt{1 - s^2}, s)$, with velocities
+        $(\pm2, 1)$. A submanifold with these two tangent vectors would
+        have dimension $2$ and be open in $\R^2$, which the figure eight
+        is not. The same argument applies to the cross $\{xy = 0\}$.
+  \item \emph{The cone.} $\{x^2 + y^2 = z^2\}$ in $\R^3$ contains the
+        lines through the origin directed by $(1, 0, 1)$, $(0, 1, 1)$ and
+        $(-1, 0, 1)$, which span $\R^3$, and it is not open. Away from
+        the origin it is a submanifold of dimension $2$, because
+        $[2x\ \ 2y\ \ {-2z}]\neq0$ there.
+  \item \emph{The corner.} Let $c = (x, y)$ be a $C^1$ curve in
+        $\{y = \abs x\}$ with $c(0) = 0$. Then $y\geq0$ has a minimum at
+        $0$, so $y'(0) = 0$, and $\abs{x'(0)} = \lim\abs{y(t)/t} = 0$:
+        the only tangent vector at the corner is $0$. A submanifold with
+        $T_pM = \{0\}$ has dimension $0$ and $p$ is isolated, which the
+        corner is not. Note that $t\mapsto(t^3, \abs t^3)$ is of class
+        $C^1$ and a homeomorphism from $\R$ onto this set; it fails to be
+        an immersion at $0$.
+\end{enumerate}
+\end{example}
+
+\section{Examples}\label{submanifolds:sec:examples}
+
+The space $\R^{n\times k}$ of matrices is a vector space of dimension $nk$,
+with the Frobenius inner product $\inner AB = \tr(A^\top B)$ when one is
+needed. Let $\mathrm{Sym}(k)$ be the space of symmetric $k\times k$
+matrices, of dimension $\frac12k(k + 1)$.
+
+\begin{theorem}[Spheres, orthogonal groups, Stiefel manifolds]
+\label{submanifolds:thm:stiefel}
+For $1\leq k\leq n$, the set of matrices with orthonormal columns
+\[
+  \mathrm{St}(n, k) = \{X\in\R^{n\times k} : X^\top X = I_k\}
+\]
+is a compact submanifold of $\R^{n\times k}$ of dimension
+$nk - \frac12k(k + 1)$, and
+\[
+  T_X\mathrm{St}(n, k) = \{Z\in\R^{n\times k} : X^\top Z + Z^\top X = 0\} .
+\]
+For $k = 1$ it is the unit sphere $S^{n-1}$, with
+$T_xS^{n-1} = \{z : x^\top z = 0\}$. For $k = n$ it is the orthogonal
+group $\mathrm O(n)$, of dimension $\frac12n(n - 1)$, with
+$T_Q\mathrm O(n) = \{Q\Omega : \Omega^\top = -\Omega\}$.
+\end{theorem}
+
+\begin{proof}
+Let $g:\R^{n\times k}\to\mathrm{Sym}(k)$, $g(X) = X^\top X - I_k$. By
+\cref{differential:prop:bilinear}, $Dg(X)Z = X^\top Z + Z^\top X$. At a
+point of $\mathrm{St}(n, k)$ and for $S\in\mathrm{Sym}(k)$, the matrix
+$Z = \frac12XS$ gives
+$Dg(X)Z = \frac12X^\top XS + \frac12SX^\top X = S$: $g$ is a submersion at
+every point of its zero set, and \cref{submanifolds:cor:produce,%
+submanifolds:thm:tangent} give the dimension and the tangent space. The
+set is closed, as the zero set of a continuous map, and bounded, since
+$\tr(X^\top X) = k$ on it. For $k = n$, $Z = Q\Omega$ with
+$\Omega = Q^\top Z$, and the condition reads $\Omega + \Omega^\top = 0$.
+\end{proof}
+
+\begin{pitfall}[Count the equations in the right space]
+$X^\top X = I_k$ looks like $k^2$ scalar equations, but the equations
+$(i, j)$ and $(j, i)$ are the same. As a map into $\R^{k\times k}$, $g$ is
+not a submersion: the image of $Dg(X)$ consists of symmetric matrices.
+The target must be the space in which the differential is onto, here
+$\mathrm{Sym}(k)$, and the codimension is its dimension. Redundant
+equations do not prevent a set from being a submanifold; they prevent the
+criterion from applying until the redundancy is removed.
+\end{pitfall}
+
+Nothing here is special to the dot product. For an inner product on $V$,
+the unit sphere $\{\inner xx = 1\}$ is a submanifold with
+$T_xS = \{z : \inner xz = 0\}$, and its conormal space at $x$ is spanned
+by the covector $\inner x\cdot$.
+
+\begin{example}[The open simplex]\label{submanifolds:ex:simplex}
+The probability vectors with positive entries,
+$\Delta^\circ = \{p\in\R^n : p_i > 0,\ \sum_ip_i = 1\}$, form an open
+subset of the affine hyperplane $H$ of \cref{affine-spaces:ex:simplex}.
+So $\Delta^\circ$ is a submanifold of dimension $n - 1$ whose tangent
+space is the same at every point: $T_p\Delta^\circ = H_0$, the vectors
+whose components sum to zero. It is flat, but it is not an affine space:
+$p + v$ leaves it when $v$ is too large. The softmax map
+$\R^n\to\Delta^\circ$ is not a parametrization, since it is not injective;
+its restriction to $\{z_n = 0\}$ is one (\cref{submanifolds:exr:9}).
+\end{example}
+
+\begin{theorem}[Linear maps of fixed rank]\label{submanifolds:thm:rank}
+Let $V$ and $W$ be vector spaces of dimensions $n$ and $m$, and
+$1\leq r\leq\min(m, n)$. The set $\mathcal M_r$ of linear maps of rank $r$
+is a submanifold of $L(V, W)$ of dimension $r(m + n - r)$, and
+\[
+  T_A\mathcal M_r = \{H\in L(V, W) : H(\ker A)\subset\im A\} .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $A_0\in\mathcal M_r$. Choose a basis of $V$ whose last $n - r$ vectors
+span $\ker A_0$, and a basis of $W$ whose first $r$ vectors are the
+images by $A_0$ of the first $r$ basis vectors of $V$. In these bases a
+linear map has a matrix in blocks,
+\[
+  A = \begin{bmatrix} A_{11} & A_{12}\\ A_{21} & A_{22}\end{bmatrix},
+  \qquad
+  A_0 = \begin{bmatrix} I_r & 0\\ 0 & 0\end{bmatrix},
+\]
+with $A_{11}$ of size $r\times r$. The set $U$ of maps with $A_{11}$
+invertible is open and contains $A_0$. For $A\in U$,
+\[
+  \begin{bmatrix} I & 0\\ -A_{21}A_{11}^{-1} & I\end{bmatrix}
+  \begin{bmatrix} A_{11} & A_{12}\\ A_{21} & A_{22}\end{bmatrix}
+  = \begin{bmatrix} A_{11} & A_{12}\\
+      0 & A_{22} - A_{21}A_{11}^{-1}A_{12}\end{bmatrix} ,
+\]
+and the first factor is invertible. In the matrix on the right the first
+$r$ columns are independent, and subtracting combinations of them from
+the others removes $A_{12}$: the rank of $A$ is $r$ plus the rank of
+$g(A) = A_{22} - A_{21}A_{11}^{-1}A_{12}$. Hence
+$\mathcal M_r\cap U = g^{-1}(0)$. The map $g$ is of class $C^1$ on $U$
+with values in a space of dimension $(m - r)(n - r)$, and it is a
+submersion: on the maps $H$ whose only non-zero block is $H_{22}$,
+$Dg(A)H = H_{22}$. So $\mathcal M_r$ is a submanifold of dimension
+$mn - (m - r)(n - r) = r(m + n - r)$.
+
+At $A_0$, $g(A_0 + H) = H_{22} - H_{21}(I + H_{11})^{-1}H_{12}$, whose
+second term is $o(H)$: $Dg(A_0)H = H_{22}$ and
+$T_{A_0}\mathcal M_r = \{H : H_{22} = 0\}$. In the chosen bases,
+$\ker A_0$ is spanned by the last $n - r$ vectors of the basis of $V$ and
+$\im A_0$ by the first $r$ vectors of the basis of $W$, so $H_{22} = 0$
+says exactly that $H$ maps $\ker A_0$ into $\im A_0$.
+\end{proof}
+
+\begin{intuition}
+A tangent vector to the maps of rank $r$ may do anything on a complement
+of $\ker A$, but it must not send $\ker A$ outside $\im A$: that would
+create rank. The forbidden block has $(m - r)(n - r)$ entries, which is
+the codimension. In terms of a singular value decomposition
+$A = \sum_{i\leq r}\sigma_iu_i\inner{v_i}\cdot$
+(\cref{spectral-svd:thm:svd}), with the $u_i$ and the $v_i$ completed
+into orthonormal bases, the tangent vectors are the $H$ with
+$\inner{u_j}{Hv_k} = 0$ for all $j, k > r$.
+\end{intuition}
+
+The maps of full rank, $r = \min(m, n)$, form an open set. For smaller
+$r$ the set $\mathcal M_r$ is not closed: its closure is the set of maps
+of rank at most $r$, which is not a submanifold. The smallest case shows
+how.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \draw[->, gray] (0,-2.1) -- (0,2.3);
+  \node[gray, above] at (0,2.3) {$u = \frac12(a + c)$};
+  \draw[bookaccent, thick] (-1.6,1.6) -- (1.6,-1.6);
+  \draw[bookaccent, thick] (1.6,1.6) -- (-1.6,-1.6);
+  \draw[bookaccent, thick] (0,1.6) ellipse [x radius=1.6, y radius=0.33];
+  \draw[bookaccent, thick] (-1.6,-1.6) arc (180:360:1.6 and 0.33);
+  \draw[bookaccent, thick, dashed] (1.6,-1.6) arc (0:180:1.6 and 0.33);
+  \node[circle, draw=bookpitfall, fill=white, thick, inner sep=1.6pt]
+    at (0,0) {};
+  \node[bookpitfall, right] at (0.25,0) {rank $0$: the apex};
+  \node[bookaccent, right] at (1.7,1.3)
+    {rank $1$, positive semidefinite};
+  \node[bookaccent, right] at (1.7,-1.3)
+    {rank $1$, negative semidefinite};
+  \node[left, font=\small] (pd) at (-2.3,1.0) {positive definite};
+  \draw[->, thin] (pd.east) -- (-0.35,1.0);
+  \node[left, font=\small] (nd) at (-2.3,-1.0) {negative definite};
+  \draw[->, thin] (nd.east) -- (-0.35,-1.0);
+  \node[left, font=\small] at (-1.5,0) {indefinite};
+\end{tikzpicture}
+\caption{The symmetric $2\times2$ matrices of determinant zero form a
+double cone in a space of dimension three. Without its apex, the cone is
+the submanifold of matrices of rank one. Inside the two halves are the
+definite matrices; outside the cone, the indefinite ones.}
+\label{submanifolds:fig:cone}
+\end{figure}
+
+\begin{example}[Symmetric matrices of rank one]
+\label{submanifolds:ex:cone}
+A symmetric matrix
+$\begin{bsmallmatrix}a & b\\ b & c\end{bsmallmatrix}$ has rank at most
+one when $ac - b^2 = 0$. With $a = u + v$ and $c = u - v$ this is
+$u^2 = v^2 + b^2$, a cone in the three-dimensional space
+$\mathrm{Sym}(2)$ (\cref{submanifolds:fig:cone}). The differential of the
+determinant, $[c\ \ {-2b}\ \ a]$ in the coordinates $(a, b, c)$, vanishes
+only at the zero matrix. So the symmetric matrices of rank exactly one
+form a submanifold of dimension $2$, with two pieces: positive
+semidefinite ($u > 0$) and negative semidefinite ($u < 0$). The matrices
+of rank at most one include the apex, where the set is not a submanifold
+(\cref{submanifolds:ex:not}). At $A = xx^\top$ the tangent vectors are
+the matrices $xy^\top + yx^\top$, the velocities of
+$t\mapsto(x + ty)(x + ty)^\top$.
+\end{example}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Submanifold & Given by & Dimension & Tangent space \\
+\midrule
+sphere $S^{n-1}$ & $x^\top x = 1$ & $n - 1$ & $x^\top z = 0$ \\
+$\mathrm O(n)$ & $Q^\top Q = I$ & $\frac12n(n - 1)$
+  & $Q\Omega$, $\Omega$ antisymmetric \\
+$\mathrm{St}(n, k)$ & $X^\top X = I_k$ & $nk - \frac12k(k + 1)$
+  & $X^\top Z + Z^\top X = 0$ \\
+rank $r$ in $\R^{m\times n}$ & a Schur complement vanishes
+  & $r(m + n - r)$ & $H(\ker A)\subset\im A$ \\
+open simplex & $\sum_ip_i = 1$, $p_i > 0$ & $n - 1$
+  & $\sum_iv_i = 0$ \\
+graph of $h:E\to F$ & $w = h(u)$ & $\dim E$ & graph of $Dh(u)$ \\
+\bottomrule
+\end{tabular}
+\caption{The examples of this section. In each case the tangent space is
+the kernel of the differential of the defining equations.}
+\label{submanifolds:tab:examples}
+\end{table}
+
+\section{Differentiable maps on submanifolds}\label{submanifolds:sec:maps}
+
+A function defined only on $M$ has no differential in the sense of
+\cref{ch:differential}: the points $p + h$ are not in $M$. Two equivalent
+ways around this are to extend the function to a neighbourhood, or to
+compose it with a parametrization.
+
+\begin{definition}\label{submanifolds:def:c1}
+Let $M\subset\Aff$ be a submanifold and $\Bff$ an affine space. A map
+$f:M\to\Bff$ is \emph{of class $C^1$} if every $p\in M$ has an open
+neighbourhood $U$ in $\Aff$ with a $C^1$ map $F:U\to\Bff$ equal to $f$ on
+$M\cap U$. Such an $F$ is a \emph{local extension} of $f$. A map from $M$
+into a submanifold $N\subset\Bff$ is of class $C^1$ if it is so as a map
+into $\Bff$.
+\end{definition}
+
+\begin{proposition}\label{submanifolds:prop:charts}
+A map $f:M\to\Bff$ is of class $C^1$ if and only if $f\circ\psi$ is of
+class $C^1$ for every parametrization $\psi$ of an open piece of $M$, as
+in \cref{submanifolds:thm:four}\,(d). It is enough to check one
+parametrization around each point.
+\end{proposition}
+
+\begin{proof}
+If $F$ is a local extension, $f\circ\psi = F\circ\psi$ near each point,
+a composition of $C^1$ maps. Conversely let $\psi$ be a parametrization
+around $p$ with $f\circ\psi$ of class $C^1$. The proof of
+\cref{submanifolds:thm:four} gives an open $U'\ni p$ and a diffeomorphism
+$\Xi$ on $U'$ such that $t = \mathrm{pr}_1\,\Xi(x)$ is in the domain of
+$\psi$ for all $x\in U'$, and $x = \psi(t)$ when $x\in M\cap U'$. Then
+$F = (f\circ\psi)\circ\mathrm{pr}_1\circ\Xi$ is of class $C^1$ on $U'$
+and equals $f$ on $M\cap U'$.
+\end{proof}
+
+\begin{corollary}[Changes of parameters]\label{submanifolds:cor:transition}
+Let $\psi_1:\Omega_1\to M$ and $\psi_2:\Omega_2\to M$ be two
+parametrizations of open pieces of $M$, and
+$W = \psi_1(\Omega_1)\cap\psi_2(\Omega_2)$. Then
+$\psi_2^{-1}\circ\psi_1$ is a diffeomorphism from $\psi_1^{-1}(W)$ onto
+$\psi_2^{-1}(W)$, two open subsets of $\R^d$.
+\end{corollary}
+
+\begin{proof}
+Since $\psi_2(\Omega_2) = M\cap U_2$ with $U_2$ open, the set
+$\psi_1^{-1}(W) = \psi_1^{-1}(U_2)$ is open, and so is $\psi_2^{-1}(W)$.
+Near each point of $\psi_2(\Omega_2)$, the map $\psi_2^{-1}$ is the
+restriction of $\mathrm{pr}_1\circ\Xi_2$, with $\Xi_2$ as in the previous
+proof. So $\psi_2^{-1}\circ\psi_1$ is locally
+$\mathrm{pr}_1\circ\Xi_2\circ\psi_1$, of class $C^1$. The same holds for
+its inverse $\psi_1^{-1}\circ\psi_2$.
+\end{proof}
+
+A parametrization gives each point of a piece of $M$ a label $t\in\R^d$,
+and two parametrizations give labels related by a diffeomorphism: they
+are two systems of curvilinear coordinates on $M$. This corollary is what
+remains when the ambient space is forgotten, and
+\cref{ch:tangent-bundles} starts from it.
+
+\begin{proposition}[The differential]\label{submanifolds:prop:differential}
+Let $f:M\to N$ be of class $C^1$ between submanifolds and $p\in M$. There
+is a unique linear map
+\[
+  Df(p):T_pM\to T_{f(p)}N
+\]
+such that $(f\circ c)'(0) = Df(p)\,c'(0)$ for every $C^1$ curve $c$ in
+$M$ with $c(0) = p$. It is the restriction to $T_pM$ of $DF(p)$, for any
+local extension $F$ of $f$. If $g:N\to P$ is of class $C^1$, so is
+$g\circ f$, and
+$D(g\circ f)(p) = Dg\bigl(f(p)\bigr)\circ Df(p)$.
+\end{proposition}
+
+\begin{proof}
+Let $F$ be a local extension and $c$ a curve in $M$ through $p$. Near
+$0$, $f\circ c = F\circ c$, so $f\circ c$ is a $C^1$ curve with velocity
+$DF(p)c'(0)$ (\cref{differential:thm:velocity}). This velocity depends
+only on $c'(0)$, linearly, and it belongs to $T_{f(p)}N$ because
+$f\circ c$ is a curve in $N$. The left-hand side $(f\circ c)'(0)$ does
+not involve $F$, so the restriction of $DF(p)$ to $T_pM$ is the same for
+all extensions. If $G$ is a local extension of $g$, then $G\circ F$ is one
+of $g\circ f$, and the chain rule follows from
+\cref{chain-rule-autodiff:thm:chain} restricted to $T_pM$.
+\end{proof}
+
+For a parametrization, the chain rule reads
+$D(f\circ\psi)(t) = Df(\psi(t))\circ D\psi(t)$: the columns of the
+Jacobian matrix of $f\circ\psi$ are the images by $Df(p)$ of the basis
+$\partial_1\psi(t),\dots,\partial_d\psi(t)$ of $T_pM$.
+
+\begin{keyidea}
+For a function $f:M\to\R$, the differential $\dd f(p)$ is a covector on
+$T_pM$, not on $V$. Two extensions $F_1$ and $F_2$ have differentials
+that agree on $T_pM$ and differ by an element of the conormal space:
+$\dd F_1(p) - \dd F_2(p)\in(T_pM)^\circ$. The part of $\dd F(p)$ that
+sees the directions leaving $M$ is not a property of $f$.
+\end{keyidea}
+
+\begin{theorem}[Critical points on a submanifold]
+\label{submanifolds:thm:critical}
+Let $f:M\to\R$ be of class $C^1$ with a local extremum at $p$. Then
+$\dd f(p) = 0$ on $T_pM$. Equivalently, for any local extension $F$,
+$\dd F(p)\in(T_pM)^\circ$; and if $M$ is given near $p$ by a submersion
+$g$, there is a unique $\lambda\in X^*$ with
+$\dd F(p) + \lambda\circ Dg(p) = 0$.
+\end{theorem}
+
+\begin{proof}
+For a curve $c$ in $M$ through $p$, the function $f\circ c$ has a local
+extremum at $0$, so $\dd f(p)c'(0) = (f\circ c)'(0) = 0$. The rest is
+\cref{submanifolds:prop:normal}, the uniqueness of $\lambda$ coming from
+the injectivity of $\dual{Dg(p)}$.
+\end{proof}
+
+This is the theorem of Lagrange (\cref{constrained-optimization:thm:lagrange})
+read as the theorem of Fermat (\cref{differential:thm:fermat}) on $M$: a
+point where $\dd f(p)$ vanishes on $T_pM$ is a \emph{critical point} of
+$f$ on $M$, and the multiplier records the conormal part of $\dd F(p)$,
+which depends on the extension and on the equations.
+
+\begin{proposition}[The gradient on a submanifold]
+\label{submanifolds:prop:gradient}
+Let $V$ have an inner product and let $f:M\to\R$ be of class $C^1$. The
+vector of $T_pM$ that represents $\dd f(p)$ for the inner product
+restricted to $T_pM$ is
+\[
+  \operatorname{grad}f(p) = \Pi_p\nabla F(p) ,
+\]
+the orthogonal projection on $T_pM$ of the gradient of any local
+extension.
+\end{proposition}
+
+\begin{proof}
+$\Pi_p\nabla F(p)\in T_pM$, and for $v\in T_pM$,
+$\inner{\Pi_p\nabla F(p)}v = \inner{\nabla F(p)}{\Pi_pv}
+= \inner{\nabla F(p)}v = \dd F(p)v = \dd f(p)v$, since $\Pi_p$ is
+self-adjoint and $\Pi_pv = v$.
+\end{proof}
+
+\begin{pitfall}[The ambient gradient depends on the extension]
+On the unit sphere of $\R^3$ let $f(x) = x_3$. The functions
+$F_1(x) = x_3$ and $F_2(x) = x_3\norm x^2$ both extend $f$, with
+$\nabla F_1 = e_3$ and $\nabla F_2 = e_3 + 2x_3x$ on the sphere: they
+differ by a normal vector. Both project to
+$\operatorname{grad}f(x) = e_3 - x_3x$, which vanishes at the two poles
+only. A step along $-\nabla F$ is a step along an arbitrary choice; and a
+step along $-\operatorname{grad}f(x)$, although tangent, still leaves the
+sphere. \Cref{ch:riemannian-optimization} deals with both points.
+\end{pitfall}
+
+\begin{example}[Normalization]\label{submanifolds:ex:normalization}
+Let $V$ have an inner product, $S$ its unit sphere, and
+$\pi(v) = v/\norm v$ on $V\setminus\{0\}$. With $w = \pi(v)$,
+\[
+  D\pi(v)h = \frac1{\norm v}\bigl(h - \inner whw\bigr)
+  = \frac1{\norm v}\,\Pi_wh ,
+\]
+where $\Pi_w$ is the orthogonal projection onto $T_wS$
+(\cref{submanifolds:exr:8}). The kernel of $D\pi(v)$ is the line $\R v$
+and its image is $T_wS$: as a map into the sphere, $\pi$ has a surjective
+differential at every point.
+\end{example}
+
+\section{Constraints in machine learning}\label{submanifolds:sec:ml}
+
+\begin{mlthread}[Machine learning: normalized and orthogonal weights]
 \begin{itemize}[nosep]
-  \item Normalized and orthogonal weights.
-  \item Low-rank parametrizations.
-  \item The manifold hypothesis for data.
+  \item \emph{Weight normalization} writes a weight vector as
+        $w = \gamma\,v/\norm v$ and trains $\gamma$ and $v$. By
+        \cref{submanifolds:ex:normalization} and the chain rule,
+        $\nabla_vL = \frac\gamma{\norm v}\Pi_w\nabla_wL$: the gradient
+        with respect to $v$ is tangent to the sphere through $v$. The
+        same holds for any loss that depends on $v$ only through
+        $v/\norm v$, as happens for the weights feeding a normalization
+        layer. A gradient step then increases the norm,
+        $\norm{v - \eta\nabla_vL}^2 = \norm v^2 + \eta^2\norm{\nabla_vL}^2$,
+        which shrinks the next effective step.
+  \item \emph{Orthogonal weights.} A matrix of $\mathrm O(n)$ preserves
+        norms, so repeated multiplication by it neither shrinks nor
+        inflates a signal. The constraint leaves $\frac12n(n - 1)$
+        degrees of freedom out of $n^2$. One can parametrize: for
+        $\Omega$ antisymmetric, the Cayley transform
+        $Q = (I - \Omega)(I + \Omega)^{-1}$ is orthogonal, and
+        $\Omega\mapsto Q$ is a parametrization of the orthogonal matrices
+        without the eigenvalue $-1$, with inverse
+        $\Omega = (I - Q)(I + Q)^{-1}$.
+  \item \emph{Leaving the set.} After a step $W - \eta\nabla L$ the
+        constraint no longer holds, whatever the direction of the step:
+        $\theta + v$ leaves a curved set. The two remedies are to move
+        the parameters of a parametrization, or to step in a tangent
+        direction and come back to the set, which is the subject of
+        \cref{ch:riemannian-optimization}.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: low-rank parametrizations]
+A low-rank adapter replaces an update $\Delta W\in\R^{m\times n}$ by a
+product $BA$ with $B\in\R^{m\times r}$ and $A\in\R^{r\times n}$. The map
+$\mu(B, A) = BA$ takes its values in the matrices of rank at most $r$,
+and $D\mu(B, A)(\dot B, \dot A) = \dot BA + B\dot A$.
+\begin{itemize}[nosep]
+  \item \emph{Counting.} Where $B$ and $A$ have rank $r$, the image of
+        $D\mu(B, A)$ is the whole tangent space $T_{BA}\mathcal M_r$, of
+        dimension $r(m + n - r)$, and its kernel consists of the pairs
+        $(BG, -GA)$ with $G\in\R^{r\times r}$. The $r(m + n)$ parameters
+        describe a set of dimension $r(m + n - r)$: the $r^2$ missing
+        dimensions are those of the changes $(B, A)\mapsto(BG^{-1}, GA)$,
+        which do not change the product. For $m = n = 1000$ and $r = 8$,
+        the adapter has $16\,000$ parameters, the set it describes has
+        dimension $15\,936$, and the full matrix has $10^6$ entries.
+  \item \emph{The starting point is singular.} With the usual
+        initialization $B = 0$, the product is the zero matrix, where the
+        set of matrices of rank at most $r$ is singular like the apex of
+        \cref{submanifolds:fig:cone}, and
+        $D\mu(0, A)(\dot B, \dot A) = \dot BA$ has rank $mr$ only. The
+        differential of the loss with respect to $A$ is zero there: at
+        the first step only $B$ moves.
+  \item \emph{The basis test.} The pair $(B, A)$ is a redundant
+        coordinate system on $\mathcal M_r$, and plain gradient descent on
+        $(B, A)$ depends on which of the equivalent pairs is used.
+        Rescaling $B$ by $s$ and $A$ by $1/s$ leaves the model unchanged
+        and changes the trajectory.
+\end{itemize}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: the manifold hypothesis]
+Natural data in $\R^n$, with $n$ the number of pixels or of samples, are
+far from filling the space: the \emph{manifold hypothesis} models them as
+lying near a submanifold of much smaller dimension $d$.
+\begin{itemize}[nosep]
+  \item A decoder or a generator $\psi:\R^d\to\R^n$ is a candidate
+        parametrization. Where $D\psi(z)$ is injective, the image of a
+        small neighbourhood of $z$ is a submanifold whose tangent space
+        is $\im D\psi(z)$, spanned by the $d$ columns of the Jacobian
+        matrix: $d$ forward-mode passes
+        (\cref{ch:chain-rule-autodiff}). Nothing ensures that $\psi$ is
+        injective, nor that its inverse is continuous
+        (\cref{submanifolds:fig:eight}).
+  \item From samples alone, the tangent space at $p$ is estimated from
+        the singular value decomposition of the displacements $x_j - p$
+        to the neighbours within a distance $\rho$: the computation of
+        \cref{spectral-svd:prop:pca}, without centring. By
+        \cref{submanifolds:prop:contact} these displacements are within
+        $o(\rho)$ of $T_pM$, so, if they spread in all tangent
+        directions, $d$ singular values are of order $\rho$, the others
+        are much smaller, and the first $d$ principal directions tend to
+        $T_pM$ as $\rho\to0$. The number of large singular values is an
+        estimate of the dimension.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{submanifolds:sec:outlook}
+
+The ambient space served twice: to say what a differentiable map on $M$
+is, and to hold all the tangent spaces inside one vector space $V$.
+\Cref{ch:tangent-bundles} keeps the parametrizations and their changes of
+parameters (\cref{submanifolds:cor:transition}) and drops $\Aff$; tangent
+vectors are then defined by curves alone, and the differential of a
+function is still a covector. \Cref{ch:riemannian-optimization} starts
+from \cref{submanifolds:prop:gradient} and adds what is missing to turn a
+tangent vector into a new point of $M$. The parametrizations will be used
+again to integrate over submanifolds in \cref{ch:change-of-variables}.
+
+\paragraph{Sources.} Loomis and Sternberg define a submanifold as a set
+that is locally a graph and prove that the zero set of a map with
+surjective differential is one (\S3.12 of \emph{Advanced Calculus},
+Theorem~12.1); they note that the tangent space consists of the vectors
+tangent to arcs drawn in the set.
+Hubbard and Hubbard also start from graphs (Definition~3.1.2), and give
+the description by equations (Theorem~3.1.10), parametrizations
+(Definition~3.1.18), the tangent space as a kernel (Theorem~3.2.4) and
+as an image (Proposition~3.2.7), and maps defined on manifolds
+(Proposition and Definition~3.2.9); the orthogonal group is their
+Exercise~3.2.11. For matrix manifolds, see P.-A.~Absil, R.~Mahony and
+R.~Sepulchre, \emph{Optimization Algorithms on Matrix Manifolds},
+Princeton University Press, 2008, and N.~Boumal, \emph{An Introduction to
+Optimization on Smooth Manifolds}, Cambridge University Press, 2023.
+Weight normalization: T.~Salimans and D.~P.~Kingma, NeurIPS, 2016.
+Low-rank adapters: E.~Hu et al., LoRA, ICLR, 2022. The manifold
+hypothesis is discussed in Y.~Bengio, A.~Courville and P.~Vincent,
+Representation learning: a review and new perspectives, \emph{IEEE
+Transactions on Pattern Analysis and Machine Intelligence}, 2013.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{12-submanifolds.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A submanifold of dimension $d$ is a set that a local
+        diffeomorphism straightens into a piece of a $d$-dimensional
+        subspace. Equivalently it is locally the zero set of a
+        submersion, a graph, or the image of an immersion that is a
+        homeomorphism onto its image.
+  \item The tangent space $T_pM$ is the set of velocities of curves in
+        $M$ through $p$: a subspace of $V$ of dimension $d$, equal to
+        $\ker Dg(p)$ and to $\im D\psi(t)$. The tangent flat $p + T_pM$
+        touches $M$ to first order.
+  \item The conormal space $(T_pM)^\circ$ is spanned by the differentials
+        of the equations. An inner product turns it into the normal
+        space and gives the projection
+        $\id - \adj A(A\adj A)^{-1}A$ onto $T_pM$.
+  \item $\mathrm{St}(n, k)$ has dimension $nk - \frac12k(k + 1)$; the
+        matrices of rank $r$ have dimension $r(m + n - r)$ and tangent
+        space $\{H : H(\ker A)\subset\im A\}$.
+  \item A $C^1$ map on $M$ has a differential on $T_pM$, the restriction
+        of the differential of any extension. Critical points on $M$ are
+        the points of the Lagrange condition, and the gradient on $M$ is
+        the projection of the ambient gradient.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{submanifolds:exr:1}
+Let $M = \{(x, y, z)\in\R^3 : x^2 + y^2 - z^2 = 1\}$.
+\begin{enumerate}[nosep]
+  \item Show that $M$ is a submanifold of dimension $2$.
+  \item Find $T_pM$ and an equation of the tangent flat at
+        $p = (1, 1, 1)$.
+  \item Show that the tangent flat at $p$ meets $M$ along two lines.
+\end{enumerate}
+\solutionlink{submanifolds:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{submanifolds:exr:2}
+\begin{enumerate}[nosep]
+  \item Show that the only vector tangent at the origin to the cusp
+        $\{y^2 = x^3\}\subset\R^2$ is $0$, and conclude that the cusp is
+        not a submanifold.
+  \item For which $c\in\R$ is $\{x^2 + y^2 - z^2 = c\}$ a submanifold of
+        $\R^3$?
+\end{enumerate}
+\solutionlink{submanifolds:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{submanifolds:exr:3}
+Let $M = \{(t, t^2, t^3) : t\in\R\}\subset\R^3$. Give a parametrization
+of $M$, a submersion $g:\R^3\to\R^2$ with $M = g^{-1}(0)$, a description
+as a graph and a straightening defined on all of $\R^3$. Compute the
+tangent space at $p = (1, 1, 1)$ as an image and as a kernel, and give a
+basis of the conormal space.
+\solutionlink{submanifolds:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{submanifolds:exr:4}
+Show that $\mathrm{SL}(n) = \{A\in\R^{n\times n} : \det A = 1\}$ is a
+submanifold of dimension $n^2 - 1$, with
+$T_A\mathrm{SL}(n) = \{H : \tr(A^{-1}H) = 0\}$. Is it compact?
+\hint{\cref{differential:prop:det}.}
+\solutionlink{submanifolds:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{submanifolds:exr:5}
+Let $X\in\mathrm{St}(n, k)$ and let $X_\perp\in\R^{n\times(n - k)}$ be
+such that the square matrix $[X\ \ X_\perp]$ is orthogonal. Show that
+\[
+  T_X\mathrm{St}(n, k)
+  = \{X\Omega + X_\perp B : \Omega^\top = -\Omega,\
+      B\in\R^{(n - k)\times k}\} ,
+\]
+and recover the dimension. What are the two numbers for
+$\mathrm{St}(5, 2)$?
+\solutionlink{submanifolds:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{submanifolds:exr:6}
+Let $A = \begin{bsmallmatrix}1 & 2\\ 2 & 4\end{bsmallmatrix}$, a point of
+the matrices of rank one in $\R^{2\times2}$.
+\begin{enumerate}[nosep]
+  \item What is the dimension of this submanifold?
+  \item Write the tangent space at $A$ as one linear equation on the
+        entries of $H$, using \cref{submanifolds:thm:rank}.
+  \item Compare with the differential of the determinant at $A$.
+  \item Which of $\begin{bsmallmatrix}0 & 1\\ 1 & 4\end{bsmallmatrix}$ and
+        the identity matrix are tangent at $A$?
+\end{enumerate}
+\solutionlink{submanifolds:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{submanifolds:exr:7}
+Let $\rho = \sqrt{x^2 + y^2}$ and
+$M = \{(x, y, z)\in\R^3 : (\rho - 2)^2 + z^2 = 1\}$, a torus.
+\begin{enumerate}[nosep]
+  \item Show that $M$ is a submanifold of dimension $2$.
+  \item Check that
+        $\psi(\theta, \varphi) = \bigl((2 + \cos\varphi)\cos\theta,\
+        (2 + \cos\varphi)\sin\theta,\ \sin\varphi\bigr)$ takes its values
+        in $M$ and is an immersion.
+  \item Compute the tangent space at $(3, 0, 0)$ in both ways.
+\end{enumerate}
+\solutionlink{submanifolds:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{submanifolds:exr:8}
+Let $V$ have an inner product and $\pi(v) = v/\norm v$ on
+$V\setminus\{0\}$.
+\begin{enumerate}[nosep]
+  \item Prove the formula for $D\pi(v)$ of
+        \cref{submanifolds:ex:normalization}, and find its kernel and its
+        image.
+  \item Let $\ell:V\to\R$ be of class $C^1$ and $L = \ell\circ\pi$. Show
+        that $\nabla L(v) = \frac1{\norm v}\Pi_w\nabla\ell(w)$ with
+        $w = \pi(v)$, and that it is orthogonal to $v$.
+  \item Deduce that a gradient step on $L$ increases $\norm v$.
+\end{enumerate}
+\solutionlink{submanifolds:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{submanifolds:exr:9}
+Let $\sigma:\R^n\to\R^n$ be the softmax map,
+$\sigma(z)_i = e^{z_i}/\sum_je^{z_j}$, and $p = \sigma(z)$. Recall that
+$[D\sigma(z)] = \diag(p) - pp^\top$.
+\begin{enumerate}[nosep]
+  \item Show that the kernel of $D\sigma(z)$ is spanned by
+        $(1,\dots,1)$ and that its image is the tangent space $H_0$ of
+        the open simplex.
+  \item Show that the restriction of $\sigma$ to the hyperplane
+        $\{z_n = 0\}$, identified with $\R^{n-1}$, is a parametrization
+        of the whole open simplex, and give its inverse.
+\end{enumerate}
+\solutionlink{submanifolds:exr:9}
+\end{exercise}
 \end{notechapter}

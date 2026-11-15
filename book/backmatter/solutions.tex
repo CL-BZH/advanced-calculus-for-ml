@@ -1468,3 +1468,160 @@ dual value $\alpha_1 + \alpha_2 - \frac12(\alpha_1 + \alpha_2)^2
 = \frac12$ equals $\frac12w^2$. For the third point,
 $3w + b = 3 > 1$: its constraint is inactive, $\alpha_3 = 0$, and nothing
 changes. It is not a support vector.
+
+\section{\nameref*{ch:submanifolds}}
+
+\solution{submanifolds:exr:1}
+\begin{enumerate}[nosep]
+  \item $M$ is the zero set of $g = x^2 + y^2 - z^2 - 1$, and
+        $[\dd g] = [2x\ \ 2y\ \ {-2z}]$ vanishes only at the origin, which
+        is not on $M$. Apply \cref{submanifolds:cor:produce}.
+  \item $[\dd g(p)] = [2\ \ 2\ \ {-2}]$, so
+        $T_pM = \{v : v_1 + v_2 - v_3 = 0\}$ and the tangent flat is
+        $(x - 1) + (y - 1) - (z - 1) = 0$, that is, $x + y - z = 1$.
+  \item Substituting $z = x + y - 1$ in the equation of $M$ gives
+        $-2xy + 2x + 2y - 2 = 0$, that is, $(x - 1)(y - 1) = 0$. The
+        intersection is the union of the lines $s\mapsto(1, s, s)$ and
+        $s\mapsto(s, 1, s)$. Unlike a sphere, this surface crosses its
+        tangent flat.
+\end{enumerate}
+
+\solution{submanifolds:exr:2}
+\begin{enumerate}[nosep]
+  \item Let $c = (x, y)$ be a $C^1$ curve in the cusp with $c(0) = 0$.
+        Since $x^3 = y^2\geq0$, the function $x$ has a minimum at $0$ and
+        $x'(0) = 0$. Then
+        $\abs{y(t)/t} = \abs{x(t)/t}^{3/2}\abs t^{1/2}\to0$, so
+        $y'(0) = 0$. If the cusp were a submanifold near the origin, its
+        tangent space $\{0\}$ would give the dimension $0$ and the origin
+        would be isolated; but the points $(s^2, s^3)$ tend to it.
+  \item The differential $[2x\ \ 2y\ \ {-2z}]$ vanishes only at the
+        origin, which belongs to the level set only for $c = 0$. For
+        $c\neq0$ the level set is a submanifold of dimension $2$ (in one
+        piece for $c > 0$, in two for $c < 0$). For $c = 0$ it is the
+        cone of \cref{submanifolds:ex:not}, which is not a submanifold.
+\end{enumerate}
+
+\solution{submanifolds:exr:3}
+\emph{Parametrization:} $\psi(t) = (t, t^2, t^3)$ on $\R$, with
+$\psi'(t) = (1, 2t, 3t^2)\neq0$ and the continuous inverse
+$(x, y, z)\mapsto x$. \emph{Equations:}
+$g(x, y, z) = (y - x^2, z - x^3)$, whose Jacobian matrix
+$\begin{bsmallmatrix}-2x & 1 & 0\\ -3x^2 & 0 & 1\end{bsmallmatrix}$ has
+rank $2$ everywhere. \emph{Graph:} $M$ is the graph of
+$x\mapsto(x^2, x^3)$, from the $x$-axis to the plane of $(y, z)$.
+\emph{Straightening:} $\Phi(x, y, z) = (x, y - x^2, z - x^3)$ is a
+diffeomorphism of $\R^3$, with inverse $(x, y + x^2, z + x^3)$, and
+$\Phi(M)$ is the first axis. At $p = \psi(1)$,
+$T_pM = \im D\psi(1) = \Span\{(1, 2, 3)\}$; the kernel of
+$\begin{bsmallmatrix}-2 & 1 & 0\\ -3 & 0 & 1\end{bsmallmatrix}$ is given
+by $v_2 = 2v_1$ and $v_3 = 3v_1$, the same line. The conormal space is
+spanned by the rows $[-2\ \ 1\ \ 0]$ and $[-3\ \ 0\ \ 1]$, which both
+vanish on $(1, 2, 3)$.
+
+\solution{submanifolds:exr:4}
+$\mathrm{SL}(n)$ is the zero set of $g = \det - 1$, and at a point $A$ of
+it $\dd g(A)H = \tr(A^{-1}H)$ by \cref{differential:prop:det}. For
+$H = A$ this is $n\neq0$, so $\dd g(A)$ is onto $\R$: $\mathrm{SL}(n)$ is
+a submanifold of codimension $1$, and its tangent space is the kernel
+$\{H : \tr(A^{-1}H) = 0\}$; at the identity, the matrices of trace zero.
+For $n\geq2$ it is not compact: it contains
+$\diag(t, 1/t, 1,\dots,1)$ for all $t > 0$, so it is not bounded.
+
+\solution{submanifolds:exr:5}
+Let $Z = X\Omega + X_\perp B$. Since $X^\top X = I$ and
+$X^\top X_\perp = 0$, $X^\top Z = \Omega$, which is antisymmetric: $Z$ is
+tangent by \cref{submanifolds:thm:stiefel}. The map
+$(\Omega, B)\mapsto Z$ is injective, because
+$[X\ \ X_\perp]$ is invertible and
+$Z = [X\ \ X_\perp]\begin{bsmallmatrix}\Omega\\ B\end{bsmallmatrix}$.
+Its image has dimension
+$\frac12k(k - 1) + (n - k)k = nk - \frac12k(k + 1)$, the dimension of the
+tangent space, so it is the whole tangent space. For
+$\mathrm{St}(5, 2)$: $1 + 6 = 7 = 10 - 3$.
+
+\solution{submanifolds:exr:6}
+\begin{enumerate}[nosep]
+  \item $r(m + n - r) = 1\cdot(2 + 2 - 1) = 3$.
+  \item $\ker A$ is spanned by $(2, -1)$ and $\im A$ by $(1, 2)$. The
+        vector $H(2, -1) = (2h_{11} - h_{12},\ 2h_{21} - h_{22})$ is
+        proportional to $(1, 2)$ when
+        $2(2h_{11} - h_{12}) = 2h_{21} - h_{22}$:
+        \[
+          4h_{11} - 2h_{12} - 2h_{21} + h_{22} = 0 .
+        \]
+  \item $\det(A + H) = \det A
+        + (a_{22}h_{11} + a_{11}h_{22} - a_{12}h_{21} - a_{21}h_{12})
+        + \det H$, so
+        $\dd(\det)(A)H = 4h_{11} + h_{22} - 2h_{21} - 2h_{12}$: the same
+        equation. Near $A$ the matrices of rank one are the zero set of
+        the determinant, which is a submersion at $A$.
+  \item For the first matrix, $0 - 2 - 2 + 4 = 0$: tangent. For the
+        identity, $4 + 1 = 5\neq0$: not tangent, and indeed
+        $\det(A + tI) = 5t + t^2$.
+\end{enumerate}
+
+\solution{submanifolds:exr:7}
+\begin{enumerate}[nosep]
+  \item On the open set $\rho > 0$, which contains $M$, the function
+        $g = (\rho - 2)^2 + z^2 - 1$ is of class $C^1$ and
+        $[\dd g] = \bigl[2(\rho - 2)\frac x\rho\ \
+        2(\rho - 2)\frac y\rho\ \ 2z\bigr]$. It vanishes only where
+        $\rho = 2$ and $z = 0$, and there $g = -1$.
+  \item At $\psi(\theta, \varphi)$, $\rho = 2 + \cos\varphi$ and
+        $z = \sin\varphi$, so $(\rho - 2)^2 + z^2 = 1$. The partial
+        derivatives
+        $\partial_\theta\psi = (2 + \cos\varphi)(-\sin\theta, \cos\theta, 0)$
+        and
+        $\partial_\varphi\psi = (-\sin\varphi\cos\theta,
+        -\sin\varphi\sin\theta, \cos\varphi)$ are orthogonal for the dot
+        product, with norms $2 + \cos\varphi\geq1$ and $1$: they are
+        independent.
+  \item $(3, 0, 0) = \psi(0, 0)$, where the partial derivatives are
+        $(0, 3, 0)$ and $(0, 0, 1)$: the tangent space is
+        $\{v_1 = 0\}$. And $[\dd g(3, 0, 0)] = [2\ \ 0\ \ 0]$ has the
+        same kernel.
+\end{enumerate}
+
+\solution{submanifolds:exr:8}
+\begin{enumerate}[nosep]
+  \item The norm $N(v) = \inner vv^{1/2}$ has the differential
+        $\dd N(v)h = \inner vh/\norm v$ on $V\setminus\{0\}$, and
+        $\pi = v/N$, so
+        \[
+          D\pi(v)h = \frac h{\norm v} - \frac{\inner vh}{\norm v^3}\,v
+          = \frac1{\norm v}\bigl(h - \inner whw\bigr) .
+        \]
+        The map $h\mapsto h - \inner whw$ is the orthogonal projection
+        onto $w^\perp = T_wS$. Its kernel is $\R w = \R v$ and its image
+        is $T_wS$.
+  \item By the chain rule,
+        $\dd L(v)h = \dd\ell(w)D\pi(v)h
+        = \frac1{\norm v}\inner{\nabla\ell(w)}{\Pi_wh}
+        = \frac1{\norm v}\inner{\Pi_w\nabla\ell(w)}h$, since $\Pi_w$ is
+        self-adjoint. So $\nabla L(v) = \frac1{\norm v}\Pi_w\nabla\ell(w)$,
+        which lies in $w^\perp$ and is orthogonal to $v$.
+  \item $\norm{v - \eta\nabla L(v)}^2 = \norm v^2
+        - 2\eta\inner v{\nabla L(v)} + \eta^2\norm{\nabla L(v)}^2
+        = \norm v^2 + \eta^2\norm{\nabla L(v)}^2\geq\norm v^2$.
+\end{enumerate}
+
+\solution{submanifolds:exr:9}
+\begin{enumerate}[nosep]
+  \item $(\diag(p) - pp^\top)v = 0$ reads $p_i(v_i - p^\top v) = 0$ for
+        all $i$; since $p_i > 0$, all $v_i$ are equal to the number
+        $p^\top v$, and conversely constant vectors are in the kernel
+        because $\sum_ip_i = 1$. So the rank is $n - 1$. Each column sum
+        of $\diag(p) - pp^\top$ is $p_j - p_j\sum_ip_i = 0$, so the image
+        is contained in $H_0$, which has dimension $n - 1$: they are
+        equal.
+  \item Let $s(z') = \sigma(z', 0)$ for $z'\in\R^{n-1}$. If $p = s(z')$
+        then $p_i/p_n = e^{z_i}$, so $z_i = \ln(p_i/p_n)$: $s$ is
+        injective, with an inverse (the log-odds) that is continuous on
+        the open simplex; and for every $p$ in the open simplex these
+        $z_i$ satisfy $s(z') = p$. Finally
+        $Ds(z')\tau = D\sigma(z', 0)(\tau, 0)$ vanishes only if
+        $(\tau, 0)$ is a constant vector, that is, $\tau = 0$: $s$ is an
+        immersion. So $s$ is a parametrization of $\Delta^\circ$, with
+        $U = \R^n$ in \cref{submanifolds:thm:four}\,(d).
+\end{enumerate}
