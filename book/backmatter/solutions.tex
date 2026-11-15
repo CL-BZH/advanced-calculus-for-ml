@@ -2010,3 +2010,118 @@ $F' = F/c^2$.
         $L$ is, and in the chart $\theta'$ it is $-\eta\,\partial L/c$
         instead of $-c\,\eta\,\partial L$.
 \end{enumerate}
+
+\section{\nameref*{ch:measures}}
+
+\solution{measures:exr:1}
+\begin{enumerate}[nosep]
+  \item The unions of blocks: $\emptyset$, $\{1, 2\}$, $\{3\}$,
+        $\{4, 5, 6\}$, $\{1, 2, 3\}$, $\{1, 2, 4, 5, 6\}$,
+        $\{3, 4, 5, 6\}$ and $X$; eight sets.
+  \item A function is measurable if and only if it is constant on each
+        block, since the preimage of a value must be a union of blocks.
+        So $x\mapsto x$ is not measurable ($\{1\}$ is not in the
+        $\sigma$-algebra), $1_{\{x\leq2\}}$ is, and $\min(x, 4)$ is not
+        (it separates $1$ from $2$).
+\end{enumerate}
+
+\solution{measures:exr:2}
+Each $(-\infty, t]$ is closed, hence a Borel set, so the generated
+$\sigma$-algebra $\mathcal S$ is contained in $\mathcal B(\R)$. It
+contains $(r, s] = (-\infty, s]\setminus(-\infty, r]$ for rational
+$r < s$, and an open interval $(a, b)$ is the countable union of the
+$(r, s]$ with $a < r < s < b$ rational. Every open set of $\R$ is a
+countable union of open intervals with rational end points, so
+$\mathcal S$ contains the open sets and
+$\mathcal B(\R)\subset\mathcal S$.
+
+\solution{measures:exr:3}
+\begin{enumerate}[nosep]
+  \item The intervals cover the rationals of $[0, 1]$ and have total
+        length at most $\sum_k\epsilon2^{-k} = \epsilon$. By
+        monotonicity and \cref{measures:prop:basic}\,(3) the measure of
+        the rationals is at most $\epsilon$, for every $\epsilon > 0$.
+  \item $\lambda(A_n) = \frac1n\to0$ and
+        $\bigcap_nA_n = \emptyset$, of measure $0$: this agrees with the
+        theorem, since $\lambda(A_1) = 1$ is finite.
+        $\lambda(B_n) = \infty$ for all $n$ while
+        $\bigcap_nB_n = \emptyset$: the limit of the measures is not the
+        measure of the intersection, and the theorem does not apply
+        because $\lambda(B_1) = \infty$.
+\end{enumerate}
+
+\solution{measures:exr:4}
+\begin{enumerate}[nosep]
+  \item $X$ has four elements; the difference of two nested sets with
+        even numbers of elements has an even number of elements; an
+        increasing sequence of subsets of a finite set is eventually
+        constant. But $\{1, 2\}\cap\{2, 3\} = \{2\}$ is not in the
+        family, nor is $\{1, 2\}\cup\{2, 3\}$.
+  \item $\sigma(\mathcal C)$ contains $\{2\} = \{1, 2\}\cap\{2, 3\}$,
+        then $\{1\}$ and $\{3\}$ by differences, and $\{4\}$ as the
+        complement of $\{1, 2, 3\}$: all points, hence all subsets. The
+        uniform probability and the probability with weights
+        $(\frac12, 0, \frac12, 0)$ both give $\frac12$ to $\{1, 2\}$ and
+        to $\{2, 3\}$, and differ on $\{2\}$. The family $\mathcal C$ is
+        not a $\pi$-system.
+\end{enumerate}
+
+\solution{measures:exr:5}
+\begin{enumerate}[nosep]
+  \item The values of $x\bmod3$ are $1, 2, 0, 1, 2, 0$: the
+        push-forward is uniform on $\{0, 1, 2\}$. The second map sends
+        four points to $0$ and two to $1$: the push-forward is
+        $\frac23\delta_0 + \frac13\delta_1$.
+  \item $f^{-1}([a, b)) = [\frac a2, \frac b2)
+        \cup[\frac{a + 1}2, \frac{b + 1}2)$, of measure $b - a$. So
+        $f_\#\lambda$ and $\lambda$ agree on the intervals $[a, b)$ of
+        $[0, 1)$, a $\pi$-system that generates the Borel sets of
+        $[0, 1)$ and contains $[0, 1)$ itself; they are equal by
+        \cref{measures:cor:uniqueness}. The doubling map preserves
+        Lebesgue measure although it is two-to-one.
+\end{enumerate}
+
+\solution{measures:exr:6}
+$\det T = 6$, so the image of the disc has area $6\pi$ and
+$T_\#\lambda = \frac16\lambda$. The ellipse is the image of the unit
+disc by $\diag(a, b)$, of determinant $ab$: its area is $\pi ab$.
+
+\solution{measures:exr:7}
+\begin{enumerate}[nosep]
+  \item $\lfloor6U\rfloor + 1 = k$ exactly when
+        $U\in[\frac{k - 1}6, \frac k6)$, an event of probability
+        $\frac16$: the law is uniform on $\{1,\dots,6\}$.
+  \item $h(u) = \sqrt u$: $P(\sqrt U\leq t) = P(U\leq t^2) = t^2$ for
+        $0\leq t\leq1$.
+\end{enumerate}
+
+\solution{measures:exr:8}
+\begin{enumerate}[nosep]
+  \item By \cref{measures:thm:translation}, $\nu = 3\lambda$, so
+        $\nu([a, b]) = 3(b - a)$.
+  \item Its value on $[0, 1)$ is infinite, and the theorem assumes it
+        finite.
+  \item $G = \begin{bsmallmatrix}4 & 3\\ 3 & 9\end{bsmallmatrix}$, since
+        the inner product of the basis vectors is
+        $2\cdot3\cdot\cos60^\circ = 3$. So
+        $\operatorname{vol} = \sqrt{27}\,\lambda_\varphi
+        = 3\sqrt3\,\lambda_\varphi$: the unit square of the coordinates
+        is a parallelogram of area $2\cdot3\cdot\sin60^\circ$.
+\end{enumerate}
+
+\solution{measures:exr:9}
+\begin{enumerate}[nosep]
+  \item Cut $[-k, k]$ into $N$ intervals of length $h = 2k/N$. On one
+        of them,
+        \[
+          \abs{z_1^2 - z_2^2} = \abs{z_1 + z_2}\,\abs{z_1 - z_2}\leq2kh ,
+        \]
+        so the corresponding piece of the parabola lies in a rectangle
+        of area $h\cdot2kh$. The total is
+        $N\cdot2kh^2 = 8k^3/N$. The piece above $[-k, k]$ is compact,
+        hence a Borel set, of measure at most $8k^3/N$ for every $N$,
+        that is, $0$; and $g(\R)$ is the countable union of these
+        pieces.
+  \item $g_\#\pi\bigl(g(\R)\bigr) = \pi\bigl(g^{-1}(g(\R))\bigr)
+        = \pi(\R) = 1$.
+\end{enumerate}

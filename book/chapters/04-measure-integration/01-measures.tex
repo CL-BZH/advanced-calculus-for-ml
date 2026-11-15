@@ -4,23 +4,948 @@
 \chaptersubtitle{%
   $\sigma$-algebras, Lebesgue measure and push-forwards}
 
-\begin{chapterplan}
+\begin{chapterintro}
+Part~III ended on a debt: expectations were integrals taken on trust,
+and derivatives were moved under the integral sign without
+justification. The integral of first-year calculus cannot pay it. It is
+defined on intervals and boxes, whereas expectations are taken over
+data sets, sequences and function spaces; and it behaves badly under
+limits, whereas learning theory is made of limits. The remedy is to
+separate two questions that the Riemann integral mixes: what is the size
+of a set, and how are sizes added up to integrate a function. This
+chapter answers the first. You will learn
 \begin{itemize}[nosep]
-  \item Why the Riemann integral is not enough: limits of functions and
-        expectations.
-  \item $\sigma$-algebras and measures; continuity from below and from above,
-        with the counterexample showing where finiteness matters; Borel sets;
-        the $\pi$--$\lambda$ theorem.
-  \item Lebesgue measure on $\R^n$: existence (\cref{ch:caratheodory}),
-        uniqueness, invariance under translations (it is a measure on the affine
-        space) and scaling by $\abs{\det A}$ under linear maps.
-  \item Measurable maps and the push-forward of a measure.
-  \item The vocabulary of probability: random variables and their laws.
+  \item $\sigma$-algebras, the families of sets that have a size, and
+        measures, the countably additive notions of size;
+  \item how to prove that two measures are equal by checking them on a
+        few sets (the $\pi$--$\lambda$ theorem);
+  \item measurable maps, which are stable under limits, and the
+        push-forward of a measure by a map;
+  \item Lebesgue measure on $\R^n$: unique, invariant under
+        translations, and multiplied by $\abs{\det T}$ under a linear
+        map, so that it lives on an affine space up to the choice of a
+        unit of volume;
+  \item the vocabulary of probability: a random variable is a
+        measurable map and its law is a push-forward;
+  \item why the output of a model and the samples of a generative model
+        are described by push-forwards, and why the latter often has no
+        density.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:norms-banach} (open sets, continuity, compact
+sets) and \cref{ch:spectral-svd} (the singular value decomposition).
+Countable means finite or in bijection with the integers. The existence
+of Lebesgue measure is proved in \cref{ch:caratheodory}; everything else
+is proved here.}
+\end{chapterintro}
+
+\section{Why a new integral}\label{measures:sec:why}
+
+The Riemann integral of a function on $[a, b]$ is the common limit of
+the sums $\sum_kf(t_k)(x_{k+1} - x_k)$ over finer and finer subdivisions,
+when this limit exists whatever the points $t_k\in[x_k, x_{k+1}]$. Three
+things go wrong.
+
+\emph{Limits.} Let $q_1, q_2, \dots$ be an enumeration of the rational
+numbers of $[0, 1]$, and let $f_n$ be equal to $1$ at $q_1,\dots,q_n$
+and to $0$ elsewhere. Each $f_n$ is Riemann integrable with integral
+$0$. The sequence increases to the function $f$ equal to $1$ on the
+rationals and $0$ elsewhere, for which every Riemann sum can be made
+equal to $1$ (rational $t_k$) or to $0$ (irrational $t_k$): $f$ is not
+Riemann integrable, and ``the integral of the limit is the limit of the
+integrals'' cannot even be stated.
+
+\emph{Domains.} An expectation over the draws of a training set, over
+infinite sequences of coin flips or over the paths of a process is an
+integral over a set that is not a box of $\R^n$.
+
+\emph{Completeness.} The continuous functions on $[0, 1]$ with the norm
+$\int\abs f$ are not complete (\cref{norms-banach:ex:incomplete}), and
+adding the Riemann integrable functions does not repair this.
+
+The cure, due to Lebesgue, is to cut the range of the function instead
+of its domain (\cref{measures:fig:slicing}). The sum
+$\sum_kc_k\cdot\text{size}\{x : c_k\leq f(x) < c_{k+1}\}$ makes sense on
+any set, provided the sets $\{c_k\leq f < c_{k+1}\}$ have a size. For
+the function $f$ above there are two of them, the rationals and the
+irrationals of $[0, 1]$. So the first task is to measure sets much more
+general than intervals.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \draw[->] (-0.2,0) -- (5.4,0);
+    \draw[->] (0,-0.2) -- (0,2.9);
+    \foreach \x in {0,0.625,...,4.4}
+      \draw[bookdef, fill=bookdef!12] (\x,0) rectangle
+        (\x+0.625,{1.4 + 0.9*sin(1.8*(\x+0.3125) r)});
+    \draw[bookaccent, very thick, domain=0:5, samples=80, smooth,
+          variable=\x] plot ({\x}, {1.4 + 0.9*sin(1.8*\x r)});
+    \node at (2.5,-0.7) {Riemann: cut the domain};
+  \end{scope}
+  \begin{scope}[xshift=7.4cm]
+    \draw[->] (-0.2,0) -- (5.4,0);
+    \draw[->] (0,-0.2) -- (0,2.9);
+    \fill[bookpitfall!12] (0,1.6) rectangle (5,2.0);
+    \draw[bookpitfall, dashed] (0,1.6) -- (5,1.6);
+    \draw[bookpitfall, dashed] (0,2.0) -- (5,2.0);
+    \draw[bookaccent, very thick, domain=0:5, samples=80, smooth,
+          variable=\x] plot ({\x}, {1.4 + 0.9*sin(1.8*\x r)});
+    \foreach \a/\b in {0.124/0.405, 1.340/1.621, 3.615/3.896, 4.830/5} {
+      \draw[bookpitfall, line width=2.4pt] (\a,0) -- (\b,0);
+      \draw[bookpitfall, densely dotted] (\a,0) -- (\a,1.6);
+      \draw[bookpitfall, densely dotted] (\b,0) -- (\b,1.6);
+    }
+    \node[left, bookpitfall] at (0,1.6) {$c_k$};
+    \node[left, bookpitfall] at (0,2.0) {$c_{k+1}$};
+    \node at (2.5,-0.7) {Lebesgue: cut the range};
+  \end{scope}
+\end{tikzpicture}
+\caption{Two ways to integrate. Left: the domain is cut into intervals,
+which requires the function to vary little on most of them. Right: the
+range is cut into bands; the set where $f$ lies in a band (thick
+segments) may be complicated, but it only needs to have a size.}
+\label{measures:fig:slicing}
+\end{figure}
+
+\section{$\sigma$-algebras}\label{measures:sec:sigma}
+
+\begin{definition}[$\sigma$-algebra]\label{measures:def:sigma}
+A \emph{$\sigma$-algebra} on a set $X$ is a family $\mathcal M$ of
+subsets of $X$ such that
+\begin{enumerate}[nosep]
+  \item $X\in\mathcal M$;
+  \item if $A\in\mathcal M$ then $X\setminus A\in\mathcal M$;
+  \item if $A_1, A_2, \dots\in\mathcal M$ then
+        $\bigcup_nA_n\in\mathcal M$.
+\end{enumerate}
+The pair $(X, \mathcal M)$ is a \emph{measurable space} and the elements
+of $\mathcal M$ are the \emph{measurable sets}.
+\end{definition}
+
+A $\sigma$-algebra also contains $\emptyset$, countable intersections
+(the complement of the union of the complements), finite unions and
+intersections, and differences $A\setminus B$. The smallest one is
+$\{\emptyset, X\}$ and the largest is the family of all subsets.
+
+\begin{proposition}[Generated $\sigma$-algebra]\label{measures:prop:generated}
+For every family $\mathcal C$ of subsets of $X$ there is a smallest
+$\sigma$-algebra containing $\mathcal C$, written $\sigma(\mathcal C)$.
+\end{proposition}
+
+\begin{proof}
+An intersection of $\sigma$-algebras is a $\sigma$-algebra, and the
+family of all subsets is one that contains $\mathcal C$. Take the
+intersection of all the $\sigma$-algebras that contain $\mathcal C$.
+\end{proof}
+
+\begin{definition}[Borel sets]\label{measures:def:borel}
+The \emph{Borel $\sigma$-algebra} $\mathcal B(X)$ of a metric space $X$
+is the $\sigma$-algebra generated by its open sets. On a
+finite-dimensional vector or affine space, the open sets are those of
+any norm (\cref{norms-banach:thm:equivalence}).
+\end{definition}
+
+Closed sets, countable sets, and countable unions and intersections of
+those are Borel sets. A \emph{half-open box} of $\R^n$ is a product
+$\prod_i[a_i, b_i)$ with $a_i\leq b_i$; it is \emph{dyadic} if the $a_i$
+and $b_i$ are integer multiples of the same $2^{-k}$.
+
+\begin{proposition}\label{measures:prop:boxes}
+Every open subset of $\R^n$ is a countable union of dyadic half-open
+boxes, and $\mathcal B(\R^n)$ is generated by the dyadic half-open boxes.
+\end{proposition}
+
+\begin{proof}
+Let $U$ be open and $x\in U$. For $k$ large, the cube
+$\prod_i[m_i2^{-k}, (m_i + 1)2^{-k})$ that contains $x$ lies in a ball
+around $x$ contained in $U$. So $U$ is the union of the dyadic cubes it
+contains, and there are countably many dyadic cubes in all. Conversely
+a half-open box is a Borel set:
+$\prod_i[a_i, b_i) = \bigcap_k\prod_i(a_i - \frac1k, b_i)$.
+\end{proof}
+
+\begin{example}[Finite sets and partitions]\label{measures:ex:partition}
+If $X$ is the disjoint union of blocks $B_1,\dots,B_m$, the unions of
+blocks form a $\sigma$-algebra with $2^m$ elements, the one generated by
+the blocks. Every $\sigma$-algebra on a finite set is of this kind. It
+describes a state of information: the sets about which one can say
+whether they contain the outcome, when all that is known is the block
+of the outcome. Observing more refines the partition and enlarges the
+$\sigma$-algebra.
+\end{example}
+
+\begin{pitfall}[Countable, not arbitrary]
+The unions in the definition are countable. Allowing arbitrary unions
+would make every subset of $\R$ a Borel set, as a union of points, and
+\cref{ch:caratheodory} shows that no reasonable notion of length exists
+on all subsets of $\R$. Allowing only finite unions would be too little:
+the set where a sequence of functions converges is described with
+countable unions and intersections.
+\end{pitfall}
+
+\section{Measures}\label{measures:sec:measures}
+
+\begin{definition}[Measure]\label{measures:def:measure}
+A \emph{measure} on a measurable space $(X, \mathcal M)$ is a map
+$\mu:\mathcal M\to[0, \infty]$ such that $\mu(\emptyset) = 0$ and
+\[
+  \mu\Bigl(\bigcup_nA_n\Bigr) = \sum_n\mu(A_n)
+\]
+for every sequence of pairwise disjoint measurable sets
+(\emph{countable additivity}). The triple $(X, \mathcal M, \mu)$ is a
+\emph{measure space}. The measure is \emph{finite} if $\mu(X) < \infty$,
+a \emph{probability measure} if $\mu(X) = 1$, and \emph{$\sigma$-finite}
+if $X$ is a countable union of sets of finite measure. A measurable set
+of measure $0$ is a \emph{null set}.
+\end{definition}
+
+Sums of non-negative terms are computed in $[0, \infty]$, in any order.
+
+\begin{example}\label{measures:ex:measures}
+\begin{enumerate}[nosep]
+  \item The \emph{counting measure} on any set: $\mu(A)$ is the number
+        of elements of $A$, or $\infty$.
+  \item The \emph{Dirac measure} at a point $a$: $\delta_a(A) = 1$ if
+        $a\in A$ and $0$ otherwise.
+  \item Non-negative combinations $\sum_iw_i\delta_{a_i}$. With weights
+        summing to $1$ this is a discrete probability distribution; for
+        a sample $x_1,\dots,x_N$, the \emph{empirical measure}
+        $\frac1N\sum_i\delta_{x_i}$ gives to a set the fraction of the
+        sample that falls in it.
+\end{enumerate}
+\end{example}
+
+\begin{proposition}\label{measures:prop:basic}
+Let $\mu$ be a measure and $A, B, A_n$ measurable sets.
+\begin{enumerate}[nosep]
+  \item If $A\subset B$ then $\mu(A)\leq\mu(B)$, and
+        $\mu(B\setminus A) = \mu(B) - \mu(A)$ when $\mu(A) < \infty$.
+  \item $\mu(A\cup B) + \mu(A\cap B) = \mu(A) + \mu(B)$.
+  \item $\mu\bigl(\bigcup_nA_n\bigr)\leq\sum_n\mu(A_n)$. In particular a
+        countable union of null sets is a null set.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) $B$ is the disjoint union of $A$ and $B\setminus A$. (2) Both sides
+equal $\mu(A\setminus B) + 2\mu(A\cap B) + \mu(B\setminus A)$. (3) The
+sets $B_n = A_n\setminus(A_1\cup\dots\cup A_{n-1})$ are pairwise
+disjoint with the same union, and $\mu(B_n)\leq\mu(A_n)$.
+\end{proof}
+
+\begin{theorem}[Continuity of measures]\label{measures:thm:continuity}
+Let $\mu$ be a measure and $A_1, A_2, \dots$ measurable sets.
+\begin{enumerate}[nosep]
+  \item If $A_1\subset A_2\subset\cdots$, then
+        $\mu\bigl(\bigcup_nA_n\bigr) = \lim_n\mu(A_n)$.
+  \item If $A_1\supset A_2\supset\cdots$ and $\mu(A_1) < \infty$, then
+        $\mu\bigl(\bigcap_nA_n\bigr) = \lim_n\mu(A_n)$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) Let $B_1 = A_1$ and $B_n = A_n\setminus A_{n-1}$. These sets are
+pairwise disjoint, $A_n = B_1\cup\dots\cup B_n$, and
+\[
+  \mu\Bigl(\bigcup_nA_n\Bigr) = \sum_n\mu(B_n)
+  = \lim_n\sum_{k\leq n}\mu(B_k) = \lim_n\mu(A_n) .
+\]
+(2) The sets $A_1\setminus A_n$ increase to
+$A_1\setminus\bigcap_nA_n$, so by (1) and
+\cref{measures:prop:basic},
+$\mu(A_1) - \mu(A_n)\to\mu(A_1) - \mu\bigl(\bigcap_nA_n\bigr)$.
+\end{proof}
+
+\begin{pitfall}[Finiteness matters from above]
+For the counting measure on the integers and $A_n = \{n, n + 1, \dots\}$,
+$\mu(A_n) = \infty$ for every $n$, while $\bigcap_nA_n = \emptyset$ has
+measure $0$. The mass escapes to infinity.
+\end{pitfall}
+
+Countable additivity is thus a continuity property. It is what will make
+limits pass through integrals in \cref{ch:lebesgue-integral}.
+
+\section{Proving that two measures are equal}\label{measures:sec:pilambda}
+
+A measure is a function of very many sets, most of which cannot be
+described. It is determined by its values on a small family, provided
+that family is closed under intersection.
+
+\begin{definition}\label{measures:def:pilambda}
+A family $\mathcal P$ of subsets of $X$ is a \emph{$\pi$-system} if
+$A\cap B\in\mathcal P$ whenever $A, B\in\mathcal P$. A family
+$\mathcal L$ is a \emph{$\lambda$-system} if
+\begin{enumerate}[nosep]
+  \item $X\in\mathcal L$;
+  \item if $A, B\in\mathcal L$ and $A\subset B$, then
+        $B\setminus A\in\mathcal L$;
+  \item if $A_1\subset A_2\subset\cdots$ are in $\mathcal L$, then
+        $\bigcup_nA_n\in\mathcal L$.
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}[$\pi$--$\lambda$ theorem]\label{measures:thm:pilambda}
+If a $\lambda$-system $\mathcal L$ contains a $\pi$-system $\mathcal P$,
+it contains $\sigma(\mathcal P)$.
+\end{theorem}
+
+\begin{proof}
+\emph{A $\lambda$-system that is also a $\pi$-system is a
+$\sigma$-algebra.} It contains complements by (1) and (2), hence finite
+unions, which are complements of intersections of complements; and a
+countable union is the increasing union of its finite partial unions.
+
+\emph{The smallest $\lambda$-system $\mathcal L_0$ containing
+$\mathcal P$ is a $\pi$-system.} It exists, as an intersection. For
+$A\in\mathcal L_0$ let
+$\mathcal L_A = \{B\in\mathcal L_0 : A\cap B\in\mathcal L_0\}$. It is a
+$\lambda$-system: $A\cap X = A$; if $B\subset C$ are in $\mathcal L_A$,
+then $A\cap(C\setminus B) = (A\cap C)\setminus(A\cap B)$ is a difference
+of nested elements of $\mathcal L_0$; and $A\cap\bigcup_nB_n$ is the
+increasing union of the $A\cap B_n$. If $A\in\mathcal P$, then
+$\mathcal L_A$ contains $\mathcal P$, so $\mathcal L_A = \mathcal L_0$:
+the intersection of an element of $\mathcal P$ and an element of
+$\mathcal L_0$ is in $\mathcal L_0$. This says that for every
+$B\in\mathcal L_0$ the $\lambda$-system $\mathcal L_B$ contains
+$\mathcal P$, so $\mathcal L_B = \mathcal L_0$ as well: $\mathcal L_0$
+is closed under intersection.
+
+By the first step $\mathcal L_0$ is a $\sigma$-algebra containing
+$\mathcal P$, so $\sigma(\mathcal P)\subset\mathcal L_0\subset\mathcal L$.
+\end{proof}
+
+\begin{corollary}[Uniqueness of measures]\label{measures:cor:uniqueness}
+Let $\mu$ and $\nu$ be two measures on $\sigma(\mathcal P)$, where
+$\mathcal P$ is a $\pi$-system. If $\mu$ and $\nu$ agree on
+$\mathcal P$, and if $X$ is the union of an increasing sequence of sets
+$X_k\in\mathcal P$ with $\mu(X_k) < \infty$, then $\mu = \nu$.
+\end{corollary}
+
+\begin{proof}
+Fix $k$ and let $\mathcal L$ be the family of the
+$A\in\sigma(\mathcal P)$ with $\mu(A\cap X_k) = \nu(A\cap X_k)$. It
+contains $X$, and $\mathcal P$, because $A\cap X_k\in\mathcal P$. It is
+stable by nested differences, since the measures involved are finite
+(\cref{measures:prop:basic}), and by increasing unions
+(\cref{measures:thm:continuity}). So $\mathcal L = \sigma(\mathcal P)$
+by \cref{measures:thm:pilambda}. Letting $k\to\infty$,
+$\mu(A) = \lim_k\mu(A\cap X_k) = \lim_k\nu(A\cap X_k) = \nu(A)$.
+\end{proof}
+
+\begin{intuition}
+The sets on which two finite measures agree always form a
+$\lambda$-system: the three axioms are exactly what subtraction and
+monotone limits give. They need not be stable by intersection
+(\cref{measures:exr:4}). The theorem says that agreement on a family
+that \emph{is} stable by intersection spreads to everything that family
+generates.
+\end{intuition}
+
+\section{Measurable maps and push-forwards}\label{measures:sec:maps}
+
+\begin{definition}[Measurable map]\label{measures:def:measurable}
+A map $f:X\to Y$ between measurable spaces $(X, \mathcal M)$ and
+$(Y, \mathcal N)$ is \emph{measurable} if
+$f^{-1}(B)\in\mathcal M$ for every $B\in\mathcal N$. When no
+$\sigma$-algebra is mentioned on a metric space, the Borel sets are
+meant.
+\end{definition}
+
+\begin{proposition}\label{measures:prop:measurable}
+\begin{enumerate}[nosep]
+  \item If $\mathcal N = \sigma(\mathcal C)$, it is enough that
+        $f^{-1}(C)\in\mathcal M$ for every $C\in\mathcal C$.
+  \item A composition of measurable maps is measurable.
+  \item A continuous map between metric spaces is measurable.
+  \item A map $f = (f_1,\dots,f_n):X\to\R^n$ is measurable if and only
+        if each $f_i$ is.
+  \item If $f, g:X\to\R$ are measurable, so are $f + g$, $fg$,
+        $\max(f, g)$ and $\abs f$. The indicator $1_A$ of a set is
+        measurable if and only if $A\in\mathcal M$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) The sets $B$ with $f^{-1}(B)\in\mathcal M$ form a $\sigma$-algebra,
+because preimages commute with complements and unions; it contains
+$\mathcal C$, hence $\sigma(\mathcal C)$. (2) is clear. (3) The preimage
+of an open set is open; apply (1). (4) For a half-open box,
+$f^{-1}\bigl(\prod_i[a_i, b_i)\bigr) = \bigcap_if_i^{-1}([a_i, b_i))$,
+and boxes generate (\cref{measures:prop:boxes}); conversely $f_i$ is $f$
+followed by a continuous projection. (5) Compose $(f, g):X\to\R^2$ with
+the continuous maps $(s, t)\mapsto s + t$, $st$, $\max(s, t)$. The set
+$\{1_A\in B\}$ is one of $\emptyset$, $A$, $X\setminus A$, $X$.
+\end{proof}
+
+\begin{theorem}[Limits of measurable functions]\label{measures:thm:limits}
+Let $f_n:X\to[-\infty, \infty]$ be measurable. Then $\sup_nf_n$,
+$\inf_nf_n$, $\limsup_nf_n$ and $\liminf_nf_n$ are measurable, and so is
+$\lim_nf_n$ if the limit exists at every point.
+\end{theorem}
+
+\begin{proof}
+The Borel sets of $[-\infty, \infty]$ are generated by the intervals
+$(c, \infty]$, and
+$\{\sup_nf_n > c\} = \bigcup_n\{f_n > c\}$. Then
+$\inf_nf_n = -\sup_n(-f_n)$,
+$\limsup_nf_n = \inf_n\sup_{k\geq n}f_k$, and similarly for
+$\liminf$; a limit is a $\limsup$.
+\end{proof}
+
+\begin{keyidea}
+Continuity is lost under pointwise limits, and so is Riemann
+integrability. Measurability is not: the class of measurable functions
+is closed under every countable operation of analysis. This is why it is
+the right setting for a theory of limits.
+\end{keyidea}
+
+\begin{definition}[Push-forward]\label{measures:def:pushforward}
+Let $f:X\to Y$ be measurable and $\mu$ a measure on $X$. The
+\emph{push-forward} of $\mu$ by $f$ is the measure on $Y$
+\[
+  f_\#\mu(B) = \mu\bigl(f^{-1}(B)\bigr) .
+\]
+\end{definition}
+
+It is a measure because preimages of disjoint sets are disjoint and
+preimages commute with unions. It has the same total mass as $\mu$, and
+$(g\circ f)_\#\mu = g_\#(f_\#\mu)$
+(\cref{measures:fig:pushforward}).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \draw[thick] (0,0) ellipse [x radius=2.4, y radius=1.4];
+  \draw[thick] (7.2,0) ellipse [x radius=2.0, y radius=1.3];
+  \fill[bookaccent!25] (-1.1,0.3) ellipse [x radius=0.7, y radius=0.45];
+  \draw[bookaccent, thick] (-1.1,0.3) ellipse [x radius=0.7, y radius=0.45];
+  \fill[bookaccent!25] (0.9,-0.5) ellipse [x radius=0.6, y radius=0.4];
+  \draw[bookaccent, thick] (0.9,-0.5) ellipse [x radius=0.6, y radius=0.4];
+  \fill[bookpitfall!25] (7.3,0.1) ellipse [x radius=0.8, y radius=0.55];
+  \draw[bookpitfall, thick] (7.3,0.1) ellipse [x radius=0.8, y radius=0.55];
+  \node at (-2.0,1.4) {$X$};
+  \node at (9.0,1.3) {$Y$};
+  \node[bookpitfall] at (7.3,0.1) {$B$};
+  \node[bookaccent] at (0.1,0.75) {$f^{-1}(B)$};
+  \draw[->, thick] (2.7,0.4) -- (4.9,0.4);
+  \node[above] at (3.8,0.4) {$f$};
+  \node at (3.8,-1.9)
+    {$f_\#\mu(B) = \mu\bigl(f^{-1}(B)\bigr)$: sets are pulled back,
+     measures are pushed forward};
+\end{tikzpicture}
+\caption{The push-forward of a measure. The mass that $f_\#\mu$ gives to
+a set $B$ of $Y$ is the mass that $\mu$ gives to the set of points sent
+into $B$.}
+\label{measures:fig:pushforward}
+\end{figure}
+
+\begin{example}\label{measures:ex:pushforward}
+\begin{enumerate}[nosep]
+  \item $f_\#\delta_a = \delta_{f(a)}$, and the push-forward of the
+        empirical measure of $x_1,\dots,x_N$ is the empirical measure of
+        $f(x_1),\dots,f(x_N)$.
+  \item If $f$ is constant, equal to $c$, then
+        $f_\#\mu = \mu(X)\,\delta_c$, whatever $\mu$: a push-forward can
+        concentrate a spread-out measure on a single point.
+\end{enumerate}
+\end{example}
+
+\section{Lebesgue measure}\label{measures:sec:lebesgue}
+
+\begin{theorem}[Lebesgue measure]\label{measures:thm:lebesgue}
+There is a unique measure $\lambda$ on $\mathcal B(\R^n)$ such that, for
+every half-open box,
+\[
+  \lambda\Bigl(\prod_{i=1}^n[a_i, b_i)\Bigr) = \prod_{i=1}^n(b_i - a_i) .
+\]
+\end{theorem}
+
+\begin{proof}
+Existence is \cref{ch:caratheodory}. For uniqueness, the half-open boxes
+form a $\pi$-system, since the intersection of two boxes is a box
+(possibly empty). They generate the Borel sets
+(\cref{measures:prop:boxes}), and $\R^n$ is the increasing union of the
+boxes $[-k, k)^n$, of finite measure. Apply
+\cref{measures:cor:uniqueness}.
+\end{proof}
+
+\begin{proposition}\label{measures:prop:lebesgue}
+\begin{enumerate}[nosep]
+  \item Points, and hence countable sets, are null sets. In particular
+        the rational numbers form a null set of $\R$.
+  \item A closed box and an open box have the same measure
+        $\prod_i(b_i - a_i)$ as the half-open one.
+  \item Non-empty open sets have positive measure and bounded Borel sets
+        have finite measure.
+  \item The hyperplane $\{x_n = 0\}$ is a null set of $\R^n$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) A point lies in a box of side $\epsilon$, of measure $\epsilon^n$,
+for every $\epsilon > 0$; then use countable additivity. (2) The closed
+box is the decreasing intersection of the boxes
+$\prod_i[a_i, b_i + \frac1k)$, and the open box is the increasing union
+of the boxes $\prod_i[a_i + \frac1k, b_i)$; apply
+\cref{measures:thm:continuity}. (3) An open set contains a box with
+non-empty interior, and a bounded set is contained in a box. (4) The
+hyperplane is the increasing union of the sets
+$[-k, k)^{n-1}\times\{0\}$, each contained in the box
+$[-k, k)^{n-1}\times[0, \epsilon)$ of measure $(2k)^{n-1}\epsilon$, for
+every $\epsilon$.
+\end{proof}
+
+The function of \cref{measures:sec:why}, equal to $1$ on the rationals,
+is thus $0$ outside a null set. For the integral of
+\cref{ch:lebesgue-integral} it will be indistinguishable from $0$.
+
+\begin{theorem}[Invariance under translations]
+\label{measures:thm:translation}
+For every Borel set $B$ and every $v\in\R^n$, $B + v$ is a Borel set and
+$\lambda(B + v) = \lambda(B)$. Conversely, if $\nu$ is a measure on
+$\mathcal B(\R^n)$ which is invariant under translations and such that
+$c = \nu\bigl([0, 1)^n\bigr)$ is finite, then $\nu = c\,\lambda$.
+\end{theorem}
+
+\begin{proof}
+The translation $\tau(x) = x - v$ is continuous, so
+$B + v = \tau^{-1}(B)$ is a Borel set and $B\mapsto\lambda(B + v)$ is
+the measure $\tau_\#\lambda$. It gives to every box the measure of a
+translated box, which is the same product; by
+\cref{measures:thm:lebesgue} it is $\lambda$.
+
+For the converse, the cube $[0, 1)^n$ is the disjoint union of
+$2^{kn}$ translates of $Q_k = [0, 2^{-k})^n$, so
+$\nu(Q_k) = c\,2^{-kn} = c\,\lambda(Q_k)$. A dyadic box whose corners
+are multiples of $2^{-k}$ is a disjoint union of translates of $Q_k$, so
+$\nu$ and $c\lambda$ agree on dyadic boxes. These form a $\pi$-system
+that generates the Borel sets and contains the boxes $[-k, k)^n$:
+$\nu = c\lambda$ by \cref{measures:cor:uniqueness}.
+\end{proof}
+
+\begin{theorem}[Linear maps]\label{measures:thm:linear}
+Let $T$ be a linear map of $\R^n$ into itself.
+\begin{enumerate}[nosep]
+  \item If $T$ is invertible, then for every Borel set $B$ the image
+        $T(B)$ is a Borel set and
+        \[
+          \lambda\bigl(T(B)\bigr) = \abs{\det T}\,\lambda(B) ;
+          \qquad\text{equivalently}\quad
+          T_\#\lambda = \abs{\det T}^{-1}\lambda .
+        \]
+  \item If $T$ is not invertible, its image $T(\R^n)$ is a null set.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) $T(B)$ is the preimage of $B$ by the continuous map $T^{-1}$, so
+$\nu(B) = \lambda(T(B))$ is the measure $(T^{-1})_\#\lambda$. It is
+invariant under translations, because $T(B + v) = T(B) + Tv$, and
+$c(T) = \lambda\bigl(T([0, 1)^n)\bigr)$ is finite. By
+\cref{measures:thm:translation},
+\[
+  \lambda\bigl(T(B)\bigr) = c(T)\,\lambda(B) \qquad\text{for all } B ,
+\]
+and applying this twice gives $c(ST) = c(S)\,c(T)$. It remains to
+compute $c$. If $D$ is diagonal with entries $d_i\neq0$, then
+$D([0, 1)^n)$ is a box with sides $\abs{d_i}$, so
+$c(D) = \prod_i\abs{d_i}$. If $U$ is orthogonal, it maps the open unit
+ball $B_1$ onto itself, so $\lambda(B_1) = c(U)\lambda(B_1)$ with
+$0 < \lambda(B_1) < \infty$, and $c(U) = 1$. Finally write the singular
+value decomposition $T = U\Sigma V^\top$
+(\cref{spectral-svd:thm:svd}):
+$c(T) = c(U)\,c(\Sigma)\,c(V^\top) = \prod_i\sigma_i$, which is
+$\abs{\det T}$ because orthogonal matrices have determinant $\pm1$. The
+second form of the statement is
+$T_\#\lambda(B) = \lambda(T^{-1}(B))$.
+
+(2) The image is contained in a subspace $H$ of dimension $n - 1$, and
+$H = W(\{x_n = 0\})$ for an invertible $W$. By (1) and
+\cref{measures:prop:lebesgue}, $\lambda(H) = \abs{\det W}\cdot0 = 0$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.05]
+  \begin{scope}
+    \draw[gray, ->] (-0.3,0) -- (1.6,0);
+    \draw[gray, ->] (0,-0.6) -- (0,1.6);
+    \draw[bookaccent, thick, fill=bookaccent!15]
+      (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+    \node at (0.6,-1.0) {area $1$};
+  \end{scope}
+  \draw[->, thick] (1.9,0.5) -- (2.7,0.5);
+  \node[above] at (2.3,0.5) {$V^\top$};
+  \begin{scope}[xshift=3.2cm]
+    \draw[gray, ->] (-0.3,0) -- (1.8,0);
+    \draw[gray, ->] (0,-0.6) -- (0,1.6);
+    \draw[bookaccent, thick, fill=bookaccent!15]
+      (0,0) -- (0.866,-0.5) -- (1.366,0.366) -- (0.5,0.866) -- cycle;
+    \node at (0.7,-1.0) {area $1$};
+  \end{scope}
+  \draw[->, thick] (5.2,0.5) -- (6.0,0.5);
+  \node[above] at (5.6,0.5) {$\Sigma$};
+  \begin{scope}[xshift=6.5cm]
+    \draw[gray, ->] (-0.3,0) -- (3.1,0);
+    \draw[gray, ->] (0,-0.6) -- (0,1.6);
+    \draw[bookaccent, thick, fill=bookaccent!15]
+      (0,0) -- (1.732,-0.375) -- (2.732,0.275) -- (1.0,0.650) -- cycle;
+    \node at (1.4,-1.0) {area $\sigma_1\sigma_2$};
+  \end{scope}
+  \draw[->, thick] (9.8,0.5) -- (10.6,0.5);
+  \node[above] at (10.2,0.5) {$U$};
+  \begin{scope}[xshift=11.1cm]
+    \draw[gray, ->] (-0.3,0) -- (2.9,0);
+    \draw[gray, ->] (0,-0.6) -- (0,1.6);
+    \draw[bookaccent, thick, fill=bookaccent!15]
+      (0,0) -- (1.756,0.240) -- (2.473,1.193) -- (0.717,0.953) -- cycle;
+    \node at (1.4,-1.0) {area $\abs{\det T}$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The proof of \cref{measures:thm:linear} in a picture, for
+$T = U\Sigma V^\top$ with $\sigma_1 = 2$ and $\sigma_2 = 0.75$. The two
+orthogonal maps do not change areas; the diagonal map multiplies them by
+$\sigma_1\sigma_2 = \abs{\det T} = 1.5$.}
+\label{measures:fig:svd}
+\end{figure}
+
+Translations do not change $\lambda$ and linear maps multiply it by a
+constant. This is what is needed to carry it to an affine space.
+
+\begin{definition}[Lebesgue measures on an affine space]
+\label{measures:def:affine}
+Let $\Aff$ be an affine space of dimension $n$. A frame defines a
+bijection $\varphi:\Aff\to\R^n$, the coordinates, and the measure
+$\lambda_\varphi(A) = \lambda\bigl(\varphi(A)\bigr)$ on
+$\mathcal B(\Aff)$.
+\end{definition}
+
+\begin{proposition}\label{measures:prop:affine}
+\begin{enumerate}[nosep]
+  \item Each $\lambda_\varphi$ is invariant under the translations of
+        $\Aff$, and does not depend on the origin of the frame.
+  \item If the basis of a second frame has the change of basis matrix
+        $P$ from the first, then
+        $\lambda_{\varphi'} = \abs{\det P}^{-1}\lambda_\varphi$.
+  \item If the direction $V$ has an inner product, all orthonormal
+        frames define the same measure, the \emph{volume} of the
+        Euclidean affine space. In a frame whose basis has the Gram
+        matrix $G$,
+        $\operatorname{vol} = \sqrt{\det G}\;\lambda_\varphi$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+The coordinates in two frames are related by $x' = P^{-1}x + c$
+(\cref{duality:prop:vector-change}), so
+$\varphi'(A) = P^{-1}\varphi(A) + c$ and, by
+\cref{measures:thm:translation,measures:thm:linear},
+$\lambda(\varphi'(A)) = \abs{\det P}^{-1}\lambda(\varphi(A))$: this is
+(2), and (1) is the case $P = I$ together with
+$\varphi(A + v) = \varphi(A) + [v]$. (3) Between two orthonormal bases
+$P$ is orthogonal and $\abs{\det P} = 1$. If $P$ is the matrix from an
+orthonormal basis to the given one, $G = P^\top P$, so
+$\abs{\det P} = \sqrt{\det G}$, and (2) gives
+$\operatorname{vol} = \abs{\det P}\,\lambda_\varphi$.
+\end{proof}
+
+\begin{keyidea}
+Lebesgue measure passes the origin test and fails the basis test in the
+mildest possible way. An affine space carries a family of proportional
+translation-invariant measures and no preferred member: choosing one is
+choosing a unit of volume, which an inner product does. A measure is not
+a function on the space: under a change of coordinates it is multiplied
+by a determinant. \Cref{ch:change-of-variables} extends this to
+non-linear changes.
+\end{keyidea}
+
+\begin{remark}[Sets that are not measurable]
+Lebesgue measure extends to a $\sigma$-algebra larger than the Borel
+sets, which contains every subset of a null set, but not to all
+subsets: \cref{ch:caratheodory} constructs a subset of $\R$ to which no
+length can be assigned if lengths are to be countably additive and
+invariant under translations. Such sets are never met in practice; the
+Borel sets are stable under all the operations used in this book.
+\end{remark}
+
+\section{The vocabulary of probability}\label{measures:sec:probability}
+
+\begin{definition}\label{measures:def:probability}
+A \emph{probability space} is a measure space $(\Omega, \mathcal F, P)$
+with $P(\Omega) = 1$. Its measurable sets are the \emph{events}. A
+\emph{random variable} with values in a measurable space $X$ is a
+measurable map $Z:\Omega\to X$, and its \emph{law}, or
+\emph{distribution}, is the push-forward $P_Z = Z_\#P$, a probability
+measure on $X$:
+\[
+  P_Z(B) = P(Z\in B) = P\bigl(\{\omega : Z(\omega)\in B\}\bigr) .
+\]
+A property holds \emph{almost surely} if it holds outside a null event.
+\end{definition}
+
+Probability statements about $Z$ only involve its law; the space
+$\Omega$ stays in the background. For a real random variable the law is
+determined by the \emph{distribution function}
+$t\mapsto P(Z\leq t)$: the intervals $(-\infty, t]$ form a $\pi$-system
+that generates $\mathcal B(\R)$ (\cref{measures:cor:uniqueness}).
+Similarly the law of a random vector is determined by the probabilities
+of boxes.
+
+\begin{example}[Sampling by push-forward]\label{measures:ex:inverse}
+On $\Omega = [0, 1)$ with Lebesgue measure, $U(\omega) = \omega$ is a
+\emph{uniform} random variable. The random variable
+$Z = -\ln(1 - U)$ satisfies, for $t\geq0$,
+\[
+  P(Z\leq t) = \lambda\{\omega : \omega\leq1 - e^{-t}\} = 1 - e^{-t} :
+\]
+its law is the exponential distribution. Every distribution on $\R$ is
+the push-forward of the uniform one by a suitable non-decreasing map;
+this is how random number generators produce non-uniform samples.
+\end{example}
+
+The statistical models of \cref{ch:natural-gradient} are families of
+probability measures on a set of outcomes. Their ``mass functions or
+densities'' describe these measures relative to a reference measure, the
+counting measure or Lebesgue measure; \cref{ch:lp-spaces} makes this
+precise.
+
+\section{Models and data as measures}\label{measures:sec:ml}
+
+\begin{mlthread}[Machine learning: the law of a model's output]
 \begin{itemize}[nosep]
-  \item The law of a model's output is a push-forward.
-  \item Generative models as push-forwards of a simple measure.
+  \item \emph{Data.} The data are modelled by a probability measure $P$
+        on the space of examples. A sample $x_1,\dots,x_N$ defines the
+        empirical measure $\hat P_N = \frac1N\sum_i\delta_{x_i}$, and
+        training on the sample is training with $\hat P_N$ in place of
+        $P$.
+  \item \emph{Outputs.} A network $f_\theta$ is a composition of
+        continuous maps, hence measurable; so is a classifier obtained
+        from it by taking the largest score. The predictions on data
+        drawn from $P$ have the law $(f_\theta)_\#P$, and the losses the
+        law $(\ell\circ f_\theta)_\#P$, a measure on $\R$ whose mean is
+        the risk.
+  \item \emph{Shift.} When the data distribution changes from $P$ to
+        $Q$ and the model does not, the law of the outputs changes from
+        $(f_\theta)_\#P$ to $(f_\theta)_\#Q$. Comparing these two
+        measures on the output space is a way to detect the shift
+        without labels.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: generative models are push-forwards]
+A generative model is a map $g_\theta$ from a latent space, with a
+simple probability measure $\pi$ such as a uniform or a Gaussian one, to
+the space of data. The model \emph{is} the measure
+$P_\theta = (g_\theta)_\#\pi$.
+\begin{itemize}[nosep]
+  \item \emph{Sampling is easy.} Draw $z$ from $\pi$ and return
+        $g_\theta(z)$: this is the definition of the push-forward.
+  \item \emph{A density may not exist.} If the latent space has a
+        smaller dimension than the data space, $P_\theta$ gives all its
+        mass to the image of $g_\theta$. For a linear $g_\theta$ this
+        image is a null set (\cref{measures:thm:linear}), and so it is
+        for a smooth one (we do not prove this; see
+        \cref{measures:exr:9} for a parabola). A measure that gives mass
+        $1$ to a Lebesgue null set has no density: the likelihood of a
+        data point is not defined
+        (\cref{measures:fig:generative}).
+  \item \emph{Consequence.} Such models cannot be trained by maximum
+        likelihood; they are trained by comparing samples of
+        $P_\theta$ with data. When $g_\theta$ is a diffeomorphism the
+        density exists and is given by the change of variables formula
+        of \cref{ch:change-of-variables}.
+\end{itemize}
+\end{mlthread}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \draw[->] (-2.2,0) -- (2.2,0) node[right] {$z$};
+    \draw[bookdef, thick, domain=-2:2, samples=60, smooth, variable=\x]
+      plot ({\x}, {1.3*exp(-\x*\x)});
+    \node[bookdef] at (1.0,1.2) {$\pi$};
+    \node at (0,-0.6) {latent space, dimension $1$};
+  \end{scope}
+  \draw[->, thick] (2.9,0.6) -- (4.3,0.6);
+  \node[above] at (3.6,0.6) {$g_\theta$};
+  \begin{scope}[xshift=7.2cm, yshift=0.3cm]
+    \draw[thick] (-2.4,-1.3) rectangle (2.4,1.5);
+    \draw[bookaccent, very thick] (-2.0,-0.9) .. controls (-1.0,1.6) and
+      (0.2,-1.6) .. (0.9,0.2) .. controls (1.3,1.2) and (1.8,1.0) ..
+      (2.1,0.4);
+    \foreach \x/\y in {-1.065/0.100, -0.749/0.049, -0.530/-0.041, -0.346/-0.135,
+        -0.195/-0.215, -0.047/-0.286, 0.097/-0.343, 0.265/-0.378,
+        0.426/-0.366, 0.628/-0.250, 0.791/-0.034, 1.086/0.572,
+        1.409/0.875}
+      \node[circle, fill=bookpitfall, inner sep=1.1pt] at (\x,\y) {};
+    \node at (0,-1.9)
+      {data space, dimension $2$: all the mass on a curve};
+  \end{scope}
+\end{tikzpicture}
+\caption{A generative model with a latent space of dimension $1$ and
+data of dimension $2$. Every sample lies on the image of $g_\theta$, a
+curve of area zero. The model is a perfectly good probability measure on
+the plane, and it has no density.}
+\label{measures:fig:generative}
+\end{figure}
+
+\section{Where the chapter leads}\label{measures:sec:outlook}
+
+Sets now have sizes. \Cref{ch:lebesgue-integral} uses them to integrate
+functions, as announced in \cref{measures:fig:slicing}, and proves the
+limit theorems that justify the computations of Part~III. Push-forwards
+come back there as the change of variable
+$\int g\,\dd(f_\#\mu) = \int g\circ f\,\dd\mu$, in
+\cref{ch:fubini} for products and independence, and in
+\cref{ch:change-of-variables}, where \cref{measures:thm:linear} becomes
+the local model of the change of variables formula.
+
+\paragraph{Sources.} Loomis and Sternberg, \emph{Advanced Calculus},
+Chapter~8, measure sets by a finitely additive \emph{content}: they
+state axioms for a size (\S8.2), build it from rectangles and pavings,
+define contented sets (Definition~6.3) and prove that a linear map
+multiplies the content by the absolute value of its determinant
+(Theorem~8.1). Hubbard and Hubbard define the volume through dyadic
+pavings (Definition~4.1.17) and sets of measure zero (Definition~4.4.1),
+prove that the determinant scales volume (Theorem~4.9.1), and construct
+the Lebesgue integral without measure theory (\S4.11). The countably
+additive theory presented here is the standard one; see for instance
+M.~Capi\'nski and E.~Kopp, \emph{Measure, Integral and Probability},
+Springer, 2004, and, for the $\pi$--$\lambda$ theorem, P.~Billingsley,
+\emph{Probability and Measure}, Wiley, 1995. The proof of
+\cref{measures:thm:linear} by the singular value decomposition replaces
+the usual reduction to elementary matrices.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{16-measures.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A $\sigma$-algebra is a family of sets stable by complements and
+        countable unions; a measure is a countably additive map from it
+        to $[0, \infty]$. Measures are continuous along increasing
+        sequences of sets, and along decreasing ones of finite measure.
+  \item Two measures that agree on a $\pi$-system, and are finite on an
+        increasing sequence from it that exhausts the space, agree on
+        the $\sigma$-algebra it generates.
+  \item Measurable maps are stable under composition, algebra and
+        pointwise limits. The push-forward
+        $f_\#\mu(B) = \mu(f^{-1}(B))$ carries a measure along a
+        measurable map.
+  \item Lebesgue measure is the only measure on the Borel sets of
+        $\R^n$ that gives boxes their volume. It is invariant under
+        translations, and it is the only such measure up to a constant;
+        $\lambda(T(B)) = \abs{\det T}\lambda(B)$ for linear $T$. On an
+        affine space it is defined up to a constant, fixed by an inner
+        product.
+  \item A random variable is a measurable map and its law is the
+        push-forward of the probability. Data sets, model outputs and
+        generative models are measures; a generative model with a small
+        latent space has no density.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{measures:exr:1}
+On $X = \{1, 2, 3, 4, 5, 6\}$ consider the blocks $\{1, 2\}$, $\{3\}$,
+$\{4, 5, 6\}$.
+\begin{enumerate}[nosep]
+  \item List the $\sigma$-algebra they generate.
+  \item Which of the functions $x\mapsto x$, $x\mapsto1_{\{x\leq2\}}$
+        and $x\mapsto\min(x, 4)$ are measurable for it?
+\end{enumerate}
+\solutionlink{measures:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{measures:exr:2}
+Show that $\mathcal B(\R)$ is generated by the intervals
+$(-\infty, t]$ with $t$ rational.
+\solutionlink{measures:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{measures:exr:3}
+\begin{enumerate}[nosep]
+  \item Prove directly that the rationals of $[0, 1]$ form a null set,
+        by covering the $k$-th rational with an interval of length
+        $\epsilon2^{-k}$.
+  \item Let $A_n = (0, \frac1n)$ and $B_n = [n, \infty)$ in $\R$. Compute
+        $\lim_n\lambda(A_n)$, $\lambda(\bigcap_nA_n)$,
+        $\lim_n\lambda(B_n)$ and $\lambda(\bigcap_nB_n)$, and compare
+        with \cref{measures:thm:continuity}.
+\end{enumerate}
+\solutionlink{measures:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{measures:exr:4}
+On $X = \{1, 2, 3, 4\}$:
+\begin{enumerate}[nosep]
+  \item show that the subsets with an even number of elements form a
+        $\lambda$-system that is not a $\sigma$-algebra;
+  \item let $\mathcal C = \{\{1, 2\}, \{2, 3\}\}$. Show that
+        $\sigma(\mathcal C)$ contains all subsets, and find two
+        probability measures that agree on $\mathcal C$ and differ.
+        Which hypothesis of \cref{measures:cor:uniqueness} fails?
+\end{enumerate}
+\solutionlink{measures:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{measures:exr:5}
+\begin{enumerate}[nosep]
+  \item Let $\mu$ be the uniform probability on $\{1,\dots,6\}$. Compute
+        its push-forwards by $x\mapsto x\bmod3$ and by
+        $x\mapsto1_{\{x\geq5\}}$.
+  \item Let $f(x) = 2x\bmod1$ on $[0, 1)$ with Lebesgue measure. Compute
+        $f^{-1}([a, b))$ and show that $f_\#\lambda = \lambda$.
+\end{enumerate}
+\solutionlink{measures:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{measures:exr:6}
+Let $T = \begin{bsmallmatrix}2 & 1\\ 0 & 3\end{bsmallmatrix}$. Given
+that the unit disc has area $\pi$, compute the area of its image by
+$T$, the measure $T_\#\lambda$, and the area of the ellipse
+$\{x^2/a^2 + y^2/b^2\leq1\}$.
+\solutionlink{measures:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{measures:exr:7}
+Let $U$ be uniform on $[0, 1)$.
+\begin{enumerate}[nosep]
+  \item Find the law of $\lfloor6U\rfloor + 1$.
+  \item Find a map $h$ such that $h(U)$ has the distribution function
+        $t\mapsto t^2$ on $[0, 1]$.
+\end{enumerate}
+\solutionlink{measures:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{measures:exr:8}
+\begin{enumerate}[nosep]
+  \item Let $\nu$ be a translation-invariant measure on
+        $\mathcal B(\R)$ with $\nu([0, 1)) = 3$. Compute
+        $\nu([a, b])$.
+  \item The counting measure on $\R$ is invariant under translations
+        and is not a multiple of $\lambda$. Why does this not contradict
+        \cref{measures:thm:translation}?
+  \item In a plane with an inner product, a frame has basis vectors of
+        lengths $2$ and $3$ at an angle of $60^\circ$. Express the
+        area in terms of the measure $\lambda_\varphi$ of this frame.
+\end{enumerate}
+\solutionlink{measures:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{measures:exr:9}
+Let $g(z) = (z, z^2)$ from $\R$ to $\R^2$.
+\begin{enumerate}[nosep]
+  \item Show that the part of the parabola $g(\R)$ above $[-k, k]$ can
+        be covered by $N$ rectangles of total area $8k^3/N$, and deduce
+        that $g(\R)$ is a Borel null set of $\R^2$.
+  \item Let $\pi$ be a probability measure on $\R$. Show that
+        $g_\#\pi$ gives mass $1$ to a null set of $\R^2$.
+\end{enumerate}
+\solutionlink{measures:exr:9}
+\end{exercise}
 \end{notechapter}
