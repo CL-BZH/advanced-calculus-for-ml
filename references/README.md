@@ -33,6 +33,8 @@ ignored by git.
 | Reference | Cited in | Official copy | Access |
 | --- | --- | --- | --- |
 | A. G. Baydin, B. A. Pearlmutter, A. A. Radul and J. M. Siskind, Automatic differentiation in machine learning: a survey, *J. Mach. Learn. Res.* 18(153), 2018 | Ch. 7 | [jmlr.org](https://www.jmlr.org/papers/v18/17-468.html) | Open access, CC BY 4.0 |
+| E. Oja, A simplified neuron model as a principal component analyzer, *J. Math. Biol.* 15, 267–273, 1982 | Ch. 14 | DOI 10.1007/BF00275687 ([Springer](https://link.springer.com/content/pdf/10.1007/BF00275687.pdf)) | Commercial |
+| M. Nickel and D. Kiela, Poincaré embeddings for learning hierarchical representations, arXiv:1705.08039, 2017 | Ch. 14 | [arXiv](https://arxiv.org/pdf/1705.08039) | Free to read on arXiv |
 
 ## Companion
 

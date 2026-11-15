@@ -4,21 +4,942 @@
 \chaptersubtitle{%
   The metric that a statistical model brings with it}
 
-\begin{chapterplan}
+\begin{chapterintro}
+So far the inner product behind a gradient was either inherited from an
+ambient space or chosen, silently, by a chart. When the points of the
+manifold are probability distributions there is a third possibility: the
+distributions themselves say how far apart they are. Two parameter values
+are close when the distributions they define are hard to tell apart from
+samples. This gives every statistical model a Riemannian metric, the
+Fisher information, defined without any chart. The Riemannian gradient
+for this metric is the \emph{natural gradient}; to first order, the
+descent step it defines does not depend on how the model is
+parametrized. Expectations are sums over a finite set, or integrals in
+the elementary sense, until Part~IV makes them rigorous in general. You
+will learn
 \begin{itemize}[nosep]
-  \item Statistical models as manifolds; the Fisher information as a Riemannian
-        metric; its invariance under reparametrization. (Expectations are used
-        here in the elementary sense and made rigorous in the next part.)
-  \item The Kullback--Leibler divergence and its second-order expansion.
-  \item Natural gradient descent; exponential families; the link with
-        Gauss--Newton.
-  \item Mirror descent as a second geometry-aware method.
+  \item statistical models as manifolds, the score as a covector, and
+        the Fisher metric;
+  \item three computations: Bernoulli, categorical and Gaussian families,
+        and why the simplex with the Fisher metric is a piece of a
+        sphere;
+  \item the Kullback--Leibler divergence, whose second-order part is the
+        Fisher metric;
+  \item natural gradient descent and its invariance; exponential
+        families, where it has a closed form; the link with the
+        Gauss--Newton method;
+  \item mirror descent, which adds covectors where gradient descent adds
+        a vector to a point;
+  \item what Kronecker-factored methods, Adam and trust-region policy
+        optimization keep of this, and what they give up.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:tangent-bundles} and
+\cref{ch:riemannian-optimization}; \cref{ch:gradient-hessian} for
+convexity and Newton's method.}
+\end{chapterintro}
+
+\section{Statistical models}\label{natural-gradient:sec:models}
+
+\begin{definition}[Statistical model]\label{natural-gradient:def:model}
+A \emph{statistical model} on a set $\mathcal Y$ of outcomes is a
+manifold $M$ together with, for each $p\in M$, a probability distribution
+on $\mathcal Y$ with a positive mass function or density
+$y\mapsto\rho(y; p)$, depending smoothly on $p$. The
+\emph{log-likelihood} of the outcome $y$ is the function
+$\ell_y(p) = \ln\rho(y; p)$ on $M$, and the \emph{expectation} at $p$ of
+a function $h$ on $\mathcal Y$ is
+\[
+  \mathbb E_p[h] = \sum_{y\in\mathcal Y}\rho(y; p)\,h(y)
+  \qquad\text{or}\qquad
+  \mathbb E_p[h] = \int_{\mathcal Y}\rho(y; p)\,h(y)\,\dd y .
+\]
+\end{definition}
+
+\emph{Standing assumptions.} Either $\mathcal Y$ is finite, and then
+nothing more is assumed; or the sums and integrals that appear may be
+differentiated twice with respect to $p$ under the sum or integral sign.
+\Cref{ch:lebesgue-integral} gives conditions for this. The points of $M$
+are distributions; a chart on $M$ is what statistics calls a
+parametrization, and its coordinates are written
+$\theta = (\theta_1,\dots,\theta_d)$.
+
+\begin{example}\label{natural-gradient:ex:models}
+\begin{enumerate}[nosep]
+  \item \emph{Categorical distributions.} $\mathcal Y = \{1,\dots,n\}$
+        and $M$ is the open simplex $\Delta^\circ$
+        (\cref{submanifolds:ex:simplex}), with $\rho(y; p) = p_y$. For
+        $n = 2$ this is the Bernoulli family, with the chart
+        $\theta = p_1\in(0, 1)$.
+  \item \emph{Gaussian distributions} on $\mathcal Y = \R$, with the
+        chart $(\mu, \sigma)$ and
+        $\rho(y; \mu, \sigma)
+        = (2\pi\sigma^2)^{-1/2}\exp\bigl(-(y - \mu)^2/2\sigma^2\bigr)$.
+  \item \emph{A model with inputs.} A network with parameters $\theta$
+        that maps an input $x$ to a distribution $\rho(y\mid x; \theta)$
+        over labels defines, for inputs drawn from a fixed distribution
+        $q$, the joint model $q(x)\rho(y\mid x; \theta)$ on pairs
+        $(x, y)$.
+\end{enumerate}
+\end{example}
+
+\begin{definition}[Score]\label{natural-gradient:def:score}
+The \emph{score} of the outcome $y$ at $p$ is the covector
+$\dd\ell_y(p)\in T_p^*M$.
+\end{definition}
+
+\begin{lemma}[The score has mean zero]\label{natural-gradient:lem:score}
+For every $p\in M$ and $v\in T_pM$,
+$\mathbb E_p\bigl[\dd\ell_y(p)v\bigr] = 0$.
+\end{lemma}
+
+\begin{proof}
+Since $\dd\ell_y = \dd\rho(y; \cdot)/\rho(y; \cdot)$,
+$\mathbb E_p[\dd\ell_y(p)v] = \sum_y\dd\rho(y; \cdot)(p)v
+= \dd\bigl(\sum_y\rho(y; \cdot)\bigr)(p)v = 0$, because the total mass is
+the constant $1$. With a density, replace the sum by an integral.
+\end{proof}
+
+\section{The Fisher metric}\label{natural-gradient:sec:fisher}
+
+\begin{definition}[Fisher information]\label{natural-gradient:def:fisher}
+The \emph{Fisher information} of a statistical model at $p$ is the
+bilinear form on $T_pM$
+\[
+  g_p(v, w) = \mathbb E_p\bigl[\dd\ell_y(p)v\ \dd\ell_y(p)w\bigr] .
+\]
+In a chart $\theta$ its matrix is the \emph{Fisher matrix}
+$F(\theta) = \mathbb E_\theta\bigl[[\dd\ell_y]^\top[\dd\ell_y]\bigr]$,
+with entries $F_{ij} = \mathbb E_\theta[\partial_i\ell_y\,\partial_j\ell_y]$.
+\end{definition}
+
+\begin{theorem}\label{natural-gradient:thm:fisher}
+\begin{enumerate}[nosep]
+  \item $g_p$ is symmetric and positive semidefinite. It is positive
+        definite if and only if no non-zero $v\in T_pM$ has
+        $\dd\ell_y(p)v = 0$ for all $y$.
+  \item $g_p$ is defined without reference to a chart. Under a change of
+        chart with Jacobian matrix $J$, the Fisher matrix becomes
+        $F' = J^{-\top}FJ^{-1}$.
+  \item In any chart,
+        $F_{ij} = -\mathbb E_\theta[\partial_i\partial_j\ell_y]$.
+\end{enumerate}
+When $g_p$ is positive definite for every $p$, it is a Riemannian metric
+on $M$: the \emph{Fisher metric}.
+\end{theorem}
+
+\begin{proof}
+(1) $g_p(v, v) = \mathbb E_p[(\dd\ell_y(p)v)^2]\geq0$, and it vanishes
+only if $\dd\ell_y(p)v = 0$ for every $y$, since $\rho > 0$. (2) The
+definition uses the covectors $\dd\ell_y(p)$ and the expectation at $p$,
+nothing else; the rule for $F$ follows from
+$[\dd\ell_y]' = [\dd\ell_y]J^{-1}$ (\cref{tangent-bundles:thm:change}).
+(3) From $\partial_j\ell = \partial_j\rho/\rho$,
+\[
+  \partial_i\partial_j\ell
+  = \frac{\partial_i\partial_j\rho}\rho
+  - \partial_i\ell\,\partial_j\ell ,
+\]
+and
+$\mathbb E_\theta[\partial_i\partial_j\rho/\rho]
+= \partial_i\partial_j\sum_y\rho = 0$. The entries of $F$ are smooth by
+the standing assumptions.
+\end{proof}
+
+\begin{intuition}
+The score says how much the log-likelihood of an observed outcome reacts
+to a move $v$ of the parameters. If the scores of all outcomes ignore
+$v$, moving along $v$ does not change the distribution to first order:
+$v$ has length zero. A direction is long when typical outcomes react
+strongly to it, that is, when a few samples suffice to detect the move.
+\end{intuition}
+
+Item (3) is remarkable in view of \cref{tangent-bundles:prop:hessian}:
+the matrix of second partial derivatives of a single $\ell_y$ is not the
+matrix of a bilinear form on $T_pM$, because $p$ is not a critical point
+of $\ell_y$. Its expectation is, because $p$ is critical \emph{on
+average} (\cref{natural-gradient:lem:score}).
+
+\begin{example}[Bernoulli, categorical, Gaussian]
+\label{natural-gradient:ex:fisher}
+\begin{enumerate}[nosep]
+  \item \emph{Bernoulli}, chart $\theta = p_1$. The scores are
+        $1/\theta$ for $y = 1$ and $-1/(1 - \theta)$ for $y = 2$, so
+        \[
+          F(\theta) = \theta\cdot\frac1{\theta^2}
+          + (1 - \theta)\cdot\frac1{(1 - \theta)^2}
+          = \frac1{\theta(1 - \theta)} .
+        \]
+        In the chart of the logit $z = \ln\frac\theta{1 - \theta}$, where
+        $J = \dd z/\dd\theta = 1/\theta(1 - \theta)$, the rule gives
+        $F' = F/J^2 = \theta(1 - \theta)$.
+  \item \emph{Categorical.} A tangent vector is a $v\in\R^n$ with
+        $\sum_iv_i = 0$, and $\dd\ell_y(p)v = v_y/p_y$. Hence
+        \[
+          g_p(v, w) = \sum_{y=1}^np_y\,\frac{v_y}{p_y}\frac{w_y}{p_y}
+          = \sum_{i=1}^n\frac{v_iw_i}{p_i} .
+        \]
+  \item \emph{Gaussian}, chart $(\mu, \sigma)$. The scores are
+        $\partial_\mu\ell = (y - \mu)/\sigma^2$ and
+        $\partial_\sigma\ell = -1/\sigma + (y - \mu)^2/\sigma^3$. With
+        $\mathbb E[(y - \mu)^2] = \sigma^2$,
+        $\mathbb E[(y - \mu)^3] = 0$ and
+        $\mathbb E[(y - \mu)^4] = 3\sigma^4$,
+        \[
+          F(\mu, \sigma) = \frac1{\sigma^2}
+          \begin{bmatrix}1 & 0\\ 0 & 2\end{bmatrix} .
+        \]
+        A shift of the mean by a given amount is easy to detect when
+        $\sigma$ is small and hard when it is large.
+\end{enumerate}
+\end{example}
+
+\begin{proposition}[The simplex is a piece of a sphere]
+\label{natural-gradient:prop:sphere}
+The map $S(p) = 2(\sqrt{p_1},\dots,\sqrt{p_n})$ sends the open simplex
+onto the part of the sphere of radius $2$ of $\R^n$ with positive
+coordinates, and the Fisher metric of the categorical family is the
+pull-back by $S$ of the metric of that sphere. The distance for the
+Fisher metric is
+\[
+  d(p, q) = 2\arccos\sum_i\sqrt{p_iq_i} .
+\]
+\end{proposition}
+
+\begin{proof}
+$\norm{S(p)}^2 = 4\sum_ip_i = 4$, and $S$ is a bijection onto the stated
+set, with inverse $x\mapsto(x_i^2/4)$. For a tangent vector $v$,
+$DS(p)v = (v_i/\sqrt{p_i})_i$, whose squared norm
+$\sum_iv_i^2/p_i$ is $g_p(v, v)$. So $S$ preserves the lengths of curves.
+On the sphere of radius $2$ the distance between $S(p)$ and $S(q)$ is $2$
+times their angle (\cref{riemannian-optimization:prop:sphere}), whose
+cosine is $\frac14\inner{S(p)}{S(q)} = \sum_i\sqrt{p_iq_i}$; the arc of
+great circle between two points with positive coordinates has positive
+coordinates.
+\end{proof}
+
+So the geometry of the categorical family is not that of the flat
+simplex: it has constant positive curvature, and its total size is
+finite. For the Bernoulli family, the interval $(0, 1)$ has the length
+$\pi$ (\cref{natural-gradient:fig:arc}). The Gaussian family is at the
+other extreme: its metric $(\dd\mu^2 + 2\,\dd\sigma^2)/\sigma^2$ is,
+after rescaling $\mu$ and up to a constant factor, the metric of the
+hyperbolic plane in another chart than the disc of
+\cref{ch:riemannian-optimization}; we do not prove this.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \draw[thick] (0,0) -- (5,0);
+    \foreach \p in {0.038,0.146,0.309,0.5,0.691,0.854,0.962}
+      \node[circle, fill=bookaccent, inner sep=1.4pt] at (5*\p,0) {};
+    \draw (0,-0.1) -- (0,0.1);
+    \draw (5,-0.1) -- (5,0.1);
+    \node[below] at (0,-0.1) {$0$};
+    \node[below] at (5,-0.1) {$1$};
+    \node[below] at (2.5,-0.1) {$\theta = \frac12$};
+    \node at (2.5,-1.1) {the chart $\theta$: not equally spaced};
+  \end{scope}
+  \draw[->, thick] (5.5,0.6) -- (6.9,0.6);
+  \node[above] at (6.2,0.6) {$S$};
+  \begin{scope}[xshift=7.6cm, yshift=-0.9cm]
+    \draw[gray, ->] (0,0) -- (3.4,0);
+    \draw[gray, ->] (0,0) -- (0,3.4);
+    \draw[thick] (3,0) arc (0:90:3);
+    \foreach \a in {11.25,22.5,33.75,45,56.25,67.5,78.75}
+      \node[circle, fill=bookaccent, inner sep=1.4pt] at (\a:3) {};
+    \node[gray, below] at (3.4,0) {$2\sqrt{1 - \theta}$};
+    \node[gray, left] at (0,3.4) {$2\sqrt\theta$};
+    \node at (1.4,-0.9) {equally spaced on a circle of radius $2$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The Bernoulli family with its Fisher metric. Seven distributions
+at equal Fisher distances from one another are crowded towards $0$ and
+$1$ in the chart $\theta$: near the ends, a small change of $\theta$ is a
+large change of the distribution. The map $S$ makes the distances
+visible: it sends $(0, 1)$ onto a quarter of a circle of radius $2$, of
+length $\pi$.}
+\label{natural-gradient:fig:arc}
+\end{figure}
+
+\begin{remark}[Why this metric]\label{natural-gradient:rem:invariance}
+Reparametrizing the model does not change the Fisher metric, since no
+chart enters its definition. Neither does it change when the outcomes
+are relabelled by a bijection of $\mathcal Y$, which only permutes the
+terms of the sum. A theorem of Chentsov, which we do not prove, says that
+on the simplex it is, up to a constant factor, the only Riemannian metric
+invariant under a natural class of transformations of the outcomes.
+\end{remark}
+
+\section{The Kullback--Leibler divergence}\label{natural-gradient:sec:kl}
+
+\begin{definition}\label{natural-gradient:def:kl}
+The \emph{Kullback--Leibler divergence} from $p$ to $q$ in $M$ is
+\[
+  D(p\,\|\,q) = \mathbb E_p\bigl[\ell_y(p) - \ell_y(q)\bigr]
+  = \sum_y\rho(y; p)\ln\frac{\rho(y; p)}{\rho(y; q)} .
+\]
+\end{definition}
+
+\begin{proposition}\label{natural-gradient:prop:kl}
+$D(p\,\|\,q)\geq0$, with equality if and only if $p$ and $q$ define the
+same distribution.
+\end{proposition}
+
+\begin{proof}
+Since $\ln t\leq t - 1$, with equality only at $t = 1$,
+\[
+  -D(p\,\|\,q) = \sum_y\rho(y; p)\ln\frac{\rho(y; q)}{\rho(y; p)}
+  \leq\sum_y\rho(y; p)\Bigl(\frac{\rho(y; q)}{\rho(y; p)} - 1\Bigr) = 0 ,
+\]
+with equality only if $\rho(y; q) = \rho(y; p)$ for all $y$.
+\end{proof}
+
+The divergence is not symmetric and does not satisfy the triangle
+inequality; it is not a distance. Its second-order part is symmetric.
+
+\begin{theorem}[The Fisher metric is the Hessian of the divergence]
+\label{natural-gradient:thm:kl}
+For fixed $p$, the functions $q\mapsto D(p\,\|\,q)$ and
+$q\mapsto D(q\,\|\,p)$ have a critical point at $q = p$, and the Hessian
+of each at that point is the Fisher form $g_p$. In a chart,
+\[
+  D(\theta\,\|\,\theta + h) = \tfrac12h^\top F(\theta)h + o(\abs h^2) ,
+  \qquad
+  D(\theta + h\,\|\,\theta) = \tfrac12h^\top F(\theta)h + o(\abs h^2) .
+\]
+\end{theorem}
+
+\begin{proof}
+Both functions have a minimum at $q = p$
+(\cref{natural-gradient:prop:kl}), so $p$ is a critical point and the
+Hessian is defined (\cref{tangent-bundles:prop:hessian}). Work in a
+chart, with $\theta$ the coordinates of $p$ and $\vartheta$ those of $q$.
+For the first function, the second partial derivatives with respect to
+$\vartheta$ at $\vartheta = \theta$ are
+$-\mathbb E_\theta[\partial_i\partial_j\ell_y(\theta)] = F_{ij}$
+(\cref{natural-gradient:thm:fisher}). For the second,
+$D = \sum_y\rho(y; \vartheta)\bigl(\ell_y(\vartheta) - \ell_y(\theta)\bigr)$
+and
+\[
+  \partial_iD
+  = \sum_y\partial_i\rho(y; \vartheta)
+    \bigl(\ell_y(\vartheta) - \ell_y(\theta)\bigr)
+  + \sum_y\rho(y; \vartheta)\,\partial_i\ell_y(\vartheta) ,
+\]
+where the last sum is zero by \cref{natural-gradient:lem:score}.
+Differentiating again and setting $\vartheta = \theta$, only
+$\sum_y\partial_i\rho\,\partial_j\ell_y
+= \mathbb E_\theta[\partial_i\ell_y\,\partial_j\ell_y] = F_{ij}$ remains.
+The expansions are Taylor's formula
+(\cref{gradient-hessian:thm:taylor}).
+\end{proof}
+
+\begin{keyidea}
+Among nearby distributions, those at a given small divergence
+$\epsilon$ from $p$ form, to second order, the sphere
+$\{h : h^\top F(\theta)h = 2\epsilon\}$ of the Fisher metric. The
+divergence compares distributions, so it cannot depend on the
+parametrization, and neither can its Hessian.
+\end{keyidea}
+
+\section{The natural gradient}\label{natural-gradient:sec:ngd}
+
+\begin{definition}[Natural gradient]\label{natural-gradient:def:natural}
+Let $L:M\to\R$ be a smooth function on a statistical model whose Fisher
+form is positive definite. The \emph{natural gradient} of $L$ is its
+Riemannian gradient for the Fisher metric
+(\cref{riemannian-optimization:def:gradient}); in a chart,
+\[
+  [\operatorname{grad}L] = F(\theta)^{-1}[\dd L]^\top .
+\]
+\emph{Natural gradient descent} in the chart $\theta$ is the iteration
+$\theta_{k+1} = \theta_k - \eta\,F(\theta_k)^{-1}[\dd L(\theta_k)]^\top$:
+Riemannian gradient descent with the retraction of the chart.
+\end{definition}
+
+\begin{proposition}[Steepest descent for the divergence]
+\label{natural-gradient:prop:steepest}
+Among the displacements $h$ with $\frac12h^\top F(\theta)h\leq\epsilon$,
+the linearized loss $[\dd L]h$ is smallest for
+\[
+  h = -\sqrt{\frac{2\epsilon}{[\dd L]F^{-1}[\dd L]^\top}}\;
+      F^{-1}[\dd L]^\top .
+\]
+\end{proposition}
+
+\begin{proof}
+The constraint says that the norm of $h$ for the Fisher metric is at most
+$\sqrt{2\epsilon}$, and
+\cref{riemannian-optimization:prop:gradient}\,(3) gives the direction;
+the squared norm of the gradient is
+$[\dd L]F^{-1}FF^{-1}[\dd L]^\top$.
+\end{proof}
+
+By \cref{natural-gradient:thm:kl}, this is the step that decreases the
+loss most, to first order, among those that change the \emph{model} by a
+divergence of at most $\epsilon$: a limit on how much the predictions
+may change, not on how much the parameters may change.
+
+\begin{theorem}[Invariance under reparametrization]
+\label{natural-gradient:thm:invariance}
+Let $\theta$ and $\theta' = \tau(\theta)$ be two charts and let
+$\theta^+$, $\theta'^+$ be the results of one step of natural gradient
+descent of size $\eta$ in each, from the same point of $M$. Then
+\[
+  \tau(\theta^+) - \theta'^+ = O(\eta^2) .
+\]
+For gradient descent in the two charts the difference is
+$-\eta\,(J - J^{-\top})[\dd L]^\top + O(\eta^2)$, of first order unless
+$J^\top J = I$.
+\end{theorem}
+
+\begin{proof}
+By \cref{riemannian-optimization:prop:gradient}\,(1),
+$F'^{-1}[\dd L]'^\top = JF^{-1}[\dd L]^\top$, so
+$\theta'^+ = \tau(\theta) - \eta JF^{-1}[\dd L]^\top$, while Taylor's
+formula gives
+$\tau(\theta^+) = \tau(\theta) - \eta JF^{-1}[\dd L]^\top + O(\eta^2)$.
+For gradient descent, $\theta'^+ = \tau(\theta) - \eta J^{-\top}[\dd L]^\top$
+and $\tau(\theta^+) = \tau(\theta) - \eta J[\dd L]^\top + O(\eta^2)$.
+\end{proof}
+
+The natural gradient is one vector field on $M$, and the two charts
+follow it with two different retractions, which agree to first order
+(\cref{natural-gradient:fig:steps}). In the limit of small steps the
+trajectories coincide: the curves with velocity
+$-\operatorname{grad}L$ are the same in every chart.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=11.0]
+  \draw[->] (0.48,1.52) -- (1.2,1.52) node[right] {$\mu$};
+  \draw[->] (0.5,1.5) -- (0.5,2.12) node[above] {$\sigma$};
+  \foreach \x in {0.6,0.8,1.0} {
+    \draw (\x,1.51) -- (\x,1.53);
+    \node[below] at (\x,1.51) {$\x$};
+  }
+  \foreach \y in {1.6,1.8,2.0} {
+    \draw (0.49,\y) -- (0.51,\y);
+    \node[left] at (0.49,\y) {$\y$};
+  }
+  \draw[->, thick, gray] (1,2) -- (0.9,1.9);
+  \draw[->, thick, gray] (1,2) -- (0.9,1.6375);
+  \draw[->, thick, gray] (1,2) -- (0.9,1.9937);
+  \draw[->, thick, bookaccent] (1,2) -- (0.6,1.8);
+  \draw[->, thick, bookaccent] (1,2) -- (0.6,1.8097);
+  \draw[->, thick, bookaccent] (1,2) -- (0.6,1.7889);
+  \node[circle, fill, inner sep=1.4pt] at (1,2) {};
+  \node[right] at (1.01,2.01) {$(1, 2)$};
+  \node[gray, right, align=left] at (1.02,1.8)
+    {gradient descent:\\three charts,\\three steps};
+  \node[bookaccent, below, align=center] at (0.72,1.74)
+    {natural gradient:\\three charts,\\almost one step};
+\end{tikzpicture}
+\caption{The experiment of \cref{tangent-bundles:fig:steps} again, with
+$\eta = 0.4$: one step from the Gaussian distribution $(1, 2)$ computed
+in the charts $(\mu, \sigma)$, $(\mu, \ln\sigma)$ and $(\mu, \sigma^2)$.
+The three gradient descent steps differ at first order. The three
+natural gradient steps end at $\sigma = 1.800$, $1.810$ and $1.789$: they
+differ at second order only.}
+\label{natural-gradient:fig:steps}
+\end{figure}
+
+\subsection*{Exponential families}
+
+\begin{definition}[Exponential family]\label{natural-gradient:def:expfam}
+An \emph{exponential family} is a statistical model with a chart
+$\theta$, the \emph{natural parameters}, with values in an open convex
+subset of $\R^d$, in which
+\[
+  \rho(y; \theta)
+  = h(y)\exp\bigl(\theta^\top T(y) - A(\theta)\bigr)
+\]
+for a function $T:\mathcal Y\to\R^d$, the \emph{sufficient statistic},
+and a positive function $h$. The function $A$, determined by the
+condition that the total mass is $1$, is the \emph{log-partition
+function}.
+\end{definition}
+
+\begin{theorem}\label{natural-gradient:thm:expfam}
+In an exponential family, with $\mu = \mathbb E_\theta[T]$:
+\begin{enumerate}[nosep]
+  \item $[\dd A(\theta)]^\top = \mu$ and
+        $F(\theta) = [D^2A(\theta)]
+        = \mathbb E_\theta\bigl[(T - \mu)(T - \mu)^\top\bigr]$; in
+        particular $A$ is convex.
+  \item $D(\theta\,\|\,\theta')
+        = A(\theta') - A(\theta) - \dd A(\theta)(\theta' - \theta)$.
+  \item If $F$ is positive definite, $\theta\mapsto\mu$ is another chart,
+        the \emph{mean parameters}, with Jacobian matrix $J = F$. The
+        Fisher matrix in the chart $\mu$ is $F^{-1}$, and for a function
+        $L$ on $M$
+        \[
+          F^{-1}[\dd_\theta L]^\top = [\dd_\mu L]^\top :
+        \]
+        the components of the natural gradient in the natural chart are
+        the partial derivatives in the mean chart.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) Here $\ell_y(\theta) = \theta^\top T(y) - A(\theta) + \ln h(y)$, so
+$[\dd\ell_y]^\top = T(y) - [\dd A]^\top$, and
+\cref{natural-gradient:lem:score} gives $[\dd A]^\top = \mu$. Then $F$ is
+the expectation of $(T - \mu)(T - \mu)^\top$; and the second derivatives
+of $\ell_y$ are those of $-A$, which do not depend on $y$, so
+$F = [D^2A]$ by \cref{natural-gradient:thm:fisher}\,(3). A function with
+positive semidefinite second differential on a convex set is convex
+(\cref{gradient-hessian:thm:convex}).
+(2) $\mathbb E_\theta[\ell_y(\theta) - \ell_y(\theta')]
+= (\theta - \theta')^\top\mu - A(\theta) + A(\theta')$.
+(3) The Jacobian matrix of $\theta\mapsto[\dd A]^\top$ is $[D^2A] = F$,
+which is invertible, and the map is injective because $A$ is strictly
+convex: if $\dd A(\theta) = \dd A(\theta')$, then $\theta'$ is a critical
+point, hence the minimum, of the strictly convex function
+$a\mapsto A(a) - \dd A(\theta)a$, and so is $\theta$; a strictly convex
+function has at most one minimum. So it is a diffeomorphism onto
+an open set (\cref{inverse-implicit:thm:inverse}). The Fisher matrix
+becomes $J^{-\top}FJ^{-1} = F^{-1}$, and
+$[\dd_\theta L] = [\dd_\mu L]J = [\dd_\mu L]F$.
+\end{proof}
+
+\begin{example}\label{natural-gradient:ex:expfam}
+The Bernoulli family is exponential with $T(y) = 1$ if $y = 1$ and $0$
+otherwise, $\theta$ the logit, $A(\theta) = \ln(1 + e^\theta)$, and
+$\mu = e^\theta/(1 + e^\theta)$ the probability of the outcome $1$:
+$A'' = \mu(1 - \mu)$, as in \cref{natural-gradient:ex:fisher}. The
+categorical family is exponential with the logits as natural parameters
+(one of them fixed), $A$ the logarithm of the sum of the exponentials,
+and the probabilities as mean parameters: the softmax map is $\dd A$.
+Gaussian distributions with a fixed variance $\sigma^2$ form an
+exponential family with $\theta = \mu/\sigma^2$ and
+$A = \sigma^2\theta^2/2$.
+\end{example}
+
+\subsection*{Models with inputs and the Gauss--Newton matrix}
+
+\begin{proposition}\label{natural-gradient:prop:ggn}
+Let the label $y$ follow an exponential family whose natural parameters
+$z = f(x; \theta)\in\R^K$ are computed from the input $x$ by a smooth
+map, with inputs $x_1,\dots,x_N$, and let
+$L(\theta) = -\frac1N\sum_n\ell_{y_n}\bigl(f(x_n; \theta)\bigr)$ be the
+average negative log-likelihood of the labels $y_1,\dots,y_N$. With $J_n$
+the Jacobian matrix of $\theta\mapsto f(x_n; \theta)$ and
+$z_n = f(x_n; \theta)$, the Fisher matrix of the model, for inputs drawn
+uniformly among the $x_n$, is
+\[
+  F(\theta) = \frac1N\sum_nJ_n^\top\,[D^2A(z_n)]\,J_n ,
+\]
+and the matrix of second partial derivatives of $L$ is
+\[
+  [D^2L(\theta)] = F(\theta)
+  - \frac1N\sum_n\sum_{k=1}^K\bigl(T_k(y_n) - \partial_kA(z_n)\bigr)
+    [D^2f_k(x_n; \theta)] .
+\]
+\end{proposition}
+
+\begin{proof}
+The score of the pair $(x_n, y)$ with respect to $\theta$ is the
+pull-back by $f(x_n; \cdot)$ of its score with respect to $z$:
+$[\dd_\theta\ell] = (T(y) - [\dd A(z_n)]^\top)^\top J_n$. Its second
+moment over $y$, at fixed $x_n$, is $J_n^\top[D^2A(z_n)]J_n$ by
+\cref{natural-gradient:thm:expfam}, and $F$ is the average over $n$. For
+the second formula, differentiate
+$-\ell_{y_n}(f(x_n; \theta))
+= A(f) - f^\top T(y_n) - \ln h(y_n)$ twice:
+the second derivative of a composition is
+$J_n^\top[D^2A]J_n + \sum_k\partial_k(A - z^\top T)[D^2f_k]$
+(\cref{gradient-hessian:rem:nonlinear}).
+\end{proof}
+
+The Fisher matrix is the part of the Hessian of the loss that does not
+involve the second derivatives of the network. It is the
+\emph{generalized Gauss--Newton matrix}; it is positive semidefinite
+whether or not $L$ is convex. When $f$ is linear in $\theta$, as in
+linear and logistic regression, the correction vanishes: the Fisher
+matrix is the Hessian, and natural gradient descent with $\eta = 1$ is
+Newton's method (\cref{gradient-hessian:def:newton}).
+
+\begin{pitfall}[The empirical Fisher matrix is another matrix]
+The Fisher matrix is an expectation over labels drawn from the
+\emph{model}. Replacing them by the observed labels gives
+$\frac1N\sum_n[\dd\ell_{y_n}]^\top[\dd\ell_{y_n}]$, the average of the
+outer products of the per-example gradients. This ``empirical Fisher''
+matrix is cheap, since the gradients are already computed, and it is a
+different object. For a linear regression that fits its data exactly,
+every per-example gradient vanishes at the solution: the empirical matrix
+is zero there, while the Fisher matrix is $\frac1NX^\top X$.
+\end{pitfall}
+
+\section{Mirror descent}\label{natural-gradient:sec:mirror}
+
+Gradient descent turns the covector $\dd L$ into a vector and adds it to
+a point. \emph{Mirror descent} goes the other way: it turns the point
+into a covector, and adds covectors, which is always legitimate.
+
+\begin{definition}[Mirror descent]\label{natural-gradient:def:mirror}
+Let $U$ be an open convex subset of a vector space $V$ and
+$\psi:U\to\R$ a smooth function with positive definite second
+differential, the \emph{potential}. Its \emph{Bregman divergence} is
+\[
+  D_\psi(a, b) = \psi(a) - \psi(b) - \dd\psi(b)(a - b)\geq0 .
+\]
+A step of \emph{mirror descent} from $a_k$ is a minimizer of
+\[
+  a\mapsto\dd L(a_k)(a - a_k) + \frac1\eta D_\psi(a, a_k) .
+\]
+\end{definition}
+
+\begin{proposition}\label{natural-gradient:prop:mirror}
+A point $a_{k+1}\in U$ is the step of mirror descent from $a_k$ if and
+only if
+\[
+  \dd\psi(a_{k+1}) = \dd\psi(a_k) - \eta\,\dd L(a_k)
+  \qquad\text{in } V^* .
+\]
+\end{proposition}
+
+\begin{proof}
+The function to minimize is strictly convex in $a$, with differential
+$\dd L(a_k) + \frac1\eta\bigl(\dd\psi(a) - \dd\psi(a_k)\bigr)$. A point
+of $U$ is its minimizer if and only if this differential vanishes there
+(\cref{gradient-hessian:cor:global}).
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \draw[thick, rounded corners=6pt] (0,0) rectangle (4.2,2.6);
+  \draw[thick, rounded corners=6pt] (7.2,0) rectangle (11.4,2.6);
+  \node[above] at (2.1,2.6) {points: $U\subset V$};
+  \node[above] at (9.3,2.6) {covectors: $V^*$};
+  \node[circle, fill, inner sep=1.4pt] (a) at (1.0,1.9) {};
+  \node[circle, fill, inner sep=1.4pt] (b) at (3.0,0.7) {};
+  \node[circle, fill, inner sep=1.4pt] (m) at (8.3,1.9) {};
+  \node[circle, fill, inner sep=1.4pt] (n) at (10.3,0.7) {};
+  \node[left] at (a) {$a_k$};
+  \node[below] at (2.8,0.6) {$a_{k+1}$};
+  \node[above] at (8.3,1.95) {$\dd\psi(a_k)$};
+  \node[below] at (10.2,0.65) {$\dd\psi(a_{k+1})$};
+  \draw[->, thick, bookdef] (1.15,1.95) to[bend left=12] (8.15,1.95);
+  \node[bookdef, above] at (5.7,2.3) {$\dd\psi$};
+  \draw[->, very thick, bookaccent] (m) -- (n);
+  \node[bookaccent, right] at (9.4,1.45) {$-\eta\,\dd L(a_k)$};
+  \draw[->, thick, bookdef] (10.15,0.65) to[bend left=12] (3.15,0.65);
+  \node[bookdef, below] at (5.7,0.3) {$(\dd\psi)^{-1}$};
+  \draw[->, dashed, gray] (a) -- (b);
+\end{tikzpicture}
+\caption{One step of mirror descent. The differential of the potential
+carries the point to the dual space; the step is taken there, where
+adding the covector $\dd L$ makes sense; the result is carried back. For
+$\psi = \frac12\norm\cdot^2$ the map $\dd\psi$ is the Riesz map and the
+dashed arrow is the gradient descent step.}
+\label{natural-gradient:fig:mirror}
+\end{figure}
+
+\begin{example}\label{natural-gradient:ex:mirror}
+\begin{enumerate}[nosep]
+  \item For an inner product and $\psi = \frac12\norm a^2$, $\dd\psi$ is
+        the Riesz map, $D_\psi(a, b) = \frac12\norm{a - b}^2$, and mirror
+        descent is gradient descent.
+  \item On the vectors with positive entries let
+        $\psi(p) = \sum_ip_i\ln p_i$. Then
+        $[\dd\psi] = [1 + \ln p_i]$, and the step is
+        $p_i^+ = p_i\exp(-\eta\,\partial_iL)$. If the minimization is
+        restricted to the simplex, a multiplier for the constraint
+        $\sum_ip_i = 1$ appears
+        (\cref{constrained-optimization:thm:lagrange}) and
+        \[
+          p_i^+ = \frac{p_i\exp(-\eta\,\partial_iL)}
+                       {\sum_jp_j\exp(-\eta\,\partial_jL)} ,
+        \]
+        the \emph{exponentiated gradient} or multiplicative weights
+        update; on the simplex $D_\psi$ is the Kullback--Leibler
+        divergence. The entries stay positive without any projection.
+\end{enumerate}
+\end{example}
+
+\begin{theorem}[Mirror descent is a Riemannian gradient step]
+\label{natural-gradient:thm:mirror}
+The second differential of the potential defines a Riemannian metric on
+$U$, with Gram matrix $G = [D^2\psi]$ in linear coordinates $a$. The map
+$a\mapsto m = [\dd\psi(a)]^\top$ is a chart on a neighbourhood of each
+point, in which mirror descent reads
+\[
+  m_{k+1} = m_k - \eta\,G'(m_k)^{-1}[\dd_mL]^\top ,
+\]
+where $G' = G^{-1}$ is the Gram matrix of the same metric in the chart
+$m$: it is Riemannian gradient descent with the retraction of the chart
+$m$.
+\end{theorem}
+
+\begin{proof}
+The Jacobian matrix of $a\mapsto m$ is $J = [D^2\psi] = G$, invertible,
+so it is a chart near each point
+(\cref{inverse-implicit:thm:inverse}), and the Gram matrix becomes
+$J^{-\top}GJ^{-1} = G^{-1}$. By \cref{natural-gradient:prop:mirror} the
+step is $m_{k+1} = m_k - \eta[\dd_aL]^\top$, and
+$[\dd_aL] = [\dd_mL]J$ gives $[\dd_aL]^\top = G[\dd_mL]^\top
+= G'^{-1}[\dd_mL]^\top$.
+\end{proof}
+
+For an exponential family with $\psi = A$ on the natural parameters, the
+metric is the Fisher metric and the chart $m$ is the mean chart: mirror
+descent with the log-partition function as potential is natural gradient
+descent in the mean parameters, exactly and not only to first order. The
+exponentiated gradient update is the same statement for the categorical
+family, read in the opposite direction: $\sum_ip_i\ln p_i$ is the
+potential on the mean parameters, and its differential gives the logits.
+
+\section{Approximations and their price}\label{natural-gradient:sec:ml}
+
+For a model with $d$ parameters the Fisher matrix has $d^2$ entries and
+solving with it costs of the order of $d^3$ operations. Practical methods
+replace it by something cheaper; each replacement gives up part of the
+invariance (\cref{natural-gradient:tab:invariance}).
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Method & Step in a chart & $L\to cL$ & rescale each $\theta_i$
+  & linear change & any chart \\
+\midrule
+gradient descent & $-\eta[\dd L]^\top$ & no & no & no & no \\
+sign descent & $-\eta\,\partial_iL/\abs{\partial_iL}$
+  & yes & no & no & no \\
+diagonal Fisher & $-\eta\,\partial_iL/F_{ii}$ & no & yes & no & no \\
+Newton & $-[D^2L]^{-1}[\dd L]^\top$ & yes & yes & yes & no \\
+natural gradient & $-\eta F^{-1}[\dd L]^\top$ & no & yes & yes
+  & first order \\
+\bottomrule
+\end{tabular}
+\caption{Does the step define the same new point of $M$ when the loss is
+multiplied by a constant $c > 0$, or when the chart is changed by a
+rescaling of each coordinate, by a linear map, by any diffeomorphism?
+Newton's method is the row of \cref{contractions-newton:prop:invariance}.}
+\label{natural-gradient:tab:invariance}
+\end{table}
+
+\begin{mlthread}[Machine learning: Kronecker-factored curvature]
+Consider one layer $s = Wa$ of a network, with input $a$ and output $s$.
+The partial derivatives of the log-likelihood with respect to $W$ form
+the matrix $\delta a^\top$, where $\delta = [\dd_s\ell]^\top$ is
+computed by backpropagation. For matrices $V, V'$ of the size of $W$,
+the Fisher form of this layer is
+\[
+  \mathbb E\bigl[(\delta^\top Va)(\delta^\top V'a)\bigr]
+  \approx\tr\bigl(V^\top\,\Gamma\,V'\,\mathcal A\bigr) ,
+  \qquad
+  \mathcal A = \mathbb E[aa^\top],\quad
+  \Gamma = \mathbb E[\delta\delta^\top] ,
+\]
+with equality if $a$ and $\delta$ are independent. For the approximate form
+the natural gradient $X$ solves $\Gamma X\mathcal A = [\partial L/\partial W]$:
+\[
+  X = \Gamma^{-1}\,[\partial L/\partial W]\,\mathcal A^{-1} .
+\]
+Two matrices of the sizes of the output and of the input are inverted,
+instead of one of the size of their product. This is the idea of the
+K-FAC method. Besides the independence, it neglects the Fisher form
+between different layers.
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: Adam and the diagonal]
+Adam divides each partial derivative by the square root of a running
+average of its square. Three steps separate it from the natural
+gradient.
 \begin{itemize}[nosep]
-  \item Kronecker-factored approximations of the Fisher matrix.
-  \item Adam as a diagonal approximation, and what that costs in invariance.
-  \item Trust regions in policy optimization.
+  \item The squares are those of the observed gradients: a diagonal of
+        the empirical matrix of the pitfall above, not of the Fisher
+        matrix.
+  \item Only the diagonal is kept. A diagonal is a property of a matrix
+        in a basis: the method depends on the coordinates, and treats a
+        rotated parametrization of the same model differently
+        (the basis test of \cref{ch:duality}).
+  \item The square root is used instead of the inverse. With steady
+        gradients the step is $-\eta\,\partial_iL/\abs{\partial_iL}$, of
+        size $\eta$ in every coordinate. It does not change when the
+        loss is rescaled, which is convenient, but it changes when a
+        parameter is rescaled, which a metric would compensate
+        (\cref{natural-gradient:exr:9}).
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: trust regions for policies]
+In reinforcement learning the model is a policy
+$\rho(\text{action}\mid\text{state}; \theta)$ and $L$ is minus the
+expected return. A step that is small in $\theta$ can change the policy
+a lot, and then the data collected with the old policy say little about
+the new one. Trust-region methods limit the change of the policy itself:
+they maximize the linearized improvement subject to an average
+Kullback--Leibler divergence of at most $\delta$ between the old and the
+new policy. To second order this is the problem of
+\cref{natural-gradient:prop:steepest}, and the step is the natural
+gradient with the step size
+$\sqrt{2\delta/[\dd L]F^{-1}[\dd L]^\top}$, where $F$ is the Fisher
+matrix of the policy averaged over the visited states. The system
+$Fh = [\dd L]^\top$ is solved approximately by the conjugate gradient
+method, which only needs products of $F$ with vectors.
+\end{mlthread}
+
+\section{Where the chapter leads}\label{natural-gradient:sec:outlook}
+
+This closes Part~III. The ladder is complete: an affine space, where
+points move by vectors and one inner product serves everywhere; a
+submanifold, which borrows both from an ambient space; a manifold, where
+only tangent vectors and covectors remain; a Riemannian manifold, where
+an inner product at each point gives back gradients and a retraction
+gives back steps; a statistical model, where the inner product is not a
+choice.
+
+Everything in this chapter rested on expectations: sums over finitely
+many outcomes, which are rigorous, and integrals of densities, which
+were taken on trust, together with the right to differentiate under the
+integral sign. Part~IV builds the integral that justifies them:
+measures in \cref{ch:measures}, the Lebesgue integral and its limit
+theorems in \cref{ch:lebesgue-integral}, and densities and changes of
+variables in \cref{ch:change-of-variables}.
+
+\paragraph{Sources.} The natural gradient is due to S.~Amari, Natural
+gradient works efficiently in learning, \emph{Neural Computation}, 1998;
+the standard reference for the geometry is S.~Amari and H.~Nagaoka,
+\emph{Methods of Information Geometry}, American Mathematical Society,
+2000. The relation between the Fisher matrix, the generalized
+Gauss--Newton matrix and the empirical Fisher matrix follows
+J.~Martens, New insights and perspectives on the natural gradient
+method, \emph{Journal of Machine Learning Research}, 2020; the
+uniqueness theorem is in N.~N.~Chentsov, \emph{Statistical Decision
+Rules and Optimal Inference}, American Mathematical Society, 1982.
+Mirror descent goes back to A.~Nemirovski and D.~Yudin, \emph{Problem
+Complexity and Method Efficiency in Optimization}, Wiley, 1983; its
+identification with a natural gradient step is in G.~Raskutti and
+S.~Mukherjee, The information geometry of mirror descent, \emph{IEEE
+Transactions on Information Theory}, 2015. K-FAC: J.~Martens and
+R.~Grosse, ICML, 2015. Adam: D.~P.~Kingma and J.~Ba, ICLR, 2015. Trust
+regions: J.~Schulman et al., Trust region policy optimization, ICML,
+2015, after S.~Kakade, A natural policy gradient, NeurIPS, 2001. Neither
+Loomis and Sternberg nor Hubbard and Hubbard treat these topics.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{15-natural-gradient.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A statistical model is a manifold of distributions. The score
+        $\dd\ell_y(p)$ is a covector with mean zero, and its second
+        moment $g_p(v, w) = \mathbb E_p[\dd\ell_y(p)v\,\dd\ell_y(p)w]$ is
+        the Fisher metric, defined without a chart; in a chart
+        $F = \mathbb E[[\dd\ell]^\top[\dd\ell]]
+        = -\mathbb E[[D^2\ell]]$.
+  \item $F = 1/\theta(1 - \theta)$ for the Bernoulli family,
+        $\sum_iv_iw_i/p_i$ on the simplex, which makes it a piece of a
+        sphere of radius $2$, and $\diag(1, 2)/\sigma^2$ for Gaussians.
+  \item The Kullback--Leibler divergence is non-negative and its Hessian
+        at $q = p$ is the Fisher form.
+  \item The natural gradient is $F^{-1}[\dd L]^\top$. It is the steepest
+        descent direction under a bound on the divergence, and the step
+        is independent of the chart to first order.
+  \item In an exponential family $F = [D^2A]$, the mean parameters are a
+        second chart with Fisher matrix $F^{-1}$, and the natural
+        gradient in one chart is the row of partial derivatives in the
+        other. For models with inputs, $F$ is the generalized
+        Gauss--Newton matrix.
+  \item Mirror descent adds covectors: $\dd\psi(a_{k+1}) = \dd\psi(a_k)
+        - \eta\,\dd L(a_k)$. It is Riemannian gradient descent for the
+        metric $D^2\psi$ in the chart $\dd\psi$.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{natural-gradient:exr:1}
+For the Bernoulli family, let $\theta = \sin^2(\varphi/2)$ with
+$0 < \varphi < \pi$. Show that the Fisher matrix in the chart $\varphi$
+is the constant $1$, and deduce the distance between two Bernoulli
+distributions and the total length of the family.
+\solutionlink{natural-gradient:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{natural-gradient:exr:2}
+For the categorical family with $n = 3$ and the chart $(p_1, p_2)$,
+compute the Fisher matrix from the scores, and check that it gives
+$\sum_{i=1}^3v_i^2/p_i$ for a tangent vector $v$ with
+$v_3 = -v_1 - v_2$.
+\solutionlink{natural-gradient:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{natural-gradient:exr:3}
+Compute the Fisher matrix of the Gaussian family in the chart
+$(\mu, s)$, $s = \ln\sigma$, in two ways: by the change of chart, and
+from $F_{ij} = -\mathbb E[\partial_i\partial_j\ell]$.
+\solutionlink{natural-gradient:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{natural-gradient:exr:4}
+For two Bernoulli distributions with parameters $\theta$ and $\theta'$,
+write $D(\theta\,\|\,\theta')$. Compute $D(0.5\,\|\,0.1)$ and
+$D(0.1\,\|\,0.5)$, and compare $D(0.5\,\|\,0.5 + h)$ with
+$\frac12F(0.5)h^2$ for $h = 0.1$ and $h = 0.01$.
+\solutionlink{natural-gradient:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{natural-gradient:exr:5}
+The Poisson distributions $\rho(y; \lambda) = e^{-\lambda}\lambda^y/y!$
+on $\mathcal Y = \{0, 1, 2, \dots\}$ form an exponential family. Find
+the natural parameter, $A$, the mean parameter, the Fisher matrix in
+both charts and $D(\lambda\,\|\,\lambda')$.
+\solutionlink{natural-gradient:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{natural-gradient:exr:6}
+For the loss $L$ of \cref{tangent-bundles:exr:5} on the Gaussian family:
+\begin{enumerate}[nosep]
+  \item compute the natural gradient at $(\mu, \sigma) = (1, 2)$ in the
+        charts $(\mu, \sigma)$ and $(\mu, s)$, and check that it is the
+        same tangent vector;
+  \item compute the three end points of
+        \cref{natural-gradient:fig:steps};
+  \item show that for every starting point, one step with $\eta = 1$ in
+        the chart $(\mu, \sigma)$ gives $\mu = 0$, the optimal mean.
+\end{enumerate}
+\solutionlink{natural-gradient:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{natural-gradient:exr:7}
+On the simplex with $n = 3$, let $L(p) = c^\top p$ with $c = (1, 2, 3)$.
+Compute one step of the exponentiated gradient update from the uniform
+distribution with $\eta = \ln2$. Check that in logits it is
+$z^+ = z - \eta c$.
+\solutionlink{natural-gradient:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{natural-gradient:exr:8}
+Consider the model $y = \theta^\top x + \varepsilon$ with Gaussian noise
+of variance $1$, inputs $x_1,\dots,x_N$ forming the rows of a matrix $X$
+of rank $d$, and the average negative log-likelihood $L$.
+\begin{enumerate}[nosep]
+  \item Show that $F = \frac1NX^\top X = [D^2L]$.
+  \item Show that one step of natural gradient descent with $\eta = 1$
+        reaches the least-squares solution from any starting point.
+  \item Write the empirical Fisher matrix and evaluate it at the
+        solution when the data are fitted exactly.
+\end{enumerate}
+\solutionlink{natural-gradient:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{natural-gradient:exr:9}
+Let $\theta' = c\,\theta$ be a rescaling of a single parameter, $c > 0$.
+\begin{enumerate}[nosep]
+  \item Show that the step $-\eta\,\partial L/F$ defines the same new
+        point in both charts, if $F$ changes as a metric.
+  \item Show that the step $-\eta\,\partial L/\abs{\partial L}$ does not,
+        and that it is unchanged when $L$ is replaced by $cL$.
+  \item Which of the two properties does gradient descent have?
+\end{enumerate}
+\solutionlink{natural-gradient:exr:9}
+\end{exercise}
 \end{notechapter}

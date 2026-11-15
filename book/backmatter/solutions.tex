@@ -1884,3 +1884,129 @@ The critical points are $\pm e_1$, $\pm e_2$, $\pm e_3$. By
 are $2(\lambda_j - \lambda_i)$, $j\neq i$: at $\pm e_1$, $-2$ and $-4$
 (maxima, $f = 3$); at $\pm e_2$, $2$ and $-2$ (saddles, $f = 2$); at
 $\pm e_3$, $4$ and $2$ (minima, $f = 1$).
+
+\section{\nameref*{ch:natural-gradient}}
+
+\solution{natural-gradient:exr:1}
+With $\theta = \sin^2(\varphi/2)$,
+$\dd\theta/\dd\varphi = \sin(\varphi/2)\cos(\varphi/2)
+= \frac12\sin\varphi$ and
+$\theta(1 - \theta) = \frac14\sin^2\varphi$. The Jacobian of
+$\theta\mapsto\varphi$ is $J = 2/\sin\varphi$, and the Fisher matrix in
+the chart $\varphi$ is $F/J^2
+= \frac4{\sin^2\varphi}\cdot\frac{\sin^2\varphi}4 = 1$. In this chart
+lengths are ordinary lengths, so the distance between the distributions
+with parameters $\varphi$ and $\varphi'$ is $\abs{\varphi - \varphi'}$,
+and the total length is $\pi$. This agrees with
+\cref{natural-gradient:prop:sphere}:
+$S(\theta) = 2(\sin\frac\varphi2, \cos\frac\varphi2)$.
+
+\solution{natural-gradient:exr:2}
+With $p_3 = 1 - p_1 - p_2$, the rows of partial derivatives of
+$\ell_y = \ln p_y$ are $[1/p_1\ \ 0]$, $[0\ \ 1/p_2]$ and
+$[-1/p_3\ \ {-1/p_3}]$ for $y = 1, 2, 3$. Weighting the outer products by
+$p_1, p_2, p_3$,
+\[
+  F = \begin{bmatrix}
+    1/p_1 + 1/p_3 & 1/p_3\\ 1/p_3 & 1/p_2 + 1/p_3
+  \end{bmatrix} .
+\]
+For $[v] = (v_1, v_2)$,
+$[v]^\top F[v] = v_1^2/p_1 + v_2^2/p_2 + (v_1 + v_2)^2/p_3
+= \sum_{i=1}^3v_i^2/p_i$.
+
+\solution{natural-gradient:exr:3}
+From $(\mu, \sigma)$ to $(\mu, s)$, $J = \diag(1, 1/\sigma)$, so
+$F' = J^{-\top}FJ^{-1}
+= \diag(1, \sigma)\,\frac1{\sigma^2}\diag(1, 2)\,\diag(1, \sigma)
+= \diag(e^{-2s}, 2)$. Directly,
+$\ell = -s - \frac12(y - \mu)^2e^{-2s} + \text{constant}$, with
+$\partial_\mu^2\ell = -e^{-2s}$,
+$\partial_\mu\partial_s\ell = -2(y - \mu)e^{-2s}$ and
+$\partial_s^2\ell = -2(y - \mu)^2e^{-2s}$. Taking minus the expectations,
+with $\mathbb E[y - \mu] = 0$ and $\mathbb E[(y - \mu)^2] = e^{2s}$,
+gives the same matrix.
+
+\solution{natural-gradient:exr:4}
+\[
+  D(\theta\,\|\,\theta') = \theta\ln\frac\theta{\theta'}
+  + (1 - \theta)\ln\frac{1 - \theta}{1 - \theta'} .
+\]
+Then $D(0.5\,\|\,0.1) = \frac12\ln5 + \frac12\ln\frac59\approx0.511$
+and $D(0.1\,\|\,0.5) = 0.1\ln0.2 + 0.9\ln1.8\approx0.368$: the
+divergence is not symmetric. Since $F(0.5) = 4$, the quadratic approximation is
+$2h^2$: $0.02$ against $D(0.5\,\|\,0.6)\approx0.02041$, and $0.0002$
+against $D(0.5\,\|\,0.51)\approx0.00020004$.
+
+\solution{natural-gradient:exr:5}
+$\rho(y; \lambda) = \frac1{y!}\exp(y\ln\lambda - \lambda)$: the natural
+parameter is $\theta = \ln\lambda$, with $T(y) = y$, $h(y) = 1/y!$ and
+$A(\theta) = e^\theta$. The mean parameter is $A'(\theta) = \lambda$.
+The Fisher matrix is $A''(\theta) = \lambda$ in the chart $\theta$ and
+its inverse $1/\lambda$ in the chart $\lambda$. By
+\cref{natural-gradient:thm:expfam},
+$D(\lambda\,\|\,\lambda') = \lambda' - \lambda
+- \lambda\ln\frac{\lambda'}\lambda$.
+
+\solution{natural-gradient:exr:6}
+\begin{enumerate}[nosep]
+  \item In $(\mu, \sigma)$: $F^{-1} = \diag(\sigma^2, \sigma^2/2)
+        = \diag(4, 2)$ and $[\dd L] = [\frac14\ \ \frac14]$, so the
+        natural gradient is $(1, \frac12)$. In $(\mu, s)$:
+        $F'^{-1} = \diag(4, \frac12)$ and
+        $[\dd L]' = [\frac14\ \ \frac12]$, which gives $(1, \frac14)$.
+        This is $J(1, \frac12)$ with $J = \diag(1, \frac12)$: the same
+        tangent vector.
+  \item With $\eta = 0.4$. In $(\mu, \sigma)$:
+        $(1, 2) - 0.4\,(1, \frac12) = (0.6, 1.8)$. In $(\mu, s)$:
+        $s = \ln2 - 0.1$, so $\sigma = 2e^{-0.1}\approx1.810$. In
+        $(\mu, v)$, $v = \sigma^2$: the natural gradient is
+        $(1, 2\sigma\cdot\frac12) = (1, 2)$, so $v = 4 - 0.8 = 3.2$ and
+        $\sigma\approx1.789$. In all three, $\mu = 0.6$.
+  \item $\partial L/\partial\mu = \mu/\sigma^2$ and the first diagonal
+        entry of $F^{-1}$ is $\sigma^2$: the first component of the
+        natural gradient is $\mu$, and $\mu - 1\cdot\mu = 0$.
+\end{enumerate}
+
+\solution{natural-gradient:exr:7}
+$[\dd L] = c^\top$ and $\exp(-\eta c) = (\frac12, \frac14, \frac18)$.
+From the uniform distribution,
+$p^+\propto(\frac12, \frac14, \frac18)$, that is,
+$p^+ = (\frac47, \frac27, \frac17)$. With $z_i = \ln p_i$ up to a common
+constant, $z_i^+ = z_i - \eta c_i$ up to a constant: the update is a
+plain gradient-like step on the logits, with the partial derivatives
+taken with respect to the probabilities.
+
+\solution{natural-gradient:exr:8}
+\begin{enumerate}[nosep]
+  \item $\ell_y = -\frac12(y - \theta^\top x)^2 + \text{constant}$, with
+        score $(y - \theta^\top x)x^\top$. For labels drawn from the
+        model, $y - \theta^\top x$ has mean $0$ and variance $1$, so the
+        second moment of the score at $x_n$ is $x_nx_n^\top$ and
+        $F = \frac1N\sum_nx_nx_n^\top = \frac1NX^\top X$. And
+        $L = \frac1{2N}\norm{X\theta - y}^2$ has the same matrix of
+        second derivatives.
+  \item $[\dd L]^\top = \frac1NX^\top(X\theta - y)$, so
+        $\theta - F^{-1}[\dd L]^\top
+        = \theta - (X^\top X)^{-1}X^\top(X\theta - y)
+        = (X^\top X)^{-1}X^\top y$.
+  \item $\frac1N\sum_nr_n^2\,x_nx_n^\top$ with the residuals
+        $r_n = y_n - \theta^\top x_n$. At an exact fit all residuals
+        vanish and the matrix is $0$, while $F = \frac1NX^\top X$ is
+        positive definite.
+\end{enumerate}
+
+\solution{natural-gradient:exr:9}
+In the chart $\theta'$, $\partial'L = \partial L/c$ and, for a metric,
+$F' = F/c^2$.
+\begin{enumerate}[nosep]
+  \item The step in $\theta'$ is $-\eta(\partial L/c)/(F/c^2)
+        = c\cdot(-\eta\,\partial L/F)$: $c$ times the step in $\theta$,
+        hence the same new point.
+  \item The step in $\theta'$ is $\mp\eta$, as in $\theta$, whereas the
+        same point would require $\mp c\eta$. Multiplying $L$ by $c$
+        does not change the sign of $\partial L$.
+  \item Neither: the step $-\eta\,\partial L$ is multiplied by $c$ when
+        $L$ is, and in the chart $\theta'$ it is $-\eta\,\partial L/c$
+        instead of $-c\,\eta\,\partial L$.
+\end{enumerate}

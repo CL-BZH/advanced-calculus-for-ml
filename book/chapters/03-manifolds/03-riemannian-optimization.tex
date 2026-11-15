@@ -722,7 +722,8 @@ Hessian & everywhere & at critical points; elsewhere a connection \\
         update $w + \eta(yx - y^2w)$ is a step along the Riemannian
         gradient of $\frac12\inner w{Aw}$ on the sphere, for the
         one-sample estimate $A = xx^\top$ of the covariance; the
-        retraction is replaced by its first-order approximation. By
+        retraction is replaced by its first-order approximation, which
+        is how Oja obtained the rule. By
         \cref{riemannian-optimization:thm:saddles}, for the true
         covariance the only local maxima are $\pm$ the first principal
         direction.
@@ -748,8 +749,8 @@ length $2\pi\sinh r$, which grows like $e^r$.
         would be Riemannian descent for the flat metric of the chart, and
         would ignore the geometry that the embedding is supposed to use.
   \item The retraction of the chart, $x + v$, may leave the ball; in
-        practice the result is pulled back inside, or the exponential
-        map is used.
+        practice the result is pulled back inside, as Nickel and Kiela
+        do, or the exponential map is used.
 \end{itemize}
 \end{mlthread}
 
@@ -777,11 +778,15 @@ Corollary~4.9), the Hessian through retractions at critical points
 (Corollary~5.16), geodesics (Definition~5.38), and the projection on the
 Stiefel manifold (\S7.3, equation (7.26)). See also P.-A.~Absil,
 R.~Mahony and R.~Sepulchre, \emph{Optimization Algorithms on Matrix
-Manifolds}, Princeton University Press, 2008. Oja's rule: E.~Oja,
-Simplified neuron model as a principal component analyzer, \emph{Journal
-of Mathematical Biology}, 1982. Hyperbolic embeddings: M.~Nickel and
-D.~Kiela, Poincar\'e embeddings for learning hierarchical
-representations, NeurIPS, 2017.
+Manifolds}, Princeton University Press, 2008. Oja's rule: E.~Oja, A
+simplified neuron model as a principal component analyzer,
+\emph{Journal of Mathematical Biology}
+15, 267--273, 1982, where the rule (equation (6)) is derived by
+expanding the normalized update (equation (5)) to first order in the
+step. Hyperbolic embeddings: M.~Nickel and D.~Kiela, Poincar\'e
+embeddings for learning hierarchical representations, arXiv:1705.08039,
+2017; their update (equation (5)) is the rescaled Euclidean gradient
+with the retraction $x + v$, followed by a projection into the ball.
 
 \paragraph{Notebook.} The numerical claims of this chapter are checked
 with PyTorch in \notebook{14-riemannian-optimization.ipynb}.
