@@ -84,6 +84,7 @@ book/
   backmatter/         solutions to the exercises
   STYLE.md            environments, notation and writing conventions
 notebooks/            one PyTorch notebook per chapter (CPU only)
+references/           the sources cited, with links and licences (no PDFs)
 ```
 
 ## Building the book

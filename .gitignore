@@ -23,3 +23,6 @@ __pycache__/
 # OS / editors
 .DS_Store
 *~
+
+# Local copies of the references (see references/README.md)
+references/pdf/
