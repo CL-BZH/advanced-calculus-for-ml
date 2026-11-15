@@ -938,6 +938,30 @@ at the midpoint of $c$ and its own centre of decay.}
 \label{affine-spaces:fig:decay}
 \end{figure}
 
+\begin{remark}[Coupled and decoupled decay: AdamW]
+\label{affine-spaces:rem:adamw}
+With plain gradient descent, adding $-\lambda x$ to the field and
+multiplying $x$ by $1 - \eta\lambda$ are the same thing:
+$x + \eta\bigl(\gamma(x) - \lambda x\bigr)
+= (1 - \eta\lambda)x + \eta\gamma(x)$. With an adaptive optimizer such as
+Adam they are not. In the \emph{coupled} form, the term $\lambda x$ is added
+to the gradient and goes through the coordinatewise rescaling of the
+optimizer. In the \emph{decoupled} form, AdamW (Loshchilov and Hutter,
+2019), the optimizer computes its step $s_k$ from the gradient alone, and
+the update is
+\[
+  x_{k+1} = (1 - \eta\lambda)x_k + s_k .
+\]
+Decoupling changes how the decay interacts with the rescaling. It does not
+change the geometry. The step $s_k$ of Adam is a vector that passes the
+origin test, and the factor $1 - \eta\lambda$ is the same contraction
+towards the point whose coordinates are zero:
+$a_{k+1} = \bigl(o + (1 - \eta\lambda)(a_k - o)\bigr) + s_k$. Both forms
+fail the origin test, and the decoupled form shows why in its formula. To
+centre the decay of AdamW at pretrained weights $\theta_0$, one stores
+$\theta - \theta_0$ as the parameter, or applies the contraction by hand.
+\end{remark}
+
 \begin{pitfall}[What the test says, and what it does not]
 The origin test does not say that weight decay is wrong. It says that the
 formula contains a choice, the point towards which the parameters are
@@ -1005,7 +1029,8 @@ generalization, UAI, 2018; M.~Wortsman et al., Model soups, ICML, 2022;
 G.~Ilharco et al., Editing models with task arithmetic, ICLR, 2023;
 H.~Zhang et al., mixup: Beyond empirical risk minimization, ICLR, 2018;
 X.~Li, Y.~Grandvalet and F.~Davoine, Explicit inductive bias for transfer
-learning with convolutional networks, ICML, 2018.
+learning with convolutional networks, ICML, 2018; I.~Loshchilov and
+F.~Hutter, Decoupled weight decay regularization, ICLR, 2019.
 
 \paragraph{Notebook.} \notebook{01-affine-spaces.ipynb} checks the
 numerical claims of this chapter with PyTorch.
@@ -1031,7 +1056,8 @@ numerical claims of this chapter with PyTorch.
         coordinate $0$ makes these rules automatic (the bias trick).
   \item The origin test detects formulas that depend on the origin.
         Updates of the form point $+$ vector pass; weight decay fails,
-        because it is a contraction towards a chosen point.
+        with SGD as with AdamW, because it pulls the parameters towards a
+        chosen point.
 \end{itemize}
 \end{chaptersummary}
 

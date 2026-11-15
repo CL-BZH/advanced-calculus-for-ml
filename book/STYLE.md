@@ -78,7 +78,10 @@ Boxes take an optional title: `\begin{pitfall}[Zero counts]`.
 The transpose symbol is reserved for the dual operator and for the
 transpose of a matrix; the star is reserved for the adjoint. In an
 orthonormal basis the two have the same matrix, and the text says so each
-time it uses the fact.
+time it uses the fact. Many references write $A^*$ (or $A'$, $A^t$,
+${}^t\!A$) for the dual operator: when a result is taken from another
+source, it is restated in the book's notation, and Chapter 2 gives the
+translation table.
 
 ## Writing
 
