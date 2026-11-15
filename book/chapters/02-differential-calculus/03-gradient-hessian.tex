@@ -4,26 +4,942 @@
 \chaptersubtitle{%
   What an inner product adds, and the second-order structure}
 
-\begin{chapterplan}
+\begin{chapterintro}
+The differential of a loss is a covector, and backpropagation computes it.
+To move the parameters one needs a vector. This chapter separates what a
+function provides by itself from what an inner product adds. The function
+alone gives the differential, the second differential (a symmetric
+bilinear form), Taylor's formula, the classification of critical points,
+convexity and Newton's method. The inner product gives the gradient, the
+eigenvalues of the Hessian, the constants of smoothness and strong
+convexity, and with them the admissible learning rates and the speed of
+gradient descent. Keeping the two lists apart explains why Newton's method
+does not care how the parameters are stored, and why gradient descent
+does. You will learn
 \begin{itemize}[nosep]
-  \item The gradient as the Riesz representative of the differential; its
-        dependence on the inner product; steepest ascent; orthogonality to level
-        sets.
-  \item Gradient descent passes the origin test but depends on the metric.
-  \item Higher differentials; symmetry of the second differential; the Hessian
-        as a bilinear form (intrinsic) and as an operator (needs a metric).
-  \item Taylor's formula with remainder; critical points and second-order
-        conditions.
-  \item Convexity, strong convexity and $L$-smoothness; the descent lemma;
-        convergence rates of gradient descent.
-  \item Newton's method is invariant under affine reparametrizations; gradient
-        descent is not.
+  \item the gradient as the Riesz representative of the differential, and
+        how it depends on the inner product;
+  \item the second differential, its symmetry, and Taylor's formula with
+        remainder;
+  \item the second-order conditions at a critical point, which use the
+        signature only;
+  \item the Hessian as a bilinear form and as a self-adjoint operator;
+  \item convexity, smoothness and strong convexity, the descent lemma and
+        two convergence theorems for gradient descent;
+  \item Newton's method, defined without an inner product, and its
+        invariance.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:differential,ch:chain-rule-autodiff}, and from
+Part~I the Riesz map (\cref{ch:inner-products}) and self-adjoint
+operators (\cref{ch:spectral-svd}); Taylor's formula with Lagrange
+remainder for functions of one variable. All spaces are
+finite-dimensional.}
+\end{chapterintro}
+
+\section{The gradient}\label{gradient-hessian:sec:gradient}
+
+In this section $\Aff$ is a Euclidean affine space
+(\cref{inner-products:def:euclidean}): its direction $V$ carries an inner
+product, with Riesz map $R_V:V\to V^*$, $R_Vu = \inner u\cdot$. Let
+$U\subset\Aff$ be open and $f:U\to\R$ differentiable at $a$.
+
+\begin{definition}[Gradient]\label{gradient-hessian:def:gradient}
+The \emph{gradient} of $f$ at $a$ is the vector
+$\nabla f(a) = R_V^{-1}\bigl(\dd f(a)\bigr)$: the unique vector such that
+\[
+  \inner{\nabla f(a)}h = \dd f(a)(h) \qquad\text{for all } h\in V .
+\]
+\end{definition}
+
+The gradient exists and is unique by the Riesz representation theorem
+(\cref{inner-products:thm:riesz}). It is a vector, a displacement of
+$\Aff$, whereas $\dd f(a)$ is a covector. Everything proved about Riesz
+representatives in \cref{ch:inner-products} applies.
+
+\begin{proposition}[Properties of the gradient]
+\label{gradient-hessian:prop:gradient}
+\begin{enumerate}[nosep]
+  \item In a basis where the inner product has Gram matrix $M$,
+        $[\nabla f(a)] = M^{-1}[\dd f(a)]^\top$. In an orthonormal basis
+        it is the column of the partial derivatives.
+  \item $\nabla f(a) = 0$ if and only if $a$ is a critical point, whatever
+        the inner product.
+  \item $\nabla f(a)$ is orthogonal to $\ker\dd f(a)$.
+  \item \emph{(Steepest ascent.)} If $\dd f(a)\neq0$, then among the unit
+        vectors $h$ the derivative $D_hf(a)$ is largest for
+        $h = \nabla f(a)/\norm{\nabla f(a)}$, and only for it; the largest
+        value is $\norm{\nabla f(a)} = \norm{\dd f(a)}_*$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) is \cref{inner-products:thm:riesz}; (2) holds because $R_V$ is an
+isomorphism; (3) and (4) are \cref{inner-products:prop:riesz-geometry}
+applied to $\phi = \dd f(a)$, with $D_hf(a) = \dd f(a)(h)$
+(\cref{differential:cor:directional}) and the definition of the dual norm
+(\cref{inner-products:def:dual-norm}).
+\end{proof}
+
+\begin{pitfall}[The gradient is not the column of partial derivatives]
+The array of partial derivatives, written as a column, is
+$[\dd f(a)]^\top$. The gradient is $M^{-1}$ times this column. The two
+coincide exactly when the basis is orthonormal for the chosen inner
+product, that is, when $M = I$. A library that calls the array of partial
+derivatives ``the gradient'' has silently chosen the inner product for
+which the storage basis is orthonormal. ``Steepest'' also depends on that
+choice: the direction of steepest ascent is steepest among vectors of
+length $1$, and the inner product decides which vectors have length $1$.
+\end{pitfall}
+
+\begin{example}[One covector, two gradients]\label{gradient-hessian:ex:two}
+On $\R^2$ let $\dd f(a)$ have the row $[1\ \ 2]$. For the dot product,
+$\nabla f(a) = (1, 2)$, of length $\sqrt5$. For the inner product with
+$M = \diag(1, 4)$, $\nabla f(a) = M^{-1}(1, 2)^\top = (1, \frac12)$, of
+length $\sqrt{1 + 4\cdot\frac14} = \sqrt2$ for that inner product. Both
+vectors satisfy $\inner{\nabla f(a)}h = h_1 + 2h_2$ for their own inner
+product. They point in different directions
+(\cref{gradient-hessian:fig:two}).
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.25]
+  \foreach \shift/\name in {0/dot, 5.6/metric}{
+    \begin{scope}[xshift=\shift cm]
+      \clip (-1.7,-1.25) rectangle (2.3,2.5);
+      \foreach \c in {-2,-1,0,1,2,3,4,5}
+        \draw[bookpitfall, dashed, thin]
+          (-2,{(\c + 2)/2}) -- (3,{(\c - 3)/2});
+    \end{scope}
+  }
+  \begin{scope}
+    \draw[bookaccent, thick] (0,0) circle (1);
+    \draw[bookpitfall, thick] (-1.7,1.968) -- (2.3,-0.032);
+    \draw[->, very thick, bookdef] (0,0) -- (1,2);
+    \fill[bookdef] (0.447,0.894) circle (1.4pt);
+    \fill (0,0) circle (1.2pt) node[below left] {$a$};
+    \node[bookdef, right] at (1,2) {$\nabla f(a)$};
+    \node[anchor=north] at (0.3,-1.3) {dot product};
+  \end{scope}
+  \begin{scope}[xshift=5.6cm]
+    \draw[bookaccent, thick] (0,0) ellipse (1 and 0.5);
+    \draw[bookpitfall, thick] (-1.7,1.557) -- (2.3,-0.443);
+    \draw[->, very thick, bookdef] (0,0) -- (1,0.5);
+    \fill[bookdef] (0.707,0.354) circle (1.4pt);
+    \fill (0,0) circle (1.2pt) node[below left] {$a$};
+    \node[bookdef, right] at (1,0.5) {$\nabla f(a)$};
+    \node[anchor=north] at (0.3,-1.3) {$M = \diag(1, 4)$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The same covector $\dd f(a)$, with row $[1\ \ 2]$, drawn by its
+level lines (red, dashed), and its gradient for two inner products. In
+each panel the blue curve is the set of vectors of length $1$ at $a$. The
+gradient points to the place where that unit ball reaches the highest
+level line (solid red). Only in the left panel is it perpendicular to the
+level lines \emph{on the page}, because only there does the page's notion
+of right angle agree with the inner product.}
+\label{gradient-hessian:fig:two}
+\end{figure}
+
+\paragraph{Gradient descent.} With a gradient, the update of
+\cref{ch:affine-spaces} has a meaning: a point plus a vector,
+\begin{equation}\label{gradient-hessian:eq:gd}
+  a_{k+1} = a_k - \eta\,\nabla f(a_k) ,
+  \qquad\text{in coordinates}\qquad
+  x_{k+1} = x_k - \eta\,M^{-1}\gamma_k ,
+\end{equation}
+where $\gamma_k = [\dd f(a_k)]^\top$ is the array of partial derivatives.
+This is the update \eqref{inner-products:eq:metric-gd}. It passes the
+origin test, and it passes the basis test
+(\cref{inner-products:prop:basis-test}): once the inner product is fixed,
+the next point is the same in every frame. What it depends on is the inner
+product itself. By the chain rule along a curve
+(\cref{chain-rule-autodiff:ex:first}), a curve moving with velocity
+$c'(t) = -\nabla f(c(t))$ satisfies
+\[
+  \frac{\dd}{\dd t}f\bigl(c(t)\bigr) = \dd f(c(t))\bigl(c'(t)\bigr)
+  = -\norm{\nabla f(c(t))}^2\leq0 ,
+\]
+so $f$ decreases along it, for any inner product. How much a finite step
+decreases $f$ is the subject of \cref{gradient-hessian:sec:convex}.
+
+\begin{mlthread}[Machine learning: one covector, many optimizers]
+Backpropagation delivers $\gamma$, and optimizers differ by the map
+$V^*\to V$ they apply to it.
 \begin{itemize}[nosep]
-  \item Bounds on the learning rate from smoothness.
-  \item Hessian--vector products.
-  \item Preconditioners, from diagonal scalings to the natural gradient.
+  \item \emph{Plain gradient descent} uses $M = I$ in the storage basis.
+  \item \emph{Diagonal preconditioners} use a diagonal $M$: one learning
+        rate per coordinate. Standardizing the features of a linear model
+        has the same effect (\cref{duality:ex:feature}).
+  \item \emph{Newton's method} uses the second differential of the loss
+        itself as $M$ (\cref{gradient-hessian:sec:newton}).
+  \item \emph{The natural gradient} uses the Fisher information of the
+        model, which is an inner product on parameter space that does not
+        depend on the parametrization (\cref{ch:natural-gradient}).
 \end{itemize}
-\end{chapterplan}
+The first two choices are tied to a basis, which is why the corresponding
+methods fail the basis test of \cref{ch:duality}. The last two come from
+the problem.
+\end{mlthread}
+
+\section{The second differential}\label{gradient-hessian:sec:second}
+
+No inner product is used in this section and the next. Let $f:U\to\R$ be
+differentiable. Its differential is a map $\dd f:U\to V^*$ into a normed
+space, so it can itself be differentiated.
+
+\begin{definition}[Second differential]\label{gradient-hessian:def:second}
+The function $f$ is \emph{twice differentiable at} $a$ if $\dd f$ is
+differentiable at $a$. Its differential $D(\dd f)(a)$ is a linear map
+$V\to V^*$, and the \emph{second differential} of $f$ at $a$ is the
+bilinear form
+\[
+  D^2f(a)(h, k) = \bigl(D(\dd f)(a)\,h\bigr)(k) .
+\]
+The function is \emph{of class $C^2$} if it is twice differentiable at
+every point and $a\mapsto D(\dd f)(a)$ is continuous.
+\end{definition}
+
+Since evaluation at $k$ is a linear map $V^*\to\R$,
+$D^2f(a)(h, k)$ is the derivative along $h$ of the function
+$x\mapsto\dd f(x)(k) = D_kf(x)$:
+\begin{equation}\label{gradient-hessian:eq:iterated}
+  D^2f(a)(h, k) = D_h(D_kf)(a)
+  = \frac{\dd}{\dd t}\Big|_{t=0}\dd f(a + th)(k) .
+\end{equation}
+
+\begin{proposition}[Hessian matrix]\label{gradient-hessian:prop:matrix}
+In a frame with basis $(e_i)$, the Gram matrix of $D^2f(a)$ is the matrix
+of the second partial derivatives,
+\[
+  H_{ij} = D^2f(a)(e_i, e_j) = \partial_i\partial_jf(a) ,
+\]
+called the \emph{Hessian matrix}, and
+$D^2f(a)(h, k) = [h]^\top H[k]$. The function $f$ is of class $C^2$ if
+and only if all its second partial derivatives exist and are continuous.
+\end{proposition}
+
+\begin{proof}
+The first statement is \eqref{gradient-hessian:eq:iterated} with
+$h = e_i$ and $k = e_j$. The components of $\dd f$ in the dual basis are
+the functions $\partial_jf$, so by \cref{differential:cor:c1} applied to
+$\dd f$, this map is of class $C^1$ if and only if the partial derivatives
+$\partial_i(\partial_jf)$ exist and are continuous.
+\end{proof}
+
+\begin{theorem}[Symmetry of the second differential]
+\label{gradient-hessian:thm:schwarz}
+If $f$ is of class $C^2$, then $D^2f(a)$ is symmetric:
+$D^2f(a)(h, k) = D^2f(a)(k, h)$. In coordinates,
+$\partial_i\partial_jf = \partial_j\partial_if$.
+\end{theorem}
+
+\begin{proof}
+Fix $h$ and $k$, and for small $s, t\neq0$ consider the second difference
+\[
+  \Delta(s, t) = f(a + sh + tk) - f(a + sh) - f(a + tk) + f(a) .
+\]
+Let $\varphi(\sigma) = f(a + \sigma h + tk) - f(a + \sigma h)$, so that
+$\Delta(s, t) = \varphi(s) - \varphi(0)$. By the mean value theorem there
+is $\sigma$ between $0$ and $s$ with
+\[
+  \Delta(s, t) = s\,\varphi'(\sigma)
+  = s\bigl(\dd f(a + \sigma h + tk)(h) - \dd f(a + \sigma h)(h)\bigr) .
+\]
+The function $\tau\mapsto\dd f(a + \sigma h + \tau k)(h)$ has the
+derivative $D^2f(a + \sigma h + \tau k)(k, h)$ by
+\eqref{gradient-hessian:eq:iterated}, so a second application of the mean
+value theorem gives $\tau$ between $0$ and $t$ with
+\[
+  \Delta(s, t) = st\,D^2f(a + \sigma h + \tau k)(k, h) .
+\]
+The expression $\Delta(s, t)$ is unchanged when the pairs $(s, h)$ and
+$(t, k)$ are exchanged, so the same argument gives $\sigma'$ and $\tau'$
+with $\Delta(s, t) = st\,D^2f(a + \sigma'h + \tau'k)(h, k)$. Dividing by
+$st$ and letting $s, t\to0$, the continuity of $D^2f$ gives
+$D^2f(a)(k, h) = D^2f(a)(h, k)$.
+\end{proof}
+
+Continuity matters: there are functions whose two mixed partial
+derivatives exist at a point and differ
+(\cref{gradient-hessian:exr:4}).
+
+\begin{proposition}[Affine changes of variable]
+\label{gradient-hessian:prop:affine}
+Let $\varphi:\Aff'\to\Aff$ be an affine map with linear part $A$, and
+$g = f\circ\varphi$. Then
+\[
+  \dd g(x) = \dual A\,\dd f(\varphi(x)), \qquad
+  D^2g(x)(h, k) = D^2f(\varphi(x))(Ah, Ak) .
+\]
+In particular, under a change of basis with matrix $P$ the Hessian matrix
+becomes $P^\top HP$.
+\end{proposition}
+
+\begin{proof}
+The first formula is \cref{chain-rule-autodiff:prop:two-readings}, since
+$D\varphi(x) = A$ at every point. For the second,
+$\dd g(x)(k) = \dd f(\varphi(x))(Ak)$; the derivative along $h$ of
+$x\mapsto\dd f(\varphi(x))(Ak)$ is, by the chain rule,
+$D^2f(\varphi(x))(Ah, Ak)$.
+\end{proof}
+
+\begin{remark}[Changes of variable that are not affine]
+\label{gradient-hessian:rem:nonlinear}
+For a general $\varphi$ a second term appears, which involves the
+\emph{first} differential of $f$. In one variable,
+$(f\circ\varphi)'' = f''(\varphi)\,\varphi'^2 + f'(\varphi)\,\varphi''$.
+The second differential is therefore a well-defined bilinear form on an
+affine space, where the allowed changes of frame are affine, and at the
+critical points of $f$ on any space, where the extra term vanishes. Away
+from critical points, on a curved space, it needs an additional structure
+(\cref{ch:riemannian-optimization}).
+\end{remark}
+
+\section{Taylor's formula and critical points}
+\label{gradient-hessian:sec:taylor}
+
+\begin{theorem}[Taylor's formula of order two]
+\label{gradient-hessian:thm:taylor}
+Let $f$ be of class $C^2$ on $U$ and let the segment $[a, a + h]$ lie in
+$U$. Then there is $\theta\in(0, 1)$ such that
+\[
+  f(a + h) = f(a) + \dd f(a)(h) + \tfrac12D^2f(a + \theta h)(h, h) .
+\]
+Consequently
+\[
+  f(a + h) = f(a) + \dd f(a)(h) + \tfrac12D^2f(a)(h, h) + r(h),
+  \qquad \frac{r(h)}{\norm h^2}\to0 \text{ as } h\to0 .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $g(t) = f(a + th)$, defined on an open interval containing $[0, 1]$.
+By \cref{differential:thm:velocity}, $g'(t) = \dd f(a + th)(h)$, and by
+\eqref{gradient-hessian:eq:iterated} applied at the point $a + th$,
+$g''(t) = D^2f(a + th)(h, h)$, which is continuous. Taylor's formula with
+Lagrange remainder in one variable gives
+$g(1) = g(0) + g'(0) + \frac12g''(\theta)$. For the second statement,
+\[
+  \abs{r(h)}
+  = \tfrac12\abs{D^2f(a + \theta h)(h, h) - D^2f(a)(h, h)}
+  \leq\tfrac12\norm{D(\dd f)(a + \theta h) - D(\dd f)(a)}\,\norm h^2 ,
+\]
+and the operator norm on the right tends to $0$ with $h$ because $f$ is of
+class $C^2$.
+\end{proof}
+
+\begin{intuition}
+To second order, a function is its tangent affine function plus half a
+quadratic form. The quadratic model
+$h\mapsto f(a) + \dd f(a)(h) + \frac12D^2f(a)(h, h)$ is built from a
+number, a covector and a symmetric bilinear form. It involves no inner
+product, and it is the object studied in \cref{ch:spectral-svd}.
+\end{intuition}
+
+Higher differentials are defined in the same way: $D^kf(a)$ is a
+symmetric $k$-linear form, and $f(a + h)$ is approximated to order $k$ by
+$\sum_{j\leq k}\frac1{j!}D^jf(a)(h,\dots,h)$. We shall not need them
+before \cref{ch:multilinear-algebra}.
+
+\begin{theorem}[Second-order conditions]
+\label{gradient-hessian:thm:second-order}
+Let $f$ be of class $C^2$ on the open set $U$ and $a\in U$.
+\begin{enumerate}[nosep]
+  \item If $f$ has a local minimum at $a$, then $\dd f(a) = 0$ and
+        $D^2f(a)$ is positive semidefinite.
+  \item If $\dd f(a) = 0$ and $D^2f(a)$ is positive definite, then $f$ has
+        a strict local minimum at $a$.
+  \item If $\dd f(a) = 0$ and $D^2f(a)$ is indefinite, then $a$ is neither
+        a local minimum nor a local maximum: it is a \emph{saddle point}.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Write $q(h) = D^2f(a)(h, h)$. (1) $\dd f(a) = 0$ by
+\cref{differential:thm:fermat}. For each $h$, $g(t) = f(a + th)$ has a
+local minimum at $t = 0$, so $g''(0) = q(h)\geq0$. (2) Choose a norm on
+$V$. The form $q$ is continuous and positive on the unit sphere, which is
+compact, so it has a positive minimum $c$ there
+(\cref{norms-banach:thm:extreme}), and $q(h)\geq c\norm h^2$ for all $h$
+by homogeneity. By \cref{gradient-hessian:thm:taylor},
+$f(a + h) - f(a) = \frac12q(h) + r(h)\geq(\frac c2 - \frac c4)\norm h^2$
+as soon as $\abs{r(h)}\leq\frac c4\norm h^2$, which holds for $h$ small.
+(3) If $q(h) > 0$ and $q(h') < 0$, then $t\mapsto f(a + th)$ has a strict
+local minimum at $0$ and $t\mapsto f(a + th')$ a strict local maximum, by
+(2) in one variable.
+\end{proof}
+
+The three cases are read off the signature $(p, m)$ of $D^2f(a)$
+(\cref{spectral-svd:def:signature}): $p = n$ in (2), $p > 0$ and $m > 0$
+in (3). When the form is degenerate and semidefinite, the second
+differential does not decide. The signature is invariant under
+$H\mapsto P^\top HP$ (\cref{spectral-svd:thm:sylvester}): \emph{the nature
+of a critical point does not depend on coordinates, and no inner product
+is needed to determine it}.
+
+\begin{example}\label{gradient-hessian:ex:critical}
+$f(x, y) = x^3 - 3x + y^2$ has $[\dd f] = [3x^2 - 3\ \ \ 2y]$ and the
+Hessian matrix $\diag(6x, 2)$. The critical points are $(1, 0)$, where
+the signature is $(2, 0)$: a strict local minimum; and $(-1, 0)$, where it
+is $(1, 1)$: a saddle point.
+\end{example}
+
+\section{The Hessian operator}\label{gradient-hessian:sec:hessian}
+
+Let $\Aff$ be Euclidean again. By
+\cref{spectral-svd:prop:form-operator}, the symmetric form $D^2f(a)$
+corresponds to a self-adjoint operator.
+
+\begin{definition}[Hessian operator]\label{gradient-hessian:def:hessian}
+The \emph{Hessian operator} of a $C^2$ function $f$ at $a$ is the
+self-adjoint operator $\operatorname{Hess}f(a):V\to V$ such that
+\[
+  D^2f(a)(h, k) = \inner h{\operatorname{Hess}f(a)\,k}
+  \qquad\text{for all } h, k .
+\]
+\end{definition}
+
+\begin{proposition}\label{gradient-hessian:prop:hessian}
+\begin{enumerate}[nosep]
+  \item In a basis, $[\operatorname{Hess}f(a)] = M^{-1}H$.
+  \item $\operatorname{Hess}f(a) = D(\nabla f)(a)$: the Hessian operator
+        is the differential of the gradient field.
+  \item The eigenvalues of $\operatorname{Hess}f(a)$ depend on the inner
+        product; the numbers of positive, negative and zero eigenvalues
+        do not, and give the signature of $D^2f(a)$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) and (3) are \cref{spectral-svd:prop:form-operator} and
+\cref{spectral-svd:cor:matrix}. (2) $\nabla f = R_V^{-1}\circ\dd f$ and
+$R_V^{-1}$ is linear, so $D(\nabla f)(a) = R_V^{-1}\circ D(\dd f)(a)$;
+then $\inner h{D(\nabla f)(a)k} = \bigl(D(\dd f)(a)k\bigr)(h)
+= D^2f(a)(k, h)$, and $D^2f(a)$ is symmetric.
+\end{proof}
+
+\begin{mlthread}[Machine learning: sharpness is relative]
+The ``sharpness'' of a minimum is usually measured by the largest
+eigenvalue of the Hessian matrix $H$, that is, of the Hessian operator for
+the dot product of the storage coordinates. Two facts from this chapter
+limit what that number means.
+\begin{itemize}[nosep]
+  \item It depends on the inner product: it is the largest eigenvalue of
+        $M^{-1}H$.
+  \item It depends on the parametrization, even at a minimum. If the same
+        model is parametrized through $\varphi$, the Hessian matrix at the
+        minimum becomes $P^\top HP$ with $P$ the Jacobian matrix of
+        $\varphi$ (\cref{gradient-hessian:rem:nonlinear}), and its
+        eigenvalues can be made as large or as small as one wishes
+        without changing the function computed by the model. For networks
+        with ReLU units such reparametrizations exist inside the usual
+        family, by rescaling consecutive layers (Dinh et al., 2017).
+\end{itemize}
+What does not change is the signature: the number of directions of
+descent, of ascent, and of flatness.
+\end{mlthread}
+
+\section{Convexity, smoothness and the speed of gradient descent}
+\label{gradient-hessian:sec:convex}
+
+\subsection{Convexity: an affine notion}
+
+Convex sets and convex functions were defined in
+\cref{affine-spaces:def:convex} with affine combinations only.
+
+\begin{theorem}[Characterizations of convexity]
+\label{gradient-hessian:thm:convex}
+Let $f$ be differentiable on a convex open set $U$. The following are
+equivalent:
+\begin{enumerate}[nosep]
+  \item $f$ is convex;
+  \item $f(b)\geq f(a) + \dd f(a)(b - a)$ for all $a, b\in U$: the graph
+        lies above every tangent affine function.
+\end{enumerate}
+If $f$ is of class $C^2$, they are also equivalent to
+\begin{enumerate}[nosep, resume]
+  \item $D^2f(a)$ is positive semidefinite for every $a\in U$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1)$\Rightarrow$(2). For $t\in(0, 1]$, convexity gives
+$f(a + t(b - a))\leq f(a) + t\bigl(f(b) - f(a)\bigr)$, that is,
+$\bigl(f(a + t(b - a)) - f(a)\bigr)/t\leq f(b) - f(a)$. As $t\to0$ the
+left-hand side tends to $\dd f(a)(b - a)$.
+(2)$\Rightarrow$(1). Let $c = (1 - t)a + tb$. Apply (2) at $c$ twice:
+$f(a)\geq f(c) + \dd f(c)(a - c)$ and
+$f(b)\geq f(c) + \dd f(c)(b - c)$. Multiply by $1 - t$ and $t$ and add:
+since $(1 - t)(a - c) + t(b - c) = 0$, we get
+$(1 - t)f(a) + tf(b)\geq f(c)$.
+(3)$\Rightarrow$(2). By \cref{gradient-hessian:thm:taylor},
+$f(b) - f(a) - \dd f(a)(b - a) = \frac12D^2f(\xi)(b - a, b - a)\geq0$ for
+some $\xi$ on the segment.
+(2)$\Rightarrow$(3). If $D^2f(a)(h, h) < 0$ for some $a$ and $h$, the
+second form of Taylor's formula gives
+$f(a + th) - f(a) - t\,\dd f(a)(h) = \frac{t^2}2D^2f(a)(h, h) + r(th) < 0$
+for $t$ small, which contradicts (2).
+\end{proof}
+
+\begin{corollary}\label{gradient-hessian:cor:global}
+A critical point of a differentiable convex function is a global minimum.
+\end{corollary}
+
+\begin{proof}
+If $\dd f(a) = 0$, (2) reads $f(b)\geq f(a)$ for all $b$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.15]
+  \begin{scope}
+    \draw[->, gray] (-0.3,0) -- (4.6,0);
+    \draw[bookaccent, very thick, domain=0.2:4.3, samples=50]
+      plot (\x, {0.5 + 0.22*(\x-1.6)*(\x-1.6)});
+    \draw[bookdef, thick] (1.3,0.0886) -- (4.3,1.5406);
+    \draw[bookpitfall, thick, dashed] (0.7,0.6782) -- (4.0,1.7672);
+    \fill (2.7,0.7662) circle (1.4pt);
+    \fill (0.7,0.6782) circle (1.4pt);
+    \fill (4.0,1.7672) circle (1.4pt);
+    \node[below] at (2.7,0) {$a$};
+    \draw[densely dotted] (2.7,0) -- (2.7,0.7662);
+    \node[bookdef, anchor=north west, font=\small] at (3.3,0.95)
+      {tangent};
+    \node[bookpitfall, anchor=south east, font=\small] at (2.3,1.25)
+      {chord};
+    \node[anchor=north] at (2.2,-0.45) {convexity};
+  \end{scope}
+  \begin{scope}[xshift=6.6cm, xscale=1.35, yscale=0.72]
+    \draw[->, gray] (-1.0,0) -- (2.5,0);
+    \draw[bookaccent, very thick, domain=-0.9:2.1, samples=60]
+      plot (\x, {2*ln(cosh(\x))});
+    \draw[bookpitfall, thick, dashed, domain=-0.5:1.95, samples=40]
+      plot (\x, {1.711 + 1.810*(\x-1.5) + (\x-1.5)*(\x-1.5)});
+    \fill (1.5,1.711) circle (1.4pt);
+    \fill[bookpitfall] (0.595,0.892) circle (1.4pt);
+    \fill[bookaccent] (0.595,0.339) circle (1.4pt);
+    \draw[densely dotted] (1.5,0) -- (1.5,1.711);
+    \draw[densely dotted] (0.595,0) -- (0.595,0.892);
+    \node[below] at (1.5,0) {$a$};
+    \node[below] at (0.45,0) {$a - \frac1L\nabla f$};
+    \node[anchor=north] at (0.9,-0.62) {descent lemma};
+  \end{scope}
+\end{tikzpicture}
+\caption{Left: a convex function lies above its tangent affine functions
+and below its chords. Right: an $L$-smooth function lies below the
+parabola of curvature $L$ that touches it at $a$ (red, dashed); the
+minimum of the parabola is reached at the gradient step of size $1/L$,
+and the function is at least as low there.}
+\label{gradient-hessian:fig:convex}
+\end{figure}
+
+\subsection{Smoothness and strong convexity: metric notions}
+
+From now on $\Aff$ is Euclidean, $U\subset\Aff$ is convex and open, and
+$f$ is of class $C^2$ on $U$.
+
+\begin{definition}\label{gradient-hessian:def:smooth}
+Let $L\geq\mu > 0$. The function $f$ is
+\begin{itemize}[nosep]
+  \item \emph{$L$-smooth} if $\abs{D^2f(a)(h, h)}\leq L\norm h^2$ for all
+        $a\in U$ and $h\in V$;
+  \item \emph{$\mu$-strongly convex} if $D^2f(a)(h, h)\geq\mu\norm h^2$
+        for all $a\in U$ and $h\in V$.
+\end{itemize}
+\end{definition}
+
+By \cref{spectral-svd:thm:minmax} these conditions say that the
+eigenvalues of $\operatorname{Hess}f(a)$ lie in $[-L, L]$, respectively in
+$[\mu, \infty)$, at every point. Unlike convexity, they involve the norm:
+the constants $L$ and $\mu$ change with the inner product, as the
+eigenvalues of $M^{-1}H$ do. The usual definition of $L$-smoothness,
+``$\nabla f$ is Lipschitz with constant $L$'', is equivalent for $C^2$
+functions (\cref{ch:contractions-newton}).
+
+\begin{proposition}[Quadratic bounds]\label{gradient-hessian:prop:bounds}
+For all $a, b\in U$:
+\begin{enumerate}[nosep]
+  \item \emph{(Descent lemma.)} If $f$ is $L$-smooth,
+        $f(b)\leq f(a) + \dd f(a)(b - a) + \frac L2\norm{b - a}^2$.
+  \item If $f$ is $\mu$-strongly convex,
+        $f(b)\geq f(a) + \dd f(a)(b - a) + \frac\mu2\norm{b - a}^2$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\Cref{gradient-hessian:thm:taylor} with $h = b - a$: the remainder
+$\frac12D^2f(\xi)(h, h)$ is at most $\frac L2\norm h^2$ in the first case
+and at least $\frac\mu2\norm h^2$ in the second.
+\end{proof}
+
+\begin{corollary}[One step of gradient descent]
+\label{gradient-hessian:cor:step}
+Let $f$ be $L$-smooth, and let $a_+ = a - \eta\nabla f(a)$ belong to $U$.
+Then
+\[
+  f(a_+)\leq f(a) - \eta\Bigl(1 - \frac{L\eta}2\Bigr)\norm{\nabla f(a)}^2 .
+\]
+The loss decreases for every $0 < \eta < 2/L$, and the guaranteed decrease
+is largest for $\eta = 1/L$, where it equals
+$\frac1{2L}\norm{\nabla f(a)}^2$.
+\end{corollary}
+
+\begin{proof}
+In the descent lemma with $b = a_+$,
+$\dd f(a)(b - a) = -\eta\inner{\nabla f(a)}{\nabla f(a)}$ and
+$\norm{b - a}^2 = \eta^2\norm{\nabla f(a)}^2$. The function
+$\eta(1 - L\eta/2)$ is positive on $(0, 2/L)$ and largest at $\eta = 1/L$.
+\end{proof}
+
+For a quadratic loss $L$ is the largest eigenvalue $\lambda_1$ of
+$M^{-1}H$, and the condition $\eta < 2/L$ is the exact threshold
+$\eta < 2/\lambda_1$ of \cref{spectral-svd:thm:gd}.
+
+\begin{theorem}[Convergence of gradient descent]
+\label{gradient-hessian:thm:rates}
+Let $f$ be $L$-smooth on the whole space $\Aff$, and let
+$a_{k+1} = a_k - \frac1L\nabla f(a_k)$.
+\begin{enumerate}[nosep]
+  \item If $f$ is bounded below, with infimum $f_*$, then for every
+        $K\geq1$
+        \[
+          \min_{0\leq k < K}\norm{\nabla f(a_k)}^2
+          \leq\frac{2L\bigl(f(a_0) - f_*\bigr)}K .
+        \]
+  \item If $f$ is also $\mu$-strongly convex, then $f$ has a unique
+        minimizer $a_*$, and with $f_* = f(a_*)$,
+        \[
+          f(a_k) - f_*
+          \leq\Bigl(1 - \frac\mu L\Bigr)^k\bigl(f(a_0) - f_*\bigr) .
+        \]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) By \cref{gradient-hessian:cor:step},
+$\frac1{2L}\norm{\nabla f(a_k)}^2\leq f(a_k) - f(a_{k+1})$. Summing over
+$k < K$, the right-hand sides telescope to
+$f(a_0) - f(a_K)\leq f(a_0) - f_*$, and the smallest of $K$ terms is at
+most their average.
+
+(2) \emph{Existence of a minimizer.} By
+\cref{gradient-hessian:prop:bounds}(2) at $a_0$ and the Cauchy--Schwarz
+inequality,
+$f(b)\geq f(a_0) - \norm{\nabla f(a_0)}\norm{b - a_0}
++ \frac\mu2\norm{b - a_0}^2$,
+which exceeds $f(a_0)$ outside a closed ball $B$ centred at $a_0$. The
+continuous function $f$ has a minimum on the compact set $B$
+(\cref{norms-banach:thm:extreme}), and it is a minimum over $\Aff$. If
+$a_*$ is a minimizer then $\dd f(a_*) = 0$ and
+\cref{gradient-hessian:prop:bounds}(2) gives
+$f(b)\geq f_* + \frac\mu2\norm{b - a_*}^2$, so it is unique.
+
+\emph{A lower bound on the gradient.} For every $a$,
+\cref{gradient-hessian:prop:bounds}(2) with $b = a_*$ and $v = a_* - a$
+gives
+\[
+  f_*\geq f(a) + \inner{\nabla f(a)}v + \tfrac\mu2\norm v^2
+  \geq f(a) - \frac1{2\mu}\norm{\nabla f(a)}^2 ,
+\]
+because
+$\inner gv + \frac\mu2\norm v^2
+= \frac\mu2\norm{v + g/\mu}^2 - \frac1{2\mu}\norm g^2$. Hence
+$\norm{\nabla f(a)}^2\geq2\mu\bigl(f(a) - f_*\bigr)$.
+
+\emph{Conclusion.} By \cref{gradient-hessian:cor:step},
+$f(a_{k+1}) - f_*\leq f(a_k) - f_* - \frac1{2L}\norm{\nabla f(a_k)}^2
+\leq(1 - \frac\mu L)\bigl(f(a_k) - f_*\bigr)$.
+\end{proof}
+
+\begin{mlthread}[Machine learning: learning rates and conditioning]
+\begin{itemize}[nosep]
+  \item The largest safe learning rate is set by the largest curvature:
+        $\eta < 2/L$. A loss whose curvature exceeds $2/\eta$ in some
+        direction increases along that direction, which is the mechanism
+        behind the divergence of training at large learning rates.
+  \item The speed is set by the \emph{condition number} $\kappa = L/\mu$:
+        about $\kappa\ln(1/\varepsilon)$ steps reduce the excess loss by
+        a factor $\varepsilon$. Without convexity, only the size of the
+        gradient is controlled, and the guarantee degrades from a
+        geometric rate to $1/K$.
+  \item Both $L$ and $\mu$ are eigenvalue bounds for $M^{-1}H$. Changing
+        the inner product changes $\kappa$: this is what a preconditioner
+        is for. The best case is $\kappa = 1$, reached when $M$ is the
+        second differential itself, and it leads to Newton's method.
+\end{itemize}
+\end{mlthread}
+
+\section{Newton's method}\label{gradient-hessian:sec:newton}
+
+A symmetric bilinear form is also a linear map $V\to V^*$
+(\cref{ch:duality}). For the second differential, write
+\[
+  \Phi_a:V\to V^*, \qquad \Phi_a(h) = D^2f(a)(h, \cdot) ,
+\]
+which is $D(\dd f)(a)$, with matrix $H$. It turns vectors into covectors.
+When it is invertible, its inverse turns covectors into vectors, which is
+what an optimizer needs, and no inner product has been chosen.
+
+\begin{definition}[Newton step]\label{gradient-hessian:def:newton}
+Let $f$ be of class $C^2$ and suppose that $D^2f(a)$ is non-degenerate.
+The \emph{Newton step} at $a$ is the vector
+\[
+  n(a) = -\Phi_a^{-1}\bigl(\dd f(a)\bigr) ,
+  \qquad\text{in coordinates}\qquad [n(a)] = -H^{-1}\gamma ,
+\]
+and \emph{Newton's method} is the iteration $a_{k+1} = a_k + n(a_k)$.
+\end{definition}
+
+\begin{proposition}[Properties of the Newton step]
+\label{gradient-hessian:prop:newton}
+\begin{enumerate}[nosep]
+  \item $n(a)$ is the unique critical point of the quadratic model
+        $m_a(h) = f(a) + \dd f(a)(h) + \frac12D^2f(a)(h, h)$, and its
+        minimizer if $D^2f(a)$ is positive definite.
+  \item If $D^2f(a)$ is positive definite, $n(a)$ is minus the gradient of
+        $f$ at $a$ for the inner product $\inner hk_a = D^2f(a)(h, k)$:
+        Newton's method is gradient descent with step size $1$ for an
+        inner product supplied by the function, which changes from point
+        to point.
+  \item \emph{(Affine invariance.)} Let $\varphi:\Aff'\to\Aff$ be an
+        affine isomorphism with linear part $A$, and $g = f\circ\varphi$.
+        Then the Newton step of $g$ at $x$ is
+        $A^{-1}n(\varphi(x))$, so that
+        \[
+          \varphi\bigl(x + n_g(x)\bigr) = \varphi(x) + n(\varphi(x)) .
+        \]
+        Newton's method applied to $g$ is the image by $\varphi^{-1}$ of
+        Newton's method applied to $f$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) By \cref{differential:ex:quadratic},
+$\dd m_a(h) = \dd f(a) + \Phi_a(h)$, which vanishes exactly at
+$h = n(a)$. If $D^2f(a)$ is positive definite, $m_a$ is convex
+(\cref{gradient-hessian:thm:convex}) and the critical point is its
+minimum (\cref{gradient-hessian:cor:global}). (2) The Riesz map of
+$\inner\cdot\cdot_a$ is $\Phi_a$. (3) By
+\cref{gradient-hessian:prop:affine},
+$\dd g(x) = \dual A\,\dd f(\varphi(x))$ and the map $\Phi$ of $g$ at $x$
+is $\dual A\,\Phi_{\varphi(x)}A$. Hence
+\[
+  n_g(x) = -\bigl(\dual A\,\Phi_{\varphi(x)}A\bigr)^{-1}
+  \dual A\,\dd f(\varphi(x))
+  = -A^{-1}\Phi_{\varphi(x)}^{-1}\dd f(\varphi(x))
+  = A^{-1}n(\varphi(x)) ,
+\]
+and $\varphi(x + n_g(x)) = \varphi(x) + A\,n_g(x)$.
+\end{proof}
+
+\begin{keyidea}
+Gradient descent needs an inner product, and its trajectory depends on
+which one is chosen. Newton's method needs none: the function supplies
+the map from covectors to vectors. It therefore passes the origin test
+and the basis test, and its behaviour does not depend on how the
+parameters are scaled, rotated or mixed. On a quadratic function with
+positive definite second differential it reaches the minimum in one step.
+\end{keyidea}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Update & Uses & Origin test & Basis test \\
+\midrule
+$x - \eta\gamma$ & the storage basis & passes & fails \\
+$x - \eta M^{-1}\gamma$, $M$ fixed & an inner product & passes & passes \\
+$x - H^{-1}\gamma$ (Newton) & the function only & passes & passes \\
+\bottomrule
+\end{tabular}
+\caption{Three updates built from the array $\gamma$ of partial
+derivatives. The second gives a different trajectory for each inner
+product; the third involves no choice.}
+\label{gradient-hessian:tab:updates}
+\end{table}
+
+Newton's method has a price. The Hessian matrix has $n^2$ entries and
+solving $Hn = -\gamma$ costs of the order of $n^3$ operations, out of
+reach when $n$ is the number of parameters of a network. The step is a
+descent direction only where the second differential is positive
+definite, and near a saddle point it is attracted to the saddle. Its
+convergence, extremely fast near a non-degenerate minimum, is proved in
+\cref{ch:contractions-newton}.
+
+\begin{mlthread}[Machine learning: Hessian--vector products]
+The full matrix $H$ is rarely needed; products $Hv$ often suffice, and
+they are cheap. By \eqref{gradient-hessian:eq:iterated},
+\[
+  \Phi_a(v) = D^2f(a)(v, \cdot)
+  = \frac{\dd}{\dd t}\Big|_{t=0}\dd f(a + tv) ,
+\]
+the push-forward of the velocity $v$ by the map $\dd f$. So $Hv$ is
+obtained by applying forward mode to the program that computes $\gamma$
+by reverse mode (\cref{ch:chain-rule-autodiff}), at the cost of a small
+multiple of one evaluation of $\gamma$, without ever forming $H$
+(Pearlmutter, 1994). Equivalently, $Hv$ is the array of partial
+derivatives of the scalar function $x\mapsto\gamma(x)^\top v$. With such
+products one can estimate the largest eigenvalue of $H$ by power
+iteration, or solve $Hn = -\gamma$ approximately by the conjugate
+gradient method, which is how Newton-like methods are run at scale.
+\end{mlthread}
+
+\section{Where the chapter leads}\label{gradient-hessian:sec:outlook}
+
+\Cref{ch:contractions-newton} gives the quantitative tools that this
+chapter postponed: the mean value inequality, the equivalence between
+bounds on the second differential and the Lipschitz property of the
+gradient, and the convergence of Newton's method.
+\Cref{ch:constrained-optimization} treats critical points under
+constraints. The idea that an inner product on parameter space should
+come from the problem, and may vary from point to point, is developed in
+\cref{ch:riemannian-optimization,ch:natural-gradient}.
+
+\paragraph{Sources.} Loomis and Sternberg treat the second differential,
+its symmetry (Theorem~16.3) and the classification of critical points
+(Theorem~16.4) in \S3.16 of \emph{Advanced Calculus}, and Taylor's
+formula in \S3.17. Hubbard and Hubbard prove the equality of crossed
+partial derivatives (Theorem~3.3.8) and Taylor's theorem in several
+variables (Theorem~3.3.16) in \S3.3, and classify critical points by the
+signature of the quadratic form in \S3.6 (Theorem~3.6.8); their gradient
+is the transpose of the row of partial derivatives (\S1.7), that is, the
+gradient for the dot product. For convexity, the descent lemma and the
+rates of gradient descent, see Y.~Nesterov, \emph{Lectures on Convex
+Optimization}, 2nd ed., Springer, 2018, and S.~Boyd and
+L.~Vandenberghe, \emph{Convex Optimization}, Cambridge University Press,
+2004, where the affine invariance of Newton's method is emphasized.
+Hessian--vector products: B.~A.~Pearlmutter, Fast exact multiplication
+by the Hessian, \emph{Neural Computation}, 1994. Sharp minima and
+reparametrization: L.~Dinh, R.~Pascanu, S.~Bengio and Y.~Bengio, Sharp
+minima can generalize for deep nets, ICML, 2017.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{08-gradient-hessian.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item The gradient is $\nabla f(a) = R_V^{-1}\dd f(a)$, with column
+        $M^{-1}[\dd f(a)]^\top$. It depends on the inner product; being
+        zero does not.
+  \item $D^2f(a)$ is a symmetric bilinear form, with Gram matrix the
+        Hessian matrix $H$, which changes as $P^\top HP$ under affine
+        changes of frame. Taylor:
+        $f(a + h) = f(a) + \dd f(a)(h) + \frac12D^2f(a)(h, h)
+        + o(\norm h^2)$.
+  \item At a critical point the signature of $D^2f(a)$ decides: minimum,
+        maximum or saddle. No inner product is involved.
+  \item With an inner product, $D^2f(a)$ becomes the Hessian operator
+        $M^{-1}H = D(\nabla f)(a)$, whose eigenvalues depend on $M$.
+  \item Convexity is affine: $f$ lies above its tangent affine functions,
+        equivalently $D^2f\geq0$. Smoothness and strong convexity are
+        metric: $\mu\norm h^2\leq D^2f(a)(h, h)\leq L\norm h^2$.
+  \item Gradient descent with $\eta = 1/L$ decreases $f$ by at least
+        $\frac1{2L}\norm{\nabla f}^2$ per step, and converges at the rate
+        $(1 - \mu/L)^k$ under strong convexity.
+  \item The Newton step $-H^{-1}\gamma$ uses the second differential as a
+        map $V\to V^*$. It needs no inner product and is invariant under
+        affine changes of variable.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{gradient-hessian:exr:1}
+Let $f(x, y) = x^2 + 3xy$ on $\R^2$ and $a = (1, 1)$. Compute
+$\nabla f(a)$ for the dot product, for $M = \diag(1, 4)$ and for
+$M = \begin{bsmallmatrix}2 & 1\\1 & 2\end{bsmallmatrix}$. In the third
+case, check the defining property on $h = (1, 0)$ and $h = (0, 1)$.
+\solutionlink{gradient-hessian:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{gradient-hessian:exr:2}
+Polar coordinates $(\rho, \theta)$ on the plane minus the origin are
+not affine, but at each point the vectors
+$e_\rho = (\cos\theta, \sin\theta)$ and
+$e_\theta = (-\rho\sin\theta, \rho\cos\theta)$, the columns of the
+Jacobian matrix of \cref{differential:ex:polar}, form a basis.
+\begin{enumerate}[nosep]
+  \item Compute the Gram matrix $M$ of the dot product in the basis
+        $(e_\rho, e_\theta)$.
+  \item For a function $g(\rho, \theta)$, the row
+        $[\partial g/\partial\rho\ \ \partial g/\partial\theta]$ gives the
+        components of the differential in the dual basis
+        (\cref{chain-rule-autodiff:exr:2}). Deduce the components of the
+        gradient in the basis $(e_\rho, e_\theta)$, and explain the
+        factor $1/\rho^2$.
+\end{enumerate}
+\solutionlink{gradient-hessian:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{gradient-hessian:exr:3}
+Find and classify the critical points of
+$f(x, y) = x^2y - x^2 - 2y^2$ on $\R^2$.
+\solutionlink{gradient-hessian:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{gradient-hessian:exr:4}
+Let $f(x, y) = xy(x^2 - y^2)/(x^2 + y^2)$ for $(x, y)\neq(0, 0)$ and
+$f(0, 0) = 0$. Show that $\partial_xf(0, y) = -y$ and
+$\partial_yf(x, 0) = x$, and deduce that the two mixed second partial
+derivatives at the origin are $-1$ and $1$. Why does this not contradict
+\cref{gradient-hessian:thm:schwarz}?
+\solutionlink{gradient-hessian:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{gradient-hessian:exr:5}
+Write the quadratic model of $f(x, y) = e^x\cos y$ at the origin, and
+compare its value with $f$ at $(0.1, 0.2)$.
+\solutionlink{gradient-hessian:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{gradient-hessian:exr:6}
+Let $\ell(z) = \log\sum_ie^{z_i}$ on $\R^n$ and $p$ the softmax of $z$.
+\begin{enumerate}[nosep]
+  \item Show that $D^2\ell(z)(h, h) = \sum_ip_ih_i^2 - (\sum_ip_ih_i)^2$,
+        the variance of $h$ under $p$, and that $\ell$ is convex.
+  \item Show that $D^2\ell(z)$ is degenerate, and find the direction on
+        which it vanishes.
+  \item Show that $\ell$ is $\frac12$-smooth for the dot product.
+\end{enumerate}
+\solutionlink{gradient-hessian:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{gradient-hessian:exr:7}
+Let $f(x) = x_1^2 + 4x_2^2$ with the dot product, and $a_0 = (2.5, 1)$.
+Give $L$ and $\mu$, perform one step of gradient descent with
+$\eta = 1/L$, and check the inequalities of
+\cref{gradient-hessian:cor:step,gradient-hessian:thm:rates} on it.
+\solutionlink{gradient-hessian:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{gradient-hessian:exr:8}
+Let $f(x) = e^{x_1} - x_1 + 2x_2^2$ and $a = (1, 1)$.
+\begin{enumerate}[nosep]
+  \item Compute the Newton step and the next point.
+  \item Do the same computation in the coordinates $u$ defined by
+        $x = Pu$ with
+        $P = \begin{bsmallmatrix}1 & 1\\0 & 1\end{bsmallmatrix}$, and
+        check that the next point is the same.
+  \item Compare with the update $x - \eta\gamma$ computed in the two
+        coordinate systems for $\eta = 0.1$.
+\end{enumerate}
+\solutionlink{gradient-hessian:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{gradient-hessian:exr:9}
+A function of one variable $f$ has a minimum at $y_*$ with
+$f''(y_*) = s > 0$.
+\begin{enumerate}[nosep]
+  \item For $g(x) = f(cx)$ with $c\neq0$, compute the second derivative
+        of $g$ at its minimum. What happens to the ``sharpness''?
+  \item For $g = f\circ\varphi$ with a general $\varphi$ of class $C^2$
+        and $\varphi'\neq0$, show that $g''$ at the minimum is
+        $s\,\varphi'(x_*)^2$, and that away from the minimum $g''$ can be
+        negative even though $f'' > 0$ everywhere. Give an example.
+\end{enumerate}
+\solutionlink{gradient-hessian:exr:9}
+\end{exercise}
 \end{notechapter}

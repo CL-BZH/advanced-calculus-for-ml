@@ -1004,3 +1004,139 @@ $2x_1 + x_2 = 8$ and $x_1 = 3$.
         covector reaches the first layer unchanged, however deep the
         network is.
 \end{enumerate}
+
+\section{\nameref*{ch:gradient-hessian}}
+
+\solution{gradient-hessian:exr:1}
+$[\dd f] = [2x + 3y\ \ \ 3x] = [5\ \ 3]$ at $a$. For the dot product,
+$\nabla f(a) = (5, 3)$. For $M = \diag(1, 4)$,
+$\nabla f(a) = M^{-1}(5, 3)^\top = (5, \frac34)$. For the third inner
+product,
+$M^{-1} = \frac13\begin{bsmallmatrix}2 & -1\\-1 & 2\end{bsmallmatrix}$ and
+$\nabla f(a) = \frac13(10 - 3, -5 + 6) = (\frac73, \frac13)$. Check:
+$\inner{\nabla f(a)}{e_1} = 2\cdot\frac73 + \frac13 = 5$ and
+$\inner{\nabla f(a)}{e_2} = \frac73 + 2\cdot\frac13 = 3$, the two
+partial derivatives.
+
+\solution{gradient-hessian:exr:2}
+\begin{enumerate}[nosep]
+  \item $e_\rho\cdot e_\rho = 1$, $e_\rho\cdot e_\theta = 0$ and
+        $e_\theta\cdot e_\theta = \rho^2$: $M = \diag(1, \rho^2)$, which
+        is $J^\top J$ for the Jacobian matrix $J$.
+  \item By \cref{gradient-hessian:prop:gradient} the components of the
+        gradient are
+        $M^{-1}[\dd g]^\top
+        = (\partial g/\partial\rho,\ \rho^{-2}\,\partial g/\partial\theta)$:
+        \[
+          \nabla g = \frac{\partial g}{\partial\rho}\,e_\rho
+          + \frac1{\rho^2}\frac{\partial g}{\partial\theta}\,e_\theta .
+        \]
+        The basis vector $e_\theta$ has length $\rho$: a unit change of
+        $\theta$ moves the point by $\rho$. With the unit vector
+        $\hat e_\theta = e_\theta/\rho$ the second term reads
+        $\frac1\rho\frac{\partial g}{\partial\theta}\hat e_\theta$, the
+        formula of vector calculus. The partial derivatives are the
+        components of a covector; the factor $M^{-1}$ turns them into
+        those of a vector.
+\end{enumerate}
+
+\solution{gradient-hessian:exr:3}
+$[\dd f] = [2x(y - 1)\ \ \ x^2 - 4y]$. If $x = 0$ then $y = 0$; if
+$y = 1$ then $x = \pm2$. The critical points are $(0, 0)$, $(2, 1)$ and
+$(-2, 1)$. The Hessian matrix is
+$\begin{bsmallmatrix}2y - 2 & 2x\\2x & -4\end{bsmallmatrix}$. At
+$(0, 0)$ it is $\diag(-2, -4)$, of signature $(0, 2)$: a strict local
+maximum. At $(\pm2, 1)$ it is
+$\begin{bsmallmatrix}0 & \pm4\\\pm4 & -4\end{bsmallmatrix}$, with
+determinant $-16 < 0$, hence one positive and one negative eigenvalue:
+signature $(1, 1)$, two saddle points.
+
+\solution{gradient-hessian:exr:4}
+For $y\neq0$, $f(x, y)/x = y(x^2 - y^2)/(x^2 + y^2)\to-y$ as $x\to0$,
+and $f(0, y) = 0$: $\partial_xf(0, y) = -y$, also true for $y = 0$.
+Symmetrically $\partial_yf(x, 0) = x$. Differentiating,
+$\partial_y(\partial_xf)(0, 0) = -1$ and
+$\partial_x(\partial_yf)(0, 0) = 1$. The theorem assumes that $f$ is of
+class $C^2$: here the second partial derivatives exist at the origin but
+are not continuous there.
+
+\solution{gradient-hessian:exr:5}
+At the origin $f = 1$, $[\dd f] = [e^x\cos y\ \ {-e^x\sin y}] = [1\ \ 0]$
+and the Hessian matrix is $\diag(1, -1)$. The quadratic model is
+$1 + x + \frac12(x^2 - y^2)$. At $(0.1, 0.2)$ it gives
+$1 + 0.1 + \frac12(0.01 - 0.04) = 1.085$, and
+$f = e^{0.1}\cos0.2\approx1.0831$: an error of about $0.002$, of the
+order of $\norm h^3$.
+
+\solution{gradient-hessian:exr:6}
+\begin{enumerate}[nosep]
+  \item $[\dd\ell(z)] = p^\top$ (\cref{ch:differential}), so the Hessian
+        matrix is the Jacobian matrix of the softmax,
+        $\diag(p) - pp^\top$, and
+        $D^2\ell(z)(h, h) = \sum_ip_ih_i^2 - (\sum_ip_ih_i)^2$. This is
+        the variance of the random variable taking the value $h_i$ with
+        probability $p_i$, which is non-negative. By
+        \cref{gradient-hessian:thm:convex}, $\ell$ is convex.
+  \item All $p_i$ are positive, so the variance vanishes exactly when
+        $h$ is constant: on the line spanned by $(1,\dots,1)$. Indeed
+        $\ell(z + c(1,\dots,1)) = \ell(z) + c$ is affine along it.
+  \item Let $m$ and $M$ be the smallest and largest $h_i$ and
+        $c = \frac12(m + M)$. The variance is at most
+        $\sum_ip_i(h_i - c)^2\leq\frac14(M - m)^2$, and
+        $(M - m)^2\leq2(M^2 + m^2)\leq2\norm h^2$. Hence
+        $0\leq D^2\ell(z)(h, h)\leq\frac12\norm h^2$.
+\end{enumerate}
+
+\solution{gradient-hessian:exr:7}
+The Hessian matrix is $\diag(2, 8)$ at every point, so $L = 8$ and
+$\mu = 2$. At $a_0$, $f = 10.25$ and $\nabla f = (5, 8)$, with
+$\norm{\nabla f}^2 = 89$. The step is
+$a_1 = a_0 - \frac18(5, 8) = (1.875, 0)$, and $f(a_1) = 3.515625$. The
+one-step bound gives
+$f(a_1)\leq10.25 - \frac{89}{16} = 4.6875$, and the rate gives
+$f(a_1) - f_*\leq(1 - \frac28)\cdot10.25 = 7.6875$ with $f_* = 0$: both
+hold. The lower bound on the gradient used in the proof reads
+$89\geq2\mu(f - f_*) = 41$.
+
+\solution{gradient-hessian:exr:8}
+\begin{enumerate}[nosep]
+  \item $\gamma = (e^{x_1} - 1, 4x_2) = (e - 1, 4)$ and
+        $H = \diag(e^{x_1}, 4) = \diag(e, 4)$. The Newton step is
+        $-H^{-1}\gamma = -(1 - e^{-1}, 1)$ and the next point is
+        $(e^{-1}, 0)\approx(0.368, 0)$.
+  \item $u = P^{-1}x = (0, 1)$. The row of partial derivatives is
+        $\gamma^\top P = [e - 1\ \ \ e + 3]$ and the Hessian matrix is
+        $P^\top HP = \begin{bsmallmatrix}e & e\\e & e + 4
+        \end{bsmallmatrix}$, with determinant $4e$ and inverse
+        $\frac1{4e}\begin{bsmallmatrix}e + 4 & -e\\-e & e
+        \end{bsmallmatrix}$. The Newton step in $u$ is
+        \[
+          -\frac1{4e}\begin{bmatrix}(e + 4)(e - 1) - e(e + 3)\\
+          -e(e - 1) + e(e + 3)\end{bmatrix}
+          = -\frac1{4e}\begin{bmatrix}-4\\4e\end{bmatrix}
+          = \begin{bmatrix}e^{-1}\\-1\end{bmatrix} ,
+        \]
+        so the next point is $u = (e^{-1}, 0)$, that is,
+        $x = Pu = (e^{-1}, 0)$: the same point.
+  \item In $x$: $x - 0.1\gamma = (1 - 0.1(e - 1), 0.6)
+        \approx(0.828, 0.600)$. In $u$:
+        $u - 0.1(e - 1, e + 3)\approx(-0.172, 0.428)$, which is the point
+        $x = Pu\approx(0.256, 0.428)$. The two computations give
+        different points.
+\end{enumerate}
+
+\solution{gradient-hessian:exr:9}
+\begin{enumerate}[nosep]
+  \item $g''(x) = c^2f''(cx)$, so at the minimum $x_* = y_*/c$ it equals
+        $c^2s$. Rescaling the parameter by $c$ multiplies the sharpness
+        by $c^2$, with the same function values: the minimum is neither
+        sharper nor flatter in any sense that concerns the model.
+  \item $g'' = f''(\varphi)\varphi'^2 + f'(\varphi)\varphi''$
+        (\cref{gradient-hessian:rem:nonlinear}), and at the minimum
+        $f'(\varphi(x_*)) = 0$, which leaves $s\,\varphi'(x_*)^2$.
+        Example: $f(y) = y^2$ and $\varphi(x) = e^x - 1$ give
+        $g(x) = (e^x - 1)^2$ and $g''(x) = 2e^x(2e^x - 1)$. At the minimum
+        $x_* = 0$, $g'' = 2 = s\,\varphi'(0)^2$; for $x < -\ln2$,
+        $g'' < 0$ although $f'' = 2$ everywhere. Convexity is preserved
+        by affine changes of variable only.
+\end{enumerate}
