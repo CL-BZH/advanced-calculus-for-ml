@@ -4,35 +4,1160 @@
 \chaptersubtitle{%
   Covectors, dual bases and the dual operator}
 
-\begin{chapterplan}
+\begin{chapterintro}
+A loss function assigns a number to each point of parameter space. Near a
+point, its variation is described by a rule that takes a displacement and
+returns a number: the change of the loss, to first order, when the
+parameters move by that displacement. Such a rule is linear, and it is
+\emph{not} a displacement. It is a different kind of object, a linear form
+or \emph{covector}, and the array that \texttt{backward()} writes into
+\texttt{.grad} holds its components. The optimizer then subtracts this
+array from the parameters, as if it held the components of a vector. This
+chapter studies covectors for their own sake, before any inner product is
+available to blur them with vectors. You will learn
 \begin{itemize}[nosep]
-  \item Vector spaces, bases and dimension; linear maps and their matrices;
-        change of basis.
-  \item The dual space $V^*$: linear forms and their level sets; the dual basis;
-        how the components of vectors and of covectors change with the basis.
-  \item The dual operator $\dual A:W^*\to V^*$, $\phi\mapsto\phi\circ A$. It
-        needs no inner product, and its matrix in the dual bases is the
-        transpose of the matrix of $A$, over any field and with no conjugation.
-  \item A warning about notation, stated early and prominently. Many texts
-        write $A^*$ for the dual operator; others write $A'$, $A^t$ or
-        ${}^t\!A$; and the same star then serves for the adjoint, sometimes
-        in the same book. Formulas copied from two sources can therefore
-        look identical and mean different things. This book writes
-        $\dual A$ for the dual operator and keeps $\adj A$ for the adjoint
-        of \cref{ch:inner-products}; a table translates the conventions of
-        the main references into this one.
-  \item The bidual and the canonical isomorphism $V\cong V^{**}$; why an
-        isomorphism $V\cong V^*$ always involves a choice.
-  \item Annihilators; $\ker\dual A = (\im A)^\circ$; $A$ and $\dual A$ have the
-        same rank.
-  \item The basis test: which formulas survive a change of basis.
+  \item what a linear form is, how to picture it, and why the dual space
+        $V^*$ has the same dimension as $V$ without being the same space;
+  \item that the components of vectors and of covectors change in opposite
+        ways when the basis changes;
+  \item the dual operator $\dual A:W^*\to V^*$ of a linear map
+        $A:V\to W$, which needs no inner product, and whose matrix is the
+        transpose of the matrix of $A$;
+  \item why the literature is hard to read on this point: the dual
+        operator is written $A^*$, $A'$, $A^t$ or ${}^t\!A$ depending on
+        the book, and the star is also used for the adjoint;
+  \item which identifications are natural ($V$ with $V^{**}$) and which
+        involve a choice ($V$ with $V^*$);
+  \item annihilators, and the equality of the ranks of $A$ and $\dual A$;
+  \item the \emph{basis test}, which gradient descent on raw partial
+        derivatives fails and which coordinatewise optimizers fail even
+        for rotations.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:affine-spaces}; bases, dimension, the
+rank--nullity theorem and matrix products (Loomis and Sternberg,
+\emph{Advanced Calculus}, \S2.1--2.2; Hubbard and Hubbard, \emph{Vector
+Calculus, Linear Algebra, and Differential Forms}, \S2.4--2.5). All vector
+spaces are real and finite-dimensional. Nothing in this chapter uses an
+inner product.}
+\end{chapterintro}
+
+\section{Bases, components and matrices}\label{duality:sec:matrices}
+
+This section fixes the notation for the rest of the book. Let $V$ and $W$
+be vector spaces of dimensions $n$ and $m$, with bases
+$e = (e_1,\dots,e_n)$ and $f = (f_1,\dots,f_m)$.
+
 \begin{itemize}[nosep]
-  \item Row vectors and column vectors.
-  \item Coordinatewise optimizers such as Adam depend on the basis.
-  \item The vector--Jacobian product is a dual operator
+  \item The \emph{components} of $v\in V$ in the basis $e$ are the numbers
+        $x_1,\dots,x_n$ with $v = \sum_jx_je_j$. They are arranged in a
+        \emph{column}, written $[v]$.
+  \item The \emph{matrix} of a linear map $A:V\to W$ in the bases $e$ and
+        $f$ is the $m\times n$ array $[A]$ whose $j$th column is
+        $[Ae_j]$: $Ae_j = \sum_iA_{ij}f_i$. Then $[Av] = [A][v]$, and
+        $[BA] = [B][A]$ for a second map $B:W\to X$.
+\end{itemize}
+The bases are not shown in the notation $[\,\cdot\,]$; they are named in
+words whenever more than one is in play.
+
+\begin{definition}[Change of basis]\label{duality:def:change}
+Let $e' = (e'_1,\dots,e'_n)$ be a second basis of $V$. The \emph{change of
+basis matrix} from $e$ to $e'$ is the invertible matrix $P$ whose $j$th
+column holds the components of $e'_j$ in the basis $e$:
+\[
+  e'_j = \sum_iP_{ij}e_i .
+\]
+\end{definition}
+
+\begin{proposition}[Vectors and maps under a change of basis]
+\label{duality:prop:vector-change}
+Let $P$ be the change of basis matrix from $e$ to $e'$ in $V$, and $Q$
+the one from $f$ to $f'$ in $W$. Write $[\,\cdot\,]$ for components and
+matrices in the old bases and $[\,\cdot\,]'$ in the new ones. Then
+\[
+  [v]' = P^{-1}[v],
+  \qquad
+  [A]' = Q^{-1}[A]P .
+\]
+\end{proposition}
+
+\begin{proof}
+If $[v]' = x'$, then
+$v = \sum_jx'_je'_j = \sum_i\bigl(\sum_jP_{ij}x'_j\bigr)e_i$,
+so $[v] = Px'$. Similarly $[Av] = Q[Av]'$. Hence
+$Q[Av]' = [A][v] = [A]P[v]'$, that is, $[Av]' = Q^{-1}[A]P[v]'$ for every
+$v$.
+\end{proof}
+
+\begin{intuition}
+The basis vectors are transformed by $P$ and the components by $P^{-1}$.
+If the new basis vectors are a hundred times shorter (centimetres instead
+of metres), the new components are a hundred times larger. Components of
+vectors vary \emph{against} the basis: they are called
+\emph{contravariant}.
+\end{intuition}
+
+\section{Linear forms}\label{duality:sec:forms}
+
+\begin{definition}[Linear form, dual space]\label{duality:def:dual}
+A \emph{linear form} on $V$, or \emph{covector}, is a linear map
+$\phi:V\to\R$. The set of all linear forms on $V$, with pointwise addition
+and multiplication by numbers, is a vector space, the \emph{dual space}
+$V^*$ of $V$.
+\end{definition}
+
+\begin{example}[Linear forms in practice]\label{duality:ex:forms}
+\begin{enumerate}[nosep]
+  \item \emph{Coordinates.} In a basis $e$, the map that sends $v$ to its
+        $i$th component is a linear form.
+  \item \emph{A price list.} If $v\in\R^n$ lists the quantities of $n$
+        products in a shopping cart, the total price is $\phi(v) =
+        \sum_ip_iv_i$, where $p_i$ is the price of one unit of product $i$
+        (the checkout counter of Hubbard and Hubbard, Example~1.3.3). The
+        price list is a covector: it is of no use by itself, and turns a
+        cart into a number.
+  \item \emph{A neuron.} The pre-activation of a unit, $x\mapsto
+        \sum_iw_ix_i$, is a linear form on the input space. In a layer
+        $x\mapsto Wx$, each \emph{row} of $W$ is a covector on the
+        inputs, while each \emph{column} is a vector of the output space.
+  \item \emph{Evaluation and integration.} On the space of polynomials of
+        degree at most $d$, $p\mapsto p(t_0)$ and $p\mapsto\int_0^1p$ are
+        linear forms.
+  \item \emph{Affine forms.} If $\ell:\Aff\to\R$ is an affine map on an
+        affine space with direction $V$
+        (\cref{affine-spaces:def:map}), its linear part $\lin\ell$ is a
+        linear form on $V$: $\ell(a + v) = \ell(a) + \lin\ell(v)$. The
+        variation of an affine function is a covector. \Cref{ch:differential}
+        extends this to differentiable functions.
+\end{enumerate}
+\end{example}
+
+\paragraph{How to picture a covector.} A vector is pictured as an arrow.
+A covector is pictured by its level sets. By
+\cref{affine-spaces:prop:fibre}, the sets $\{\phi = c\}$ of a non-zero
+form are parallel affine hyperplanes with direction $\ker\phi$, and by
+linearity they are evenly spaced: the levels $0, 1, 2,\dots$ are met at
+equal intervals along any line that crosses them. The number $\phi(v)$ is
+the number of unit levels that the arrow $v$ crosses, counted with a sign
+and with fractions (\cref{duality:fig:levels}). No length and no angle are
+involved in this picture.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.05]
+  \begin{scope}
+    \clip (-0.35,-0.35) rectangle (3.45,3.35);
+    \foreach \k in {0,...,4}
+      \draw[bookaccent, thick] (\k+0.2,-0.4) -- (\k-1.7,3.4);
+  \end{scope}
+  \foreach \k in {0,...,3}
+    \node[bookaccent, font=\small, anchor=north] at (\k+0.32,-0.38)
+      {$\phi{=}\k$};
+  \draw[->, very thick, bookdef] (0,0) -- (1.5,2);
+  \node[bookdef, fill=white, inner sep=1.5pt] at (0.55,1.15) {$v$};
+  \fill (0,0) circle (1.5pt);
+  \node[anchor=north] at (1.6,-0.95) {$\phi(v) = 2.5$};
+  \begin{scope}[xshift=5.6cm]
+    \begin{scope}
+      \clip (-0.35,-0.35) rectangle (3.45,3.35);
+      \foreach \k in {0,...,9}
+        \draw[bookaccent, thick] (0.5*\k+0.2,-0.4) -- (0.5*\k-1.7,3.4);
+    \end{scope}
+    \foreach \k/\x in {0/0,2/1,4/2,6/3}
+      \node[bookaccent, font=\small, anchor=north] at (\x+0.36,-0.38)
+        {$2\phi{=}\k$};
+    \draw[->, very thick, bookdef] (0,0) -- (1.5,2);
+    \node[bookdef, fill=white, inner sep=1.5pt] at (0.55,1.15) {$v$};
+    \fill (0,0) circle (1.5pt);
+    \node[anchor=north] at (1.6,-0.95) {$(2\phi)(v) = 5$};
+  \end{scope}
+\end{tikzpicture}
+\caption{A covector is drawn as a stack of evenly spaced level sets; here
+$\phi(x, y) = x + \frac12y$ and $v = (1.5, 2)$. The value $\phi(v)$ counts
+the unit levels crossed by $v$. Doubling the covector halves the spacing: a
+\emph{larger} covector has \emph{tighter} level sets.}
+\label{duality:fig:levels}
+\end{figure}
+
+\begin{proposition}[A linear form is known by its kernel and one value]
+\label{duality:prop:kernel}
+Let $\phi\in V^*$ be non-zero.
+\begin{enumerate}[nosep]
+  \item $\ker\phi$ is a hyperplane of $V$: a subspace of dimension $n - 1$.
+  \item If $\psi\in V^*$ vanishes on $\ker\phi$, then $\psi = c\phi$ for
+        some $c\in\R$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) The image of $\phi$ is a non-zero subspace of $\R$, hence $\R$, and
+the rank--nullity theorem gives $\dim\ker\phi = n - 1$.
+
+(2) Choose $v_0$ with $\phi(v_0) = 1$. For every $v$, the vector
+$v - \phi(v)v_0$ is in $\ker\phi$, so $\psi$ vanishes on it:
+$\psi(v) = \phi(v)\psi(v_0)$. Take $c = \psi(v_0)$.
+\end{proof}
+
+So a covector is determined by a hyperplane through $0$ (its zero level)
+and by the choice of which parallel hyperplane is its level $1$.
+
+\subsection{The dual basis}
+
+\begin{definition}[Dual basis]\label{duality:def:dual-basis}
+Let $e = (e_1,\dots,e_n)$ be a basis of $V$. For $i = 1,\dots,n$, let
+$e_i^*\in V^*$ be the form that sends a vector to its $i$th component in
+the basis $e$:
+\[
+  e_i^*\Bigl(\sum_jx_je_j\Bigr) = x_i ,
+  \qquad\text{that is,}\qquad
+  e_i^*(e_j) = \delta_{ij} =
+  \begin{cases}1 & \text{if } i = j,\\ 0 & \text{if } i\neq j.\end{cases}
+\]
+The family $e^* = (e_1^*,\dots,e_n^*)$ is the \emph{dual basis} of $e$.
+\end{definition}
+
+\begin{theorem}[The dual basis is a basis]\label{duality:thm:dual-basis}
+The family $e^*$ is a basis of $V^*$, so $\dim V^* = \dim V$. For every
+$\phi\in V^*$ and $v\in V$,
+\[
+  \phi = \sum_i\phi(e_i)\,e_i^* ,
+  \qquad
+  v = \sum_ie_i^*(v)\,e_i ,
+  \qquad
+  \phi(v) = \sum_i\phi(e_i)\,e_i^*(v) .
+\]
+\end{theorem}
+
+\begin{proof}
+The second formula is the definition of $e_i^*$. Applying $\phi$ to it
+gives the third, by linearity. The third formula says that the forms
+$\phi$ and $\sum_i\phi(e_i)e_i^*$ take the same value on every $v$, which
+is the first formula; in particular the $e_i^*$ span $V^*$. They are
+linearly independent: if $\sum_ic_ie_i^* = 0$, applying both sides to
+$e_j$ gives $c_j = 0$.
+\end{proof}
+
+The \emph{components of a covector} $\phi$ in the dual basis are thus its
+values on the basis vectors, $\phi_i = \phi(e_i)$. They are arranged in a
+\emph{row}, written $[\phi] = [\phi_1\ \cdots\ \phi_n]$, so that the third
+formula becomes a matrix product:
+\[
+  \phi(v) = [\phi][v] \qquad\text{(row times column).}
+\]
+
+\begin{proposition}[Covectors under a change of basis]
+\label{duality:prop:covector-change}
+Let $P$ be the change of basis matrix from $e$ to $e'$. Then
+\[
+  [\phi]' = [\phi]P ,
+  \qquad
+  e'^{\,*}_i = \sum_j(P^{-1})_{ij}\,e_j^* ,
+\]
+and the number $[\phi]'[v]' = [\phi]PP^{-1}[v] = [\phi][v]$ does not
+depend on the basis.
+\end{proposition}
+
+\begin{proof}
+The new components of $\phi$ are its values on the new basis vectors:
+$\phi(e'_j) = \sum_iP_{ij}\phi(e_i) = ([\phi]P)_j$. For the dual basis,
+let $\theta_i = \sum_j(P^{-1})_{ij}e_j^*$. Then
+$\theta_i(e'_k) = \sum_j(P^{-1})_{ij}\sum_lP_{lk}e_j^*(e_l)
+= \sum_j(P^{-1})_{ij}P_{jk} = \delta_{ik}$, so $\theta_i = e'^{\,*}_i$.
+\end{proof}
+
+\begin{keyidea}
+Under a change of basis $P$, basis vectors and components of covectors are
+transformed by $P$; components of vectors and dual basis forms are
+transformed by $P^{-1}$. Components of covectors vary \emph{with} the
+basis (they are \emph{covariant}), components of vectors \emph{against} it.
+The pairing $\phi(v)$ is the same number in every basis.
+\end{keyidea}
+
+\begin{example}[Per-unit quantities are covectors]\label{duality:ex:units}
+Let $V$ be the one-dimensional space of displacements along a road, with
+basis $e = (\text{one metre})$, and let $e' = (\text{one centimetre})$, so
+$P = [\frac1{100}]$. A piece of cable of three metres is the vector
+$v = 3e = 300e'$: its component is multiplied by $100$. The price of cable
+is a covector $\phi$, with $\phi(e) = 2$ euros (per metre) and
+$\phi(e') = 0.02$ euros (per centimetre): its component is divided by
+$100$. The price of the piece, $\phi(v) = 2\times3 = 0.02\times300 = 6$
+euros, does not depend on the unit.
+\end{example}
+
+\begin{pitfall}[The form $e_1^*$ depends on the whole basis, not on $e_1$]
+The notation $e_1^*$ suggests an operation applied to the vector $e_1$.
+There is none. In $\R^2$, let $e = \bigl((1, 0), (0, 1)\bigr)$ and
+$e' = \bigl((1, 0), (1, 1)\bigr)$. The two bases have the same first
+vector, yet
+\[
+  e_1^*(x, y) = x , \qquad e'^{\,*}_1(x, y) = x - y ,
+\]
+because the first component of $(x, y) = (x - y)(1, 0) + y(1, 1)$ in the
+basis $e'$ is $x - y$. Conversely $e'_2\neq e_2$ but
+$e'^{\,*}_2 = e_2^*$. The level sets of $e_1^*$ are parallel to the
+\emph{other} basis vector (\cref{duality:fig:dual-basis}). A map
+$v\mapsto v^*$ from $V$ to $V^*$ does not exist until more structure is
+given; \cref{duality:sec:bidual} returns to this point.
+\end{pitfall}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \clip (-1.3,-0.8) rectangle (3.3,2.6);
+    \foreach \k in {-1,...,3}
+      \draw[bookaccent, thick] (\k,-1) -- (\k,3);
+  \end{scope}
+  \draw[->, very thick, bookdef] (0,0) -- (1,0)
+    node[midway, below] {$e_1$};
+  \draw[->, very thick, bookdef] (0,0) -- (0,1)
+    node[midway, left] {$e_2$};
+  \fill (0,0) circle (1.5pt);
+  \node[bookaccent, font=\small] at (2,2.85) {$e_1^* = 2$};
+  \node[anchor=north] at (1,-1.0) {basis $e$: levels of $e_1^*$};
+  \begin{scope}[xshift=6cm]
+    \begin{scope}
+      \clip (-1.3,-0.8) rectangle (3.3,2.6);
+      \foreach \k in {-4,...,4}
+        \draw[bookaccent, thick] (\k-2,-2) -- (\k+3,3);
+    \end{scope}
+    \draw[->, very thick, bookdef] (0,0) -- (1,0);
+    \node[bookdef, fill=white, inner sep=1.5pt] at (0.5,-0.3) {$e'_1$};
+    \draw[->, very thick, bookdef] (0,0) -- (1,1);
+    \node[bookdef, fill=white, inner sep=1.5pt] at (0.25,0.75) {$e'_2$};
+    \fill (0,0) circle (1.5pt);
+    \node[anchor=north] at (1,-1.0) {basis $e'$: levels of $e'^{\,*}_1$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Two bases with the same first vector have different first dual
+forms. The level sets of $e_1^*$ are parallel to $e_2$, and those of
+$e'^{\,*}_1$ are parallel to $e'_2$: the form that reads the first
+component is determined by the other basis vectors.}
+\label{duality:fig:dual-basis}
+\end{figure}
+
+\begin{proposition}[The dual basis in $\R^n$]\label{duality:prop:inverse}
+Let $e = (e_1,\dots,e_n)$ be a basis of $\R^n$ and $E$ the matrix whose
+columns are $e_1,\dots,e_n$. Then $e_i^*$ is the form
+$x\mapsto(\text{row }i\text{ of }E^{-1})\,x$.
+\end{proposition}
+
+\begin{proof}
+$E$ is the change of basis matrix from the standard basis to $e$. By
+\cref{duality:prop:vector-change}, the components of $x$ in the basis $e$
+are $E^{-1}x$, and $e_i^*(x)$ is the $i$th of them.
+\end{proof}
+
+\begin{mlthread}[Machine learning: rows, columns and \texttt{.grad}]
+A tensor library stores vectors and covectors in arrays of the same shape,
+and nothing records which is which. Two habits of this book follow from
+the present section.
+\begin{itemize}[nosep]
+  \item In a linear model $x\mapsto wx$, the data $x$ are vectors and the
+        weights $w$ are a covector on the input space. Rescaling a
+        feature (\cref{duality:ex:units}) multiplies the data and divides
+        the weight, and the prediction is unchanged.
+  \item For a scalar loss, the array \texttt{p.grad} produced by
+        \texttt{backward()} holds the components of a covector on
+        parameter space: the linear part of the loss, in the sense of
+        \cref{duality:ex:forms}(5). It has the shape of \texttt{p} because
+        $V^*$ has the dimension of $V$, not because it is an element
+        of $V$.
+\end{itemize}
+\end{mlthread}
+
+\section{The dual operator}\label{duality:sec:dual-operator}
+
+\begin{definition}[Dual operator]\label{duality:def:dual-operator}
+Let $A:V\to W$ be linear. The \emph{dual operator} of $A$ is the map
+\[
+  \dual A:W^*\to V^* ,\qquad \dual A(\psi) = \psi\circ A .
+\]
+In other words, $\bigl(\dual A\psi\bigr)(v) = \psi(Av)$ for all
+$\psi\in W^*$ and $v\in V$. The form $\dual A\psi$ is also called the
+\emph{pull-back} of $\psi$ by $A$.
+\end{definition}
+
+The map $\psi\circ A$ is linear as a composition of linear maps, so it is
+an element of $V^*$, and $\psi\mapsto\psi\circ A$ is linear in $\psi$. The
+definition uses nothing but composition:
+\begin{center}
+\begin{tikzcd}[column sep=large]
+V \arrow[r, "A"] \arrow[rr, bend right=25, "\dual A\psi\,=\,\psi\circ A"']
+  & W \arrow[r, "\psi"] & \R
+\end{tikzcd}
+\qquad\qquad
+\begin{tikzcd}[column sep=large]
+V^* & W^* \arrow[l, "\dual A"']
+\end{tikzcd}
+\end{center}
+
+\begin{intuition}
+The map $A$ pushes vectors forward, from $V$ to $W$. It cannot push
+covectors forward, but it pulls them back, from $W^*$ to $V^*$: to measure
+a vector $v$ of $V$ with $\dual A\psi$, send $v$ to $W$ with $A$ and
+measure the result with $\psi$. Vectors travel with $A$ and covectors
+travel against it.
+\end{intuition}
+
+\begin{proposition}[Rules for the dual operator]\label{duality:prop:rules}
+For linear maps $A, A':V\to W$ and $B:W\to X$, and $c\in\R$:
+\begin{enumerate}[nosep]
+  \item $\dual{(A + A')} = \dual A + \dual{A'}$ and
+        $\dual{(cA)} = c\,\dual A$;
+  \item $\dual{(BA)} = \dual A\,\dual B$ (the order is reversed);
+  \item $\dual{(\id_V)} = \id_{V^*}$, and if $A$ is invertible then so is
+        $\dual A$, with $(\dual A)^{-1} = \dual{(A^{-1})}$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) $\psi\circ(A + A') = \psi\circ A + \psi\circ A'$ and
+$\psi\circ(cA) = c(\psi\circ A)$, because $\psi$ is linear.
+(2) For $\chi\in X^*$, $\dual{(BA)}\chi = \chi\circ B\circ A
+= \dual A(\chi\circ B) = \dual A\,\dual B\chi$.
+(3) $\psi\circ\id_V = \psi$. If $A$ is invertible, (2) gives
+$\dual A\,\dual{(A^{-1})} = \dual{(A^{-1}A)} = \id_{V^*}$ and
+$\dual{(A^{-1})}\,\dual A = \dual{(AA^{-1})} = \id_{W^*}$.
+\end{proof}
+
+\begin{theorem}[The matrix of the dual operator is the transpose]
+\label{duality:thm:transpose}
+Let $[A]$ be the matrix of $A:V\to W$ in bases $e$ of $V$ and $f$ of $W$.
+\begin{enumerate}[nosep]
+  \item On rows of components, the dual operator is multiplication by
+        $[A]$ on the right:
+        $[\dual A\psi] = [\psi][A]$ for every $\psi\in W^*$.
+  \item The matrix of $\dual A$ in the dual bases $f^*$ of $W^*$ and
+        $e^*$ of $V^*$ is the transpose $[A]^\top$.
+\end{enumerate}
+This holds over any field of scalars; in the complex case there is no
+conjugation.
+\end{theorem}
+
+\begin{proof}
+(1) The $j$th component of $\dual A\psi$ is its value on $e_j$:
+\[
+  \bigl(\dual A\psi\bigr)(e_j) = \psi(Ae_j)
+  = \psi\Bigl(\sum_iA_{ij}f_i\Bigr) = \sum_i\psi_iA_{ij}
+  = \bigl([\psi][A]\bigr)_j .
+\]
+(2) The matrix of a linear map has for $k$th column the components of the
+image of the $k$th basis vector. Here the $k$th basis vector is $f_k^*$,
+whose row of components has a $1$ in position $k$, and by (1) the
+components of $\dual Af_k^*$ are $A_{k1},\dots,A_{kn}$: the $k$th
+\emph{row} of $[A]$. So the $k$th column of the matrix of $\dual A$ is the
+$k$th row of $[A]$. The proof uses only the linearity of $\psi$.
+\end{proof}
+
+\begin{intuition}
+A matrix can be read in two ways. Its columns are the images of the basis
+vectors of $V$: this is $A$, pushing vectors forward. Its rows are the
+pull-backs of the coordinate forms of $W$: row $k$ is
+$[\dual Af_k^*]$, the form ``$k$th output component, as a function of the
+input''. The same array of numbers represents both $A$ and $\dual A$;
+what changes is the side on which it multiplies.
+\end{intuition}
+
+\subsection{A warning about notation}\label{duality:sec:notation}
+
+The dual operator is one of the worst places in mathematics for notation.
+There is no agreement on its symbol or even on its name, and the most
+common symbol, a star, is also the universal symbol for a \emph{different}
+operator, the adjoint of \cref{ch:inner-products}, which exists only when
+inner products are given and maps $W$ to $V$ instead of $W^*$ to $V^*$.
+
+\begin{pitfall}[The same star for two operators]
+Loomis and Sternberg call $\psi\mapsto\psi\circ T$ ``the adjoint of $T$''
+and write it $T^*$, an element of $\mathrm{Hom}(W^*, V^*)$ (\S2.3,
+pp.~84--85); its matrix is the transpose, which they write $\mathbf t^*$
+(\S2.4, Theorem~4.3). Later, on a Hilbert space with its isomorphism
+$\theta:V\to V^*$, they form $\theta^{-1}\circ T^*\circ\theta$, an element
+of $\mathrm{Hom}(V)$, and state that in Hilbert space theory ``it is
+\emph{this} mapping that is called the adjoint of $T$'' and designated
+$T^*$ (\S5.4, p.~262). From that page on, the one symbol $T^*$ denotes the
+second operator. Both usages are standard and the book is careful, but a
+reader who opens it at Chapter~5 and one who opens it at Chapter~2 read
+the same symbol with two meanings.
+\end{pitfall}
+
+\Cref{duality:tab:notation} translates the conventions of some references
+into the one used here. This book writes $\dual A$ for the dual operator,
+after the transpose of its matrix, and keeps $\adj A$ for the adjoint.
+When a result is taken from another source, it is restated in this
+notation.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{4.6cm}p{1.4cm}p{4.2cm}p{3.2cm}@{}}
+\toprule
+Source & Dual space & Dual operator $W^*\to V^*$ & Adjoint $W\to V$ \\
+\midrule
+This book & $V^*$ & $\dual A$, ``dual operator'' & $\adj A$ \\
+Loomis and Sternberg, \emph{Advanced Calculus} & $V^*$
+  & $T^*$, ``adjoint'' (\S2.3); matrix $\mathbf t^*$ & $T^*$ (\S5.4) \\
+Hubbard and Hubbard, \emph{Vector Calculus, \dots} & not used
+  & $A^\top$ for matrices (\S1.2); $T^*$ for the pull-back of forms
+    (\S6.9) & not used \\
+Axler, \emph{Linear Algebra Done Right} & $V'$ & $T'$, ``dual map''
+  & $T^*$ \\
+Kreyszig, \emph{Introductory Functional Analysis} & $X'$
+  & $T^\times$, ``adjoint operator'' (\S4.5)
+  & $T^*$, ``Hilbert-adjoint'' (\S3.9) \\
+van Neerven, \emph{Functional Analysis} & $X^*$ & $T^*$, ``adjoint''
+  & $T^*$ \\
+French textbooks & $E^*$ & ${}^t\!u$, ``transpos\'ee'' & $u^*$ \\
+\bottomrule
+\end{tabular}
+\caption{Notation for the dual operator and for the adjoint in some
+references. A star in the third column and a star in the fourth are
+different operators.}
+\label{duality:tab:notation}
+\end{table}
+
+\begin{pitfall}[Two things called ``taking the transpose'']
+The word \emph{transpose} hides a second trap.
+\begin{itemize}[nosep]
+  \item Transposing the matrix of a map $A$ gives the matrix of the dual
+        operator $\dual A$ (\cref{duality:thm:transpose}). This is
+        harmless: it involves no choice beyond the bases.
+  \item Transposing a \emph{row} into a \emph{column} claims to turn a
+        covector into a vector. This is a map $V^*\to V$, and no such map
+        exists without extra structure (\cref{duality:sec:bidual}).
+        Hubbard and Hubbard, who define the gradient as the transpose of
+        the row matrix of the derivative, warn that this transpose is
+        ``not as innocent as it looks'' and is defined geometrically only
+        when an inner product is given (\S1.7, p.~126).
+\end{itemize}
+In this chapter, transposes of matrices are everywhere and transposes of
+rows are nowhere, except in \cref{duality:sec:basis-test}, whose subject is
+what goes wrong with them.
+\end{pitfall}
+
+\begin{mlthread}[Machine learning: the backward pass of a linear layer]
+Let $z = Wx$ be a linear layer, with $x\in\R^n$ and $z\in\R^m$. Suppose
+that what happens after the layer is summarized by a covector $\delta$ on
+the output space: $\delta(\Delta z)$ is the first-order change of the loss
+when the output moves by $\Delta z$. Then the change of the loss when the
+\emph{input} moves by $\Delta x$ is
+$\delta(W\Delta x) = (\dual W\delta)(\Delta x)$. The sensitivity with
+respect to the input is the pull-back $\dual W\delta$, with components
+$[\delta][W]$.
+\begin{itemize}[nosep]
+  \item This is what automatic differentiation calls a
+        \emph{vector--Jacobian product}: \texttt{torch.autograd.grad(z, x,
+        grad\_outputs=delta)} and \texttt{torch.func.vjp} return
+        $[\delta][W]$. Despite the name, the ``vector'' is a covector.
+  \item The rule $\dual{(BA)} = \dual A\,\dual B$ is the reason why the
+        backward pass visits the layers in reverse order.
+  \item No inner product is involved. The transposes of backpropagation
+        are dual operators, not adjoints
         (\cref{ch:chain-rule-autodiff}).
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\section{What is natural and what is chosen}\label{duality:sec:bidual}
+
+The spaces $V$, $V^*$ and $V^{**} = (V^*)^*$ all have dimension $n$, so any
+two of them are isomorphic. The interesting question is whether an
+isomorphism can be written down without choosing anything.
+
+\subsection{The bidual}
+
+A vector $v\in V$ defines a linear form on $V^*$: evaluate at $v$.
+
+\begin{theorem}[$V$ and $V^{**}$ are naturally isomorphic]
+\label{duality:thm:bidual}
+For $v\in V$ let $\iota(v)\in V^{**}$ be the form
+$\iota(v)(\phi) = \phi(v)$. The map $\iota:V\to V^{**}$ is a linear
+isomorphism, and for every basis $e$ of $V$ it sends $e$ to the dual basis
+of $e^*$.
+\end{theorem}
+
+\begin{proof}
+$\iota(v)$ is linear in $\phi$ by the definition of the operations of
+$V^*$, and $\iota$ is linear in $v$ because each $\phi$ is linear. Let $e$
+be a basis of $V$. Then $\iota(e_i)(e_j^*) = e_j^*(e_i) = \delta_{ij}$,
+which says that $\bigl(\iota(e_1),\dots,\iota(e_n)\bigr)$ is the dual
+basis of $e^*$. A linear map that sends a basis to a basis is an
+isomorphism.
+\end{proof}
+
+The map $\iota$ was defined without any basis, and bases appeared only in
+the proof. It is therefore legitimate to \emph{identify} $V^{**}$ with $V$
+and to write $v(\phi) = \phi(v)$. Vectors are the covectors of covectors.
+
+\begin{proposition}[The dual of the dual operator]
+\label{duality:prop:double-dual}
+For $A:V\to W$, $\dual{(\dual A)}\circ\iota_V = \iota_W\circ A$. With the
+identifications $V^{**} = V$ and $W^{**} = W$, $\dual{(\dual A)} = A$.
+\end{proposition}
+
+\begin{proof}
+For $v\in V$ and $\psi\in W^*$,
+$\bigl(\dual{(\dual A)}\iota_V(v)\bigr)(\psi)
+= \iota_V(v)\bigl(\dual A\psi\bigr) = (\dual A\psi)(v) = \psi(Av)
+= \iota_W(Av)(\psi)$.
+\end{proof}
+
+\subsection{$V$ and $V^*$: three kinds of square arrays}
+
+There is no counterpart of $\iota$ between $V$ and $V^*$. Every basis
+gives an isomorphism, and different bases give different ones.
+
+\begin{definition}[Bilinear form, Gram matrix]\label{duality:def:bilinear}
+A \emph{bilinear form} on $V$ is a map $b:V\times V\to\R$ that is linear
+in each argument. Its \emph{Gram matrix} in a basis $e$ is
+$G_{ij} = b(e_i, e_j)$, so that $b(u, v) = [u]^\top G[v]$.
+\end{definition}
+
+A bilinear form is the same thing as a linear map $\Phi:V\to V^*$: given
+$b$, put $\Phi(u) = b(u,\cdot)$; given $\Phi$, put
+$b(u, v) = \Phi(u)(v)$. The row of components of $\Phi(u)$ is
+$[u]^\top G$. Likewise a linear map $\Psi:V^*\to V$ has an array $B$ with
+$[\Psi\phi] = B[\phi]^\top$.
+
+\begin{proposition}[Three transformation rules]\label{duality:prop:three}
+Let $P$ be the change of basis matrix from $e$ to $e'$. An $n\times n$
+array of numbers attached to the basis $e$ becomes, in the basis $e'$:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+if it represents & it becomes & invariants \\
+\midrule
+an operator $A:V\to V$ & $P^{-1}AP$ & eigenvalues, trace, determinant \\
+a bilinear form, or a map $\Phi:V\to V^*$ & $P^\top GP$
+  & symmetry, rank, signs \\
+a map $\Psi:V^*\to V$ & $P^{-1}BP^{-\top}$ & symmetry, rank, signs \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{proposition}
+
+\begin{proof}
+The first rule is \cref{duality:prop:vector-change} with $Q = P$. For the
+second,
+\[
+  b(e'_i, e'_j) = \sum_{k,l}P_{ki}P_{lj}\,b(e_k, e_l) = (P^\top GP)_{ij} .
+\]
+For the third, by
+\cref{duality:prop:vector-change,duality:prop:covector-change},
+\[
+  [\Psi\phi]' = P^{-1}[\Psi\phi] = P^{-1}B[\phi]^\top
+  = P^{-1}BP^{-\top}\bigl([\phi]P\bigr)^\top
+  = P^{-1}BP^{-\top}[\phi]'^\top .
+\]
+The invariants of an operator are those of the similarity class of its
+matrix. For the other two rules, $P^\top GP$ is symmetric if and only if
+$G$ is, and has the rank of $G$ because $P$ is invertible; the invariance
+of the numbers of positive and negative eigenvalues of a symmetric $G$ is
+Sylvester's law of inertia, proved in \cref{ch:spectral-svd}.
+\end{proof}
+
+\begin{keyidea}
+A square array of numbers does not say what it is. The Jacobian of an
+update map is an operator, a Hessian is a bilinear form, and a
+preconditioner is a map $V^*\to V$. They are stored alike and transform
+differently. In particular the \emph{eigenvalues} of a bilinear form have
+no meaning: under $G\mapsto P^\top GP$ only their signs survive
+(\cref{duality:exr:9}).
+\end{keyidea}
+
+\begin{proposition}[The identification given by a basis]
+\label{duality:prop:identification}
+For a basis $e$ of $V$, let $\Phi_e:V\to V^*$ be the isomorphism with
+$\Phi_e(e_i) = e_i^*$, and $b_e(u, v) = \Phi_e(u)(v) = \sum_iu_iv_i$ the
+corresponding bilinear form, where $u_i, v_i$ are the components in $e$.
+Let $P$ be the change of basis matrix from $e$ to $e'$. Then
+\[
+  \Phi_{e'} = \Phi_e \iff P^\top P = I .
+\]
+\end{proposition}
+
+\begin{proof}
+The Gram matrix of $b_e$ in the basis $e$ is $I$, so in the basis $e'$ it
+is $P^\top IP = P^\top P$ by \cref{duality:prop:three}. The Gram matrix of
+$b_{e'}$ in the basis $e'$ is $I$. Two bilinear forms are equal if and
+only if their Gram matrices in one basis are.
+\end{proof}
+
+So ``transpose the row into a column'', which is $\Phi_e^{-1}$ written in
+components, is a different map for each basis, except among bases related
+by matrices with $P^\top P = I$. Choosing one of these maps once and for
+all is choosing a symmetric bilinear form $b$; requiring $b(v, v) > 0$ for
+$v\neq0$ makes it an inner product. That choice, and what it buys, is the
+subject of \cref{ch:inner-products}.
+
+\section{Annihilators and the four subspaces}\label{duality:sec:annihilators}
+
+A subspace of $V$ can be described by vectors that span it, or by the
+linear equations that it satisfies. The equations live in $V^*$.
+
+\begin{definition}[Annihilator]\label{duality:def:annihilator}
+The \emph{annihilator} of a subspace $U\subset V$ is
+\[
+  U^\circ = \{\phi\in V^* : \phi(u) = 0\text{ for all }u\in U\} .
+\]
+\end{definition}
+
+\begin{proposition}[Dimension of the annihilator]
+\label{duality:prop:annihilator}
+$U^\circ$ is a subspace of $V^*$ of dimension $n - \dim U$, and
+$U = \{v\in V : \phi(v) = 0\text{ for all }\phi\in U^\circ\}$. With
+$V^{**} = V$, this reads $(U^\circ)^\circ = U$.
+\end{proposition}
+
+\begin{proof}
+$U^\circ$ is a subspace because the conditions $\phi(u) = 0$ are linear in
+$\phi$. Let $(e_1,\dots,e_k)$ be a basis of $U$, completed into a basis
+$(e_1,\dots,e_n)$ of $V$. A form $\phi = \sum_i\phi_ie_i^*$ vanishes on
+$U$ if and only if $\phi_i = \phi(e_i) = 0$ for $i\leq k$. So
+$U^\circ = \operatorname{span}(e_{k+1}^*,\dots,e_n^*)$, of dimension
+$n - k$. Every $v\in U$ is killed by $U^\circ$. Conversely, if
+$v = \sum_ix_ie_i$ is killed by $e_{k+1}^*,\dots,e_n^*$, then
+$x_i = e_i^*(v) = 0$ for $i > k$, so $v\in U$.
+\end{proof}
+
+\begin{theorem}[The four subspaces]\label{duality:thm:four}
+For a linear map $A:V\to W$,
+\[
+  \ker\dual A = (\im A)^\circ ,
+  \qquad
+  \im\dual A = (\ker A)^\circ .
+\]
+\end{theorem}
+
+\begin{proof}
+A form $\psi\in W^*$ is in $\ker\dual A$ if and only if $\psi(Av) = 0$ for
+all $v$, that is, $\psi$ vanishes on $\im A$. This is the first equality.
+For the second, if $v\in\ker A$ then $(\dual A\psi)(v) = \psi(Av) = 0$, so
+$\im\dual A\subset(\ker A)^\circ$. The dimensions agree: by the
+rank--nullity theorem for $\dual A$, the first equality,
+\cref{duality:prop:annihilator}, and the rank--nullity theorem for $A$,
+\[
+  \dim\im\dual A = m - \dim(\im A)^\circ = \dim\im A
+  = n - \dim\ker A = \dim(\ker A)^\circ .
+\qedhere
+\]
+\end{proof}
+
+\begin{corollary}[Rank, injectivity, solvability]
+\label{duality:cor:rank}
+\begin{enumerate}[nosep]
+  \item $A$ and $\dual A$ have the same rank. In terms of matrices, the
+        rows and the columns of a matrix span spaces of the same
+        dimension.
+  \item $A$ is surjective if and only if $\dual A$ is injective, and $A$
+        is injective if and only if $\dual A$ is surjective.
+  \item \emph{(Solvability.)} The equation $Av = w$ has a solution if and
+        only if $\psi(w) = 0$ for every $\psi\in\ker\dual A$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) was obtained in the proof of the theorem, and the statement about
+matrices follows from \cref{duality:thm:transpose}: the columns of
+$[A]^\top$ are the rows of $[A]$. (2) $A$ is surjective iff
+$(\im A)^\circ = \{0\}$ iff $\ker\dual A = \{0\}$; $A$ is injective iff
+$(\ker A)^\circ = V^*$ iff $\im\dual A = V^*$. (3) By
+\cref{duality:prop:annihilator} applied to $U = \im A$, $w\in\im A$ if and
+only if every form of $(\im A)^\circ = \ker\dual A$ vanishes on $w$.
+\end{proof}
+
+\begin{intuition}
+The equality of the row rank and the column rank is often presented as a
+surprise about arrays of numbers. Here it is a statement about a map and
+its dual: $A$ loses $\dim\ker A$ dimensions of vectors, and the covectors
+that can be pulled back are exactly those that vanish on what $A$ loses.
+No inner product and no orthogonality were used: the ``orthogonal
+complement'' of the usual statement is an annihilator, a subspace of the
+dual.
+\end{intuition}
+
+\begin{mlthread}[Machine learning: what a layer cannot see]
+Let $L(\theta) = h(X\theta)$ be a loss that depends on the parameters
+$\theta\in\R^p$ only through the predictions $X\theta$, where $X$ is the
+$n\times p$ data matrix of a linear model. Then $L$ is constant along
+$\ker X$: $L(\theta + v) = L(\theta)$ whenever $Xv = 0$. Any covector that
+describes the variation of $L$ at $\theta$ must vanish on $\ker X$, that
+is, belong to $(\ker X)^\circ = \im\dual X$: its row of components is a
+combination of the rows of $X$, the data points. When $p > n$ (more
+parameters than data), $\ker X$ has dimension at least $p - n$, and the
+training signal lives in a subspace of $V^*$ of dimension at most $n$. The
+same holds for the input of any layer $z = Wx$: the pulled-back covector
+$\dual W\delta$ vanishes on $\ker W$, the directions that the layer
+ignores.
+\end{mlthread}
+
+\section{The basis test}\label{duality:sec:basis-test}
+
+\Cref{ch:affine-spaces} tested formulas against a change of origin. The
+second natural change of frame is a change of basis.
+
+\begin{definition}[Basis test]\label{duality:def:basis-test}
+A formula computed on components \emph{passes the basis test} if its
+result does not depend on the basis: when the basis changes by $P$, the
+result is transformed by $P^{-1}$ if it is meant to be a vector, by $P$
+(on the right of its row) if it is meant to be a covector, and not at all
+if it is meant to be a number.
+\end{definition}
+
+Sums of vectors, sums of covectors, the pairing $[\phi][v]$ and the
+products $[A][v]$ and $[\psi][A]$ pass the test, by
+\cref{duality:prop:vector-change,duality:prop:covector-change}. The
+formulas of interest are those that mix the two kinds of arrays.
+
+\paragraph{Gradient descent on raw partial derivatives.} Let $x$ be the
+column of coordinates of a parameter and let the loss have the linear part
+$\phi$ at that point, with row of components $[\phi]$ (for an affine loss
+$L(x) = [\phi]x + c$ these are exactly the partial derivatives
+$\partial L/\partial x_i$; \cref{ch:differential} shows that the same
+holds to first order for any differentiable loss). The array stored by the
+library is the column $\gamma = [\phi]^\top$, and the update is
+\begin{equation}\label{duality:eq:gd}
+  x_+ = x - \eta\,\gamma .
+\end{equation}
+In another basis, $x' = P^{-1}x$ and
+$\gamma' = [\phi]'^\top = \bigl([\phi]P\bigr)^\top = P^\top\gamma$.
+
+\begin{proposition}[Gradient descent in another basis]
+\label{duality:prop:gd}
+The update \eqref{duality:eq:gd} computed in the basis $e'$,
+$x'_+ = x' - \eta\gamma'$, is in the coordinates of the basis $e$
+\[
+  x_+ = x - \eta\,PP^\top\gamma .
+\]
+It coincides with the update computed in $e$ for every $\gamma$ if and
+only if $PP^\top = I$.
+\end{proposition}
+
+\begin{proof}
+$x_+ = Px'_+ = P\bigl(P^{-1}x - \eta P^\top\gamma\bigr)
+= x - \eta PP^\top\gamma$. The two updates agree for all $\gamma$ iff
+$PP^\top\gamma = \gamma$ for all $\gamma$.
+\end{proof}
+
+So \eqref{duality:eq:gd} fails the basis test. The reason is a type error:
+it adds the components of a covector to the components of a vector, which
+requires a map $V^*\to V$. The formula silently uses $\Phi_e^{-1}$, the
+identification attached to the basis in which the computation is done
+(\cref{duality:prop:identification}), and $PP^\top$ is the array of
+$\Phi_{e'}^{-1}$ seen from the basis $e$. Rotations and reflections
+($P^\top P = I$) do not change this identification; every other change of
+basis does.
+
+\begin{example}[Units of a feature]\label{duality:ex:feature}
+A linear model has a weight $w_1$ on a feature measured in metres. If the
+feature is re-expressed in centimetres, the data are multiplied by $100$
+and, for the predictions to stay the same, the weight is divided by $100$
+(\cref{duality:ex:units}). In parameter space this is a change of basis
+with $P^{-1} = \frac1{100}$ along that axis, so $P = 100$ and
+$PP^\top = 10^4$. By \cref{duality:prop:gd}, the same learning rate now
+moves the model $10\,000$ times further along that weight. Nothing has
+changed in the problem: the same data, the same model, the same loss.
+This is the reason why features are standardized before gradient descent,
+and why methods that pass the basis test, such as Newton's method
+(\cref{ch:gradient-hessian}), do not need it.
+\end{example}
+
+\paragraph{Coordinatewise methods.} Many optimizers transform the array
+$\gamma$ one coordinate at a time. The simplest is \emph{sign descent},
+\begin{equation}\label{duality:eq:sign}
+  x_+ = x - \eta\,\mathrm{sign}(\gamma)
+  \qquad\text{(coordinatewise, with } \mathrm{sign}(0) = 0\text{)},
+\end{equation}
+which is also the first step of Adam when its $\varepsilon$ is zero. In
+the basis $e'$ the same recipe gives, back in the coordinates of $e$,
+\[
+  x_+ = x - \eta\,P\,\mathrm{sign}(P^\top\gamma) .
+\]
+
+\begin{example}[Sign descent depends on the basis, even for a rotation]
+\label{duality:ex:sign}
+Take $\gamma = (2, 1)$. In the basis $e$, the step is $-\eta(1, 1)$.
+\begin{itemize}[nosep]
+  \item \emph{Rotation by $45^\circ$}:
+        $P = \frac1{\sqrt2}\begin{bsmallmatrix}1 & -1\\1 & 1
+        \end{bsmallmatrix}$. Then
+        $P^\top\gamma = \frac1{\sqrt2}(3, -1)$, its sign is $(1, -1)$, and
+        the step is $-\eta P(1, -1) = -\eta(\sqrt2, 0)$: another length
+        and another direction, although $P^\top P = I$.
+  \item \emph{Change of unit}: $P = \begin{bsmallmatrix}2 & 0\\0 & 1
+        \end{bsmallmatrix}$. Then $P^\top\gamma = (4, 1)$, its sign is
+        $(1, 1)$, and the step is $-\eta P(1, 1) = -\eta(2, 1)$.
+\end{itemize}
+For comparison, \eqref{duality:eq:gd} gives $-\eta(2, 1)$ in $e$, the same
+step for the rotation, and $-\eta PP^\top\gamma = -\eta(8, 1)$ for the
+change of unit (\cref{duality:fig:basis-test}).
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.5]
+  \begin{scope}
+    \fill (0,0) circle (1.5pt) node[above right] {$x$};
+    \draw[->, very thick, bookaccent] (0,0) -- (-0.5,-0.25);
+    \node[bookaccent, anchor=north west, font=\small] at (-0.55,-0.3)
+      {$e$, and $e$ rotated};
+    \draw[->, very thick, bookpitfall] (0,0) -- (-2,-0.25);
+    \node[bookpitfall, anchor=south, font=\small] at (-1.6,-0.1)
+      {unit of $e_1$ doubled};
+    \node[anchor=north] at (-0.9,-1.0)
+      {gradient descent, $\eta = 0.25$};
+  \end{scope}
+  \begin{scope}[xshift=4.6cm]
+    \fill (0,0) circle (1.5pt) node[above right] {$x$};
+    \draw[->, very thick, bookaccent] (0,0) -- (-0.5,-0.5);
+    \node[bookaccent, anchor=north, font=\small] at (-0.35,-0.52) {$e$};
+    \draw[->, very thick, bookdef] (0,0) -- (-0.707,0);
+    \node[bookdef, anchor=south, font=\small] at (-0.75,0.03)
+      {$e$ rotated};
+    \draw[->, very thick, bookpitfall] (0,0) -- (-1,-0.5);
+    \node[bookpitfall, anchor=north east, font=\small] at (-0.95,-0.5)
+      {unit of $e_1$ doubled};
+    \node[anchor=north] at (-0.6,-1.0) {sign descent, $\eta = 0.5$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The step taken from the same point, for the same loss with
+$\gamma = (2, 1)$, when the computation is done in three different bases
+and the result is drawn in the first one. Gradient descent on raw partial
+derivatives is unchanged by the rotation and changed by the change of
+unit. Sign descent is changed by both.}
+\label{duality:fig:basis-test}
+\end{figure}
+
+\begin{proposition}[What sign descent is invariant under]
+\label{duality:prop:sign}
+If $P$ is a signed permutation matrix (one non-zero entry, equal to $\pm1$,
+in each row and each column), then
+$P\,\mathrm{sign}(P^\top\gamma) = \mathrm{sign}(\gamma)$ for all $\gamma$:
+sign descent is unchanged by relabelling the coordinates and reversing
+some of them.
+\end{proposition}
+
+\begin{proof}
+The entries of $P^\top\gamma$ are those of $\gamma$, permuted and
+multiplied by $\pm1$, and $\mathrm{sign}$ commutes with both operations:
+$\mathrm{sign}(P^\top\gamma) = P^\top\mathrm{sign}(\gamma)$. Moreover
+$PP^\top = I$ for a signed permutation matrix.
+\end{proof}
+
+\Cref{duality:ex:sign} shows that the proposition does not extend to
+rotations or to changes of unit. The step of sign descent is
+$-\eta\sum_i\mathrm{sign}\bigl(\phi(e_i)\bigr)e_i$: one unit along each
+basis vector, in the direction that decreases the loss. It is built from
+the basis vectors themselves, and it is neither the component array of a
+vector nor that of a covector. The same is true of Adam, RMSProp and the
+other methods that divide or rescale coordinate by coordinate. These
+methods are popular because the coordinates of a network's parameters are
+not arbitrary (each one is the weight of a connection), but their
+behaviour is tied to that particular basis.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Update & Origin test & Basis test \\
+\midrule
+$x - \eta\gamma$ (gradient descent on partial derivatives)
+  & passes & only if $P^\top P = I$ \\
+the same with weight decay & fails & only if $P^\top P = I$ \\
+sign descent, Adam & passes & fails, even for rotations \\
+AdamW & fails & fails, even for rotations \\
+\bottomrule
+\end{tabular}
+\caption{The two tests on common update rules. The entries for gradient
+descent and sign descent are proved in this chapter and the previous one;
+those for Adam and AdamW are checked numerically in the notebook.}
+\label{duality:tab:tests}
+\end{table}
+
+\begin{pitfall}[Sharp and flat minima]
+At a minimum, the second-order behaviour of a loss is a bilinear form; in
+coordinates, $L(x)\approx\frac12x^\top Hx$. Under a change of basis its
+array becomes $P^\top HP$ (\cref{duality:prop:three}), and its eigenvalues
+change. With $H = I$ and $P = \begin{bsmallmatrix}0.1 & 0\\0 & 1
+\end{bsmallmatrix}$, the same minimum has the array
+$\begin{bsmallmatrix}0.01 & 0\\0 & 1\end{bsmallmatrix}$ and looks a hundred
+times flatter in one direction. Measures of the ``sharpness'' of a minimum
+based on the eigenvalues of the Hessian array therefore depend on the
+parametrization (Dinh, Pascanu, Bengio and Bengio, 2017). They acquire a
+meaning once a way of measuring lengths in parameter space is fixed, which
+is again the inner product of \cref{ch:inner-products}.
+\end{pitfall}
+
+\section{Where the chapter leads}\label{duality:sec:outlook}
+
+The chapter ends on a gap. The variation of a loss is a covector; an
+update must be a vector; and no natural map leads from $V^*$ to $V$.
+\Cref{ch:inner-products} fills the gap with an inner product, whose Riesz
+map $R_V:V\to V^*$ is a chosen identification, and defines the adjoint
+$\adj A = R_V^{-1}\circ\dual A\circ R_W$. The dual operator of this
+chapter then appears in three places: in the chain rule and
+backpropagation (\cref{ch:chain-rule-autodiff}), in the pull-back of
+differential forms (\cref{ch:differential-forms}), and, in infinite
+dimension, in the duality of function spaces (\cref{ch:norms-banach}).
+
+\paragraph{Sources.} The dual space, annihilators and the dual operator
+are treated by Loomis and Sternberg in \S2.3 of \emph{Advanced Calculus},
+whose Theorems~3.3 to 3.5 correspond to
+\cref{duality:prop:annihilator,duality:prop:rules,duality:thm:four} here,
+and the transpose in their \S2.4 (Theorem~4.3 corresponds to
+\cref{duality:thm:transpose}); the notation is compared in
+\cref{duality:sec:notation}. Hubbard and Hubbard do not introduce the dual
+space; their remark on the gradient (\S1.7) and their pull-back of forms
+by a linear transformation (Definition~6.9.1) are the two places where the
+ideas of this chapter surface. The other books of
+\cref{duality:tab:notation} are S.~Axler, \emph{Linear Algebra Done
+Right}, Springer; E.~Kreyszig, \emph{Introductory Functional Analysis with
+Applications}, Wiley, 1978; J.~van Neerven, \emph{Functional Analysis},
+Cambridge University Press. The reference on sharp minima is
+L.~Dinh, R.~Pascanu, S.~Bengio and Y.~Bengio, Sharp minima can generalize
+for deep nets, ICML, 2017.
+
+\paragraph{Notebook.} \notebook{02-duality.ipynb} checks the numerical
+claims of this chapter with PyTorch.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A covector is a linear form on $V$. It is pictured by its evenly
+        spaced level sets, and $\phi(v)$ counts the levels crossed by $v$.
+        The dual space $V^*$ has the dimension of $V$.
+  \item In a basis, vectors are columns and covectors are rows. Under a
+        change of basis $P$, columns are multiplied by $P^{-1}$ and rows by
+        $P$; the pairing $[\phi][v]$ is invariant.
+  \item The dual operator $\dual A:W^*\to V^*$, $\psi\mapsto\psi\circ A$,
+        pulls covectors back. It needs no inner product, reverses
+        compositions, and its matrix in the dual bases is the transpose.
+  \item Many books write the dual operator $A^*$ and call it the adjoint.
+        Here $\dual A$ is the dual operator and $\adj A$ is reserved for
+        the adjoint, which needs inner products.
+  \item $V^{**}$ is naturally $V$. An isomorphism $V\to V^*$ is a choice,
+        equivalent to a bilinear form; the one attached to a basis changes
+        with the basis unless $P^\top P = I$.
+  \item Square arrays represent three different kinds of objects, with
+        rules $P^{-1}AP$, $P^\top GP$ and $P^{-1}BP^{-\top}$.
+  \item $\ker\dual A = (\im A)^\circ$ and $\im\dual A = (\ker A)^\circ$;
+        hence $A$ and $\dual A$ have the same rank.
+  \item Gradient descent on raw partial derivatives fails the basis test
+        (it becomes $x - \eta PP^\top\gamma$), and coordinatewise methods
+        fail it even for rotations.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{duality:exr:1}
+In $\R^3$ let $e_1 = (1, 0, 0)$, $e_2 = (1, 1, 0)$, $e_3 = (1, 1, 1)$.
+Compute the dual basis. Find the components of $v = (3, 2, 1)$ in the
+basis $e$ and those of the form $\phi(x) = x_1 + x_2 + x_3$ in the basis
+$e^*$, and verify that $[\phi][v] = \phi(v)$.
+\solutionlink{duality:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{duality:exr:2}
+Let $V$ be the space of real polynomials of degree at most $2$, and let
+$\epsilon_0, \epsilon_1, \epsilon_2\in V^*$ be the evaluations at $0$, $1$
+and $2$: $\epsilon_t(p) = p(t)$.
+\begin{enumerate}[nosep]
+  \item Find the basis $(\ell_0, \ell_1, \ell_2)$ of $V$ whose dual basis
+        is $(\epsilon_0, \epsilon_1, \epsilon_2)$.
+  \item Compute the components of the form $I(p) = \int_0^2p(t)\,dt$ in
+        the basis $(\epsilon_0, \epsilon_1, \epsilon_2)$. What rule of
+        numerical integration is this?
+\end{enumerate}
+\solutionlink{duality:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{duality:exr:3}
+A model predicts $\hat y = w_1x_1 + w_2x_2$, where $x_1$ is a length in
+metres. The loss has partial derivatives $\gamma = (\gamma_1, \gamma_2)$
+with respect to $(w_1, w_2)$ at the current weights. The feature $x_1$ is
+now expressed in centimetres.
+\begin{enumerate}[nosep]
+  \item Give the new weights $w'$ that make the same predictions, and the
+        change of basis matrix $P$ in parameter space.
+  \item Give the partial derivatives $\gamma'$ with respect to $w'$.
+  \item One step of \eqref{duality:eq:gd} is taken on $w'$ with learning
+        rate $\eta$. Express the resulting model in the original weights
+        and compare with a step taken on $w$.
+\end{enumerate}
+\solutionlink{duality:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{duality:exr:4}
+Let $V = \R^{m\times n}$ be the space of $m\times n$ matrices, with basis
+$(E_{ij})$, where $E_{ij}$ has a $1$ in position $(i, j)$ and zeros
+elsewhere.
+\begin{enumerate}[nosep]
+  \item Show that every linear form on $V$ is
+        $\phi_G:X\mapsto\tr(G^\top X) = \sum_{i,j}G_{ij}X_{ij}$ for a
+        unique $G\in\R^{m\times n}$, and that the $G_{ij}$ are the
+        components of $\phi_G$ in the dual basis.
+  \item For $A\in\R^{p\times m}$ let $\Lambda_A:\R^{m\times n}\to
+        \R^{p\times n}$, $X\mapsto AX$. Show that
+        $\dual{\Lambda_A}\phi_G = \phi_{A^\top G}$.
+  \item For $x\in\R^n$ let $\varepsilon_x:\R^{m\times n}\to\R^m$,
+        $W\mapsto Wx$. Show that for a covector $\delta$ on $\R^m$ with
+        row $[\delta]$, $\dual{\varepsilon_x}\delta = \phi_G$ with
+        $G = [\delta]^\top x^\top$.
+\end{enumerate}
+\solutionlink{duality:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{duality:exr:5}
+Let $U$ be a subspace of $V$ and $j:U\to V$ the inclusion, $j(u) = u$.
+Show that $\dual j:V^*\to U^*$ is the restriction $\phi\mapsto\phi|_U$,
+that it is surjective, and that its kernel is $U^\circ$. Deduce again that
+$\dim U^\circ = \dim V - \dim U$.
+\solutionlink{duality:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{duality:exr:6}
+Let $A:\R^2\to\R^3$ have the matrix
+$\begin{bsmallmatrix}1 & 0\\1 & 1\\0 & 1\end{bsmallmatrix}$ in the
+standard bases. Find a basis of $\ker\dual A$, and use
+\cref{duality:cor:rank} to give the condition on $w\in\R^3$ under which
+$Av = w$ has a solution. Check the two equalities of
+\cref{duality:thm:four} on this example.
+\solutionlink{duality:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{duality:exr:7}
+In $\R^2$ let $e$ be the standard basis and $e' = \bigl((1, 0), (1, 1)\bigr)$.
+Compute the array of the bilinear form $b_{e'}$ of
+\cref{duality:prop:identification} in the basis $e$, and the rows
+$[\Phi_{e'}(e_1)]$ and $[\Phi_{e'}(e_2)]$ in the basis $e^*$. Compare
+with $\Phi_e$.
+\solutionlink{duality:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{duality:exr:8}
+Let $\gamma = (2, 1)$ and $P = \begin{bsmallmatrix}1 & 1\\0 & 1
+\end{bsmallmatrix}$.
+\begin{enumerate}[nosep]
+  \item Compute the step of \eqref{duality:eq:gd} and the step of
+        \eqref{duality:eq:sign} when the computation is done in the basis
+        $e'$ defined by $P$, expressed in the coordinates of $e$.
+  \item Find an invertible $P$, not a signed permutation matrix, and a
+        $\gamma$ for which sign descent gives the same step in $e$ and
+        $e'$. Why does this not contradict
+        \cref{duality:ex:sign}?
+\end{enumerate}
+\solutionlink{duality:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{duality:exr:9}
+Let $M = \begin{bsmallmatrix}2 & 0\\0 & 1\end{bsmallmatrix}$ and
+$P = \begin{bsmallmatrix}1 & 1\\0 & 1\end{bsmallmatrix}$.
+\begin{enumerate}[nosep]
+  \item Compute the new array when $M$ represents an operator, a bilinear
+        form, and a map $V^*\to V$.
+  \item Compute the eigenvalues of the three results. In which case are
+        they those of $M$? In the other two cases, which properties of
+        $M$ survive?
+\end{enumerate}
+\solutionlink{duality:exr:9}
+\end{exercise}
 \end{notechapter}

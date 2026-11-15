@@ -69,6 +69,8 @@ Boxes take an optional title: `\begin{pitfall}[Zero counts]`.
 | $a + v$, $b - a$ | | point plus vector; the vector from $a$ to $b$ |
 | $x$, $\omega$, $\beta$, $\gamma$ | | coordinate arrays of $a$, $w$, $f(o)$, $g$ |
 | $\vec f$ | `\lin{f}` | linear part of an affine map $f$ |
+| $[v]$, $[\phi]$, $[A]$ | | column of components of a vector, row of components of a covector, matrix of a map, in bases named in words |
+| $P$ | | change of basis matrix: $e'_j = \sum_i P_{ij} e_i$, so $[v]' = P^{-1}[v]$ and $[\phi]' = [\phi]P$ |
 | $V^*$ | | dual space; its elements are covectors |
 | $A^\top$ | `\dual{A}` | **dual operator** $W^*\to V^*$ (no inner product) |
 | $A^*$ | `\adj{A}` | **adjoint** $W\to V$ (needs inner products) |

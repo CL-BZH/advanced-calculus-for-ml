@@ -173,3 +173,157 @@ convex. So $g^{-1}(C)$ is convex, and
 The map $\theta\mapsto X\theta - y$ is affine from $\R^n$ to $\R^m$, with
 linear part $X$, so $\theta\mapsto\varphi(X\theta - y)$ is convex. Least
 squares is the case $\varphi(r) = \norm r^2$.
+
+% =====================================================================
+\section{\nameref*{ch:duality}}
+
+\solution{duality:exr:1}
+By \cref{duality:prop:inverse}, the dual basis is given by the rows of
+$E^{-1}$, where $E$ has columns $e_1, e_2, e_3$:
+\[
+  E = \begin{bmatrix}1 & 1 & 1\\0 & 1 & 1\\0 & 0 & 1\end{bmatrix},
+  \qquad
+  E^{-1} = \begin{bmatrix}1 & -1 & 0\\0 & 1 & -1\\0 & 0 & 1\end{bmatrix}.
+\]
+So $e_1^*(x) = x_1 - x_2$, $e_2^*(x) = x_2 - x_3$, $e_3^*(x) = x_3$. The
+components of $v = (3, 2, 1)$ are $[v] = E^{-1}v = (1, 1, 1)$; indeed
+$e_1 + e_2 + e_3 = (3, 2, 1)$. The components of $\phi$ are its values on
+the basis vectors: $[\phi] = [\phi(e_1)\ \phi(e_2)\ \phi(e_3)]
+= [1\ 2\ 3]$. Then $[\phi][v] = 1 + 2 + 3 = 6 = \phi(3, 2, 1)$.
+
+\solution{duality:exr:2}
+\begin{enumerate}[nosep]
+  \item We need $\ell_i(j) = \delta_{ij}$ for $i, j\in\{0, 1, 2\}$. These
+        are the Lagrange polynomials
+        \[
+          \ell_0 = \tfrac12(t - 1)(t - 2),\qquad
+          \ell_1 = t(2 - t),\qquad
+          \ell_2 = \tfrac12t(t - 1) .
+        \]
+        They are linearly independent (apply the $\epsilon_j$ to a
+        vanishing combination), hence a basis of the three-dimensional
+        space $V$, and $(\epsilon_0, \epsilon_1, \epsilon_2)$ is its dual
+        basis by definition. In this basis the components of a polynomial
+        are its values: $p = p(0)\ell_0 + p(1)\ell_1 + p(2)\ell_2$.
+  \item The components of $I$ are its values on the basis:
+        $I(\ell_0) = \frac12\int_0^2(t^2 - 3t + 2)\,dt = \frac13$,
+        $I(\ell_1) = \int_0^2(2t - t^2)\,dt = \frac43$,
+        $I(\ell_2) = \frac12\int_0^2(t^2 - t)\,dt = \frac13$. Hence
+        \[
+          \int_0^2p(t)\,dt = \tfrac13p(0) + \tfrac43p(1) + \tfrac13p(2)
+        \]
+        for every polynomial of degree at most $2$. This is Simpson's
+        rule: the weights of a quadrature rule are the components of the
+        covector ``integral'' in a basis of evaluation forms.
+\end{enumerate}
+
+\solution{duality:exr:3}
+\begin{enumerate}[nosep]
+  \item The new feature is $x'_1 = 100x_1$, so
+        $w'_1 = w_1/100$ and $w'_2 = w_2$ give
+        $w'_1x'_1 + w'_2x_2 = w_1x_1 + w_2x_2$. In parameter space,
+        $[w]' = P^{-1}[w]$ with
+        $P = \begin{bsmallmatrix}100 & 0\\0 & 1\end{bsmallmatrix}$.
+  \item $\gamma' = P^\top\gamma = (100\gamma_1, \gamma_2)$: a change of
+        $w'_1$ by one unit is a change of $w_1$ by $100$ units.
+  \item $w'_+ = w' - \eta\gamma'$, so in the original weights
+        $w_+ = Pw'_+ = w - \eta PP^\top\gamma
+        = w - \eta(10^4\gamma_1, \gamma_2)$. A step taken directly on $w$
+        is $w - \eta(\gamma_1, \gamma_2)$. The change of unit multiplies
+        the step along $w_1$ by $10^4$.
+\end{enumerate}
+
+\solution{duality:exr:4}
+\begin{enumerate}[nosep]
+  \item Every $X$ is $\sum_{i,j}X_{ij}E_{ij}$, so the dual basis form
+        $E_{ij}^*$ is $X\mapsto X_{ij}$, and by
+        \cref{duality:thm:dual-basis} every $\phi$ is
+        $\sum_{i,j}\phi(E_{ij})E_{ij}^*$, that is,
+        $\phi(X) = \sum_{i,j}G_{ij}X_{ij}$ with $G_{ij} = \phi(E_{ij})$,
+        uniquely. Finally
+        $\tr(G^\top X) = \sum_j(G^\top X)_{jj} = \sum_{i,j}G_{ij}X_{ij}$.
+  \item For $G\in\R^{p\times n}$,
+        $\bigl(\dual{\Lambda_A}\phi_G\bigr)(X) = \phi_G(AX)
+        = \tr(G^\top AX) = \tr\bigl((A^\top G)^\top X\bigr)
+        = \phi_{A^\top G}(X)$.
+  \item $\bigl(\dual{\varepsilon_x}\delta\bigr)(W) = \delta(Wx)
+        = [\delta]Wx = \tr\bigl(x[\delta]W\bigr)$, since
+        $\tr(xr) = rx$ for a column $x$ and a row $r$. This is
+        $\tr(G^\top W)$ with $G^\top = x[\delta]$, i.e.\
+        $G = [\delta]^\top x^\top$. In the language of backpropagation:
+        the sensitivity with respect to a weight matrix is the outer
+        product of the output sensitivity and the input.
+\end{enumerate}
+
+\solution{duality:exr:5}
+By definition $\dual j\phi = \phi\circ j$, and $(\phi\circ j)(u) = \phi(u)$
+for $u\in U$: this is the restriction of $\phi$ to $U$. Since $j$ is
+injective, $\dual j$ is surjective by \cref{duality:cor:rank}(2): every
+linear form on $U$ extends to $V$. Its kernel is the set of forms whose
+restriction to $U$ is zero, which is $U^\circ$. The rank--nullity theorem
+for $\dual j$ gives $\dim V^* = \dim U^* + \dim U^\circ$, that is,
+$\dim U^\circ = \dim V - \dim U$ by \cref{duality:thm:dual-basis}.
+
+\solution{duality:exr:6}
+By \cref{duality:thm:transpose}, $[\dual A\psi] = [\psi][A]
+= [\psi_1 + \psi_2\ \ \psi_2 + \psi_3]$. It vanishes if and only if
+$\psi_1 = -\psi_2 = \psi_3$, so $\ker\dual A$ is spanned by the form with
+row $[1\ {-1}\ 1]$. By \cref{duality:cor:rank}(3), $Av = w$ has a solution
+if and only if $w_1 - w_2 + w_3 = 0$. Check: $\im A$ is spanned by the
+columns $(1, 1, 0)$ and $(0, 1, 1)$, and a form vanishes on both if and
+only if $\psi_1 + \psi_2 = 0 = \psi_2 + \psi_3$, so
+$(\im A)^\circ = \ker\dual A$. The columns are independent, so
+$\ker A = \{0\}$ and $(\ker A)^\circ = (\R^2)^*$; and the rows
+$[\psi_1 + \psi_2\ \ \psi_2 + \psi_3]$ fill $(\R^2)^*$ (take $\psi_3 = 0$),
+so $\im\dual A = (\ker A)^\circ$.
+
+\solution{duality:exr:7}
+Here $P = \begin{bsmallmatrix}1 & 1\\0 & 1\end{bsmallmatrix}$. The array
+$G$ of $b_{e'}$ in the basis $e$ satisfies $P^\top GP = I$
+(\cref{duality:prop:three}), so
+\[
+  G = P^{-\top}P^{-1}
+  = \begin{bmatrix}1 & 0\\-1 & 1\end{bmatrix}
+    \begin{bmatrix}1 & -1\\0 & 1\end{bmatrix}
+  = \begin{bmatrix}1 & -1\\-1 & 2\end{bmatrix} .
+\]
+The row of $\Phi_{e'}(u)$ is $[u]^\top G$: $[\Phi_{e'}(e_1)] = [1\ {-1}]$
+and $[\Phi_{e'}(e_2)] = [{-1}\ 2]$. Directly: $e_1 = e'_1$ is sent to
+$e'^{\,*}_1 = x - y$, and $e_2 = e'_2 - e'_1$ is sent to
+$e'^{\,*}_2 - e'^{\,*}_1 = y - (x - y) = -x + 2y$. In contrast,
+$[\Phi_e(e_1)] = [1\ 0]$ and $[\Phi_e(e_2)] = [0\ 1]$. The two bases
+identify $V$ with $V^*$ differently, as expected since $P^\top P\neq I$.
+
+\solution{duality:exr:8}
+\begin{enumerate}[nosep]
+  \item $PP^\top = \begin{bsmallmatrix}2 & 1\\1 & 1\end{bsmallmatrix}$,
+        so the step of \eqref{duality:eq:gd} is
+        $-\eta PP^\top\gamma = -\eta(5, 3)$, instead of $-\eta(2, 1)$.
+        For sign descent, $P^\top\gamma = (2, 3)$, its sign is $(1, 1)$,
+        and the step is $-\eta P(1, 1) = -\eta(2, 1)$, instead of
+        $-\eta(1, 1)$.
+  \item Take $P = \begin{bsmallmatrix}2 & 0\\0 & 1\end{bsmallmatrix}$ and
+        $\gamma = (0, 1)$: $P^\top\gamma = (0, 1)$, its sign is $(0, 1)$,
+        and $P(0, 1) = (0, 1) = \mathrm{sign}(\gamma)$. There is no
+        contradiction: passing the basis test requires the same result
+        for \emph{every} $\gamma$, and for $\gamma = (2, 1)$ this $P$
+        changes the step (\cref{duality:ex:sign}).
+\end{enumerate}
+
+\solution{duality:exr:9}
+With $P^{-1} = \begin{bsmallmatrix}1 & -1\\0 & 1\end{bsmallmatrix}$:
+\[
+  P^{-1}MP = \begin{bmatrix}2 & 1\\0 & 1\end{bmatrix},
+  \qquad
+  P^\top MP = \begin{bmatrix}2 & 2\\2 & 3\end{bmatrix},
+  \qquad
+  P^{-1}MP^{-\top} = \begin{bmatrix}3 & -1\\-1 & 1\end{bmatrix}.
+\]
+The eigenvalues are $2$ and $1$ for the first (those of $M$, as for any
+similar matrix); $\frac12(5\pm\sqrt{17})\approx4.56,\ 0.44$ for the second;
+$2\pm\sqrt2\approx3.41,\ 0.59$ for the third. In the last two cases the
+eigenvalues of $M$ are lost, but the arrays are still symmetric, of rank
+$2$, with two positive eigenvalues: symmetry, rank and signs are what a
+bilinear form or a map $V^*\to V$ keeps under a change of basis. (Here the
+three determinants also agree, because $\det P = 1$; in general the last
+two are multiplied by $(\det P)^2$ and $(\det P)^{-2}$.)
