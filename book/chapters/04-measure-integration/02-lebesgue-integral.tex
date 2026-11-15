@@ -4,20 +4,808 @@
 \chaptersubtitle{%
   Simple functions, monotone limits and dominated limits}
 
-\begin{chapterplan}
+\begin{chapterintro}
+With a measure in hand, the integral is built in three steps: functions
+with finitely many values, where it is a finite sum; non-negative
+functions, as a supremum; and integrable functions, as a difference.
+Sums, series, averages over a data set and integrals over $\R^n$ become
+one and the same operation, for different measures. What the
+construction buys is a calculus of limits: three theorems that say when
+the integral of a limit is the limit of the integrals. They in turn
+justify the operation that Part~III used on trust and that every
+gradient-based method relies on, the exchange of a derivative and an
+expectation. You will learn
 \begin{itemize}[nosep]
-  \item The integral of simple, non-negative and integrable functions.
-  \item Monotone convergence, Fatou's lemma and dominated convergence, with
-        proofs.
-  \item Almost everywhere; comparison with the Riemann integral.
-  \item Differentiation under the integral sign.
-  \item Integration with respect to a push-forward measure.
+  \item the integral of simple, non-negative and integrable functions,
+        and what ``almost everywhere'' means;
+  \item the monotone convergence theorem, Fatou's lemma and the dominated
+        convergence theorem, with the three ways in which mass can be
+        lost in a limit;
+  \item why nothing is lost with respect to the Riemann integral;
+  \item when an integral may be differentiated under the integral sign;
+  \item how to integrate against a push-forward measure;
+  \item the two standard estimators of the gradient of an expectation,
+        and the hypothesis that decides which one is available.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:measures}. Functions take their values in $\R$
+or in $[0, \infty]$, with the conventions $0\cdot\infty = 0$ and
+$a + \infty = \infty$. A measure space $(X, \mathcal M, \mu)$ is fixed.}
+\end{chapterintro}
+
+\section{Non-negative functions}\label{lebesgue-integral:sec:positive}
+
+\begin{definition}[Simple function]\label{lebesgue-integral:def:simple}
+A \emph{simple function} is a measurable function $s:X\to[0, \infty)$
+with finitely many values. If $a_1,\dots,a_m$ are its distinct values
+and $A_i = \{s = a_i\}$, then $s = \sum_ia_i1_{A_i}$ and its
+\emph{integral} is
+\[
+  \int s\,\dd\mu = \sum_{i=1}^ma_i\,\mu(A_i)\in[0, \infty] .
+\]
+\end{definition}
+
+\begin{lemma}\label{lebesgue-integral:lem:simple}
+For simple functions $s, t$ and $c\geq0$:
+$\int(s + t)\,\dd\mu = \int s\,\dd\mu + \int t\,\dd\mu$,
+$\int cs\,\dd\mu = c\int s\,\dd\mu$, and
+$\int s\,\dd\mu\leq\int t\,\dd\mu$ if $s\leq t$. Consequently
+$\int\sum_jb_j1_{B_j}\,\dd\mu = \sum_jb_j\mu(B_j)$ for any measurable sets
+$B_j$ and numbers $b_j\geq0$, disjoint or not.
+\end{lemma}
+
+\begin{proof}
+Let $s = \sum_ia_i1_{A_i}$ and $t = \sum_jb_j1_{B_j}$ as in the
+definition. The sets $C_{ij} = A_i\cap B_j$ form a partition of $X$, on
+which $s + t$ takes the value $a_i + b_j$. Grouping the $C_{ij}$ with
+the same value and using the additivity of $\mu$,
+\[
+  \int(s + t)\,\dd\mu = \sum_{i,j}(a_i + b_j)\mu(C_{ij})
+  = \sum_ia_i\mu(A_i) + \sum_jb_j\mu(B_j) .
+\]
+The same partition gives the other two claims: if $s\leq t$ then
+$a_i\leq b_j$ whenever $C_{ij}$ is not empty. The last statement follows
+by additivity, since $\int b1_B\,\dd\mu = b\mu(B)$.
+\end{proof}
+
+\begin{definition}[Integral of a non-negative function]
+\label{lebesgue-integral:def:positive}
+For a measurable $f:X\to[0, \infty]$,
+\[
+  \int f\,\dd\mu
+  = \sup\Bigl\{\int s\,\dd\mu : s\text{ simple},\ s\leq f\Bigr\} ,
+  \qquad
+  \int_Af\,\dd\mu = \int f1_A\,\dd\mu \quad(A\in\mathcal M) .
+\]
+\end{definition}
+
+For a simple $f$ this is the previous integral, by the monotonicity in
+\cref{lebesgue-integral:lem:simple}, and clearly
+$\int f\,\dd\mu\leq\int g\,\dd\mu$ when $f\leq g$. One also writes
+$\int f(x)\,\dd\mu(x)$, and $\int f(x)\,\dd x$ for Lebesgue measure.
+
+\begin{lemma}[Cutting the range]\label{lebesgue-integral:lem:dyadic}
+Let $f:X\to[0, \infty]$ be measurable. The functions
+\[
+  s_n = \min\bigl(n,\ 2^{-n}\lfloor2^nf\rfloor\bigr)
+\]
+are simple, increase with $n$, and converge to $f$ at every point;
+$f - s_n\leq2^{-n}$ where $f\leq n$.
+\end{lemma}
+
+\begin{proof}
+$s_n$ takes the values $k2^{-n}$, $0\leq k\leq n2^n$, on the measurable
+sets $\{k2^{-n}\leq f < (k + 1)2^{-n}\}$, and $n$ on $\{f\geq n\}$. Since
+$\lfloor2^{n+1}f\rfloor\geq2\lfloor2^nf\rfloor$, the sequence increases.
+If $f(x) < \infty$ and $n\geq f(x)$, then
+$0\leq f(x) - s_n(x) < 2^{-n}$; if $f(x) = \infty$, $s_n(x) = n$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, xscale=1.0, yscale=1.8,
+    declare function={ff(\x) = 0.2 + 1.4*sin(60*\x)^2*exp(-0.15*\x);}]
+  \foreach \lev/\xs/\name in {4/0/2, 8/7.4/3} {
+    \begin{scope}[xshift=\xs cm]
+      \fill[bookdef!18] plot[domain=0:5, samples=501]
+        ({\x}, {floor(\lev*ff(\x))/\lev}) -- (5,0) -- (0,0) -- cycle;
+      \draw[bookdef, thick] plot[domain=0:5, samples=501]
+        ({\x}, {floor(\lev*ff(\x))/\lev});
+      \draw[bookaccent, very thick, domain=0:5, samples=120, smooth]
+        plot ({\x}, {ff(\x)});
+      \draw[->] (-0.2,0) -- (5.4,0);
+      \draw[->] (0,-0.1) -- (0,1.75);
+      \draw (0.07,1) -- (-0.07,1) node[left] {$1$};
+      \node at (2.5,-0.3) {$s_\name$: levels $2^{-\name}$ apart};
+    \end{scope}
+  }
+\end{tikzpicture}
+\caption{The simple functions of \cref{lebesgue-integral:lem:dyadic}
+for $n = 2$ and $n = 3$. The range is cut into levels $2^{-n}$ apart and
+$f$ is rounded down to the level below, as on the right of
+\cref{measures:fig:slicing}. The integral of $s_n$ is the shaded area;
+it increases to the integral of $f$.}
+\label{lebesgue-integral:fig:dyadic}
+\end{figure}
+
+\begin{theorem}[Monotone convergence]\label{lebesgue-integral:thm:mct}
+Let $f_n:X\to[0, \infty]$ be measurable with
+$f_1\leq f_2\leq\cdots$, and $f = \lim_nf_n$. Then
+\[
+  \int f\,\dd\mu = \lim_{n\to\infty}\int f_n\,\dd\mu .
+\]
+\end{theorem}
+
+\begin{proof}
+The integrals $\int f_n\,\dd\mu$ increase and are at most
+$\int f\,\dd\mu$, so their limit $\ell$ satisfies
+$\ell\leq\int f\,\dd\mu$. Conversely let $s = \sum_ia_i1_{A_i}$ be simple
+with $s\leq f$, and $0 < c < 1$. The sets $E_n = \{f_n\geq cs\}$ are
+measurable, increase, and cover $X$: where $s(x) > 0$,
+$cs(x) < f(x) = \lim_nf_n(x)$. Then
+\[
+  \int f_n\,\dd\mu\geq\int cs1_{E_n}\,\dd\mu
+  = c\sum_ia_i\,\mu(A_i\cap E_n)
+  \xrightarrow[n\to\infty]{} c\sum_ia_i\,\mu(A_i) = c\int s\,\dd\mu
+\]
+by the continuity of $\mu$ (\cref{measures:thm:continuity}). So
+$\ell\geq c\int s\,\dd\mu$ for every $c < 1$ and every simple
+$s\leq f$, hence $\ell\geq\int f\,\dd\mu$.
+\end{proof}
+
+\begin{corollary}\label{lebesgue-integral:cor:additive}
+For measurable $f, g, f_n:X\to[0, \infty]$ and $c\geq0$:
+\begin{enumerate}[nosep]
+  \item $\int(f + g)\,\dd\mu = \int f\,\dd\mu + \int g\,\dd\mu$ and
+        $\int cf\,\dd\mu = c\int f\,\dd\mu$;
+  \item $\int\sum_nf_n\,\dd\mu = \sum_n\int f_n\,\dd\mu$;
+  \item $\nu(A) = \int_Af\,\dd\mu$ is a measure on $\mathcal M$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) Take simple $s_n\uparrow f$ and $t_n\uparrow g$
+(\cref{lebesgue-integral:lem:dyadic}); then $s_n + t_n\uparrow f + g$,
+and the claim passes to the limit from
+\cref{lebesgue-integral:lem:simple}. (2) Apply the theorem to the
+partial sums. (3) For disjoint $A_n$ with union $A$,
+$f1_A = \sum_nf1_{A_n}$; apply (2).
+\end{proof}
+
+\begin{example}[Sums are integrals]\label{lebesgue-integral:ex:sums}
+For the Dirac measure, $\int f\,\dd\delta_a = f(a)$. For the empirical
+measure of a sample, $\int f\,\dd\hat P_N = \frac1N\sum_if(x_i)$: the
+average. For the counting measure on the integers,
+$\int f\,\dd\mu = \sum_nf(n)$: a series with non-negative terms. Item
+(2) of the corollary then says that a double series with non-negative
+terms may be summed in either order.
+\end{example}
+
+\begin{proposition}[Markov's inequality]\label{lebesgue-integral:prop:markov}
+Let $f:X\to[0, \infty]$ be measurable and $c > 0$. Then
+$\mu\{f\geq c\}\leq\frac1c\int f\,\dd\mu$. Consequently
+$\int f\,\dd\mu = 0$ if and only if $f = 0$ outside a null set, and if
+$\int f\,\dd\mu < \infty$ then $f < \infty$ outside a null set.
+\end{proposition}
+
+\begin{proof}
+$c1_{\{f\geq c\}}\leq f$. If $\int f\,\dd\mu = 0$, the sets
+$\{f\geq\frac1n\}$ are null and so is their union $\{f > 0\}$;
+conversely, if $f$ vanishes outside a null set $N$, every simple
+$s\leq f$ has $\int s\,\dd\mu = \int s1_N\,\dd\mu = 0$. Finally
+$\mu\{f = \infty\}\leq\mu\{f\geq c\}\leq\frac1c\int f\,\dd\mu$ for every
+$c$.
+\end{proof}
+
+\section{Integrable functions}\label{lebesgue-integral:sec:integrable}
+
+\begin{definition}[Integrable function]\label{lebesgue-integral:def:integrable}
+A measurable $f:X\to\R$ is \emph{integrable} if
+$\int\abs f\,\dd\mu < \infty$. Its integral is
+\[
+  \int f\,\dd\mu = \int f^+\,\dd\mu - \int f^-\,\dd\mu , \qquad
+  f^+ = \max(f, 0),\quad f^- = \max(-f, 0) .
+\]
+A function with values in $\R^n$, or in a finite-dimensional vector
+space, is integrable if its components are, and it is integrated
+component by component. On a probability space the integral of a random
+variable $Z$ is its \emph{expectation} $\E[Z] = \int Z\,\dd P$.
+\end{definition}
+
+\begin{theorem}\label{lebesgue-integral:thm:linear}
+The integrable functions form a vector space on which the integral is
+linear. If $f\leq g$ then $\int f\,\dd\mu\leq\int g\,\dd\mu$, and
+$\abs{\int f\,\dd\mu}\leq\int\abs f\,\dd\mu$.
+\end{theorem}
+
+\begin{proof}
+If $f$ and $g$ are integrable, $\abs{f + g}\leq\abs f + \abs g$ shows
+that $h = f + g$ is. From
+$h^+ + f^- + g^- = h^- + f^+ + g^+$ and
+\cref{lebesgue-integral:cor:additive},
+$\int h^+ + \int f^- + \int g^- = \int h^- + \int f^+ + \int g^+$, all
+terms being finite; this is $\int h = \int f + \int g$. Multiplication
+by a scalar is similar. If $f\leq g$, then
+$\int g - \int f = \int(g - f)\geq0$. Finally
+$\pm f\leq\abs f$.
+\end{proof}
+
+\begin{definition}[Almost everywhere]\label{lebesgue-integral:def:ae}
+A property of the points of $X$ holds \emph{almost everywhere} if it
+holds outside a null set.
+\end{definition}
+
+\begin{proposition}\label{lebesgue-integral:prop:ae}
+If $f$ is integrable and $g$ is a measurable function equal to $f$
+almost everywhere, then $g$ is integrable and
+$\int g\,\dd\mu = \int f\,\dd\mu$.
+\end{proposition}
+
+\begin{proof}
+$\abs{f - g}$ vanishes almost everywhere, so
+$\int\abs{f - g}\,\dd\mu = 0$
+(\cref{lebesgue-integral:prop:markov}); then
+$\abs g\leq\abs f + \abs{f - g}$ and
+$\abs{\int g - \int f}\leq\int\abs{g - f}$.
+\end{proof}
+
+\begin{keyidea}
+The integral does not see null sets. A function may be changed, or left
+undefined, on a null set without affecting anything. The function equal
+to $1$ on the rationals has integral $0$ for Lebesgue measure, like the
+zero function. In probability, ``almost everywhere'' reads ``almost
+surely''.
+\end{keyidea}
+
+\section{Limits under the integral sign}\label{lebesgue-integral:sec:limits}
+
+\begin{theorem}[Fatou's lemma]\label{lebesgue-integral:thm:fatou}
+For measurable $f_n:X\to[0, \infty]$,
+\[
+  \int\liminf_{n\to\infty}f_n\,\dd\mu
+  \leq\liminf_{n\to\infty}\int f_n\,\dd\mu .
+\]
+\end{theorem}
+
+\begin{proof}
+The functions $g_n = \inf_{k\geq n}f_k$ increase to $\liminf_nf_n$, and
+$g_n\leq f_n$. By \cref{lebesgue-integral:thm:mct},
+$\int\liminf_nf_n = \lim_n\int g_n\leq\liminf_n\int f_n$.
+\end{proof}
+
+\begin{theorem}[Dominated convergence]\label{lebesgue-integral:thm:dct}
+Let $f_n$ be measurable functions converging almost everywhere to a
+measurable function $f$. If there is an integrable function $g$ with
+$\abs{f_n}\leq g$ almost everywhere for all $n$, then $f$ is integrable
+and
+\[
+  \lim_{n\to\infty}\int\abs{f_n - f}\,\dd\mu = 0 , \qquad
+  \lim_{n\to\infty}\int f_n\,\dd\mu = \int f\,\dd\mu .
+\]
+\end{theorem}
+
+\begin{proof}
+Changing the functions on a null set, which changes no integral, we may
+assume that the convergence and the bounds hold everywhere. Then
+$\abs f\leq g$, so $f$ is integrable, and
+$2g - \abs{f_n - f}\geq0$ converges to $2g$. By Fatou's lemma,
+\[
+  \int2g\,\dd\mu
+  \leq\liminf_n\int\bigl(2g - \abs{f_n - f}\bigr)\,\dd\mu
+  = \int2g\,\dd\mu - \limsup_n\int\abs{f_n - f}\,\dd\mu ,
+\]
+and $\int2g\,\dd\mu$ is finite: $\limsup_n\int\abs{f_n - f} \leq0$. The
+second limit follows from
+$\abs{\int f_n - \int f}\leq\int\abs{f_n - f}$.
+\end{proof}
+
+\begin{pitfall}[Three ways to lose mass]
+On $\R$ with Lebesgue measure, each of the following sequences tends to
+$0$ at every point while $\int f_n = 1$ for all $n$
+(\cref{lebesgue-integral:fig:mass}):
+\[
+  f_n = 1_{[n, n+1)} , \qquad
+  f_n = n\,1_{(0, 1/n)} , \qquad
+  f_n = \tfrac1n\,1_{[0, n)} .
+\]
+The mass escapes to infinity, concentrates at a point, or spreads out.
+Fatou's inequality is strict, and no integrable function dominates the
+sequence. Monotone convergence excludes these by an order; dominated
+convergence excludes them by a common bound of finite integral.
+\end{pitfall}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, xscale=0.95, yscale=1.3]
+  \begin{scope}
+    \draw[->] (-0.2,0) -- (4.6,0);
+    \draw[->] (0,-0.2) -- (0,2.4);
+    \foreach \a/\c in {0/bookaccent, 1/bookdef, 3/bookpitfall}
+      \draw[\c, very thick] (\a,0) -- (\a,1) -- (\a+1,1) -- (\a+1,0);
+    \node[bookaccent] at (0.5,1.25) {$f_0$};
+    \node[bookdef] at (1.5,1.25) {$f_1$};
+    \node[bookpitfall] at (3.5,1.25) {$f_3$};
+    \foreach \k in {1,...,4}
+      \draw (\k,0.06) -- (\k,-0.06) node[below] {\small$\k$};
+    \draw (0.06,1) -- (-0.06,1) node[left] {\small$1$};
+    \node[anchor=base] at (2.2,-0.85) {escape to infinity};
+  \end{scope}
+  \begin{scope}[xshift=5.6cm]
+    \draw[->] (-0.2,0) -- (4.6,0);
+    \draw[->] (0,-0.2) -- (0,2.4);
+    \draw[bookaccent, very thick] (0,0.5) -- (4,0.5) -- (4,0);
+    \draw[bookdef, very thick] (0,1) -- (2,1) -- (2,0);
+    \draw[bookpitfall, very thick] (0,2) -- (1,2) -- (1,0);
+    \node[bookaccent] at (3.4,0.75) {$f_1$};
+    \node[bookdef] at (1.6,1.25) {$f_2$};
+    \node[bookpitfall] at (1.3,2.0) {$f_4$};
+    \foreach \k/\t in {1/\frac14, 2/\frac12, 4/1}
+      \draw (\k,0.06) -- (\k,-0.06) node[below] {\scriptsize$\t$};
+    \foreach \k/\t in {0.5/1, 1/2, 2/4}
+      \draw (0.06,\k) -- (-0.06,\k) node[left] {\small$\t$};
+    \node[anchor=base] at (2.2,-0.85) {concentration};
+  \end{scope}
+  \begin{scope}[xshift=11.2cm]
+    \draw[->] (-0.2,0) -- (4.6,0);
+    \draw[->] (0,-0.2) -- (0,2.4);
+    \draw[bookaccent, very thick] (0,2) -- (1,2) -- (1,0);
+    \draw[bookdef, very thick] (0,1) -- (2,1) -- (2,0);
+    \draw[bookpitfall, very thick] (0,0.5) -- (4,0.5) -- (4,0);
+    \node[bookaccent] at (1.3,2.0) {$f_1$};
+    \node[bookdef] at (2.3,1.0) {$f_2$};
+    \node[bookpitfall] at (3.4,0.75) {$f_4$};
+    \foreach \k in {1,2,4}
+      \draw (\k,0.06) -- (\k,-0.06) node[below] {\small$\k$};
+    \foreach \k/\t in {0.5/\frac14, 1/\frac12, 2/1}
+      \draw (0.06,\k) -- (-0.06,\k) node[left] {\scriptsize$\t$};
+    \node[anchor=base] at (2.2,-0.85) {spreading};
+  \end{scope}
+\end{tikzpicture}
+\caption{Three sequences of functions of integral $1$ that converge to
+$0$ at every point. The scales differ from one panel to the next; every
+rectangle has area $1$.}
+\label{lebesgue-integral:fig:mass}
+\end{figure}
+
+\begin{corollary}[Series]\label{lebesgue-integral:cor:series}
+If $f_n$ are measurable and
+$\sum_n\int\abs{f_n}\,\dd\mu < \infty$, the series $\sum_nf_n$ converges
+almost everywhere, its sum is integrable, and
+$\int\sum_nf_n\,\dd\mu = \sum_n\int f_n\,\dd\mu$.
+\end{corollary}
+
+\begin{proof}
+$g = \sum_n\abs{f_n}$ has
+$\int g = \sum_n\int\abs{f_n} < \infty$
+(\cref{lebesgue-integral:cor:additive}), so $g$ is finite almost
+everywhere (\cref{lebesgue-integral:prop:markov}) and the series
+converges absolutely there. The partial sums are dominated by $g$;
+apply \cref{lebesgue-integral:thm:dct}.
+\end{proof}
+
+\begin{remark}[The integral as an extension]
+\label{lebesgue-integral:rem:extension}
+Let $f$ be integrable and $t_n = s_n^+ - s_n^-$, where $s_n^\pm$ are the
+simple functions of \cref{lebesgue-integral:lem:dyadic} for $f^\pm$.
+Then $t_n\to f$ and $\abs{t_n}\leq\abs f$, so
+$\int\abs{t_n - f}\,\dd\mu\to0$: every integrable function is
+approximated, in this sense, by functions with finitely many values, on
+which the integral is a finite sum. Since
+$\abs{\int f\,\dd\mu}\leq\int\abs f\,\dd\mu$, the integral is the
+extension by continuity of that finite sum, as announced after
+\cref{norms-banach:thm:blt}. \Cref{ch:lp-spaces} makes $\int\abs f\,\dd\mu$
+a norm.
+\end{remark}
+
+\section{The Riemann integral is a special case}
+\label{lebesgue-integral:sec:riemann}
+
+\begin{theorem}\label{lebesgue-integral:thm:riemann}
+A continuous function on $[a, b]$ is integrable for Lebesgue measure,
+and its integral is its Riemann integral. For a continuous
+$f\geq0$ on $[a, \infty)$,
+$\int_{[a, \infty)}f\,\dd\lambda = \lim_{b\to\infty}\int_a^bf(x)\,\dd x$.
+\end{theorem}
+
+\begin{proof}
+Cut $[a, b)$ into $N$ intervals $[x_k, x_{k+1})$ of equal length and let
+$s_N = \sum_kf(x_k)1_{[x_k, x_{k+1})}$. The Lebesgue integral of $s_N$ is
+the Riemann sum $\sum_kf(x_k)(x_{k+1} - x_k)$, which tends to the
+Riemann integral. Since $f$ is continuous, $s_N\to f$ on $[a, b)$, and
+$\abs{s_N}\leq\max\abs f$, which is integrable on a set of finite
+measure; by \cref{lebesgue-integral:thm:dct} the integrals of $s_N$ tend
+to $\int_{[a, b]}f\,\dd\lambda$. The second statement is monotone
+convergence for $f1_{[a, n]}$.
+\end{proof}
+
+So every integral computed in a first course keeps its value, and the
+fundamental theorem of calculus remains the way to compute. The theorem
+extends to bounded functions with finitely many discontinuities, and,
+with the larger $\sigma$-algebra of \cref{ch:caratheodory}, to every
+Riemann integrable function. One warning: the Lebesgue integral is an
+\emph{absolute} integral. The limit
+$\lim_{b\to\infty}\int_0^b\frac{\sin x}x\,\dd x$ exists, but
+$\int_0^\infty\abs{\frac{\sin x}x}\,\dd x = \infty$: this function is not
+integrable on $[0, \infty)$.
+
+\section{Integrals that depend on a parameter}
+\label{lebesgue-integral:sec:parameter}
+
+Let $U$ be an open subset of a finite-dimensional normed vector space
+$V$, the space of parameters, and let $f:X\times U\to\R$ be such that
+$x\mapsto f(x, \theta)$ is integrable for every $\theta$. Put
+\[
+  F(\theta) = \int f(x, \theta)\,\dd\mu(x) .
+\]
+
+\begin{theorem}[Continuity]\label{lebesgue-integral:thm:continuity}
+Let $\theta_0\in U$. If, for almost every $x$, the function
+$\theta\mapsto f(x, \theta)$ is continuous at $\theta_0$ and
+$\abs{f(x, \theta)}\leq g(x)$ for all $\theta\in U$, with $g$
+integrable, then $F$ is continuous at $\theta_0$.
+\end{theorem}
+
+\begin{proof}
+For a sequence $\theta_n\to\theta_0$, apply
+\cref{lebesgue-integral:thm:dct} to $x\mapsto f(x, \theta_n)$.
+\end{proof}
+
+\begin{theorem}[Differentiation under the integral sign]
+\label{lebesgue-integral:thm:differentiation}
+Let $\theta_0\in U$. Assume that there is an integrable function $g$
+such that, for almost every $x$,
+\begin{enumerate}[nosep]
+  \item $\abs{f(x, \theta) - f(x, \theta_0)}
+        \leq g(x)\norm{\theta - \theta_0}$ for all $\theta\in U$;
+  \item $\theta\mapsto f(x, \theta)$ is differentiable at $\theta_0$.
+\end{enumerate}
+Then $F$ is differentiable at $\theta_0$, and for every $h\in V$
+\[
+  \dd F(\theta_0)\,h = \int\dd_\theta f(x, \theta_0)\,h\,\dd\mu(x) .
+\]
+Hypothesis (1) holds, at every point of $U$, if
+$\theta\mapsto f(x, \theta)$ is Lipschitz on $U$ with constant $g(x)$.
+\end{theorem}
+
+\begin{proof}
+Let $x$ be outside the null set where (1) or (2) fails. Dividing (1) by
+$\norm{\theta - \theta_0}$ and letting $\theta\to\theta_0$ along a line
+gives $\abs{\dd_\theta f(x, \theta_0)h}\leq g(x)\norm h$. The function
+$x\mapsto\dd_\theta f(x, \theta_0)h$ is a limit of difference quotients,
+hence measurable (\cref{measures:thm:limits}), and it is integrable. So
+$\Lambda h = \int\dd_\theta f(x, \theta_0)h\,\dd\mu(x)$ is defined and
+linear in $h$. Now let $h_n\to0$ with $h_n\neq0$ and
+\[
+  r_n(x) = \frac{f(x, \theta_0 + h_n) - f(x, \theta_0)
+           - \dd_\theta f(x, \theta_0)h_n}{\norm{h_n}} .
+\]
+By (2), $r_n(x)\to0$; by (1) and the bound above,
+$\abs{r_n}\leq2g$. By \cref{lebesgue-integral:thm:dct},
+$\int r_n\,\dd\mu\to0$, that is,
+$F(\theta_0 + h_n) - F(\theta_0) - \Lambda h_n = o(\norm{h_n})$.
+\end{proof}
+
+\begin{corollary}\label{lebesgue-integral:cor:c1}
+Assume that, for almost every $x$, $\theta\mapsto f(x, \theta)$ is of
+class $C^1$ on a ball $B\subset U$ with
+$\norm{\dd_\theta f(x, \theta)}\leq g(x)$ for all $\theta\in B$, where
+$g$ is integrable. Then $F$ is of class $C^1$ on $B$ and
+$\dd F(\theta) = \int\dd_\theta f(x, \theta)\,\dd\mu(x)$.
+\end{corollary}
+
+\begin{proof}
+By the mean value inequality (\cref{contractions-newton:cor:mvi}),
+$\theta\mapsto f(x, \theta)$ is Lipschitz on $B$ with constant $g(x)$;
+so \cref{lebesgue-integral:thm:differentiation} applies at every point
+of $B$. The continuity of $\dd F$ is
+\cref{lebesgue-integral:thm:continuity} applied to the components of
+$\dd_\theta f$.
+\end{proof}
+
+\begin{intuition}
+The differential of $F$ is a covector, and it is the integral of the
+covectors $\dd_\theta f(x, \theta_0)$. What allows the exchange is a
+bound on how fast $f$ can change with $\theta$, uniform in $\theta$ and
+integrable in $x$. Differentiability at $\theta_0$ is then needed only
+for almost every $x$, not for all.
+\end{intuition}
+
+\begin{pitfall}[A derivative that vanishes almost everywhere]
+On $X = [0, 1]$ with Lebesgue measure let
+$f(x, \theta) = 1_{\{x\leq\theta\}}$ for $0 < \theta < 1$. For every
+$\theta$, and every $x\neq\theta$, the derivative with respect to
+$\theta$ exists and is $0$. Yet $F(\theta) = \theta$ has derivative $1$.
+Hypothesis (2) holds; hypothesis (1) fails, since $f$ jumps: it would
+require $g(x)\geq1/\abs{x - \theta_0}$, which is not integrable. The
+whole derivative of $F$ comes from the moving discontinuity, which the
+pointwise derivative does not see.
+\end{pitfall}
+
+\begin{remark}[The standing assumptions of
+\cref{ch:natural-gradient}]\label{lebesgue-integral:rem:regular}
+For a statistical model with densities $\rho(y; \theta)$ with respect to
+a measure $\nu$, the total mass $\int\rho(y; \theta)\,\dd\nu(y) = 1$ may
+be differentiated twice under the integral sign as soon as $\rho$ is of
+class $C^2$ in $\theta$ and its first and second partial derivatives
+with respect to $\theta$ are bounded, for $\theta$ in a neighbourhood of
+each point, by an integrable function of $y$
+(\cref{lebesgue-integral:cor:c1}, applied twice). This
+is what \cref{natural-gradient:lem:score,natural-gradient:thm:fisher}
+used. It holds for exponential families on the interior of their
+parameter set.
+\end{remark}
+
+\section{Integrating against a push-forward}
+\label{lebesgue-integral:sec:pushforward}
+
+\begin{theorem}[Transfer]\label{lebesgue-integral:thm:transfer}
+Let $f:X\to Y$ be measurable and $g:Y\to[0, \infty]$ measurable. Then
+\[
+  \int_Yg\,\dd(f_\#\mu) = \int_Xg\circ f\,\dd\mu .
+\]
+A measurable $g:Y\to\R$ is integrable for $f_\#\mu$ if and only if
+$g\circ f$ is integrable for $\mu$, and the formula then holds.
+\end{theorem}
+
+\begin{proof}
+For $g = 1_B$ the formula is the definition
+$f_\#\mu(B) = \mu(f^{-1}(B))$, since
+$1_B\circ f = 1_{f^{-1}(B)}$. It extends to simple functions by
+linearity, to non-negative $g$ by monotone convergence along the simple
+functions of \cref{lebesgue-integral:lem:dyadic}, and to integrable $g$
+by applying it to $\abs g$, $g^+$ and $g^-$.
+\end{proof}
+
+This proof is a pattern: indicators, simple functions, non-negative
+functions, integrable functions. Most identities between integrals are
+proved in this way.
+
+For a random variable $Z$ with law $P_Z$, the theorem reads
+\[
+  \E[g(Z)] = \int_\Omega g(Z(\omega))\,\dd P(\omega)
+  = \int g(z)\,\dd P_Z(z) :
+\]
+an expectation is computed from the law, and the probability space is
+never needed. With the empirical measure of a sample in place of $P_Z$
+it is the average of the $g(z_i)$.
+
+\section{Gradients of expectations}\label{lebesgue-integral:sec:ml}
+
+Many objectives are expectations whose distribution depends on the
+parameters: $L(\theta) = \E_{z\sim P_\theta}[\ell(z)]$. Two formulas
+turn $\dd L$ into an expectation that can be estimated by sampling.
+They correspond to two ways of placing $\theta$ inside the integral.
+
+\begin{mlthread}[Machine learning: two estimators of a gradient]
 \begin{itemize}[nosep]
-  \item Gradients of expectations: the reparametrization trick and the
-        score-function estimator.
-  \item When $\nabla$ and $\E$ may be exchanged.
+  \item \emph{Reparametrization.} Suppose $P_\theta = (g_\theta)_\#\pi$
+        for a fixed measure $\pi$, for instance
+        $z = \mu + \sigma\varepsilon$ with $\varepsilon$ standard
+        Gaussian. By \cref{lebesgue-integral:thm:transfer},
+        $L(\theta) = \int\ell(g_\theta(\varepsilon))\,\dd\pi(\varepsilon)$:
+        the measure no longer depends on $\theta$. If
+        $\theta\mapsto\ell(g_\theta(\varepsilon))$ satisfies the
+        hypotheses of \cref{lebesgue-integral:thm:differentiation},
+        \[
+          \dd L(\theta) = \E_{\varepsilon\sim\pi}
+          \bigl[\dd\ell\bigl(g_\theta(\varepsilon)\bigr)
+          \circ D_\theta g_\theta(\varepsilon)\bigr] ,
+        \]
+        the average of the gradients computed by backpropagation
+        through the sampling map.
+  \item \emph{Score function.} Suppose $P_\theta$ has a density
+        $\rho(z; \theta)$ with respect to a fixed measure $\nu$. Then
+        $L(\theta) = \int\ell(z)\rho(z; \theta)\,\dd\nu(z)$, and if
+        $\ell(z)\,\dd_\theta\rho(z; \theta)$ is dominated as in
+        \cref{lebesgue-integral:cor:c1},
+        \[
+          \dd L(\theta) = \int\ell(z)\,\dd_\theta\rho(z; \theta)\,\dd\nu(z)
+          = \E_{z\sim P_\theta}
+          \bigl[\ell(z)\;\dd_\theta\ln\rho(z; \theta)\bigr] ,
+        \]
+        the loss weighted by the score of
+        \cref{natural-gradient:def:score}. With $\ell = 1$ this is the
+        statement that the score has mean zero.
+  \item \emph{Which one.} The first needs $\ell$ to be differentiable
+        along the sampling path; the second needs nothing of $\ell$ but
+        integrability, and applies to discrete $z$, where $\nu$ is a
+        counting measure. For $\ell(z) = 1_{\{z > 0\}}$ the first formula
+        returns $0$, which is wrong: this is the pitfall above
+        (\cref{lebesgue-integral:fig:paths}). When both apply, the
+        first often has a much smaller variance
+        (\cref{lebesgue-integral:exr:8}).
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, xscale=1.3, yscale=2.6]
+  \draw[->] (-3.3,0) -- (3.5,0) node[right] {$\mu$};
+  \draw[->] (-3.2,-0.08) -- (-3.2,1.25);
+  \node[left] at (-3.2,1) {$1$};
+  \node[left] at (-3.2,0) {$0$};
+  \foreach \e in {-1.6,-0.7,-0.1,0.5,1.3}
+    \draw[gray, thick] (-3.2,0.012) -- (\e,0.012) -- (\e,0.988)
+      -- (3.3,0.988);
+  \draw[bookaccent, very thick] plot[smooth] coordinates
+    {(-3,0.0013) (-2.5,0.0062) (-2,0.0228) (-1.5,0.0668) (-1,0.1587)
+     (-0.5,0.3085) (0,0.5) (0.5,0.6915) (1,0.8413) (1.5,0.9332)
+     (2,0.9772) (2.5,0.9938) (3,0.9987)};
+  \node[bookaccent, right] at (1.45,0.72)
+    {$L(\mu) = \E[\ell(\mu + \varepsilon)]$};
+  \node[gray, right] at (1.45,0.3)
+    {paths $\mu\mapsto\ell(\mu + \varepsilon_i)$};
+\end{tikzpicture}
+\caption{The loss $\ell(z) = 1_{\{z > 0\}}$ along five sampling paths
+$z = \mu + \varepsilon_i$ (grey), and its expectation (blue). Each path
+is flat wherever it is differentiable, so the average of the path
+derivatives is $0$. The expectation is smooth with a positive
+derivative.}
+\label{lebesgue-integral:fig:paths}
+\end{figure}
+
+\begin{mlthread}[Machine learning: when $\nabla$ and $\E$ may be
+exchanged]
+Stochastic gradient descent replaces the gradient of the risk
+$R(\theta) = \E_{x\sim P}[\ell(x, \theta)]$ by the gradient of the loss
+on a sample. It is an unbiased estimator exactly when
+$\dd R(\theta) = \E[\dd_\theta\ell(x, \theta)]$.
+\begin{itemize}[nosep]
+  \item For the empirical risk the expectation is a finite sum and
+        there is nothing to prove.
+  \item For the population risk,
+        \cref{lebesgue-integral:thm:differentiation} asks for a bound
+        of Lipschitz type in $\theta$, with an integrable constant. It
+        holds, near any $\theta_0$, for smooth networks and losses when
+        the data are bounded, or have enough finite moments.
+  \item With ReLU activations, $\theta\mapsto\ell(x, \theta)$ is still
+        locally Lipschitz but not differentiable everywhere. The
+        theorem only needs differentiability at $\theta_0$ for almost
+        every $x$, which holds when the examples that sit exactly on a
+        kink form a null set, as they do, for all but exceptional
+        $\theta_0$, if $P$ has a density.
+  \item With hard thresholds, sampling of discrete variables or
+        quantization, that bound fails and so does the
+        exchange: the gradient of the expected loss is not the expected
+        gradient, which is $0$. Hence the score-function estimator, or
+        smooth relaxations.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{lebesgue-integral:sec:outlook}
+
+The integral is linear, monotone, blind to null sets, and continuous
+along monotone or dominated sequences. \Cref{ch:fubini} integrates over
+products one variable at a time. \Cref{ch:lp-spaces} turns the
+integrable functions into complete normed spaces, where
+$\int\abs{f_n - f}\to0$ is a convergence, and gives measures densities.
+\Cref{ch:change-of-variables} computes the push-forward of Lebesgue
+measure by a diffeomorphism.
+
+\paragraph{Sources.} Hubbard and Hubbard construct the Lebesgue integral
+on $\R^n$ from series of Riemann integrable functions (\S4.11) and state
+the theorem on series (Theorem~4.11.17), the dominated convergence
+theorem (Theorem~4.11.19) and differentiation under the integral sign
+with a hypothesis on difference quotients (Theorem~4.11.22), which is
+hypothesis (1) of \cref{lebesgue-integral:thm:differentiation} for one
+parameter. The construction through simple functions is the standard
+one; see M.~Capi\'nski and E.~Kopp, \emph{Measure, Integral and
+Probability},
+Springer, 2004. The reparametrization estimator is due to
+D.~P.~Kingma and M.~Welling, Auto-encoding variational Bayes, ICLR,
+2014, and D.~J.~Rezende, S.~Mohamed and D.~Wierstra, ICML, 2014; the
+score-function estimator to R.~J.~Williams, \emph{Machine Learning},
+1992. A survey: S.~Mohamed, M.~Rosca, M.~Figurnov and A.~Mnih, Monte
+Carlo gradient estimation in machine learning, \emph{Journal of Machine
+Learning Research}, 2020.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{17-lebesgue-integral.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item $\int s\,\dd\mu = \sum_ia_i\mu(A_i)$ for a simple function;
+        $\int f\,\dd\mu$ is the supremum over simple $s\leq f$ for
+        $f\geq0$, and $\int f^+ - \int f^-$ for integrable $f$. Sums,
+        averages and integrals are integrals for different measures.
+  \item The integral is linear and monotone, and two functions equal
+        almost everywhere have the same integral.
+  \item Monotone convergence: $0\leq f_n\uparrow f$ implies
+        $\int f_n\uparrow\int f$. Fatou:
+        $\int\liminf f_n\leq\liminf\int f_n$. Dominated convergence:
+        $f_n\to f$ almost everywhere and $\abs{f_n}\leq g$ integrable
+        imply $\int f_n\to\int f$.
+  \item The integral of a continuous function on an interval is its
+        Riemann integral.
+  \item $\dd\int f(x, \theta)\,\dd\mu = \int\dd_\theta f(x, \theta)\,\dd\mu$
+        at $\theta_0$ when
+        $\abs{f(x, \theta) - f(x, \theta_0)}\leq g(x)\norm{\theta - \theta_0}$
+        with $g$ integrable, and $f$ is differentiable in $\theta$ at
+        $\theta_0$ for almost every $x$.
+  \item $\int g\,\dd(f_\#\mu) = \int g\circ f\,\dd\mu$. The gradient
+        of an expectation is an expectation by reparametrization, if the
+        loss is differentiable along the path, or by the score function.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{lebesgue-integral:exr:1}
+Let $f = 2\cdot1_{[0, 1)} + 5\cdot1_{[1, 3)}$ on $\R$. Compute
+$\int f\,\dd\mu$ for $\mu$ the Lebesgue measure, for
+$\mu = \delta_1 + 2\delta_2$, and for the empirical measure of the
+sample $0.5, 1.5, 2.5, 7$.
+\solutionlink{lebesgue-integral:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{lebesgue-integral:exr:2}
+For $f(x) = x$ on $[0, 1)$ with Lebesgue measure, compute the integral
+of the simple function $s_n$ of \cref{lebesgue-integral:lem:dyadic} and
+its limit.
+\solutionlink{lebesgue-integral:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{lebesgue-integral:exr:3}
+Show that
+$\displaystyle\int_0^\infty\frac x{e^x - 1}\,\dd x
+= \sum_{n=1}^\infty\frac1{n^2}$, by expanding $1/(e^x - 1)$ in powers of
+$e^{-x}$. Which theorem justifies the exchange?
+\solutionlink{lebesgue-integral:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{lebesgue-integral:exr:4}
+For $f_n = n\,1_{(0, 1/n)}$ on $(0, 1)$, compute both sides of Fatou's
+inequality, and show that $\sup_nf_n$ is not integrable.
+\solutionlink{lebesgue-integral:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{lebesgue-integral:exr:5}
+Compute
+$\displaystyle\lim_{n\to\infty}\int_0^n\Bigl(1 - \frac xn\Bigr)^n\dd x$,
+with a justification.
+\solutionlink{lebesgue-integral:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{lebesgue-integral:exr:6}
+Let $F(\theta) = \int_0^\infty e^{-x}\cos(\theta x)\,\dd x$. Show that
+$F$ is differentiable with
+$F'(\theta) = -\int_0^\infty xe^{-x}\sin(\theta x)\,\dd x$, and check
+this on the closed form $F(\theta) = 1/(1 + \theta^2)$.
+\solutionlink{lebesgue-integral:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{lebesgue-integral:exr:7}
+Let $Z$ be uniform on $\{1,\dots,6\}$ and $h(x) = x\bmod3$. Compute
+$\E[h(Z)^2]$ directly and from the law of $h(Z)$
+(\cref{measures:exr:5}).
+\solutionlink{lebesgue-integral:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{lebesgue-integral:exr:8}
+Let $z = \mu + \varepsilon$ with $\varepsilon$ standard Gaussian, and
+$\ell(z) = z^2$, so that $L(\mu) = \mu^2 + 1$.
+\begin{enumerate}[nosep]
+  \item Write the reparametrization estimator and the score-function
+        estimator of $L'(\mu)$, and check that both have mean $2\mu$.
+  \item Compute their variances at $\mu = 1$. (Use
+        $\E[\varepsilon^2] = 1$, $\E[\varepsilon^4] = 3$,
+        $\E[\varepsilon^6] = 15$.)
+\end{enumerate}
+\solutionlink{lebesgue-integral:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{lebesgue-integral:exr:9}
+With the same $z$, let $\ell(z) = 1_{\{z > 0\}}$, so that
+$L(\mu) = \Phi(\mu)$, the standard Gaussian distribution function, with
+derivative the density
+$\varphi(\mu) = e^{-\mu^2/2}/\sqrt{2\pi}$.
+\begin{enumerate}[nosep]
+  \item What does the reparametrization formula give?
+  \item Show that the score-function formula gives
+        $\E[1_{\{z > 0\}}(z - \mu)] = \varphi(\mu)$.
+  \item Which hypothesis of
+        \cref{lebesgue-integral:thm:differentiation} fails in (1)?
+\end{enumerate}
+\solutionlink{lebesgue-integral:exr:9}
+\end{exercise}
 \end{notechapter}

@@ -2125,3 +2125,120 @@ disc by $\diag(a, b)$, of determinant $ab$: its area is $\pi ab$.
   \item $g_\#\pi\bigl(g(\R)\bigr) = \pi\bigl(g^{-1}(g(\R))\bigr)
         = \pi(\R) = 1$.
 \end{enumerate}
+
+\section{\nameref*{ch:lebesgue-integral}}
+
+\solution{lebesgue-integral:exr:1}
+For Lebesgue measure, $2\cdot1 + 5\cdot2 = 12$. For
+$\delta_1 + 2\delta_2$ the integral is $f(1) + 2f(2) = 5 + 10 = 15$:
+the point $1$ belongs to $[1, 3)$. For the empirical measure it is the
+average of $f(0.5), f(1.5), f(2.5), f(7)$, that is,
+$(2 + 5 + 5 + 0)/4 = 3$. The same function has three integrals, one for
+each way of weighing the sets $\{f = 2\}$ and $\{f = 5\}$.
+
+\solution{lebesgue-integral:exr:2}
+For $n\geq1$ the cap at $n$ plays no role, and $s_n = k2^{-n}$ on
+$[k2^{-n}, (k + 1)2^{-n})$ for $0\leq k < 2^n$. So
+\[
+  \int s_n\,\dd\lambda = \sum_{k=0}^{2^n - 1}k2^{-n}\cdot2^{-n}
+  = 2^{-2n}\,\frac{(2^n - 1)2^n}2 = \frac12\bigl(1 - 2^{-n}\bigr) ,
+\]
+which increases to $\frac12$, as monotone convergence requires.
+
+\solution{lebesgue-integral:exr:3}
+For $x > 0$, $e^{-x} < 1$ and
+\[
+  \frac x{e^x - 1} = \frac{xe^{-x}}{1 - e^{-x}}
+  = \sum_{n=1}^\infty xe^{-nx} .
+\]
+The terms are non-negative, so the series may be integrated term by
+term (\cref{lebesgue-integral:cor:additive}, which is monotone
+convergence for the partial sums). By
+\cref{lebesgue-integral:thm:riemann} and an integration by parts,
+$\int_0^\infty xe^{-nx}\,\dd x = 1/n^2$. The sum is $\pi^2/6$.
+
+\solution{lebesgue-integral:exr:4}
+For a given $x$, $f_n(x) = 0$ as soon as $n\geq1/x$: the limit is $0$,
+and the left-hand side of Fatou's inequality is $0$. The right-hand
+side is $\liminf_n\int f_n = 1$. Next, $f_k(x) = k$ if $k < 1/x$ and $0$
+otherwise, so for $\frac1{n+1}\leq x < \frac1n$ the supremum is $n$.
+That interval has length $\frac1{n(n+1)}$, and by
+\cref{lebesgue-integral:cor:additive}
+\[
+  \int\sup_kf_k\,\dd\lambda = \sum_{n=1}^\infty\frac n{n(n+1)}
+  = \sum_{n=1}^\infty\frac1{n+1} = \infty .
+\]
+Any function that dominates all the $f_n$ dominates their supremum: none
+is integrable.
+
+\solution{lebesgue-integral:exr:5}
+Let $f_n(x) = (1 - x/n)^n1_{[0, n]}(x)$ on $[0, \infty)$. For every $x$,
+$f_n(x)\to e^{-x}$, and $0\leq f_n(x)\leq e^{-x}$ because
+$1 - u\leq e^{-u}$. Since $e^{-x}$ is integrable, dominated convergence
+gives the limit $\int_0^\infty e^{-x}\,\dd x = 1$. A direct computation
+confirms it: $\int_0^n(1 - x/n)^n\,\dd x = n/(n + 1)$.
+
+\solution{lebesgue-integral:exr:6}
+The function $f(x, \theta) = e^{-x}\cos(\theta x)$ is of class $C^1$ in
+$\theta$ with
+$\abs{\partial_\theta f(x, \theta)} = xe^{-x}\abs{\sin(\theta x)}
+\leq xe^{-x}$, which is integrable on $[0, \infty)$ and does not depend
+on $\theta$. \Cref{lebesgue-integral:cor:c1} gives the formula. On the
+closed form, $F'(\theta) = -2\theta/(1 + \theta^2)^2$; and indeed
+\[
+  \int_0^\infty xe^{-x}\sin(\theta x)\,\dd x
+  = \operatorname{Im}\int_0^\infty xe^{-(1 - i\theta)x}\,\dd x
+  = \operatorname{Im}\frac1{(1 - i\theta)^2}
+  = \frac{2\theta}{(1 + \theta^2)^2} .
+\]
+
+\solution{lebesgue-integral:exr:7}
+Directly, the values of $h(Z)^2$ for $Z = 1,\dots,6$ are
+$1, 4, 0, 1, 4, 0$, with average $10/6 = 5/3$. The law of $h(Z)$ is
+uniform on $\{0, 1, 2\}$, and $(0 + 1 + 4)/3 = 5/3$. The first
+computation is $\int g\circ h\,\dd P_Z$ and the second is
+$\int g\,\dd(h_\#P_Z)$, with $g(y) = y^2$.
+
+\solution{lebesgue-integral:exr:8}
+\begin{enumerate}[nosep]
+  \item Reparametrization: $\frac{\dd}{\dd\mu}(\mu + \varepsilon)^2
+        = 2(\mu + \varepsilon)$, of mean $2\mu$. Score function: the
+        density is $e^{-(z - \mu)^2/2}/\sqrt{2\pi}$, with score
+        $z - \mu = \varepsilon$; the estimator is
+        $(\mu + \varepsilon)^2\varepsilon$, of mean
+        $\E[\mu^2\varepsilon + 2\mu\varepsilon^2 + \varepsilon^3]
+        = 2\mu$.
+  \item The first has variance $4\E[\varepsilon^2] = 4$. For the
+        second, at $\mu = 1$,
+        \[
+          \E\bigl[(1 + \varepsilon)^4\varepsilon^2\bigr]
+          = \E\bigl[\varepsilon^2 + 4\varepsilon^3 + 6\varepsilon^4
+            + 4\varepsilon^5 + \varepsilon^6\bigr]
+          = 1 + 18 + 15 = 34 ,
+        \]
+        so the variance is $34 - 2^2 = 30$. To reach the same accuracy,
+        the score-function estimator needs $7.5$ times as many samples.
+\end{enumerate}
+
+\solution{lebesgue-integral:exr:9}
+\begin{enumerate}[nosep]
+  \item For every $\varepsilon\neq-\mu$, the function
+        $\mu\mapsto1_{\{\mu + \varepsilon > 0\}}$ is constant near
+        $\mu$, with derivative $0$. The formula gives $0$, while
+        $L'(\mu) = \varphi(\mu) > 0$.
+  \item With $z = \mu + \varepsilon$ and
+        $\varphi'(\varepsilon) = -\varepsilon\varphi(\varepsilon)$,
+        \[
+          \E\bigl[1_{\{z > 0\}}(z - \mu)\bigr]
+          = \int_{-\mu}^\infty\varepsilon\varphi(\varepsilon)\,
+            \dd\varepsilon
+          = \varphi(-\mu) = \varphi(\mu) .
+        \]
+  \item Hypothesis (1). If $-\varepsilon$ lies between $\mu$ and
+        $\mu'$, the two values of the loss differ by $1$, however close
+        $\mu'$ is to $-\varepsilon$: the bound requires
+        $g(\varepsilon)\geq1/\abs{\varepsilon + \mu}$, and
+        $\int\varphi(\varepsilon)/\abs{\varepsilon + \mu}\,\dd\varepsilon
+        = \infty$. Hypothesis (2) holds for every
+        $\varepsilon\neq-\mu$.
+\end{enumerate}
