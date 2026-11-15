@@ -4,19 +4,693 @@
 \chaptersubtitle{%
   From local linear information to quantitative conclusions}
 
-\begin{chapterplan}
+\begin{chapterintro}
+The differential describes a map near one point, up to an error that is
+small in a sense that says nothing about how near is near enough. To
+conclude anything over a finite distance, for instance that an iteration
+converges, the information at single points must be assembled along a
+path. The tool is the mean value inequality: a bound on the differential
+along a segment bounds the change of the map between its end points. From
+it come the Lipschitz constants of networks, the proof that gradient
+descent contracts distances under strong convexity, and the fast
+convergence of Newton's method. You will learn
 \begin{itemize}[nosep]
-  \item The mean value inequality in normed spaces (there is no mean value
-        \emph{equality} for vector-valued maps).
-  \item Lipschitz maps; differentiation and uniform limits.
-  \item Fixed-point iterations and the contraction mapping principle.
-  \item Newton's method: quadratic convergence and Kantorovich's theorem.
+  \item the mean value inequality for maps with values in a normed space,
+        and why there is no mean value \emph{equality};
+  \item its consequences: Lipschitz constants, the error of the tangent
+        affine map, differentiation of a limit of maps;
+  \item when an iteration $a_{k+1} = g(a_k)$ converges, globally and near
+        a fixed point, and at which rate;
+  \item that gradient descent on a smooth, strongly convex function is a
+        contraction;
+  \item Newton's method for equations: its invariance, its quadratic
+        convergence, and a theorem of Kantorovich that guarantees
+        convergence from data at the starting point.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:differential,ch:chain-rule-autodiff,%
+ch:gradient-hessian}; the contraction principle of \cref{ch:norms-banach}
+and the norm of a self-adjoint operator (\cref{ch:spectral-svd}). All
+spaces are finite-dimensional.}
+\end{chapterintro}
+
+\section{The mean value inequality}\label{contractions-newton:sec:mvi}
+
+For a differentiable function $c:[\alpha, \beta]\to\R$ the mean value
+theorem gives a point $\tau$ with
+$c(\beta) - c(\alpha) = (\beta - \alpha)\,c'(\tau)$. For curves in a space
+of dimension two or more this is false.
+
+\begin{example}[No mean value equality]\label{contractions-newton:ex:circle}
+Let $c(t) = (\cos t, \sin t)$ on $[0, 2\pi]$. Then
+$c(2\pi) - c(0) = 0$, whereas $c'(t) = (-\sin t, \cos t)$ has length $1$
+for every $t$: there is no $\tau$ with
+$c(2\pi) - c(0) = 2\pi\,c'(\tau)$. What remains true is an inequality:
+the displacement $0$ is no longer than the speed $1$ times the duration
+$2\pi$ (\cref{contractions-newton:fig:circle}).
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.5]
+  \draw[bookaccent, thick] (0,0) circle (1);
+  \draw[bookaccent, very thick] (1,0) arc[start angle=0, end angle=130,
+    radius=1];
+  \foreach \t in {0,50,100}
+    \draw[->, bookdef, thick] ({cos(\t)},{sin(\t)})
+      -- ({cos(\t) - 0.55*sin(\t)},{sin(\t) + 0.55*cos(\t)});
+  \draw[bookpitfall, very thick] (1,0) -- ({cos(130)},{sin(130)});
+  \fill (1,0) circle (1.2pt) node[right] {$c(\alpha)$};
+  \fill ({cos(130)},{sin(130)}) circle (1.2pt) node[above left]
+    {$c(\beta)$};
+  \node[bookpitfall, font=\small] at (-0.05,-0.05)
+    {$c(\beta) - c(\alpha)$};
+  \node[bookdef, font=\small, anchor=west] at (1.15,0.75) {$c'(t)$};
+\end{tikzpicture}
+\caption{A curve travelled at speed $1$ from $c(\alpha)$ to $c(\beta)$.
+The displacement (red) is shorter than the distance travelled,
+$\beta - \alpha$, and it is not parallel to any of the velocities. After a
+full turn it is zero.}
+\label{contractions-newton:fig:circle}
+\end{figure}
+
+Throughout, $\Aff$ and $\Bff$ are normed affine spaces with directions $V$
+and $W$, and $U\subset\Aff$ is open.
+
+\begin{theorem}[Mean value inequality for curves]
+\label{contractions-newton:thm:mvi-curve}
+Let $c:[\alpha, \beta]\to\Bff$ and $g:[\alpha, \beta]\to\R$ be continuous,
+and differentiable on $(\alpha, \beta)$, with
+\[
+  \norm{c'(t)}\leq g'(t) \qquad\text{for all } t\in(\alpha, \beta) .
+\]
+Then $\norm{c(\beta) - c(\alpha)}\leq g(\beta) - g(\alpha)$. In
+particular, if $\norm{c'(t)}\leq K$ for all $t$, then
+$\norm{c(\beta) - c(\alpha)}\leq K(\beta - \alpha)$.
+\end{theorem}
+
+\begin{proof}
+Let $\varepsilon > 0$, and let $A$ be the set of $t\in[\alpha, \beta]$
+such that
+\[
+  \norm{c(s) - c(\alpha)}\leq g(s) - g(\alpha) + \varepsilon(s - \alpha)
+  + \varepsilon \qquad\text{for all } s\in[\alpha, t] .
+\]
+At $s = \alpha$ the inequality is strict, so by continuity it holds near
+$\alpha$: $\tau = \sup A > \alpha$. By continuity again it holds at
+$s = \tau$, so $\tau\in A$. Suppose $\tau < \beta$. Both $c$ and $g$ are
+differentiable at $\tau$, so for $s > 0$ small enough
+\[
+  \norm{c(\tau + s) - c(\tau)}
+  \leq\bigl(\norm{c'(\tau)} + \tfrac\varepsilon2\bigr)s
+  \leq\bigl(g'(\tau) + \tfrac\varepsilon2\bigr)s
+  \leq g(\tau + s) - g(\tau) + \varepsilon s .
+\]
+Adding the inequality at $\tau$ and using the triangle inequality shows
+that $\tau + s\in A$, which contradicts the definition of $\tau$. Hence
+$\tau = \beta$, and
+$\norm{c(\beta) - c(\alpha)}\leq g(\beta) - g(\alpha)
++ \varepsilon(\beta - \alpha + 1)$ for every $\varepsilon > 0$. The
+particular case is $g(t) = Kt$.
+\end{proof}
+
+\begin{theorem}[Mean value inequality]\label{contractions-newton:thm:mvi}
+Let $f:U\to\Bff$ be differentiable, and let the segment $[a, b]$ lie in
+$U$. If $\norm{Df(x)}\leq K$ for every $x\in[a, b]$, then
+\[
+  \norm{f(b) - f(a)}\leq K\norm{b - a} .
+\]
+\end{theorem}
+
+\begin{proof}
+The curve $c(t) = f(a + t(b - a))$, $t\in[0, 1]$, has the velocity
+$c'(t) = Df(a + t(b - a))(b - a)$ (\cref{differential:thm:velocity}), of
+norm at most $K\norm{b - a}$. Apply
+\cref{contractions-newton:thm:mvi-curve}.
+\end{proof}
+
+\begin{intuition}
+A bound on the speed gives a bound on the distance covered. The operator
+norm $\norm{Df(x)}$ is the largest factor by which $f$ stretches
+velocities at $x$; if it never exceeds $K$ along the way from $a$ to $b$,
+the images of $a$ and $b$ are at most $K$ times as far apart as $a$ and
+$b$.
+\end{intuition}
+
+\begin{corollary}\label{contractions-newton:cor:mvi}
+Let $U$ be convex and open, and $f:U\to\Bff$ differentiable.
+\begin{enumerate}[nosep]
+  \item $f$ is Lipschitz with constant $K$ on $U$ if and only if
+        $\norm{Df(x)}\leq K$ for all $x\in U$.
+  \item If $Df(x) = 0$ for all $x\in U$, then $f$ is constant.
+  \item For all $a, b\in U$,
+        \[
+          \norm{f(b) - f(a) - Df(a)(b - a)}
+          \leq\sup_{x\in[a, b]}\norm{Df(x) - Df(a)}\;\norm{b - a} .
+        \]
+  \item If $Df$ is Lipschitz with constant $L$ on $U$, then for all
+        $a, b\in U$,
+        \[
+          \norm{f(b) - f(a) - Df(a)(b - a)}\leq\frac L2\norm{b - a}^2 .
+        \]
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) If the differential is bounded by $K$, \cref{contractions-newton:thm:mvi}
+applies to every segment of the convex set $U$. Conversely, if $f$ is
+$K$-Lipschitz, then for every $v$,
+\[
+  \norm{Df(a)v} = \lim_{t\to0}\frac{\norm{f(a + tv) - f(a)}}{\abs t}
+  \leq K\norm v .
+\]
+(2) is (1) with $K = 0$. (3) Apply \cref{contractions-newton:thm:mvi} to
+$x\mapsto f(x) - Df(a)(x - a)$, whose differential at $x$ is
+$Df(x) - Df(a)$. (4) Let $h = b - a$ and
+$c(t) = f(a + th) - t\,Df(a)h$ on $[0, 1]$. Then
+$c'(t) = \bigl(Df(a + th) - Df(a)\bigr)h$ has norm at most
+$Lt\norm h^2$, the derivative of $g(t) = \frac L2t^2\norm h^2$, and
+\cref{contractions-newton:thm:mvi-curve} gives
+$\norm{c(1) - c(0)}\leq\frac L2\norm h^2$.
+\end{proof}
+
+Statement (3) is the quantitative form of differentiability: the tangent
+affine map at $a$ is accurate on the whole segment $[a, b]$ as soon as the
+differential varies little along it. Statement (4) is the form used in the
+analysis of Newton's method.
+
+\begin{proposition}[Smoothness and Lipschitz gradients]
+\label{contractions-newton:prop:smooth}
+Let $\Aff$ be Euclidean, $U$ convex and open, and $f:U\to\R$ of class
+$C^2$. Then $f$ is $L$-smooth (\cref{gradient-hessian:def:smooth}) if and
+only if its gradient is Lipschitz with constant $L$:
+$\norm{\nabla f(a) - \nabla f(b)}\leq L\norm{a - b}$ for all $a, b\in U$.
+\end{proposition}
+
+\begin{proof}
+By \cref{gradient-hessian:prop:hessian}, $D(\nabla f)(a)$ is the Hessian
+operator $S = \operatorname{Hess}f(a)$, which is self-adjoint. Its norm is
+the largest $\abs{\lambda_i}$ (\cref{spectral-svd:cor:norm}), which is
+also the largest value of $\abs{\inner h{Sh}}$ on unit vectors
+(\cref{spectral-svd:thm:minmax}). So $f$ is $L$-smooth if and only if
+$\norm{D(\nabla f)(a)}\leq L$ for all $a$, and the statement is
+\cref{contractions-newton:cor:mvi}(1) for the map $\nabla f$.
+\end{proof}
+
+\begin{mlthread}[Machine learning: Lipschitz constants of networks]
+Let a layer be $x\mapsto\sigma(Wx + b)$ with an activation such that
+$\abs{s'}\leq1$ (ReLU away from $0$, $\tanh$, the logistic function). Its
+differential is $\diag(s'(z))W$, of norm at most $\norm W$ for the
+Euclidean norms, so by \cref{contractions-newton:cor:mvi} the layer is
+Lipschitz with constant $\norm W$, the largest singular value of $W$. By
+the chain rule a network is Lipschitz with constant at most
+$\prod_k\norm{W_k}$. This is the bound behind spectral normalization
+(\cref{ch:norms-banach}); it is usually far from tight, because the
+directions most stretched by one layer need not be those most stretched by
+the next.
+\end{mlthread}
+
+\begin{theorem}[Differentiating a limit]\label{contractions-newton:thm:limit}
+Let $U$ be convex and open, and let $f_k:U\to W$ be differentiable maps
+into a normed space. Suppose that $(f_k(a_0))$ converges for some
+$a_0\in U$, and that $Df_k$ converges to a map $G:U\to L(V, W)$ uniformly
+on $U$. Then $(f_k)$ converges at every point of $U$, uniformly on bounded
+subsets, to a differentiable map $f$, and $Df = G$.
+\end{theorem}
+
+\begin{proof}
+Let $\varepsilon_k = \sup_U\norm{Df_k - G}$, which tends to $0$. By
+\cref{contractions-newton:cor:mvi}(1) applied to $f_j - f_k$,
+\begin{equation}\label{contractions-newton:eq:cauchy}
+  \norm{(f_j - f_k)(x) - (f_j - f_k)(y)}
+  \leq(\varepsilon_j + \varepsilon_k)\norm{x - y}
+  \qquad\text{for all } x, y\in U .
+\end{equation}
+With $y = a_0$ this shows that $(f_k(x))$ is a Cauchy sequence, uniformly
+for $x$ in a bounded set; $W$ is complete
+(\cref{norms-banach:cor:finite}), so $f_k$ converges to a map $f$. Fix
+$a\in U$. Letting $k\to\infty$ in \eqref{contractions-newton:eq:cauchy}
+with $y = a$ gives
+$\norm{(f_j - f)(x) - (f_j - f)(a)}\leq\varepsilon_j\norm{x - a}$. Hence
+\begin{align*}
+  \norm{f(x) - f(a) - G(a)(x - a)}
+  &\leq\varepsilon_j\norm{x - a}
+   + \norm{f_j(x) - f_j(a) - Df_j(a)(x - a)}\\
+  &\quad+ \norm{Df_j(a) - G(a)}\,\norm{x - a} .
+\end{align*}
+Given $\varepsilon > 0$, choose $j$ with $\varepsilon_j\leq\varepsilon/3$;
+then the first and third terms are at most
+$\frac\varepsilon3\norm{x - a}$, and so is the second for $x$ close enough
+to $a$, since $f_j$ is differentiable at $a$.
+\end{proof}
+
+The theorem will be used to differentiate maps defined by series, such as
+the exponential of a matrix (\cref{ch:odes-flows}).
+
+\section{Iterations and contractions}\label{contractions-newton:sec:iterations}
+
+Many algorithms have the form $a_{k+1} = g(a_k)$. A limit of such a
+sequence is a \emph{fixed point} of $g$, and the contraction principle
+(\cref{norms-banach:thm:contraction}) gives convergence when $g$ is
+Lipschitz with a constant $\kappa < 1$. By
+\cref{contractions-newton:cor:mvi}, for a differentiable $g$ on a convex
+set this means $\norm{Dg(x)}\leq\kappa$ at every point. Near a fixed point
+it is enough to look at the differential there.
+
+\begin{theorem}[Local convergence]\label{contractions-newton:thm:local}
+Let $g:U\to\Aff$ be of class $C^1$ with a fixed point $a^*$, and suppose
+that $q = \norm{Dg(a^*)} < 1$. For every $\kappa\in(q, 1)$ there is
+$r > 0$ such that $g$ maps the closed ball $\bar B(a^*, r)$ into itself
+and, for every $a_0$ in that ball, the sequence $a_{k+1} = g(a_k)$
+satisfies
+\[
+  \norm{a_k - a^*}\leq\kappa^k\norm{a_0 - a^*} .
+\]
+\end{theorem}
+
+\begin{proof}
+$Dg$ is continuous, so there is $r > 0$ with $\bar B(a^*, r)\subset U$ and
+$\norm{Dg(x)}\leq\kappa$ on that ball, which is convex. By
+\cref{contractions-newton:thm:mvi},
+$\norm{g(x) - a^*} = \norm{g(x) - g(a^*)}\leq\kappa\norm{x - a^*}$ for
+$x$ in the ball. So the ball is mapped into itself, and the estimate
+follows by induction.
+\end{proof}
+
+\begin{remark}[Which norm?]\label{contractions-newton:rem:norm}
+The hypothesis $\norm{Dg(a^*)} < 1$ depends on the norm, whereas
+convergence does not (\cref{norms-banach:cor:finite}). The condition that
+does not depend on the norm is that all the eigenvalues of $Dg(a^*)$,
+real or complex, have modulus less than $1$; we shall not need it. When
+$Dg(a^*)$ is self-adjoint for an inner product, its norm for that inner
+product is the largest $\abs{\lambda_i}$
+(\cref{spectral-svd:cor:norm}), and nothing is lost.
+\end{remark}
+
+\begin{theorem}[Gradient descent is a contraction]
+\label{contractions-newton:thm:gd}
+Let $\Aff$ be Euclidean and let $f:\Aff\to\R$ be of class $C^2$,
+$L$-smooth and $\mu$-strongly convex. For $0 < \eta < 2/L$ the map
+$g(a) = a - \eta\nabla f(a)$ is Lipschitz with the constant
+\[
+  \kappa(\eta) = \max\bigl(\abs{1 - \eta\mu}, \abs{1 - \eta L}\bigr) < 1 .
+\]
+Consequently gradient descent converges from every starting point to the
+unique minimizer $a^*$ of $f$, with
+$\norm{a_k - a^*}\leq\kappa(\eta)^k\norm{a_0 - a^*}$. The constant is
+smallest for $\eta = 2/(L + \mu)$, where it equals
+$(L - \mu)/(L + \mu)$.
+\end{theorem}
+
+\begin{proof}
+By \cref{gradient-hessian:prop:hessian},
+$Dg(a) = \id - \eta\operatorname{Hess}f(a)$, a self-adjoint operator
+whose eigenvalues are the $1 - \eta\lambda_i$ with
+$\lambda_i\in[\mu, L]$. Its norm is the largest $\abs{1 - \eta\lambda_i}$
+(\cref{spectral-svd:cor:norm}), at most $\kappa(\eta)$ because
+$t\mapsto\abs{1 - \eta t}$ is convex. So $g$ is $\kappa(\eta)$-Lipschitz
+on $\Aff$ (\cref{contractions-newton:cor:mvi}), and the contraction
+principle applies with $X = \Aff$. A fixed point of $g$ is a critical
+point of $f$, hence its minimizer (\cref{gradient-hessian:cor:global}).
+The optimal step is found as in \cref{spectral-svd:thm:gd}.
+\end{proof}
+
+This extends \cref{spectral-svd:thm:gd} from quadratic functions to all
+smooth strongly convex ones, with the same constants. It also sharpens
+\cref{gradient-hessian:thm:rates}: for $\eta = 1/L$ the distance to the
+minimizer is multiplied by $1 - \mu/L$ at each step, whereas that theorem
+gave this factor for the excess loss, which behaves like the
+\emph{square} of the distance.
+
+\begin{mlthread}[Machine learning: what the learning rate allows]
+Near a non-degenerate local minimum $a^*$ of a loss that is not convex,
+\cref{contractions-newton:thm:local} applies to
+$g(a) = a - \eta\nabla f(a)$, whose differential at $a^*$ has the
+eigenvalues $1 - \eta\lambda_i$, the $\lambda_i > 0$ being those of
+$\operatorname{Hess}f(a^*)$. If $\eta < 2/\lambda_1$, gradient descent
+started close enough converges to $a^*$, at the rate
+$\max_i\abs{1 - \eta\lambda_i}$. If $\eta > 2/\lambda_1$, one eigenvalue
+is below $-1$ and the minimum repels along the corresponding direction.
+To first order, a given learning rate can therefore only settle in minima
+whose largest curvature is below $2/\eta$: large learning rates rule out
+sharp minima, where sharpness is measured in the inner product used by
+the optimizer (\cref{ch:gradient-hessian}).
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: layers defined by a fixed point]
+Instead of stacking $N$ layers one can define the output of a block as
+the fixed point of a single layer, $z^* = g_\theta(z^*, x)$ (Bai, Kolter
+and Koltun, 2019). The contraction principle says when this makes sense:
+if $z\mapsto g_\theta(z, x)$ is Lipschitz with a constant $\kappa < 1$,
+for instance $g_\theta(z, x) = \tanh(Wz + Ux)$ with $\norm W < 1$, the
+fixed point exists, is unique, and is reached by iteration at the rate
+$\kappa^k$. How $z^*$ varies with $\theta$, without differentiating
+through the iterations, is a question for the implicit function theorem
+(\cref{ch:inverse-implicit}).
+\end{mlthread}
+
+\section{Newton's method for equations}\label{contractions-newton:sec:newton}
+
+Let $F:U\to W$ be a map of class $C^1$ from an open set of $\Aff$ to a
+vector space $W$ with $\dim W = \dim V$. To solve $F(a) = 0$, replace $F$
+by its tangent affine map at the current point and solve that instead.
+
+\begin{definition}[Newton's method]\label{contractions-newton:def:newton}
+Where $DF(a)$ is invertible, the \emph{Newton map} is
+\[
+  N(a) = a - DF(a)^{-1}F(a) ,
+\]
+the unique zero of $x\mapsto F(a) + DF(a)(x - a)$. \emph{Newton's method}
+is the iteration $a_{k+1} = N(a_k)$.
+\end{definition}
+
+The method of \cref{gradient-hessian:def:newton} is the case
+$F = \dd f$, with $W = V^*$: a critical point of $f$ is a zero of its
+differential, and $D(\dd f)(a)$ is the map $\Phi_a$.
+
+\begin{proposition}[Invariance]\label{contractions-newton:prop:invariance}
+Let $\varphi:\Aff'\to\Aff$ be an affine isomorphism, $B:W\to W'$ a linear
+isomorphism, and $G = B\circ F\circ\varphi$. Then
+$N_G = \varphi^{-1}\circ N_F\circ\varphi$: the Newton iterates of $G$ are
+the images by $\varphi^{-1}$ of those of $F$.
+\end{proposition}
+
+\begin{proof}
+Let $A$ be the linear part of $\varphi$. By the chain rule
+$DG(x) = B\,DF(\varphi(x))\,A$, so
+$N_G(x) = x - A^{-1}DF(\varphi(x))^{-1}B^{-1}BF(\varphi(x))$ and
+$\varphi(N_G(x)) = \varphi(x) - DF(\varphi(x))^{-1}F(\varphi(x))$.
+\end{proof}
+
+Newton's method is thus defined by the equation alone: it uses no norm
+and no inner product, and it is unaffected by affine changes of the
+unknown and by linear recombinations of the equations. Norms enter only
+to measure how fast it converges.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth]
+  \begin{scope}[xscale=5.0, yscale=1.25]
+    \draw[->, gray] (1.2,0) -- (2.32,0);
+    \draw[bookaccent, very thick, domain=1.25:2.2, samples=40]
+      plot (\x, {\x*\x - 2});
+    \draw[bookdef, thick] (2.1,2.41) -- (1.5262,0);
+    \draw[bookdef, thick] (1.5262,0.3293) -- (1.4183,0);
+    \draw[densely dotted] (2.1,0) -- (2.1,2.41);
+    \draw[densely dotted] (1.5262,0) -- (1.5262,0.3293);
+    \node[circle, fill, inner sep=1.2pt] at (2.1,2.41) {};
+    \node[circle, fill, inner sep=1.2pt] at (1.5262,0.3293) {};
+    \node[below] at (2.1,0) {$a_0$};
+    \node[below right] at (1.5,0) {$a_1$};
+    \node[below left] at (1.44,0) {$a_2$};
+    \node[bookaccent, left] at (1.95,2.2) {$F$};
+  \end{scope}
+  \begin{scope}[xshift=13.2cm, yshift=-0.35cm]
+    \begin{axis}[width=6.2cm, height=4.6cm, ymode=log,
+        xlabel={step $k$}, ylabel={error},
+        xmin=-0.3, xmax=4.3, ymin=1e-12, ymax=3,
+        xtick={0,1,2,3,4}, ytick={1,1e-4,1e-8,1e-12},
+        tick label style={font=\footnotesize},
+        label style={font=\small}]
+      \addplot[bookpitfall, thick, mark=*, mark size=1.2pt] coordinates
+        {(0,0.686) (1,0.412) (2,0.247) (3,0.148) (4,0.0889)};
+      \addplot[bookdef, thick, mark=*, mark size=1.2pt] coordinates
+        {(0,0.686) (1,0.112) (2,4.11e-3) (3,5.95e-6) (4,1.25e-11)};
+    \end{axis}
+  \end{scope}
+\end{tikzpicture}
+\caption{Left: Newton's method for $F(x) = x^2 - 2$ from $a_0 = 2.1$; each
+iterate is the zero of the tangent at the previous one. Right: its error
+(green) on a logarithmic scale, against an iteration that gains the
+constant factor $0.6$ per step (red). A constant factor adds a constant
+number of correct digits per step; Newton's method doubles it.}
+\label{contractions-newton:fig:newton}
+\end{figure}
+
+\begin{theorem}[Local quadratic convergence]
+\label{contractions-newton:thm:quadratic}
+Let $F(a^*) = 0$ with $DF(a^*)$ invertible, and put
+$\beta = \norm{DF(a^*)^{-1}}$. Suppose that $DF$ is Lipschitz with
+constant $L$ on a ball $\bar B(a^*, r)\subset U$ with
+$r\leq1/(2\beta L)$. Then for every $a_0$ in this ball the Newton iterates
+are defined, remain in the ball, and satisfy
+\[
+  \norm{a_{k+1} - a^*}\leq\beta L\norm{a_k - a^*}^2 ,
+  \qquad
+  \norm{a_k - a^*}\leq\frac1{\beta L}\Bigl(\frac12\Bigr)^{2^k} .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $x$ be in the ball. Then
+$\norm{DF(x) - DF(a^*)}\leq Lr\leq1/(2\beta)$, so the operator
+$T = DF(a^*)^{-1}\bigl(DF(a^*) - DF(x)\bigr)$ has norm at most $\frac12$.
+Hence $DF(x) = DF(a^*)(\id - T)$ is invertible, with
+$\norm{DF(x)^{-1}}\leq2\beta$ (\cref{differential:lem:neumann}). Since
+$F(a^*) = 0$,
+\[
+  N(x) - a^* = DF(x)^{-1}\bigl(DF(x)(x - a^*) - F(x)\bigr)
+  = DF(x)^{-1}\bigl(F(a^*) - F(x) - DF(x)(a^* - x)\bigr) ,
+\]
+and by \cref{contractions-newton:cor:mvi}(4) the last bracket has norm at
+most $\frac L2\norm{x - a^*}^2$. Hence
+$\norm{N(x) - a^*}\leq\beta L\norm{x - a^*}^2
+\leq\frac12\norm{x - a^*}$, the second inequality because
+$\beta L\norm{x - a^*}\leq\frac12$. So $N(x)$ is in the ball. With
+$u_k = \beta L\norm{a_k - a^*}$ we have $u_0\leq\frac12$ and
+$u_{k+1}\leq u_k^2$, hence $u_k\leq(\frac12)^{2^k}$.
+\end{proof}
+
+\begin{example}[Square roots]\label{contractions-newton:ex:sqrt}
+For $F(x) = x^2 - 2$ on $(0, \infty)$, $N(x) = \frac12(x + 2/x)$ and
+$N(x) - \sqrt2 = (x - \sqrt2)^2/(2x)$. From $a_0 = 1$ the iterates are
+$1.5$, $1.41667$, $1.4142157$, $1.41421356237$, with errors
+$8.6\times10^{-2}$, $2.5\times10^{-3}$, $2.1\times10^{-6}$,
+$1.6\times10^{-12}$.
+\end{example}
+
+\begin{corollary}[Newton's method for minimization]
+\label{contractions-newton:cor:min}
+Let $f:U\to\R$ be of class $C^2$ with $D(\dd f)$ Lipschitz near a
+critical point $a^*$ where $D^2f(a^*)$ is non-degenerate (for instance
+$f$ of class $C^3$). Then the Newton iteration of
+\cref{gradient-hessian:def:newton}, started close enough to $a^*$,
+converges to $a^*$ with
+$\norm{a_{k+1} - a^*}\leq C\norm{a_k - a^*}^2$.
+\end{corollary}
+
+\begin{proof}
+\Cref{contractions-newton:thm:quadratic} for $F = \dd f$.
+\end{proof}
+
+The corollary holds at every non-degenerate critical point: Newton's
+method is attracted to saddle points and maxima as strongly as to minima.
+It solves $\dd f = 0$ and does not know that it is asked to minimize.
+
+\Cref{contractions-newton:thm:quadratic} assumes a zero and a starting
+point near it. The next theorem assumes neither: from quantities measured
+at the starting point it proves that a zero \emph{exists} and that
+Newton's method finds it.
+
+\begin{theorem}[Kantorovich]\label{contractions-newton:thm:kantorovich}
+Let $a_0\in U$ with $DF(a_0)$ invertible, and put
+\[
+  \beta_0 = \norm{DF(a_0)^{-1}}, \qquad
+  \eta_0 = \norm{DF(a_0)^{-1}F(a_0)} ,
+\]
+the second being the length of the first Newton step. Suppose that
+$\bar B(a_0, 2\eta_0)\subset U$, that $DF$ is Lipschitz with constant $L$
+on this ball, and that
+\[
+  h_0 = \beta_0L\eta_0\leq\tfrac12 .
+\]
+Then the Newton iterates are defined, stay in the ball, and converge to a
+zero $a^*$ of $F$, with
+$\norm{a_{k+1} - a_k}\leq\eta_0/2^k$ and
+$\norm{a_k - a^*}\leq\eta_0/2^{k-1}$.
+\end{theorem}
+
+\begin{proof}
+Write $\beta_k = \norm{DF(a_k)^{-1}}$,
+$\eta_k = \norm{a_{k+1} - a_k}$ and $h_k = \beta_kL\eta_k$. We prove by
+induction that $a_k$ is in the ball, $DF(a_k)$ is invertible,
+$h_k\leq\frac12$ and $\eta_k\leq\eta_0/2^k$. This holds for $k = 0$.
+Assume it up to $k$. Then
+$\norm{a_{k+1} - a_0}\leq\sum_{j\leq k}\eta_j < 2\eta_0$, so $a_{k+1}$ is
+in the ball, as is the segment $[a_k, a_{k+1}]$.
+
+\emph{Invertibility.} $\norm{DF(a_{k+1}) - DF(a_k)}\leq L\eta_k$, so
+$T = DF(a_k)^{-1}\bigl(DF(a_k) - DF(a_{k+1})\bigr)$ has norm at most
+$h_k\leq\frac12$, and by \cref{differential:lem:neumann}
+$DF(a_{k+1}) = DF(a_k)(\id - T)$ is invertible with
+$\beta_{k+1}\leq\beta_k/(1 - h_k)$.
+
+\emph{The new residual.} By definition of the Newton step,
+$F(a_k) + DF(a_k)(a_{k+1} - a_k) = 0$, so by
+\cref{contractions-newton:cor:mvi}(4)
+\[
+  \norm{F(a_{k+1})}
+  = \norm{F(a_{k+1}) - F(a_k) - DF(a_k)(a_{k+1} - a_k)}
+  \leq\tfrac L2\eta_k^2 .
+\]
+
+\emph{The new step.}
+$\eta_{k+1}\leq\beta_{k+1}\norm{F(a_{k+1})}
+\leq\dfrac{\beta_kL\eta_k^2}{2(1 - h_k)}
+= \dfrac{h_k}{2(1 - h_k)}\,\eta_k\leq\dfrac{\eta_k}2$, and
+\[
+  h_{k+1} = \beta_{k+1}L\eta_{k+1}
+  \leq\frac{h_k^2}{2(1 - h_k)^2}\leq2h_k^2\leq\tfrac12 ,
+\]
+since $h_k\leq\frac12$. This completes the induction.
+
+\emph{Convergence.} For $j > k$,
+$\norm{a_j - a_k}\leq\sum_{i\geq k}\eta_i\leq2\eta_k\leq\eta_0/2^{k-1}$:
+the sequence is Cauchy, and it converges to a point $a^*$ of the closed
+ball. Finally $F(a^*) = \lim F(a_k) = 0$ because
+$\norm{F(a_{k+1})}\leq\frac L2\eta_k^2\to0$.
+\end{proof}
+
+The inequality $h_{k+1}\leq2h_k^2$ shows that the convergence is quadratic
+as soon as $h_0 < \frac12$. Kantorovich's theorem also gives the
+uniqueness of the zero in a ball, which we do not prove. Its hypothesis
+combines three quantities: how large the first step is ($\eta_0$), how
+badly conditioned the linearized problem is ($\beta_0$), and how fast the
+linearization changes ($L$).
+
+\begin{pitfall}[Newton's method is local]
+Far from a zero, nothing is guaranteed. For $F(x) = \arctan x$, whose only
+zero is $0$, the iteration $N(x) = x - (1 + x^2)\arctan x$ converges from
+$a_0 = 1$ and diverges from $a_0 = 1.5$, with iterates of alternating sign
+and growing size (\cref{contractions-newton:exr:9}). Practical versions
+shorten the step until the residual decreases; near the zero the full
+step is accepted and the quadratic rate is recovered.
+\end{pitfall}
+
+\section{Where the chapter leads}\label{contractions-newton:sec:outlook}
+
+The mean value inequality and the contraction principle are the two tools
+of \cref{ch:inverse-implicit}: a $C^1$ map with invertible differential is
+shown to be locally invertible by exhibiting the inverse as a fixed point.
+They are used again for the existence of solutions of differential
+equations (\cref{ch:odes-flows}), where gradient descent appears as the
+discretization of a flow.
+
+\paragraph{Sources.} Loomis and Sternberg prove the mean value inequality
+for arcs and for maps in \S3.7 of \emph{Advanced Calculus} (Theorems~7.3
+and~7.4), by the argument used here. Hubbard and Hubbard state a mean
+value theorem for functions of several variables (Theorem~1.9.1), present
+Newton's method in \S2.8, and give Kantorovich's theorem as
+Theorem~2.8.13, with a proof in their appendix; their hypothesis is
+written with $\norm{F(a_0)}\,\norm{DF(a_0)^{-1}}^2$ where ours has
+$\beta_0\eta_0$. Fixed-point layers: S.~Bai, J.~Z.~Kolter and V.~Koltun,
+Deep equilibrium models, NeurIPS, 2019.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{09-contractions-newton.ipynb}.
+
+\begin{chaptersummary}
 \begin{itemize}[nosep]
-  \item Gradient descent as a fixed-point iteration; linear convergence under
-        strong convexity.
-  \item Layers defined by a fixed point.
+  \item There is no mean value equality for vector-valued maps, but
+        $\norm{Df}\leq K$ on a segment implies
+        $\norm{f(b) - f(a)}\leq K\norm{b - a}$.
+  \item On a convex set: $K$-Lipschitz means $\norm{Df}\leq K$; the
+        tangent affine map errs by at most
+        $\sup\norm{Df(x) - Df(a)}\norm{b - a}$, and by
+        $\frac L2\norm{b - a}^2$ if $Df$ is $L$-Lipschitz. $L$-smooth
+        means that the gradient is $L$-Lipschitz.
+  \item An iteration $a_{k+1} = g(a_k)$ converges near a fixed point where
+        $\norm{Dg(a^*)} < 1$, at a rate arbitrarily close to that norm.
+  \item Gradient descent on an $L$-smooth, $\mu$-strongly convex function
+        is a contraction with constant
+        $\max(\abs{1 - \eta\mu}, \abs{1 - \eta L})$.
+  \item Newton's method $a - DF(a)^{-1}F(a)$ is invariant under affine
+        changes of the unknown and linear changes of the equations. Near
+        a zero with invertible differential the error is squared at each
+        step. Kantorovich: if $\beta_0L\eta_0\leq\frac12$ at the starting
+        point, a zero exists and the method converges to it.
 \end{itemize}
-\end{chapterplan}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{contractions-newton:exr:1}
+Let $c(t) = (\cos t, \sin t, t)$ on $[0, 2\pi]$, with the Euclidean norm.
+Compute $c(2\pi) - c(0)$ and $\norm{c'(t)}$, check the mean value
+inequality, and show that there is no $\tau$ with
+$c(2\pi) - c(0) = 2\pi\,c'(\tau)$.
+\solutionlink{contractions-newton:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{contractions-newton:exr:2}
+Let $W = \begin{bsmallmatrix}3 & 0\\4 & 5\end{bsmallmatrix}$ and
+$\ell(x) = \tanh(Wx + b)$, with $\tanh$ applied to each coordinate. Give a
+Lipschitz constant of $\ell$ for the Euclidean norm, and one for the
+composition of two such layers. Is the first one attained?
+\solutionlink{contractions-newton:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{contractions-newton:exr:3}
+Give an example of a differentiable function on an open subset of $\R$
+whose derivative is zero everywhere and which is not constant. Where does
+the proof of \cref{contractions-newton:cor:mvi}(2) use convexity?
+\solutionlink{contractions-newton:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{contractions-newton:exr:4}
+Let $\Aff$ be Euclidean and $f:\Aff\to\R$ differentiable with a gradient
+that is Lipschitz with constant $L$ ($f$ is not assumed to be of class
+$C^2$). Prove the descent lemma:
+$f(b)\leq f(a) + \dd f(a)(b - a) + \frac L2\norm{b - a}^2$.
+\solutionlink{contractions-newton:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{contractions-newton:exr:5}
+Consider $g(x) = \cos x$ on $X = [0, 1]$.
+\begin{enumerate}[nosep]
+  \item Show that $g$ maps $X$ into itself and is a contraction, with a
+        constant $\kappa$ to be given.
+  \item From $a_0 = 1$, how many iterations does the second estimate of
+        \cref{norms-banach:thm:contraction} require to guarantee an error
+        below $10^{-6}$?
+  \item The fixed point is $a^*\approx0.739085$. What rate does
+        \cref{contractions-newton:thm:local} predict near it?
+\end{enumerate}
+\solutionlink{contractions-newton:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{contractions-newton:exr:6}
+On $\R^2$ with the dot product let
+$f(x) = \frac12(x_1^2 + x_2^2) + 3\log\cosh x_2$.
+\begin{enumerate}[nosep]
+  \item Find $\mu$ and $L$.
+  \item For which $\eta$ does \cref{contractions-newton:thm:gd} apply?
+        Give $\kappa(\eta)$ for $\eta = 1/L$ and for the best $\eta$.
+\end{enumerate}
+\solutionlink{contractions-newton:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{contractions-newton:exr:7}
+For $F(x) = x^2 - 2$ and $a_0 = 1$, compute $\beta_0$, $\eta_0$, a
+Lipschitz constant $L$ of $F'$ and $h_0$. Does
+\cref{contractions-newton:thm:kantorovich} apply? Compare its conclusion
+with \cref{contractions-newton:ex:sqrt}.
+\solutionlink{contractions-newton:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{contractions-newton:exr:8}
+Perform one step of Newton's method for the system
+$x^2 + y^2 = 4$, $xy = 1$ from $a_0 = (2, \frac12)$, and compare the
+residual $F$ before and after.
+\solutionlink{contractions-newton:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{contractions-newton:exr:9}
+For $F(x) = \arctan x$, compute three Newton iterates from $a_0 = 1$ and
+from $a_0 = 1.5$. Show that the iteration alternates between $x_c$ and
+$-x_c$ for ever when $a_0 = x_c$, where $x_c > 0$ solves
+$2x = (1 + x^2)\arctan x$, and locate $x_c$ between the two starting
+points.
+\solutionlink{contractions-newton:exr:9}
+\end{exercise}
 \end{notechapter}

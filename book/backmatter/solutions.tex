@@ -1140,3 +1140,96 @@ $89\geq2\mu(f - f_*) = 41$.
         $g'' < 0$ although $f'' = 2$ everywhere. Convexity is preserved
         by affine changes of variable only.
 \end{enumerate}
+
+\section{\nameref*{ch:contractions-newton}}
+
+\solution{contractions-newton:exr:1}
+$c(2\pi) - c(0) = (0, 0, 2\pi)$, of norm $2\pi$, and
+$c'(t) = (-\sin t, \cos t, 1)$ has norm $\sqrt2$ for every $t$. The
+inequality reads $2\pi\leq\sqrt2\cdot2\pi$. An equality
+$c(2\pi) - c(0) = 2\pi\,c'(\tau)$ would require
+$\sin\tau = \cos\tau = 0$, which is impossible.
+
+\solution{contractions-newton:exr:2}
+$D\ell(x) = \diag(1 - \tanh^2z)\,W$ with $z = Wx + b$, of norm at most
+$\norm W = 3\sqrt5\approx6.71$ (\cref{spectral-svd:exr:5}). So $\ell$ is
+Lipschitz with constant $3\sqrt5$, and a composition of two such layers
+with constant $(3\sqrt5)^2 = 45$. The first constant is the best one: by
+\cref{contractions-newton:cor:mvi}(1) the smallest Lipschitz constant is
+$\sup_x\norm{D\ell(x)}$, and at the point where $Wx + b = 0$ (it exists
+because $W$ is invertible) the differential is $W$ itself.
+
+\solution{contractions-newton:exr:3}
+On $U = (0, 1)\cup(2, 3)$ let $f = 0$ on the first interval and $f = 1$
+on the second. Then $f' = 0$ on $U$. The proof applies the mean value
+inequality to the segment joining two points, which must lie in $U$: the
+segment from $\frac12$ to $\frac52$ does not.
+
+\solution{contractions-newton:exr:4}
+Let $h = b - a$ and $\varphi(t) = f(a + th) - t\,\dd f(a)(h)$ for
+$t\in[0, 1]$. Then
+$\varphi'(t) = \bigl(\dd f(a + th) - \dd f(a)\bigr)(h)
+= \inner{\nabla f(a + th) - \nabla f(a)}h\leq Lt\norm h^2$ by the
+Cauchy--Schwarz inequality. The function
+$\varphi(t) - \frac L2t^2\norm h^2$ has a non-positive derivative, so it
+is non-increasing:
+$\varphi(1) - \frac L2\norm h^2\leq\varphi(0)$, which is the claim.
+
+\solution{contractions-newton:exr:5}
+\begin{enumerate}[nosep]
+  \item $\cos$ is decreasing on $[0, 1]$, with values in
+        $[\cos1, 1]\subset[0, 1]$, and
+        $\abs{g'(x)} = \sin x\leq\sin1\approx0.8415$: $g$ is a contraction
+        with $\kappa = \sin1$ (\cref{contractions-newton:cor:mvi}).
+  \item $a_1 = \cos1\approx0.5403$, so $d(a_1, a_0)\approx0.4597$. We
+        need $\kappa^k\leq10^{-6}(1 - \kappa)/0.4597\approx3.45\times10^{-7}$,
+        that is, $k\geq\ln(3.45\times10^{-7})/\ln(0.8415)\approx86.2$:
+        $87$ iterations.
+  \item $\abs{g'(a^*)} = \sin(0.739085)\approx0.6736$. Close to the fixed
+        point the error is multiplied by about $0.67$ per step, not
+        $0.84$; in fact $32$ iterations suffice.
+\end{enumerate}
+
+\solution{contractions-newton:exr:6}
+\begin{enumerate}[nosep]
+  \item The Hessian matrix is $\diag(1,\ 1 + 3/\cosh^2x_2)$, with
+        eigenvalues in $[1, 4]$; the value $4$ is reached at $x_2 = 0$
+        and the value $1$ everywhere. So $\mu = 1$ and $L = 4$.
+  \item For $0 < \eta < \frac12$. With $\eta = \frac14$,
+        $\kappa = \max(\frac34, 0) = \frac34$. The best step is
+        $\eta = 2/(L + \mu) = \frac25$, with
+        $\kappa = (L - \mu)/(L + \mu) = \frac35$.
+\end{enumerate}
+
+\solution{contractions-newton:exr:7}
+$F'(1) = 2$, so $\beta_0 = \frac12$ and
+$\eta_0 = \abs{F(1)/F'(1)} = \frac12$; $F'(x) = 2x$ is Lipschitz with
+$L = 2$. Hence $h_0 = \frac12\cdot2\cdot\frac12 = \frac12$: the theorem
+applies, exactly at its limit, on the ball $[0, 2]$. It guarantees a zero
+in $[0, 2]$ and $\abs{a_k - a^*}\leq\eta_0/2^{k-1} = 2^{-k}$. The actual
+errors, $8.6\times10^{-2}$, $2.5\times10^{-3}$, $2.1\times10^{-6}$ for
+$k = 1, 2, 3$, are far smaller: at $h_0 = \frac12$ the theorem only
+promises a linear rate, and the quadratic rate sets in because $h_k$
+drops below $\frac12$ after the first step.
+
+\solution{contractions-newton:exr:8}
+With $F(x, y) = (x^2 + y^2 - 4,\ xy - 1)$: $F(a_0) = (0.25, 0)$ and
+\[
+  DF(a_0) = \begin{bmatrix}2x & 2y\\y & x\end{bmatrix}_{(2, 1/2)}
+  = \begin{bmatrix}4 & 1\\0.5 & 2\end{bmatrix},
+  \qquad
+  DF(a_0)^{-1} = \frac1{7.5}\begin{bmatrix}2 & -1\\-0.5 & 4\end{bmatrix} .
+\]
+The step is $-DF(a_0)^{-1}F(a_0) = (-0.0667, 0.0167)$ and
+$a_1 = (1.9333, 0.5167)$. There $F(a_1) = (0.0047, -0.0011)$: the residual
+has gone from $0.25$ to about $0.005$ in norm.
+
+\solution{contractions-newton:exr:9}
+$N(x) = x - (1 + x^2)\arctan x$. From $1$: $-0.5708$, $0.1169$,
+$-0.0011$, converging to $0$. From $1.5$: $-1.6941$, $2.3211$,
+$-5.1141$, diverging. If $2x_c = (1 + x_c^2)\arctan x_c$ then
+$N(x_c) = -x_c$, and since $N$ is odd, $N(-x_c) = x_c$: a cycle of period
+two. The function $2x - (1 + x^2)\arctan x$ equals
+$2 - \frac\pi2 > 0$ at $x = 1$ and $3 - 3.194 < 0$ at $x = 1.5$, so
+$x_c$ lies between them ($x_c\approx1.3917$). Starting below $x_c$ the
+iterates shrink in absolute value; starting above, they grow.

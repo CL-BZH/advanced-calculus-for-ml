@@ -19,7 +19,7 @@ book keeps three such pairs apart from beginning to end:
 and it applies two tests to every formula and algorithm: does it change
 when the **origin** moves, and does it change when the **basis** changes?
 
-**Status: work in progress.** Chapters 1 to 8 are drafted. The other
+**Status: work in progress.** Chapters 1 to 9 are drafted. The other
 chapters contain their planned contents.
 
 The PDF is rebuilt by GitHub Actions on every push to `main`:
@@ -43,7 +43,7 @@ Each part adds one layer of structure.
 6. The Differential *(drafted)*
 7. The Chain Rule and Automatic Differentiation *(drafted)*
 8. Gradient, Hessian and Taylor's Formula *(drafted)*
-9. The Mean Value Inequality, Contractions and Newton's Method
+9. The Mean Value Inequality, Contractions and Newton's Method *(drafted)*
 10. The Inverse and Implicit Function Theorems
 11. Constrained Optimization
 
