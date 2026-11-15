@@ -4,25 +4,1087 @@
 \chaptersubtitle{%
   Convergence, continuity and bounded operators}
 
-\begin{chapterplan}
+\begin{chapterintro}
+Training is a limit process: a sequence of parameters that is hoped to
+converge. To say what this means, one needs a notion of closeness, and a
+norm provides it. In a finite-dimensional space all norms agree on which
+sequences converge, so the question ``does training converge?'' does not
+depend on the norm. Everything quantitative does: how fast, with which
+step size, how much the output of a network can move when its input moves.
+In spaces of functions, which have infinite dimension, norms stop agreeing
+even on convergence, and the choice becomes part of the problem. This
+chapter develops the vocabulary of limits for the rest of the book. You
+will learn
 \begin{itemize}[nosep]
-  \item Norms and distances; open and closed sets; continuity; compactness;
-        completeness.
-  \item All norms on a finite-dimensional space are equivalent; this fails in
-        infinite dimension.
-  \item Bounded linear maps and their equivalent characterizations; the operator
-        norm; $L(V, W)$ is a Banach space when $W$ is.
-  \item Extension of a bounded operator from a dense subspace.
-  \item Function spaces: $C^0([a,b])$ with the sup norm; Hilbert spaces;
-        projection onto a closed subspace and the Riesz theorem in infinite
+  \item what a norm is, with the examples $\ell^1$, $\ell^2$, $\ell^\infty$
+        and their dual norms, and why sign descent is steepest descent for
+        $\ell^\infty$;
+  \item open and closed sets, continuity, compactness and completeness, in
+        a normed affine space;
+  \item that all norms on a finite-dimensional space are equivalent, and
+        what this does and does not say;
+  \item bounded linear maps and the operator norm, and the Lipschitz
+        constant of a network as a product of operator norms;
+  \item the contraction mapping principle, with value iteration as an
+        example;
+  \item what changes in infinite dimension: incomplete spaces, unbounded
+        maps, non-compact balls, and the Riesz theorem in a Hilbert space.
+\end{itemize}
+\prerequisites{\cref{ch:affine-spaces,ch:duality,ch:inner-products}; real
+sequences, the least upper bound property, the Bolzano--Weierstrass theorem
+and the extreme value theorem in $\R$ (Loomis and Sternberg, \S3.1; Hubbard
+and Hubbard, \S1.5--1.6).}
+\end{chapterintro}
+
+\section{Norms}\label{norms-banach:sec:norms}
+
+\begin{definition}[Norm]\label{norms-banach:def:norm}
+A \emph{norm} on a real vector space $V$ is a map $\norm\cdot:V\to\R$ such
+that for all $u, v\in V$ and $c\in\R$:
+\begin{enumerate}[nosep]
+  \item $\norm v\geq0$, and $\norm v = 0$ only for $v = 0$;
+  \item $\norm{cv} = \abs c\norm v$;
+  \item $\norm{u + v}\leq\norm u + \norm v$ (triangle inequality).
+\end{enumerate}
+A vector space with a norm is a \emph{normed space}. A \emph{normed affine
+space} is an affine space $\Aff$ whose direction $V$ is a normed space; the
+\emph{distance} between two points is $d(a, b) = \norm{b - a}$.
+\end{definition}
+
+The distance satisfies $d(a, b) > 0$ for $a\neq b$, $d(a, b) = d(b, a)$
+and $d(a, c)\leq d(a, b) + d(b, c)$, and it is invariant under
+translations: $d(a + u, b + u) = d(a, b)$. Two consequences of the triangle
+inequality are used constantly: for all $u, v$,
+\begin{equation}\label{norms-banach:eq:reverse}
+  \bigl|\norm u - \norm v\bigr|\leq\norm{u - v} ,
+\end{equation}
+since $\norm u\leq\norm{u - v} + \norm v$ and symmetrically.
+
+\begin{example}[Norms on $\R^n$ and on functions]
+\label{norms-banach:ex:norms}
+\begin{enumerate}[nosep]
+  \item On $\R^n$:
+        $\norm x_1 = \sum_i\abs{x_i}$,
+        $\norm x_2 = \bigl(\sum_ix_i^2\bigr)^{1/2}$ and
+        $\norm x_\infty = \max_i\abs{x_i}$. The triangle inequality for
+        $\norm\cdot_1$ and $\norm\cdot_\infty$ follows from
+        $\abs{x_i + y_i}\leq\abs{x_i} + \abs{y_i}$; for $\norm\cdot_2$ it
+        is \cref{inner-products:cor:norm}.
+  \item The norm of an inner product (\cref{inner-products:cor:norm}).
+  \item On the space $C^0([a, b])$ of continuous functions on $[a, b]$:
+        the \emph{sup norm} $\norm f_\infty = \max_{t}\abs{f(t)}$, the norm
+        $\norm f_1 = \int_a^b\abs f$, and the norm $\norm f_2$ of the inner
+        product $\inner fg = \int_a^bfg$.
+\end{enumerate}
+\end{example}
+
+\begin{proposition}[Parallelogram law]\label{norms-banach:prop:parallelogram}
+If a norm comes from an inner product, then for all $u, v$
+\[
+  \norm{u + v}^2 + \norm{u - v}^2 = 2\norm u^2 + 2\norm v^2 .
+\]
+\end{proposition}
+
+\begin{proof}
+Expand $\norm{u\pm v}^2 = \norm u^2\pm2\inner uv + \norm v^2$ and add.
+\end{proof}
+
+For $n\geq2$ the norms $\norm\cdot_1$ and $\norm\cdot_\infty$ do not come
+from inner products: with $u = e_1$ and $v = e_2$ the two sides are $8$ and
+$4$ for $\norm\cdot_1$, and $2$ and $4$ for $\norm\cdot_\infty$. (Jordan
+and von Neumann showed in 1935 that the parallelogram law characterizes
+the norms that come from inner products; this converse is not used here.)
+A normed space has lengths but, in general, no angles and no Riesz map.
+It still has a dual norm.
+
+\begin{definition}[Dual norm]\label{norms-banach:def:dual-norm}
+Let $V$ be a normed space. The \emph{dual norm} of a linear form $\phi$ on
+$V$ is
+\[
+  \norm\phi_* = \sup\{\phi(v) : \norm v\leq1\} ,
+\]
+when this supremum is finite. For the norm of an inner product this is
+\cref{inner-products:def:dual-norm}.
+\end{definition}
+
+\begin{proposition}[Dual norms of $\ell^1$ and $\ell^\infty$]
+\label{norms-banach:prop:dual-norms}
+Let $\phi$ be the form on $\R^n$ with row $[\phi_1\ \cdots\ \phi_n]$.
+\begin{enumerate}[nosep]
+  \item For $\norm\cdot_\infty$ on $\R^n$,
+        $\norm\phi_* = \sum_i\abs{\phi_i}$, attained at
+        $v = \mathrm{sign}(\phi)$.
+  \item For $\norm\cdot_1$ on $\R^n$,
+        $\norm\phi_* = \max_i\abs{\phi_i}$, attained at
+        $v = \mathrm{sign}(\phi_i)e_i$ for an index $i$ with $\abs{\phi_i}$
+        maximal.
+  \item For $\norm\cdot_2$ on $\R^n$,
+        $\norm\phi_* = \bigl(\sum_i\phi_i^2\bigr)^{1/2}$, attained at
+        $v = [\phi]^\top/\norm\phi_*$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) $\phi(v) = \sum_i\phi_iv_i\leq\sum_i\abs{\phi_i}\abs{v_i}
+\leq\norm v_\infty\sum_i\abs{\phi_i}$, with equality for
+$v_i = \mathrm{sign}(\phi_i)$.
+(2) $\sum_i\abs{\phi_i}\abs{v_i}\leq\max_i\abs{\phi_i}\,\norm v_1$, with
+equality for the stated $v$.
+(3) is \cref{inner-products:prop:riesz-geometry} for the dot product.
+\end{proof}
+
+\begin{mlthread}[Machine learning: steepest descent depends on the norm]
+Let the loss have the linear part $\phi$ at the current point, with
+$\gamma = [\phi]^\top$. The direction of \emph{steepest descent} for a norm
+is the vector of norm $1$ on which $\phi$ is smallest, that is, minus a
+point where the unit ball touches the highest level set of $\phi$
+(\cref{norms-banach:fig:steepest}). By
+\cref{norms-banach:prop:dual-norms}:
+\begin{itemize}[nosep]
+  \item for $\norm\cdot_2$ it is $-\gamma/\norm\gamma_2$: gradient
+        descent;
+  \item for $\norm\cdot_\infty$ it is $-\mathrm{sign}(\gamma)$: the
+        \emph{sign descent} \eqref{duality:eq:sign}, the first step of
+        Adam;
+  \item for $\norm\cdot_1$ it is $-\mathrm{sign}(\gamma_i)e_i$ for the
+        largest $\abs{\gamma_i}$: greedy coordinate descent.
+\end{itemize}
+This gives the geometric reason for \cref{duality:ex:sign}. The unit ball
+of $\norm\cdot_\infty$ is a cube whose faces are aligned with the basis: it
+is not preserved by rotations, and its symmetries are exactly the signed
+permutations of \cref{duality:prop:sign}.
+\end{mlthread}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.15]
+  % l1
+  \begin{scope}
+    \draw[bookaccent, thick] (1,0) -- (0,1) -- (-1,0) -- (0,-1) -- cycle;
+    \draw[gray, thin] (1.65,-1.3) -- (0.35,1.3);
+    \draw[->, very thick, bookdef] (0,0) -- (1,0);
+    \fill (0,0) circle (1.2pt);
+    \node[anchor=north] at (0.2,-1.45) {$\norm\cdot_1$: $(1, 0)$};
+  \end{scope}
+  % l2
+  \begin{scope}[xshift=4.2cm]
+    \draw[bookaccent, thick] (0,0) circle (1);
+    \draw[gray, thin] (1.768,-1.3) -- (0.468,1.3);
+    \draw[->, very thick, bookdef] (0,0) -- (0.894,0.447);
+    \fill (0,0) circle (1.2pt);
+    \node[anchor=north] at (0.2,-1.45)
+      {$\norm\cdot_2$: $\frac1{\sqrt5}(2, 1)$};
+  \end{scope}
+  % linf
+  \begin{scope}[xshift=8.4cm]
+    \draw[bookaccent, thick] (-1,-1) rectangle (1,1);
+    \draw[gray, thin] (2.15,-1.3) -- (0.85,1.3);
+    \draw[->, very thick, bookdef] (0,0) -- (1,1);
+    \fill (0,0) circle (1.2pt);
+    \node[anchor=north] at (0.2,-1.45) {$\norm\cdot_\infty$: $(1, 1)$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The unit balls of $\norm\cdot_1$, $\norm\cdot_2$ and
+$\norm\cdot_\infty$ in $\R^2$, each with the highest level set of
+$\phi = [2\ \ 1]$ that it touches and the point where it touches it. The
+steepest ascent direction is $(1, 0)$, $\frac1{\sqrt5}(2, 1)$ and $(1, 1)$
+respectively, and the values of $\phi$ there are the dual norms $2$,
+$\sqrt5$ and $3$.}
+\label{norms-banach:fig:steepest}
+\end{figure}
+
+\section{Convergence, open sets, continuity}
+\label{norms-banach:sec:topology}
+
+Throughout this section $\Aff$ and $\Bff$ are normed affine spaces with
+directions $V$ and $W$. A normed space is a normed affine space over
+itself, so everything applies to $V$.
+
+\begin{definition}[Convergence]
+A sequence $(a_k)$ of points of $\Aff$ \emph{converges} to $a\in\Aff$,
+written $a_k\to a$, if $d(a_k, a)\to0$.
+\end{definition}
+
+A sequence has at most one limit: if $a_k\to a$ and $a_k\to a'$ then
+$d(a, a')\leq d(a, a_k) + d(a_k, a')\to0$. By
+\eqref{norms-banach:eq:reverse}, if $v_k\to v$ in $V$ then
+$\norm{v_k}\to\norm v$.
+
+\begin{definition}[Balls, open and closed sets]
+The \emph{open ball} of centre $a$ and radius $r > 0$ is
+$B(a, r) = \{b : d(a, b) < r\}$. A set $U\subset\Aff$ is \emph{open} if
+every point of $U$ is the centre of an open ball contained in $U$. A set
+is \emph{closed} if its complement is open. A set is \emph{bounded} if it
+is contained in a ball.
+\end{definition}
+
+\begin{proposition}[Closed sets and sequences]\label{norms-banach:prop:closed}
+A set $C\subset\Aff$ is closed if and only if the limit of every convergent
+sequence of points of $C$ belongs to $C$.
+\end{proposition}
+
+\begin{proof}
+Let $C$ be closed, $a_k\in C$ and $a_k\to a$. If $a\notin C$, some ball
+$B(a, r)$ lies in the complement of $C$, which contradicts $d(a_k, a) < r$
+for large $k$. Conversely, if $C$ is not closed, there is a point
+$a\notin C$ such that every ball $B(a, \frac1k)$ meets $C$; choosing
+$a_k\in C\cap B(a, \frac1k)$ gives a sequence of $C$ converging to
+$a\notin C$.
+\end{proof}
+
+\begin{definition}[Continuous and Lipschitz maps]
+A map $f:X\to\Bff$ defined on a subset $X\subset\Aff$ is \emph{continuous
+at} $a\in X$ if for every $\varepsilon > 0$ there is $\delta > 0$ such that
+$d(f(b), f(a)) < \varepsilon$ for all $b\in X$ with $d(b, a) < \delta$. It
+is \emph{continuous} if it is continuous at every point of $X$, and
+\emph{Lipschitz with constant} $\kappa$ if
+$d(f(a), f(b))\leq\kappa\,d(a, b)$ for all $a, b\in X$.
+\end{definition}
+
+A Lipschitz map is continuous (take $\delta = \varepsilon/\kappa$), and by
+\eqref{norms-banach:eq:reverse} the norm itself is Lipschitz with
+constant $1$.
+
+\begin{proposition}[Continuity and sequences]\label{norms-banach:prop:seq}
+$f$ is continuous at $a$ if and only if $f(a_k)\to f(a)$ for every sequence
+$a_k\to a$ in $X$. Consequently a composition of continuous maps is
+continuous.
+\end{proposition}
+
+\begin{proof}
+If $f$ is continuous at $a$ and $a_k\to a$: given $\varepsilon$, take
+$\delta$ as in the definition; then $d(a_k, a) < \delta$ for large $k$, so
+$d(f(a_k), f(a)) < \varepsilon$. Conversely, if $f$ is not continuous at
+$a$, there is $\varepsilon > 0$ such that for every $k$ some $a_k\in X$ has
+$d(a_k, a) < \frac1k$ and $d(f(a_k), f(a))\geq\varepsilon$: then
+$a_k\to a$ but $f(a_k)\not\to f(a)$.
+\end{proof}
+
+\begin{definition}[Equivalent norms]
+Two norms $\norm\cdot$ and $\norm\cdot'$ on $V$ are \emph{equivalent} if
+there are constants $0 < m\leq C$ such that
+$m\norm v\leq\norm v'\leq C\norm v$ for all $v$.
+\end{definition}
+
+Equivalent norms have the same convergent sequences, since
+$\norm{v_k - v}\to0$ if and only if $\norm{v_k - v}'\to0$. By
+\cref{norms-banach:prop:closed,norms-banach:prop:seq} they therefore have
+the same closed sets, the same open sets and the same continuous maps.
+They have the same Lipschitz maps, with different constants.
+
+\section{Compactness and completeness}\label{norms-banach:sec:compact}
+
+\begin{definition}[Compact set]
+A set $K\subset\Aff$ is \emph{compact} if every sequence of points of $K$
+has a subsequence that converges to a point of $K$.
+\end{definition}
+
+\begin{theorem}[Continuous functions on compact sets]
+\label{norms-banach:thm:extreme}
+Let $K\subset\Aff$ be compact and non-empty.
+\begin{enumerate}[nosep]
+  \item If $f:K\to\Bff$ is continuous, then $f(K)$ is compact.
+  \item If $f:K\to\R$ is continuous, then $f$ attains a largest and a
+        smallest value on $K$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) A sequence of $f(K)$ is $(f(a_k))$ with $a_k\in K$. A subsequence
+$(a_{k_j})$ converges to some $a\in K$, and $f(a_{k_j})\to f(a)\in f(K)$
+by \cref{norms-banach:prop:seq}. (2) Let $s = \sup f(K)\in\R\cup\{\infty\}$
+and choose $a_k\in K$ with $f(a_k)\to s$. A subsequence converges to some
+$a\in K$, and by continuity $f(a) = s$. So $s$ is finite and attained. The
+same argument applies to the infimum.
+\end{proof}
+
+\begin{theorem}[Bolzano--Weierstrass in $\R^n$]\label{norms-banach:thm:bw}
+In $(\R^n, \norm\cdot_\infty)$, every bounded sequence has a convergent
+subsequence, and every closed bounded set is compact.
+\end{theorem}
+
+\begin{proof}
+A sequence converges for $\norm\cdot_\infty$ if and only if each of its
+$n$ coordinate sequences converges. Let $(x_k)$ be bounded. Its first
+coordinates form a bounded sequence of real numbers, which has a
+convergent subsequence by the theorem in $\R$. Along that subsequence, the
+second coordinates are bounded and have a convergent sub-subsequence. After
+$n$ extractions all coordinates converge. If the $x_k$ belong to a closed
+set, so does the limit (\cref{norms-banach:prop:closed}).
+\end{proof}
+
+\begin{definition}[Cauchy sequence, complete space]
+A sequence $(a_k)$ is a \emph{Cauchy sequence} if for every
+$\varepsilon > 0$ there is $N$ such that $d(a_k, a_l) < \varepsilon$ for
+all $k, l\geq N$. A normed affine space is \emph{complete} if every Cauchy
+sequence converges. A complete normed vector space is a \emph{Banach
+space}; a complete inner product space is a \emph{Hilbert space}.
+\end{definition}
+
+\begin{proposition}[Cauchy sequences]\label{norms-banach:prop:cauchy}
+A convergent sequence is a Cauchy sequence. A Cauchy sequence is bounded,
+and if one of its subsequences converges, so does the whole sequence.
+\end{proposition}
+
+\begin{proof}
+If $a_k\to a$ then $d(a_k, a_l)\leq d(a_k, a) + d(a, a_l)$. If $(a_k)$ is
+Cauchy, take $N$ for $\varepsilon = 1$: all $a_k$ with $k\geq N$ are in
+$B(a_N, 1)$, and finitely many points remain. If moreover $a_{k_j}\to a$,
+then $d(a_k, a)\leq d(a_k, a_{k_j}) + d(a_{k_j}, a)$, and both terms are
+small for $k$ and $j$ large.
+\end{proof}
+
+\begin{intuition}
+A Cauchy sequence is one that ought to converge: its terms get arbitrarily
+close to each other. Completeness says that it does, that the space has no
+holes. It is what allows a limit to be proved to exist without knowing it
+in advance, which is how solutions of equations will be produced in
+\cref{norms-banach:sec:contraction} and later.
+\end{intuition}
+
+\section{Finite dimension: all norms are equivalent}
+\label{norms-banach:sec:finite}
+
+\begin{theorem}[Equivalence of norms]\label{norms-banach:thm:equivalence}
+On a finite-dimensional vector space, any two norms are equivalent.
+\end{theorem}
+
+\begin{proof}
+Let $e$ be a basis of $V$ and $\norm v_e = \max_i\abs{x_i}$, where $x$ are
+the components of $v$. The map $v\mapsto x$ identifies $(V, \norm\cdot_e)$
+with $(\R^n, \norm\cdot_\infty)$. Let $N$ be any norm on $V$. It suffices
+to show that $N$ is equivalent to $\norm\cdot_e$.
+
+\emph{Upper bound.} $N(v) = N\bigl(\sum_ix_ie_i\bigr)
+\leq\sum_i\abs{x_i}N(e_i)\leq C\norm v_e$ with $C = \sum_iN(e_i)$.
+
+\emph{Lower bound.} By \eqref{norms-banach:eq:reverse} and the upper
+bound, $\abs{N(u) - N(v)}\leq N(u - v)\leq C\norm{u - v}_e$: the function
+$N$ is continuous on $(V, \norm\cdot_e)$. The sphere
+$S = \{v : \norm v_e = 1\}$ is closed and bounded, hence compact by
+\cref{norms-banach:thm:bw}. By \cref{norms-banach:thm:extreme}, $N$ attains
+a smallest value $m$ on $S$, and $m > 0$ because $N$ vanishes only at
+$0\notin S$. For $v\neq0$, $v/\norm v_e\in S$, so
+$N(v) = \norm v_e\,N(v/\norm v_e)\geq m\norm v_e$.
+\end{proof}
+
+\begin{corollary}[Topology in finite dimension]\label{norms-banach:cor:finite}
+Let $V$ be a finite-dimensional normed space.
+\begin{enumerate}[nosep]
+  \item $V$ is complete, and its closed bounded subsets are compact.
+  \item Every linear map from $V$ to a normed space $W$ is Lipschitz, hence
+        continuous.
+  \item Convergence, open sets, closed sets, compact sets and continuity
+        in $V$ do not depend on the norm.
+\end{enumerate}
+The same holds for a finite-dimensional normed affine space.
+\end{corollary}
+
+\begin{proof}
+(3) is the remark after the definition of equivalent norms. (1) By (3) it
+is enough to prove it for $\norm\cdot_e$, that is, in
+$(\R^n, \norm\cdot_\infty)$, where compactness is
+\cref{norms-banach:thm:bw}; a Cauchy sequence is bounded, so it has a
+convergent subsequence and converges
+(\cref{norms-banach:prop:cauchy}). (2) For a linear map $A$,
+$\norm{Av}\leq\sum_i\abs{x_i}\norm{Ae_i}\leq C'\norm v_e\leq C''\norm v$,
+and $\norm{Au - Av} = \norm{A(u - v)}$. For an affine space, choose an
+origin: the vectorialization $a\mapsto a - o$ preserves distances.
+\end{proof}
+
+\begin{proposition}[The constants]\label{norms-banach:prop:constants}
+For all $x\in\R^n$,
+\[
+  \norm x_\infty\leq\norm x_2\leq\norm x_1\leq\sqrt n\,\norm x_2
+  \leq n\,\norm x_\infty ,
+\]
+and each inequality is an equality for some $x\neq0$.
+\end{proposition}
+
+\begin{proof}
+$\max_ix_i^2\leq\sum_ix_i^2\leq\bigl(\sum_i\abs{x_i}\bigr)^2$ gives the
+first two. The third is the Cauchy--Schwarz inequality for the vectors
+$(\abs{x_1},\dots,\abs{x_n})$ and $(1,\dots,1)$. The fourth is
+$\sum_ix_i^2\leq n\max_ix_i^2$. The first two are equalities for $x = e_1$,
+the last two for $x = (1,\dots,1)$.
+\end{proof}
+
+\begin{keyidea}
+In finite dimension, \emph{whether} a sequence converges, or a map is
+continuous, is a property of the affine space alone: no norm, inner product
+or basis needs to be chosen. \emph{How fast} it converges, and the value of
+every Lipschitz constant, depend on the norm. The equivalence constants
+depend on the dimension: for a model with $n = 10^8$ parameters,
+$\norm\cdot_2$ and $\norm\cdot_\infty$ are equivalent up to a factor
+$10^4$.
+\end{keyidea}
+
+\begin{example}[In infinite dimension, norms are not equivalent]
+\label{norms-banach:ex:not-equivalent}
+On $C^0([0, 1])$ let $f_k(t) = t^k$. Then $\norm{f_k}_\infty = 1$ for all
+$k$, while $\norm{f_k}_1 = \frac1{k + 1}\to0$. The sequence converges to
+$0$ for $\norm\cdot_1$ and not for $\norm\cdot_\infty$, so no inequality
+$\norm f_\infty\leq C\norm f_1$ can hold. (The other one does:
+$\norm f_1\leq\norm f_\infty$.)
+\end{example}
+
+\begin{example}[An incomplete space]\label{norms-banach:ex:incomplete}
+$\bigl(C^0([0, 1]), \norm\cdot_1\bigr)$ is not complete. Let $f_k$ be $0$
+on $[0, \frac12]$, $1$ on $[\frac12 + \frac1k, 1]$, and affine in between
+(\cref{norms-banach:fig:ramps}). For $l\geq k$, $f_l - f_k$ vanishes
+outside $[\frac12, \frac12 + \frac1k]$ and is at most $1$ there, so
+$\norm{f_l - f_k}_1\leq\frac1k$: the sequence is Cauchy. Suppose it
+converged to a continuous $f$. Then
+$\int_0^{1/2}\abs f = \int_0^{1/2}\abs{f_k - f}\leq\norm{f_k - f}_1\to0$,
+so $f = 0$ on $[0, \frac12]$. For $\delta > 0$ and $k\geq1/\delta$,
+$\int_{1/2 + \delta}^1\abs{1 - f}\leq\norm{f_k - f}_1\to0$, so $f = 1$ on
+$[\frac12 + \delta, 1]$ for every $\delta$. Such an $f$ is not continuous
+at $\frac12$. The limit that the sequence ``wants'' is a step function,
+which is not in the space. Completing spaces of this kind is the purpose
+of the Lebesgue integral (\cref{ch:lp-spaces}).
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=4.2]
+  \draw[->, gray] (-0.05,0) -- (1.12,0) node[right] {$t$};
+  \draw[->, gray] (0,-0.05) -- (0,0.72);
+  \draw[gray] (1,0.01) -- (1,-0.02) node[below] {$1$};
+  \draw[gray] (0.5,0.01) -- (0.5,-0.02) node[below] {$\frac12$};
+  \draw[gray] (0.01,0.6) -- (-0.02,0.6) node[left] {$1$};
+  \draw[bookaccent!45, thick] (0,0) -- (0.5,0) -- (1.0,0.6);
+  \draw[bookaccent!70, thick] (0,0) -- (0.5,0) -- (0.75,0.6) -- (1,0.6);
+  \draw[bookaccent, thick] (0,0) -- (0.5,0) -- (0.625,0.6) -- (1,0.6);
+  \draw[bookpitfall, thick] (0,0) -- (0.5,0) -- (0.5625,0.6) -- (1,0.6);
+  \node[bookaccent!60, font=\small] at (0.93,0.4) {$f_2$};
+  \node[bookpitfall, font=\small] at (0.47,0.42) {$f_{16}$};
+\end{tikzpicture}
+\caption{The functions $f_2$, $f_4$, $f_8$, $f_{16}$ of
+\cref{norms-banach:ex:incomplete}. The area between two of them tends to
+zero, so the sequence is Cauchy for $\norm\cdot_1$, but its limit would
+have to jump at $\frac12$.}
+\label{norms-banach:fig:ramps}
+\end{figure}
+
+\section{Bounded linear maps and the operator norm}
+\label{norms-banach:sec:operators}
+
+Let $V$ and $W$ be normed spaces, of any dimension.
+
+\begin{theorem}[Continuity of linear maps]\label{norms-banach:thm:bounded}
+For a linear map $A:V\to W$ the following are equivalent:
+\begin{enumerate}[nosep]
+  \item $A$ is continuous at $0$;
+  \item $A$ is continuous;
+  \item $A$ is Lipschitz;
+  \item $A$ is bounded on the unit ball:
+        $\sup\{\norm{Av} : \norm v\leq1\} < \infty$;
+  \item there is a constant $C$ with $\norm{Av}\leq C\norm v$ for all $v$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+$(5)\Rightarrow(3)$: $\norm{Au - Av} = \norm{A(u - v)}\leq C\norm{u - v}$.
+$(3)\Rightarrow(2)\Rightarrow(1)$ are clear. $(1)\Rightarrow(4)$: there is
+$\delta > 0$ with $\norm{Av}\leq1$ whenever $\norm v\leq\delta$; if
+$\norm v\leq1$ then $\norm{Av} = \frac1\delta\norm{A(\delta v)}
+\leq\frac1\delta$. $(4)\Rightarrow(5)$: let $C$ be the supremum; for
+$v\neq0$, $\norm{Av} = \norm v\,\norm{A(v/\norm v)}\leq C\norm v$.
+\end{proof}
+
+\begin{definition}[Bounded map, operator norm]\label{norms-banach:def:opnorm}
+A linear map satisfying these conditions is \emph{bounded}. Its
+\emph{operator norm} is
+\[
+  \norm A = \sup\{\norm{Av} : \norm v\leq1\} .
+\]
+The set of bounded linear maps from $V$ to $W$ is written $L(V, W)$.
+\end{definition}
+
+By the proof above, $\norm A$ is the smallest constant in (5) and the
+smallest Lipschitz constant of $A$: $\norm{Av}\leq\norm A\norm v$. It
+depends on the norms of both spaces. If $V$ is finite-dimensional, every
+linear map is bounded (\cref{norms-banach:cor:finite}) and the supremum is
+a maximum (\cref{norms-banach:thm:extreme}). For $W = \R$, $L(V, \R)$ is
+the space of bounded linear forms, and the operator norm is the dual norm
+of \cref{norms-banach:def:dual-norm}. In infinite dimension, ``the dual
+space'' always means this space of bounded forms.
+
+\begin{proposition}[Properties of the operator norm]
+\label{norms-banach:prop:opnorm}
+$L(V, W)$ is a vector space and $\norm\cdot$ is a norm on it. For
+$A\in L(V, W)$ and $B\in L(W, X)$, $BA\in L(V, X)$ and
+\[
+  \norm{BA}\leq\norm B\norm A .
+\]
+For the dual operator, $\norm{\dual A\psi}_*\leq\norm A\norm\psi_*$. If $V$
+and $W$ are finite-dimensional inner product spaces,
+$\norm{\adj A} = \norm A$.
+\end{proposition}
+
+\begin{proof}
+If $\norm A = 0$ then $Av = 0$ for all $v$. Homogeneity is clear, and
+$\norm{(A + A')v}\leq\norm{Av} + \norm{A'v}\leq(\norm A + \norm{A'})\norm
+v$. For the product, $\norm{BAv}\leq\norm B\norm{Av}
+\leq\norm B\norm A\norm v$. For the dual operator,
+$(\dual A\psi)(v) = \psi(Av)\leq\norm\psi_*\norm A\norm v$. For the
+adjoint, by the Cauchy--Schwarz inequality,
+\[
+  \norm{\adj Aw}^2 = \inner{A\adj Aw}w
+  \leq\norm A\norm{\adj Aw}\norm w ,
+\]
+so $\norm{\adj Aw}\leq\norm A\norm w$ and $\norm{\adj A}\leq\norm A$.
+Applying this to $\adj A$ gives
+$\norm A = \norm{\adj{(\adj A)}}\leq\norm{\adj A}$.
+\end{proof}
+
+\begin{proposition}[The operator norm for $\ell^\infty$]
+\label{norms-banach:prop:row-sum}
+For a matrix $A$ seen as a map
+$(\R^n, \norm\cdot_\infty)\to(\R^m, \norm\cdot_\infty)$,
+\[
+  \norm A = \max_i\sum_j\abs{A_{ij}} \qquad\text{(the largest row sum).}
+\]
+\end{proposition}
+
+\begin{proof}
+For $\norm x_\infty\leq1$,
+$\abs{(Ax)_i}\leq\sum_j\abs{A_{ij}}\abs{x_j}\leq\sum_j\abs{A_{ij}}$, so
+$\norm{Ax}_\infty$ is at most the largest row sum. If row $i$ has the
+largest sum, $x_j = \mathrm{sign}(A_{ij})$ gives $(Ax)_i = \sum_j
+\abs{A_{ij}}$.
+\end{proof}
+
+For $\norm\cdot_1$ on both sides the operator norm is the largest column
+sum (\cref{norms-banach:exr:4}). For $\norm\cdot_2$ on both sides it is
+the largest singular value, the \emph{spectral norm}
+(\cref{ch:spectral-svd}).
+
+\begin{theorem}[$L(V, W)$ is complete when $W$ is]
+\label{norms-banach:thm:complete}
+If $W$ is a Banach space, then $L(V, W)$ with the operator norm is a Banach
+space. In particular the dual of any normed space is a Banach space.
+\end{theorem}
+
+\begin{proof}
+Let $(A_k)$ be a Cauchy sequence in $L(V, W)$. For each $v$,
+$\norm{A_kv - A_lv}\leq\norm{A_k - A_l}\norm v$, so $(A_kv)$ is a Cauchy
+sequence in $W$ and has a limit, which we call $Av$. The map $A$ is linear
+because limits commute with sums and multiples. A Cauchy sequence is
+bounded: $\norm{A_k}\leq B$ for all $k$, hence
+$\norm{Av} = \lim\norm{A_kv}\leq B\norm v$ and $A$ is bounded. Finally,
+given $\varepsilon > 0$, let $N$ be such that
+$\norm{A_k - A_l}\leq\varepsilon$ for $k, l\geq N$. For $\norm v\leq1$ and
+$k\geq N$, letting $l\to\infty$ in
+$\norm{A_kv - A_lv}\leq\varepsilon$ gives $\norm{A_kv - Av}\leq\varepsilon$.
+So $\norm{A_k - A}\leq\varepsilon$ for $k\geq N$.
+\end{proof}
+
+\begin{example}[Unbounded linear maps]\label{norms-banach:ex:unbounded}
+In infinite dimension, linear maps need not be continuous.
+\begin{enumerate}[nosep]
+  \item \emph{Differentiation.} On the space of continuously
+        differentiable functions on $[0, 1]$ with the sup norm, let
+        $Df = f'$, with values in $(C^0([0, 1]), \norm\cdot_\infty)$. For
+        $f_k(t) = \sin(2\pi kt)$, $\norm{f_k}_\infty = 1$ and
+        $\norm{Df_k}_\infty = 2\pi k$. So $D$ is not bounded: functions
+        that are uniformly close can have derivatives that are far apart.
+  \item \emph{Evaluation.} On $C^0([-1, 1])$, the form $\delta_0(f) = f(0)$
+        is bounded for the sup norm, with $\norm{\delta_0}_* = 1$. For the
+        norm $\norm\cdot_2$ it is not: the functions
+        $h_k(t) = \max(0, 1 - k\abs t)$ have $h_k(0) = 1$ and
+        $\norm{h_k}_2^2 = \frac2{3k}\to0$.
+\end{enumerate}
+\end{example}
+
+\begin{mlthread}[Machine learning: the Lipschitz constant of a network]
+If $f_1,\dots,f_L$ are Lipschitz with constants $\kappa_1,\dots,\kappa_L$,
+then $f_L\circ\dots\circ f_1$ is Lipschitz with constant
+$\kappa_1\cdots\kappa_L$, since each map multiplies distances by at most
+its constant. For a network this gives a bound that can be read off the
+weights.
+\begin{itemize}[nosep]
+  \item An affine layer $x\mapsto Wx + b$ has Lipschitz constant
+        $\norm W$, the operator norm of its linear part for the chosen
+        norms. The bias plays no role.
+  \item The usual activations (ReLU, tanh, sigmoid), applied coordinate by
+        coordinate, are Lipschitz with constant $1$ for $\norm\cdot_1$,
+        $\norm\cdot_2$ and $\norm\cdot_\infty$, because
+        $\abs{\sigma(s) - \sigma(t)}\leq\abs{s - t}$ for each coordinate.
+  \item Hence $\mathrm{Lip}(f)\leq\prod_l\norm{W_l}$. The bound is
+        usually not attained (\cref{norms-banach:exr:5}).
+\end{itemize}
+\emph{Spectral normalization} (Miyato, Kataoka, Koyama and Yoshida, 2018)
+divides each weight matrix by its spectral norm, which makes the network
+Lipschitz with constant at most $1$ for $\norm\cdot_2$. For robustness to
+perturbations that are small in $\norm\cdot_\infty$, as with adversarial
+examples, the relevant operator norms are those of
+\cref{norms-banach:prop:row-sum}. The Lipschitz constant of a network is
+not one number: it depends on the norms chosen for the input and for the
+output.
+\end{mlthread}
+
+\section{The contraction mapping principle}
+\label{norms-banach:sec:contraction}
+
+\begin{theorem}[Contraction mapping principle]
+\label{norms-banach:thm:contraction}
+Let $X$ be a non-empty closed subset of a complete normed affine space, and
+let $f:X\to X$ be Lipschitz with a constant $\kappa < 1$. Then
+\begin{enumerate}[nosep]
+  \item $f$ has exactly one fixed point $a^*$ in $X$;
+  \item for every $a_0\in X$, the sequence $a_{k+1} = f(a_k)$ converges to
+        $a^*$, with
+        \[
+          d(a_k, a^*)\leq\kappa^k\,d(a_0, a^*)
+          \qquad\text{and}\qquad
+          d(a_k, a^*)\leq\frac{\kappa^k}{1 - \kappa}\,d(a_1, a_0) .
+        \]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+By induction $d(a_{j+1}, a_j)\leq\kappa^jd(a_1, a_0)$. For $l > k$, the
+triangle inequality gives
+\[
+  d(a_l, a_k)\leq\sum_{j=k}^{l-1}d(a_{j+1}, a_j)
+  \leq\sum_{j\geq k}\kappa^jd(a_1, a_0)
+  = \frac{\kappa^k}{1 - \kappa}\,d(a_1, a_0) ,
+\]
+which tends to $0$ as $k\to\infty$. So $(a_k)$ is a Cauchy sequence. It
+converges because the space is complete, and its limit $a^*$ is in $X$
+because $X$ is closed. Since $f$ is continuous,
+$f(a^*) = \lim f(a_k) = \lim a_{k+1} = a^*$. If $b^*$ is another fixed
+point, $d(a^*, b^*) = d(f(a^*), f(b^*))\leq\kappa\,d(a^*, b^*)$ forces
+$d(a^*, b^*) = 0$. The first estimate follows from
+$d(a_{k+1}, a^*) = d(f(a_k), f(a^*))\leq\kappa\,d(a_k, a^*)$, and the
+second from letting $l\to\infty$ in the display.
+\end{proof}
+
+\begin{intuition}
+A contraction brings any two points closer by a fixed factor. Iterating it
+squeezes the whole set towards a single point, at a geometric rate. The
+second estimate is computable without knowing the fixed point: after one
+step, the distance travelled bounds the distance that remains.
+\end{intuition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.5]
+  \draw[->, gray] (-0.2,0) -- (3.2,0) node[right] {$x$};
+  \draw[->, gray] (0,-0.2) -- (0,3.0);
+  \draw[gray, thin] (0,0) -- (2.9,2.9) node[right] {$y = x$};
+  \draw[bookaccent, thick] (0,1) -- (2.9,2.45)
+    node[right] {$y = \frac12x + 1$};
+  \draw[bookpitfall, thick] (0,0) -- (0,1) -- (1,1) -- (1,1.5) -- (1.5,1.5)
+    -- (1.5,1.75) -- (1.75,1.75) -- (1.75,1.875) -- (1.875,1.875);
+  \fill (2,2) circle (1.3pt) node[above left] {$a^*$};
+  \node[below] at (0,0) {$a_0$};
+  \draw[gray, thin, dashed] (1,1) -- (1,0) node[below, black] {$a_1$};
+  \draw[gray, thin, dashed] (1.5,1.5) -- (1.5,0) node[below, black] {$a_2$};
+\end{tikzpicture}
+\caption{Iterating the contraction $f(x) = \frac12x + 1$ on $\R$ from
+$a_0 = 0$. Each step halves the distance to the fixed point $a^* = 2$.}
+\label{norms-banach:fig:cobweb}
+\end{figure}
+
+\begin{example}[Affine contractions]\label{norms-banach:ex:affine}
+An affine map $f$ of a Banach affine space into itself is Lipschitz with
+constant $\norm{\lin f}$. If $\norm{\lin f} < 1$ it has a unique fixed
+point, and its iterates converge to it at the rate
+$\norm{\lin f}^k$. This is a quantitative form of
+\cref{affine-spaces:prop:fixed-point}, valid in any dimension. In
+\cref{affine-spaces:ex:decay} the linear part was
+$(1 - \eta(1 + \lambda))\id$, of norm $\abs{1 - \eta(1 + \lambda)}$ for
+every norm.
+\end{example}
+
+\begin{pitfall}[Being a contraction depends on the norm]
+The matrix $A = \begin{bsmallmatrix}0.5 & 1\\0 & 0.5\end{bsmallmatrix}$
+has norm $1.5$ for $\norm\cdot_\infty$
+(\cref{norms-banach:prop:row-sum}), so $x\mapsto Ax + b$ is not a
+contraction for that norm. For the norm
+$\norm x' = \max(\abs{x_1}, 4\abs{x_2})$, the operator norm of $A$ is that
+of $DAD^{-1} = \begin{bsmallmatrix}0.5 & 0.25\\0 & 0.5\end{bsmallmatrix}$
+for $\norm\cdot_\infty$, where $D = \diag(1, 4)$: it is $0.75$. The same
+map is a contraction for $\norm\cdot'$, and its iterates converge for
+every norm, since all norms are equivalent. To apply
+\cref{norms-banach:thm:contraction} one may choose the norm.
+\end{pitfall}
+
+\begin{proposition}[Value iteration is a contraction]
+\label{norms-banach:prop:bellman}
+Let $S$ and $\mathcal U$ be finite sets (states and actions), $r(s, u)$
+real numbers (rewards), $p(s'\mid s, u)\geq0$ with
+$\sum_{s'}p(s'\mid s, u) = 1$ (transition probabilities), and
+$0\leq\beta < 1$ (discount). On the space $\R^S$ of functions
+$v:S\to\R$ with the norm $\norm v_\infty$, the \emph{Bellman operator}
+\[
+  (Tv)(s) = \max_{u\in\mathcal U}
+  \Bigl[r(s, u) + \beta\sum_{s'}p(s'\mid s, u)\,v(s')\Bigr]
+\]
+is Lipschitz with constant $\beta$. Consequently it has a unique fixed
+point $v^*$, and $T^kv\to v^*$ for every $v$, with
+$\norm{T^kv - v^*}_\infty\leq\beta^k\norm{v - v^*}_\infty$.
+\end{proposition}
+
+\begin{proof}
+Write $q_v(s, u)$ for the bracket. For $v, w\in\R^S$,
+\[
+  q_v(s, u) - q_w(s, u) = \beta\sum_{s'}p(s'\mid s, u)\bigl(v(s') -
+  w(s')\bigr)\leq\beta\norm{v - w}_\infty ,
+\]
+because the $p(s'\mid s, u)$ are non-negative and sum to $1$. Hence
+$q_v(s, u)\leq q_w(s, u) + \beta\norm{v - w}_\infty
+\leq(Tw)(s) + \beta\norm{v - w}_\infty$ for every $u$, and taking the
+maximum over $u$, $(Tv)(s)\leq(Tw)(s) + \beta\norm{v - w}_\infty$.
+Exchanging $v$ and $w$ gives
+$\abs{(Tv)(s) - (Tw)(s)}\leq\beta\norm{v - w}_\infty$ for all $s$. The
+space $(\R^S, \norm\cdot_\infty)$ is complete
+(\cref{norms-banach:cor:finite}), and
+\cref{norms-banach:thm:contraction} applies.
+\end{proof}
+
+The Bellman operator is not affine, because of the maximum: the
+contraction principle does not need linearity. And the choice of norm
+matters. With two states that both lead to the first one, whatever the
+action, the linear part of $T$ is
+$\beta\begin{bsmallmatrix}1 & 0\\1 & 0\end{bsmallmatrix}$, whose operator
+norm is $\beta$ for $\norm\cdot_\infty$ and $\beta\sqrt2$ for
+$\norm\cdot_2$ (it sends $e_1$ to $\beta(1, 1)$). For $\beta = 0.9$ it is
+a contraction for the first norm and not for the second.
+
+\section{What changes in infinite dimension}
+\label{norms-banach:sec:infinite}
+
+In a space of functions, three facts of \cref{norms-banach:cor:finite}
+fail: norms are not all equivalent
+(\cref{norms-banach:ex:not-equivalent}), a normed space need not be
+complete (\cref{norms-banach:ex:incomplete}), and linear maps need not be
+continuous (\cref{norms-banach:ex:unbounded}). A fourth one fails too.
+
+\begin{proposition}[The unit ball is not compact]
+\label{norms-banach:prop:not-compact}
+In an inner product space of infinite dimension, the closed unit ball is
+not compact.
+\end{proposition}
+
+\begin{proof}
+By the Gram--Schmidt process (\cref{inner-products:thm:gs}) applied to an
+infinite linearly independent sequence, there is an orthonormal sequence
+$(e_k)$. For $k\neq l$, $\norm{e_k - e_l}^2 = 2$, so no subsequence of
+$(e_k)$ is a Cauchy sequence, and none converges.
+\end{proof}
+
+The useful spaces of functions are those that are complete.
+
+\begin{theorem}[$C^0$ with the sup norm is a Banach space]
+\label{norms-banach:thm:c0}
+$\bigl(C^0([a, b]), \norm\cdot_\infty\bigr)$ is complete.
+\end{theorem}
+
+\begin{proof}
+Let $(f_k)$ be a Cauchy sequence. For each $t$,
+$\abs{f_k(t) - f_l(t)}\leq\norm{f_k - f_l}_\infty$, so $(f_k(t))$ is a
+Cauchy sequence of real numbers; let $f(t)$ be its limit. Given
+$\varepsilon > 0$, let $N$ be such that
+$\abs{f_k(t) - f_l(t)}\leq\varepsilon$ for all $t$ and all $k, l\geq N$.
+Letting $l\to\infty$: $\abs{f_k(t) - f(t)}\leq\varepsilon$ for all $t$ and
+$k\geq N$. It remains to show that $f$ is continuous. Fix $t_0$ and
+$\varepsilon$, take $k = N$ as above, and $\delta$ such that
+$\abs{f_N(t) - f_N(t_0)}\leq\varepsilon$ for $\abs{t - t_0} < \delta$. Then
+$\abs{f(t) - f(t_0)}\leq\abs{f(t) - f_N(t)} + \abs{f_N(t) - f_N(t_0)}
++ \abs{f_N(t_0) - f(t_0)}\leq3\varepsilon$. So $f\in C^0([a, b])$ and
+$\norm{f_k - f}_\infty\leq\varepsilon$ for $k\geq N$.
+\end{proof}
+
+\begin{definition}[Dense subspace]
+A subset $D$ of a normed space $V$ is \emph{dense} if every $v\in V$ is the
+limit of a sequence of points of $D$.
+\end{definition}
+
+\begin{theorem}[Extension of bounded linear maps]
+\label{norms-banach:thm:blt}
+Let $D$ be a dense linear subspace of a normed space $V$, $W$ a Banach
+space, and $A:D\to W$ a bounded linear map. There is a unique continuous
+map $\bar A:V\to W$ that extends $A$. It is linear, and
+$\norm{\bar A} = \norm A$.
+\end{theorem}
+
+\begin{proof}
+Let $v\in V$ and $v_k\to v$ with $v_k\in D$. Then
+$\norm{Av_k - Av_l}\leq\norm A\norm{v_k - v_l}$, so $(Av_k)$ is a Cauchy
+sequence in $W$ and converges. If $v'_k\to v$ is another such sequence,
+$\norm{Av_k - Av'_k}\leq\norm A\norm{v_k - v'_k}\to0$, so the limit is the
+same; call it $\bar Av$. For $v\in D$ the constant sequence shows
+$\bar Av = Av$. Linearity follows by taking limits in
+$A(cv_k + v'_k) = cAv_k + Av'_k$, and
+$\norm{\bar Av} = \lim\norm{Av_k}\leq\norm A\lim\norm{v_k}
+= \norm A\norm v$, so $\bar A$ is bounded with $\norm{\bar A}\leq\norm A$;
+the reverse inequality holds because $\bar A$ extends $A$. Two continuous
+maps that agree on $D$ agree on every limit of points of $D$, hence on
+$V$.
+\end{proof}
+
+\begin{intuition}
+A bounded linear map only needs to be defined on enough elements to
+approximate all the others; completeness of the target does the rest. This
+is how the integral is extended from simple functions to integrable ones
+in \cref{ch:lebesgue-integral}. The theorem says nothing for unbounded
+maps: differentiation is defined on a dense subspace of
+$(C^0([0, 1]), \norm\cdot_\infty)$ and has no continuous extension.
+\end{intuition}
+
+\subsection{Hilbert spaces}
+
+Two results of \cref{ch:inner-products} were proved by counting
+dimensions: the decomposition $V = U\oplus U^\perp$ and the Riesz theorem.
+In infinite dimension, completeness replaces the count.
+
+\begin{theorem}[Projection on a complete subspace]
+\label{norms-banach:thm:projection}
+Let $V$ be an inner product space and $U$ a linear subspace that is
+complete for the norm of $V$ (for instance a closed subspace of a Hilbert
+space, or any finite-dimensional subspace). For every $v\in V$ there is a
+unique point $p\in U$ closest to $v$, and $v - p$ is orthogonal to $U$.
+\end{theorem}
+
+\begin{proof}
+Let $\delta = \inf_{u\in U}\norm{v - u}$ and $u_k\in U$ with
+$\norm{v - u_k}\to\delta$. The parallelogram law
+(\cref{norms-banach:prop:parallelogram}) applied to $v - u_k$ and
+$v - u_l$ gives
+\[
+  \norm{u_k - u_l}^2 = 2\norm{v - u_k}^2 + 2\norm{v - u_l}^2
+  - 4\Bigl\|v - \tfrac12(u_k + u_l)\Bigr\|^2
+  \leq2\norm{v - u_k}^2 + 2\norm{v - u_l}^2 - 4\delta^2 ,
+\]
+since $\frac12(u_k + u_l)\in U$. The right-hand side tends to $0$, so
+$(u_k)$ is a Cauchy sequence; it converges to some $p\in U$ because $U$ is
+complete, and $\norm{v - p} = \delta$. The same inequality with two closest
+points $p, p'$ in place of $u_k, u_l$ gives $\norm{p - p'}^2\leq0$:
+uniqueness. For $u\in U$ and $t\in\R$,
+$\delta^2\leq\norm{v - p - tu}^2 = \delta^2 - 2t\inner{v - p}u
++ t^2\norm u^2$ for all $t$, which is possible only if
+$\inner{v - p}u = 0$.
+\end{proof}
+
+\begin{theorem}[Riesz representation in a Hilbert space]
+\label{norms-banach:thm:riesz}
+Let $H$ be a Hilbert space. For every bounded linear form $\phi$ on $H$
+there is exactly one $u\in H$ such that $\phi(v) = \inner uv$ for all $v$,
+and $\norm\phi_* = \norm u$.
+\end{theorem}
+
+\begin{proof}
+If $\phi = 0$ take $u = 0$. Otherwise $U = \ker\phi$ is a closed subspace
+(\cref{norms-banach:prop:closed}, since $\phi$ is continuous), hence
+complete, and $U\neq H$. Choose $v\notin U$ and let $a = v - p$, where $p$
+is the point of $U$ closest to $v$: by
+\cref{norms-banach:thm:projection}, $a\neq0$ and $a$ is orthogonal to $U$.
+For every $w\in H$, the vector $\phi(a)w - \phi(w)a$ is in $U$, so
+$\inner a{\phi(a)w - \phi(w)a} = 0$, that is,
+$\phi(w)\norm a^2 = \phi(a)\inner aw$. Hence $u = \phi(a)a/\norm a^2$
+represents $\phi$. If $u'$ also does, $\inner{u - u'}v = 0$ for all $v$,
+and $v = u - u'$ gives $u = u'$. Finally
+$\phi(v)\leq\norm u\norm v$ with equality at $v = u$, so
+$\norm\phi_* = \norm u$.
+\end{proof}
+
+\begin{example}[Without completeness the Riesz theorem fails]
+\label{norms-banach:ex:riesz-fails}
+On $C^0([-1, 1])$ with $\inner fg = \int_{-1}^1fg$, let
+$\phi(f) = \int_0^1f$. It is bounded: by the Cauchy--Schwarz inequality
+$\abs{\phi(f)}\leq\bigl(\int_0^1f^2\bigr)^{1/2}\leq\norm f_2$. Suppose a
+continuous $u$ represented it. Testing on $f(t) = u(t)\max(0, -t)$, which
+vanishes on $[0, 1]$, gives $\int_{-1}^0u(t)^2(-t)\,dt = 0$, so $u = 0$ on
+$[-1, 0)$. Testing on $f(t) = (u(t) - 1)\max(0, t)$ gives
+$\int_0^1(u(t) - 1)^2t\,dt = 0$, so $u = 1$ on $(0, 1]$. No continuous
+function does both. The representative should be the indicator of
+$[0, 1]$, which is not in the space.
+\end{example}
+
+\begin{mlthread}[Machine learning: spaces of functions]
+A model class is a set of functions, and learning is a search in a space
+of functions. Which norm that space carries is part of the problem.
+\begin{itemize}[nosep]
+  \item The squared loss measures the distance between a predictor and the
+        target in a norm of type $\norm\cdot_2$, weighted by the
+        distribution of the data. \Cref{norms-banach:thm:projection} then
+        gives the best predictor in a closed subspace as an orthogonal
+        projection (\cref{ch:lp-spaces}).
+  \item For $\norm\cdot_2$, evaluation at a point is not a bounded form
+        (\cref{norms-banach:ex:unbounded}): two functions can be close in
+        mean square and far apart at a given input. A small average error
+        says nothing about a particular prediction.
+  \item A \emph{reproducing kernel Hilbert space} is a Hilbert space of
+        functions on a set $\mathcal X$ in which every evaluation
+        $\delta_x:f\mapsto f(x)$ \emph{is} bounded. By
+        \cref{norms-banach:thm:riesz} there is then a function $k_x$ in
+        the space with $f(x) = \inner{k_x}f$ for all $f$: the
+        \emph{reproducing property}. The kernel is
+        $k(x, y) = \inner{k_x}{k_y}$. Kernel methods rest on the Riesz
+        theorem.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{norms-banach:sec:outlook}
+
+\Cref{ch:spectral-svd} computes the operator norm for $\norm\cdot_2$ and
+describes a linear map between inner product spaces by its singular
+values. \Cref{ch:differential} defines the differential of a map between
+normed affine spaces: by \cref{norms-banach:cor:finite}, in finite
+dimension the definition does not depend on the norms.
+\Cref{ch:contractions-newton,ch:inverse-implicit,ch:odes-flows} use the
+contraction principle to prove the convergence of Newton's method, the
+inverse function theorem and the existence of solutions of differential
+equations; in the last case the complete space is a space of continuous
+functions with the sup norm (\cref{norms-banach:thm:c0}).
+
+\paragraph{Sources.} Loomis and Sternberg introduce norms in \S3.2 of
+\emph{Advanced Calculus} and prove the equivalence of continuity and
+boundedness for linear maps in \S3.3 (Theorem~3.1). Their Chapter~4 covers
+sequential compactness (\S4.4, where Theorem~4.6 is the equivalence of all
+norms on $\R^n$), completeness (\S4.7, where Theorem~7.6 is
+\cref{norms-banach:thm:complete}) and the contraction mapping fixed-point
+theorem (\S4.9, Theorem~9.1); the projection on a complete subspace and
+the Riesz theorem are in their \S5.2. Hubbard and Hubbard treat limits,
+continuity and compactness in $\R^n$ in \S1.5--1.6. The presentation of
+bounded operators, of the extension theorem and of the Riesz theorem in a
+Hilbert space also follows the notes of S.~Rea and R.~Dadhley on
+F.~Schuller's \emph{Lectures on Quantum Theory} (Lectures~2 to~4), from
+which the example of differentiation is taken. Spectral normalization is
+due to T.~Miyato, T.~Kataoka, M.~Koyama and Y.~Yoshida, Spectral
+normalization for generative adversarial networks, ICLR, 2018.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{04-norms-banach.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A norm measures lengths; $\norm\cdot_1$ and $\norm\cdot_\infty$ do
+        not come from inner products. The dual norm of a covector is its
+        largest value on the unit ball; the duals of $\ell^1$,
+        $\ell^2$, $\ell^\infty$ are $\ell^\infty$, $\ell^2$, $\ell^1$.
+        Steepest descent for $\ell^\infty$ is sign descent.
+  \item Convergence, closed sets and continuity are defined from the
+        distance $d(a, b) = \norm{b - a}$. A set is compact if every
+        sequence in it has a subsequence converging in it; a space is
+        complete if Cauchy sequences converge.
+  \item In finite dimension all norms are equivalent: the topology is
+        canonical, every linear map is continuous, closed bounded sets are
+        compact. Constants and rates still depend on the norm and on the
         dimension.
-  \item The contraction mapping principle, used in
-        \cref{ch:contractions-newton,ch:inverse-implicit,ch:odes-flows}.
+  \item A linear map is continuous if and only if it is bounded. The
+        operator norm is its Lipschitz constant, and
+        $\norm{BA}\leq\norm B\norm A$: the Lipschitz constant of a network
+        is bounded by a product of operator norms.
+  \item A contraction of a closed subset of a complete space has a unique
+        fixed point, reached by iteration at a geometric rate. Value
+        iteration is an example, for the sup norm.
+  \item In infinite dimension norms are not equivalent, spaces may be
+        incomplete, linear maps may be unbounded and balls are not
+        compact. In a Hilbert space, projection on closed subspaces and
+        the Riesz theorem survive.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
-\begin{itemize}[nosep]
-  \item Lipschitz constants of networks and spectral normalization.
-  \item Learning as a search in a space of functions.
-\end{itemize}
-\end{chapterplan}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{norms-banach:exr:1}
+Let $\phi$ be the form on $\R^3$ with row $[2\ \ {-1}\ \ 3]$. Compute its
+dual norm for $\norm\cdot_1$, $\norm\cdot_2$ and $\norm\cdot_\infty$ on
+$\R^3$, and in each case a vector of norm $1$ where the supremum is
+attained. What are the three steepest descent directions?
+\solutionlink{norms-banach:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{norms-banach:exr:2}
+Show that the sup norm on $C^0([0, 1])$ does not come from an inner
+product, using $f = 1$ and $g(t) = t$.
+\solutionlink{norms-banach:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{norms-banach:exr:3}
+Let $f_k(t) = t^k$ on $[0, 1]$.
+\begin{enumerate}[nosep]
+  \item Compute $\norm{f_k - f_{2k}}_\infty$, show that
+        $\norm{f_k - f_l}_\infty\geq\frac14$ whenever $l\geq2k$, and
+        deduce that $(f_k)$ has no subsequence that converges for the sup
+        norm.
+  \item Conclude that the closed unit ball of
+        $(C^0([0, 1]), \norm\cdot_\infty)$ is not compact, although it is
+        closed and bounded.
+\end{enumerate}
+\solutionlink{norms-banach:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{norms-banach:exr:4}
+Show that the operator norm of a matrix $A$ as a map
+$(\R^n, \norm\cdot_1)\to(\R^m, \norm\cdot_1)$ is the largest column sum
+$\max_j\sum_i\abs{A_{ij}}$. Compute the operator norms of
+$\begin{bsmallmatrix}1 & -2\\3 & 4\end{bsmallmatrix}$ for $\norm\cdot_1$
+and for $\norm\cdot_\infty$.
+\solutionlink{norms-banach:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{norms-banach:exr:5}
+Let $f:\R^2\to\R$, $f(x) = W_2\,\mathrm{relu}(W_1x)$ with
+$W_1 = \begin{bsmallmatrix}1 & -1\\-1 & 1\end{bsmallmatrix}$ and
+$W_2 = [1\ \ 1]$, where $\mathrm{relu}(s) = \max(0, s)$ coordinatewise. Use
+$\norm\cdot_\infty$ on $\R^2$.
+\begin{enumerate}[nosep]
+  \item Compute the bound $\norm{W_2}\norm{W_1}$ on the Lipschitz constant
+        of $f$.
+  \item Show that $f(x) = \abs{x_1 - x_2}$ and find its smallest Lipschitz
+        constant.
+\end{enumerate}
+\solutionlink{norms-banach:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{norms-banach:exr:6}
+Let $A = \begin{bsmallmatrix}0.5 & 1\\0 & 0.5\end{bsmallmatrix}$,
+$b = (1, 1)$ and $f(x) = Ax + b$ on $\R^2$.
+\begin{enumerate}[nosep]
+  \item Find the fixed point of $f$.
+  \item With the norm $\norm x' = \max(\abs{x_1}, 4\abs{x_2})$ and
+        $x_0 = (0, 0)$, use \cref{norms-banach:thm:contraction} to find a
+        $k$ that guarantees $\norm{x_k - x^*}'\leq10^{-6}$.
+\end{enumerate}
+\solutionlink{norms-banach:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{norms-banach:exr:7}
+A system has two states. In state $1$, action ``stay'' gives reward $1$
+and action ``move'' gives reward $0$ and leads to state $2$. In state $2$,
+``stay'' gives reward $3$ and ``move'' gives reward $0$ and leads to
+state $1$. The discount is $\beta = \frac12$.
+\begin{enumerate}[nosep]
+  \item Write the Bellman operator and compute $T^kv$ for $v = (0, 0)$ and
+        $k = 1, 2, 3, 4$.
+  \item Find the fixed point $v^*$ and check that
+        $\norm{T^kv - v^*}_\infty = \beta^k\norm{v - v^*}_\infty$ for
+        these $k$.
+\end{enumerate}
+\solutionlink{norms-banach:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{norms-banach:exr:8}
+Show that a finite-dimensional linear subspace $U$ of a normed space $V$
+(of any dimension) is closed.
+\solutionlink{norms-banach:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{norms-banach:exr:9}
+On $C^0([-1, 1])$ with $\norm\cdot_2$, let
+$h_k(t) = \max(0, 1 - k\abs t)$.
+\begin{enumerate}[nosep]
+  \item Verify that $\norm{h_k}_2^2 = \frac2{3k}$, and conclude that
+        $\delta_0$ is not bounded for $\norm\cdot_2$.
+  \item Show that $\delta_0$ is bounded for $\norm\cdot_\infty$, with dual
+        norm $1$.
+\end{enumerate}
+\solutionlink{norms-banach:exr:9}
+\end{exercise}
 \end{notechapter}
