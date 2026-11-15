@@ -1,0 +1,27 @@
+\begin{notechapter}
+\chapter{The Chain Rule and Automatic Differentiation}
+\label{ch:chain-rule-autodiff}
+\chaptersubtitle{%
+  Vectors are pushed forward, covectors are pulled back}
+
+\begin{chapterplan}
+\begin{itemize}[nosep]
+  \item The chain rule, with proof; the product rule for bilinear maps.
+  \item Push-forward of velocities by $Df(a)$ (the Jacobian--vector product) and
+        pull-back of covectors by $\dual{Df(a)}$ (the vector--Jacobian product).
+  \item Forward mode and reverse mode as the two orders in which a composition
+        can be evaluated; their costs.
+  \item Backpropagation derived as reverse mode on a composition of layers; the
+        transposes that appear are dual operators, and no inner product is
+        involved.
+  \item Computational graphs: fan-out corresponds to the addition of covectors.
+\end{itemize}
+\smallskip\noindent\textbf{Machine learning threads.}
+\begin{itemize}[nosep]
+  \item \texttt{torch.func.jvp}, \texttt{torch.func.vjp} and
+        \texttt{torch.autograd.grad}.
+  \item \texttt{loss.backward()} computes a covector; the optimizer then applies
+        a Riesz map without saying so.
+\end{itemize}
+\end{chapterplan}
+\end{notechapter}

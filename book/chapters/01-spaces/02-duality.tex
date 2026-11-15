@@ -1,0 +1,30 @@
+\begin{notechapter}
+\chapter{Vector Spaces and Duality}
+\label{ch:duality}
+\chaptersubtitle{%
+  Covectors, dual bases and the dual operator}
+
+\begin{chapterplan}
+\begin{itemize}[nosep]
+  \item Vector spaces, bases and dimension; linear maps and their matrices;
+        change of basis.
+  \item The dual space $V^*$: linear forms and their level sets; the dual basis;
+        how the components of vectors and of covectors change with the basis.
+  \item The dual operator $\dual A:W^*\to V^*$, $\phi\mapsto\phi\circ A$. It
+        needs no inner product, and its matrix in the dual bases is the
+        transpose of the matrix of $A$, over any field and with no conjugation.
+  \item The bidual and the canonical isomorphism $V\cong V^{**}$; why an
+        isomorphism $V\cong V^*$ always involves a choice.
+  \item Annihilators; $\ker\dual A = (\im A)^\circ$; $A$ and $\dual A$ have the
+        same rank.
+  \item The basis test: which formulas survive a change of basis.
+\end{itemize}
+\smallskip\noindent\textbf{Machine learning threads.}
+\begin{itemize}[nosep]
+  \item Row vectors and column vectors.
+  \item Coordinatewise optimizers such as Adam depend on the basis.
+  \item The vector--Jacobian product is a dual operator
+        (\cref{ch:chain-rule-autodiff}).
+\end{itemize}
+\end{chapterplan}
+\end{notechapter}

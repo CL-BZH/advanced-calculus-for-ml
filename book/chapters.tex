@@ -1,0 +1,46 @@
+% Table of contents of the book: one \include per chapter
+
+\part{Spaces}
+\include{chapters/01-spaces/01-affine-spaces}
+\include{chapters/01-spaces/02-duality}
+\include{chapters/01-spaces/03-inner-products}
+\include{chapters/01-spaces/04-norms-banach}
+\include{chapters/01-spaces/05-spectral-svd}
+
+\part{Differential Calculus}
+\include{chapters/02-differential-calculus/01-differential}
+\include{chapters/02-differential-calculus/02-chain-rule-autodiff}
+\include{chapters/02-differential-calculus/03-gradient-hessian}
+\include{chapters/02-differential-calculus/04-contractions-newton}
+\include{chapters/02-differential-calculus/05-inverse-implicit}
+\include{chapters/02-differential-calculus/06-constrained-optimization}
+
+\part{Manifolds}
+\include{chapters/03-manifolds/01-submanifolds}
+\include{chapters/03-manifolds/02-tangent-bundles}
+\include{chapters/03-manifolds/03-riemannian-optimization}
+\include{chapters/03-manifolds/04-natural-gradient}
+
+\part{Measure and Integration}
+\include{chapters/04-measure-integration/01-measures}
+\include{chapters/04-measure-integration/02-lebesgue-integral}
+\include{chapters/04-measure-integration/03-fubini}
+\include{chapters/04-measure-integration/04-lp-spaces}
+\include{chapters/04-measure-integration/05-change-of-variables}
+
+\part{Differential Forms and Flows}
+\include{chapters/05-forms-flows/01-multilinear-algebra}
+\include{chapters/05-forms-flows/02-differential-forms}
+\include{chapters/05-forms-flows/03-stokes}
+\include{chapters/05-forms-flows/04-vector-calculus}
+\include{chapters/05-forms-flows/05-odes-flows}
+
+\appendix
+% the contents line goes before \part*, which ends its page: placed
+% after it, the line is written after the entries of the first
+% appendix chapter
+\clearpage\phantomsection
+\addcontentsline{toc}{part}{Appendix}
+\part*{Appendix}
+\include{chapters/99-appendix/01-caratheodory}
+\include{backmatter/solutions}

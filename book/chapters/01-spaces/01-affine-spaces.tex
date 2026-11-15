@@ -1,0 +1,1153 @@
+\begin{notechapter}
+\chapter{Affine Spaces}
+\label{ch:affine-spaces}
+\chaptersubtitle{%
+  Points, displacements, and what a parameter update is allowed to do}
+
+\begin{chapterintro}
+The update rule of gradient descent,
+$\theta\leftarrow\theta - \eta\nabla L(\theta)$, adds two objects of
+different kinds. The parameter $\theta$ is a \emph{point}:
+a state of the model. The term $-\eta\nabla L(\theta)$ is a \emph{displacement}:
+a change of state. A computer stores both as arrays of $n$ numbers, so the
+difference is invisible in code, and most calculus books erase it on the
+first page by declaring that both are elements of $\R^n$. This chapter keeps
+them apart. The structure in which points and displacements live together
+is called an affine space, and everything else in the book is built on it.
+You will learn
+\begin{itemize}[nosep]
+  \item the definition of an affine space and the rules of calculation that
+        follow from it: point $+$ vector is a point, point $-$ point is a
+        vector, and nothing else is allowed;
+  \item what choosing an origin does, and why coordinates of points and of
+        vectors react differently when the origin moves;
+  \item which combinations of points are meaningful (weights summing to $1$
+        give a point, weights summing to $0$ give a vector);
+  \item affine subspaces, convexity, and affine maps $x\mapsto Ax + b$, where
+        $A$ belongs to the map and $b$ to the choice of origins;
+  \item the \emph{origin test}, which detects formulas that secretly depend
+        on the origin, such as weight decay.
+\end{itemize}
+\prerequisites{vector spaces, linear maps, bases and matrices, at the level
+of a first course in linear algebra. \Cref{ch:duality} revisits them. All
+vector spaces in this chapter are real; from
+\cref{affine-spaces:sec:coordinates} on they are finite-dimensional.}
+\end{chapterintro}
+
+\section{Two kinds of data}\label{affine-spaces:sec:two-kinds}
+
+Some quantities answer the question ``where?'' and others the question
+``how far, and in which direction?''.
+
+\begin{itemize}[nosep]
+  \item \emph{Dates and durations.} ``14 July, noon'' is a date; ``three
+        hours'' is a duration. A date plus a duration is a date, and the
+        difference of two dates is a duration. Two durations can be added.
+        Two dates cannot: ``14 July plus 3 August'' means nothing.
+  \item \emph{Temperatures and temperature differences.} A temperature of
+        $20^\circ$C is a level on a scale whose zero is conventional.
+        ``$5$ degrees warmer'' is a difference. Twice ``$5$ degrees warmer''
+        is ``$10$ degrees warmer'' on every scale with the same unit, but
+        twice $20^\circ$C is $40^\circ$C, whereas the same computation in
+        kelvins gives $586.3$~K, that is, $313.15^\circ$C. Doubling a
+        temperature level depends on where the zero was put.
+  \item \emph{Positions and displacements.} A place on a map is a position;
+        ``$2$ km to the north-east'' is a displacement, and it can be
+        applied at any position.
+  \item \emph{Parameters and updates.} The weights of a model after $k$
+        steps of training form a position in parameter space. The update
+        applied at step $k$ is a displacement.
+\end{itemize}
+
+Programming languages that take types seriously enforce the distinction.
+In Python, the difference of two \texttt{datetime} objects is a
+\texttt{timedelta}, a \texttt{datetime} plus a \texttt{timedelta} is a
+\texttt{datetime}, and the sum of two \texttt{datetime} objects raises a
+\texttt{TypeError}. Tensors have no such protection: \texttt{x + y} is
+accepted whatever \texttt{x} and \texttt{y} stand for. The mathematics has
+to do the type checking, and the type system it uses is the definition of
+the next section.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.1]
+  \fill (0,0) circle (1.6pt) node[below left] {$a$};
+  \fill (2.4,1.0) circle (1.6pt) node[above right] {$b = a + v$};
+  \draw[->, very thick, bookdef] (0,0) -- (2.4,1.0)
+    node[midway, above left] {$v = b - a$};
+  \fill (3.2,-0.9) circle (1.6pt) node[below left] {$c$};
+  \fill (5.6,0.1) circle (1.6pt) node[above right] {$c + v$};
+  \draw[->, very thick, bookdef] (3.2,-0.9) -- (5.6,0.1)
+    node[midway, below right] {$v$};
+\end{tikzpicture}
+\caption{Points (black dots) and a displacement (green arrow). The
+displacement $v$ that leads from $a$ to $b$ is not attached to $a$: applied
+at another point $c$, the same $v$ leads to $c + v$.}
+\label{affine-spaces:fig:points-vectors}
+\end{figure}
+
+\section{The definition}\label{affine-spaces:sec:definition}
+
+\begin{definition}[Affine space]\label{affine-spaces:def:affine}
+An \emph{affine space} is a non-empty set $\Aff$, whose elements are called
+\emph{points}, together with a real vector space $V$, whose elements are
+called \emph{displacements} or simply \emph{vectors}, and an operation
+$\Aff\times V\to\Aff$, written $(a, v)\mapsto a + v$, such that for all
+$a, b\in\Aff$ and $u, v\in V$:
+\begin{enumerate}[nosep]
+  \item $a + 0 = a$;
+  \item $(a + u) + v = a + (u + v)$;
+  \item there is exactly one $v\in V$ such that $a + v = b$; it is written
+        $b - a$.
+\end{enumerate}
+The space $V$ is the \emph{direction} of $\Aff$, and the \emph{dimension} of
+$\Aff$ is the dimension of $V$.
+\end{definition}
+
+\begin{intuition}
+The vector space $V$ acts on the set $\Aff$ by moving its points. Axioms 1
+and 2 say that the zero displacement moves nothing and that two successive
+displacements amount to their sum. Axiom 3 says that from any point, every
+other point is reached by one displacement and only one. The symbol $+$ is
+used with two meanings, in $a + v$ and in $u + v$; axiom 2 is what makes
+this harmless.
+\end{intuition}
+
+The definition provides two operations between the two sets,
+\[
+  \text{point} + \text{vector} = \text{point},
+  \qquad
+  \text{point} - \text{point} = \text{vector},
+\]
+and nothing else. It does not define the sum of two points, the product of
+a point by a number, or a distinguished point that would deserve to be
+called zero. All the usual rules that mix the two operations follow from
+the three axioms.
+
+\begin{proposition}[Rules of calculation]\label{affine-spaces:prop:rules}
+For all $a, b, c\in\Aff$ and $u, v\in V$:
+\begin{enumerate}[nosep]
+  \item if $a + u = a + v$ then $u = v$; in particular $a + v = a$ only for
+        $v = 0$, and $a - a = 0$;
+  \item \emph{(Chasles' relation)} $(b - a) + (c - b) = c - a$;
+  \item $a - b = -(b - a)$;
+  \item $(a + u) - (b + v) = (a - b) + u - v$;
+  \item if $a + u = b + u$ then $a = b$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) Put $b = a + u = a + v$. Both $u$ and $v$ are displacements from $a$ to
+$b$, so $u = v$ by the uniqueness in axiom 3. Since $a + 0 = a$ by axiom 1,
+the only $v$ with $a + v = a$ is $0$, which is the meaning of $a - a = 0$.
+
+(2) By axiom 2 and the definition of $b - a$ and $c - b$,
+\[
+  a + \bigl((b - a) + (c - b)\bigr) = \bigl(a + (b - a)\bigr) + (c - b)
+  = b + (c - b) = c .
+\]
+So $(b - a) + (c - b)$ is a displacement from $a$ to $c$, and by uniqueness
+it is $c - a$.
+
+(3) Take $c = a$ in (2): $(b - a) + (a - b) = a - a = 0$.
+
+(4) Using axiom 2 and the commutativity of addition in $V$,
+\[
+  (b + v) + \bigl((a - b) + u - v\bigr) = b + \bigl((a - b) + u\bigr)
+  = \bigl(b + (a - b)\bigr) + u = a + u .
+\]
+So $(a - b) + u - v$ is the displacement from $b + v$ to $a + u$.
+
+(5) Add $-u$ to both sides: $a = (a + u) + (-u) = (b + u) + (-u) = b$, by
+axioms 2 and 1.
+\end{proof}
+
+\begin{example}[A vector space is an affine space]
+\label{affine-spaces:ex:vector-space}
+Every vector space $V$ is an affine space with direction $V$ itself: the
+points are the elements of $V$, and $a + v$ is the addition of $V$. Then
+$b - a$ is the usual difference. This is how $\R^n$ is used in most of
+calculus. In this example the set of points happens to contain a special
+element, $0$, and to carry extra operations (sums and multiples of points).
+The affine structure does not see them.
+\end{example}
+
+\begin{example}[Solutions of a linear system]\label{affine-spaces:ex:system}
+Let $A$ be an $m\times n$ matrix and $b\in\R^m$, and suppose that the set
+$S = \{x\in\R^n : Ax = b\}$ is not empty. If $b\neq0$, $S$ is not a vector
+space: it does not contain $0$, and the sum of two solutions is not a
+solution, since $A(x + y) = 2b$. But the difference of two solutions lies
+in $\ker A$, and a solution plus an element of $\ker A$ is a solution. So
+$S$ is an affine space with direction $\ker A$, and it has no natural
+origin: no solution is more special than another.
+\end{example}
+
+\begin{example}[Probability vectors]\label{affine-spaces:ex:simplex}
+The set $H = \{p\in\R^n : p_1 + \dots + p_n = 1\}$ is an affine space with
+direction $H_0 = \{v\in\R^n : v_1 + \dots + v_n = 0\}$. Probability
+distributions on $n$ outcomes are the points of $H$ with non-negative
+coordinates. The sum of two probability vectors is not a probability
+vector, but their difference is an element of $H_0$. The familiar quantity
+$p - y$ (predicted probabilities minus one-hot label), which appears when
+the cross-entropy is differentiated with respect to the logits, is such a
+difference: its coordinates sum to zero.
+\end{example}
+
+\begin{pitfall}[Angles are not points of an affine space]
+Angles, hours on a clock face and other periodic quantities can be moved by
+a displacement ($350^\circ + 20^\circ = 10^\circ$), and axioms 1 and 2 hold.
+Axiom 3 fails: from $350^\circ$ to $10^\circ$ the displacement can be
+$+20^\circ$, $-340^\circ$, $+380^\circ$, and so on. Operations that rely on
+uniqueness fail with it. The ``midpoint'' of $350^\circ$ and $10^\circ$
+computed as $(350 + 10)/2 = 180^\circ$ points in the direction opposite to
+the two angles, whereas $(-10 + 10)/2 = 0^\circ$ lies between them
+(\cref{affine-spaces:exr:7}). The circle is the first example of a space
+that looks affine near each point but not globally;
+\cref{ch:tangent-bundles} returns to it.
+\end{pitfall}
+
+\begin{remark}[An equivalent definition]
+Some authors start from the map $\Aff\times\Aff\to V$, $(a, b)\mapsto b - a$,
+and ask for two properties: Chasles' relation, and that for every $a$ the
+map $b\mapsto b - a$ is a bijection from $\Aff$ onto $V$. The operation
+$a + v$ is then \emph{defined} as the unique $b$ with $b - a = v$. The two
+definitions describe the same objects; the one adopted here puts forward
+the operation that an update rule uses.
+\end{remark}
+
+\section{Origins and coordinates}\label{affine-spaces:sec:coordinates}
+
+From now on $\Aff$ has finite dimension $n$.
+
+\begin{definition}[Vectorialization, frame, coordinates]
+\label{affine-spaces:def:frame}
+Let $o\in\Aff$. The map
+\[
+  \Theta_o:\Aff\to V,\qquad a\mapsto a - o
+\]
+is the \emph{vectorialization} of $\Aff$ at $o$, and $o$ is then called an
+\emph{origin}. An \emph{affine frame} of $\Aff$ is a pair
+$(o; e_1,\dots,e_n)$ made of a point $o$ and a basis $(e_1,\dots,e_n)$ of
+$V$. The \emph{coordinates} of a point $a$ in this frame are the numbers
+$x_1,\dots,x_n$ such that $a = o + \sum_jx_je_j$, that is, the components
+of the vector $a - o$ in the basis. The coordinates of a vector $v$ in the
+frame are its components in the basis; the origin plays no role in them.
+\end{definition}
+
+By axiom 3, $\Theta_o$ is a bijection, with inverse $v\mapsto o + v$. Once
+an origin is chosen, points can therefore be \emph{represented} by vectors,
+and once a basis is chosen too, by elements of $\R^n$. This is what every
+program does. The representation depends on the choices, and points and
+vectors do not react in the same way when the origin changes.
+
+\begin{proposition}[Moving the origin]\label{affine-spaces:prop:origin-change}
+Let $o' = o + w$ be another origin, with the same basis. If a point $a$ has
+coordinates $x$ in the frame $(o; e_1,\dots,e_n)$ and $x'$ in the frame
+$(o'; e_1,\dots,e_n)$, and $w$ has components $\omega$, then
+\[
+  x' = x - \omega .
+\]
+The coordinates of a vector are the same in both frames.
+\end{proposition}
+
+\begin{proof}
+By rule (4) of \cref{affine-spaces:prop:rules},
+$a - o' = (a + 0) - (o + w) = (a - o) - w$. Taking components in the basis
+gives $x' = x - \omega$. The coordinates of a vector are its components in
+the basis, which has not changed.
+\end{proof}
+
+\begin{keyidea}
+When the origin moves by $w$, the coordinates of every point change by
+$-w$ and the coordinates of every vector stay the same. A formula written
+in coordinates describes something geometric only if its result reacts
+accordingly: like a point if it is meant to be a point, like a vector if
+it is meant to be a vector, and not at all if it is meant to be a number.
+\end{keyidea}
+
+The temperature scales of \cref{affine-spaces:sec:two-kinds} are frames of a
+one-dimensional affine space. Celsius and Kelvin share the basis vector
+(one degree) and differ by the origin, with $\omega = -273.15$ when passing
+from Celsius to Kelvin coordinates. Celsius and Fahrenheit differ by both
+the origin and the basis vector.
+
+\section{Affine combinations}\label{affine-spaces:sec:combinations}
+
+Adding two points is not defined. Yet the midpoint of two points and the
+mean of a cloud of points are perfectly geometric. The following
+proposition explains which weighted sums of points make sense.
+
+\begin{proposition}[Affine combinations]\label{affine-spaces:prop:affine-comb}
+Let $a_1,\dots,a_k\in\Aff$, $\lambda_1,\dots,\lambda_k\in\R$ and $o\in\Aff$.
+\begin{enumerate}[nosep]
+  \item If $\sum_i\lambda_i = 1$, the point $o + \sum_i\lambda_i(a_i - o)$ does
+        not depend on $o$. It is written $\sum_i\lambda_ia_i$ and called an
+        \emph{affine combination}, or \emph{barycentre}, of the $a_i$.
+  \item If $\sum_i\lambda_i = 0$, the vector $\sum_i\lambda_i(a_i - o)$ does
+        not depend on $o$. It is also written $\sum_i\lambda_ia_i$.
+  \item In all other cases, both depend on $o$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Replace $o$ by $o' = o + w$. By \cref{affine-spaces:prop:origin-change},
+$a_i - o' = (a_i - o) - w$, so
+\[
+  \sum_i\lambda_i(a_i - o') = \sum_i\lambda_i(a_i - o)
+  - \Bigl(\sum_i\lambda_i\Bigr)w
+\]
+and, since $o' = o + w$,
+\[
+  o' + \sum_i\lambda_i(a_i - o') = o + \sum_i\lambda_i(a_i - o)
+  + \Bigl(1 - \sum_i\lambda_i\Bigr)w .
+\]
+The vector is the same for every $w$ if and only if $\sum_i\lambda_i = 0$,
+and the point is the same for every $w$ if and only if
+$\sum_i\lambda_i = 1$.
+\end{proof}
+
+\begin{intuition}
+The sum of the weights is the ``number of points'' that the expression
+contains. One point in total: the result is a point. Zero points in total:
+the positions cancel and the result is a displacement. Any other total:
+the expression still contains a multiple of the origin, and it means
+nothing until the origin is fixed.
+\end{intuition}
+
+In coordinates, both notations are computed in the obvious way: the
+coordinates of $\sum_i\lambda_ia_i$ are $\sum_i\lambda_ix^{(i)}$, where
+$x^{(i)}$ are the coordinates of $a_i$. The proposition says when this
+array of numbers is the coordinate array of a well-defined object.
+
+\begin{example}[Meaningful and meaningless expressions]
+\label{affine-spaces:ex:midpoint}
+The midpoint $\frac12a + \frac12b$ and the mean $\frac1k\sum_ia_i$ are
+points. The difference $b - a$ (weights $1$ and $-1$) is a vector, and so
+is the second difference $a - 2b + c$. The expression $2a - b$ (weights $2$
+and $-1$) is a point: the reflection of $b$ through $a$. The expressions
+$a + b$ and $2a$ have total weight $2$ and are not defined. In the plane,
+take a frame with origin $o$ in which $a$ and $b$ have coordinates $(1, 2)$
+and $(3, 1)$, and a second origin $o'$ with coordinates $(1, 1)$. Computed
+from $o$, the ``sum'' is the point of coordinates $(4, 3)$. Computed from
+$o'$, the new coordinates of $a$ and $b$ are $(0, 1)$ and $(2, 0)$, their
+sum is $(2, 1)$, which is the point of old coordinates $(3, 2)$. The two
+results differ by $(1 - 2)w = -w$, as the proof predicts. The midpoint is
+the point of old coordinates $(2, 1.5)$ in both computations
+(\cref{affine-spaces:fig:sum-midpoint}).
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.25]
+  % parallelogram built from the origin o
+  \draw[dashed, bookaccent] (0,0) -- (1,2) -- (4,3) -- (3,1) -- cycle;
+  % parallelogram built from the origin o'
+  \draw[dashed, bookpitfall] (1,1) -- (1,2) -- (3,2) -- (3,1) -- cycle;
+  \draw[thin, gray] (1,2) -- (3,1);
+  \fill[bookaccent] (0,0) circle (1.6pt) node[below left] {$o$};
+  \fill[bookpitfall] (1,1) circle (1.6pt) node[below left] {$o'$};
+  \fill (1,2) circle (1.6pt) node[above left] {$a$};
+  \fill (3,1) circle (1.6pt) node[below right] {$b$};
+  \fill[bookaccent] (4,3) circle (1.6pt) node[above right] {$s$};
+  \fill[bookpitfall] (3,2) circle (1.6pt) node[above right] {$s'$};
+  \fill[bookdef] (2,1.5) circle (2pt) node[above right] {$m$};
+\end{tikzpicture}
+\caption{The ``sum'' of two points depends on the origin used to compute it:
+$s$ is ``$a + b$'' computed from $o$ (blue parallelogram) and $s'$ is
+``$a + b$'' computed from $o'$ (red parallelogram). The midpoint
+$m = \frac12a + \frac12b$ (green) does not depend on the origin: it is the
+centre of both parallelograms.}
+\label{affine-spaces:fig:sum-midpoint}
+\end{figure}
+
+Affine combinations can be nested without leaving the family.
+
+\begin{proposition}[Associativity of barycentres]
+\label{affine-spaces:prop:associativity}
+For $j = 1,\dots,m$ let $b_j = \sum_i\lambda_{ji}a_i$ be affine combinations
+of the points $a_1,\dots,a_k$, and let $\mu_1,\dots,\mu_m$ be weights with
+$\sum_j\mu_j = 1$. Then
+\[
+  \sum_j\mu_jb_j = \sum_i\Bigl(\sum_j\mu_j\lambda_{ji}\Bigr)a_i ,
+\]
+and the weights on the right-hand side sum to $1$.
+\end{proposition}
+
+\begin{proof}
+Fix an origin $o$. By definition, $b_j - o = \sum_i\lambda_{ji}(a_i - o)$,
+so
+\[
+  \sum_j\mu_jb_j = o + \sum_j\mu_j(b_j - o)
+  = o + \sum_i\Bigl(\sum_j\mu_j\lambda_{ji}\Bigr)(a_i - o) .
+\]
+The total weight is
+$\sum_i\sum_j\mu_j\lambda_{ji} = \sum_j\mu_j\sum_i\lambda_{ji}
+= \sum_j\mu_j = 1$,
+so the last expression is the affine combination claimed.
+\end{proof}
+
+\begin{definition}[Segments, convex sets, convex functions]
+\label{affine-spaces:def:convex}
+An affine combination with non-negative weights is a \emph{convex
+combination}. The \emph{segment} $[a, b]$ is the set of points
+$(1 - t)a + tb$, $t\in[0, 1]$. A subset $C\subset\Aff$ is \emph{convex} if
+it contains the segment joining any two of its points. A function
+$f:C\to\R$ on a convex set is \emph{convex} if
+\[
+  f\bigl((1 - t)a + tb\bigr)\leq(1 - t)f(a) + tf(b)
+  \qquad\text{for all }a, b\in C,\ t\in[0, 1] .
+\]
+\end{definition}
+
+Convexity is therefore an affine notion. It needs neither an origin nor a
+way to measure lengths and angles, and it will be available long before
+inner products enter in \cref{ch:inner-products}.
+
+\begin{mlthread}[Machine learning: averages of models]
+Several common techniques average parameter vectors, and all of them are
+affine combinations.
+\begin{itemize}[nosep]
+  \item \emph{Iterate averaging}, $\bar\theta_K = \frac1K\sum_{k=1}^K\theta_k$
+        (Polyak and Juditsky, 1992), and its variants along a training run
+        such as stochastic weight averaging (Izmailov et al., 2018).
+  \item The \emph{exponential moving average}
+        $\bar\theta\leftarrow\beta\bar\theta + (1 - \beta)\theta$, with
+        weights $\beta$ and $1 - \beta$.
+  \item \emph{Model soups}, which average the weights of several fine-tuned
+        models (Wortsman et al., 2022), and linear interpolation
+        $(1 - t)\theta_0 + t\theta_1$ between two models.
+  \item \emph{Task arithmetic} (Ilharco et al., 2023) forms
+        $\theta_0 + \sum_i\lambda_i(\theta_i - \theta_0)$, where $\theta_0$
+        are pretrained weights and $\theta_i$ fine-tuned ones. The
+        differences $\theta_i - \theta_0$ are called task vectors, and
+        rightly so: they are vectors, and a point plus a combination of
+        vectors is a point whatever the $\lambda_i$. The sum of the weights
+        on the points is $1 - \sum_i\lambda_i + \sum_i\lambda_i = 1$.
+\end{itemize}
+On the data side, \emph{mixup} (Zhang et al., 2018) trains on convex
+combinations $(1 - t)x_i + tx_j$ of pairs of inputs, and centring a data
+set replaces the points $x_i$ by the vectors $x_i - \bar x$, where
+$\bar x = \frac1n\sum_ix_i$ is their mean. A covariance matrix is built
+from these vectors, which is why it does not depend on the origin.
+\end{mlthread}
+
+\section{Affine subspaces}\label{affine-spaces:sec:subspaces}
+
+\begin{definition}[Affine subspace]\label{affine-spaces:def:subspace}
+A non-empty subset $\Bff\subset\Aff$ is an \emph{affine subspace} if there
+are a point $b\in\Bff$ and a linear subspace $W\subset V$ such that
+\[
+  \Bff = b + W = \{b + w : w\in W\} .
+\]
+\end{definition}
+
+\begin{proposition}\label{affine-spaces:prop:subspace}
+Let $\Bff = b + W$ be an affine subspace of $\Aff$.
+\begin{enumerate}[nosep]
+  \item For every $b'\in\Bff$, $\Bff = b' + W$, and
+        $W = \{c - b' : c\in\Bff\}$. In particular $W$ is determined by
+        $\Bff$; it is called the \emph{direction} of $\Bff$.
+  \item With the operation of $\Aff$ restricted to $\Bff\times W$, $\Bff$ is
+        an affine space with direction $W$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) Write $b' = b + w_0$ with $w_0\in W$. For $w\in W$,
+$b' + w = b + (w_0 + w)\in b + W$ and $b + w = b' + (w - w_0)\in b' + W$,
+because $W$ is a linear subspace. So $b + W = b' + W$. Then
+$\{c - b' : c\in\Bff\} = \{(b' + w) - b' : w\in W\} = W$.
+
+(2) By (1), $b' + w\in\Bff$ for all $b'\in\Bff$ and $w\in W$, so the
+operation is well defined. Axioms 1 and 2 hold in $\Bff$ because they hold
+in $\Aff$. For axiom 3, let $b', c\in\Bff$. By (1), $c - b'\in W$, and it is
+the only vector of $V$, hence of $W$, that leads from $b'$ to $c$.
+\end{proof}
+
+Affine subspaces of dimension $0$, $1$ and $n - 1$ are the points, the
+\emph{lines} and the \emph{hyperplanes} of $\Aff$. Two affine subspaces with
+the same direction are \emph{parallel}
+(\cref{affine-spaces:fig:subspace}). The spaces $S$ and $H$ of
+\cref{affine-spaces:ex:system,affine-spaces:ex:simplex} are affine
+subspaces of $\R^n$.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.1]
+  \draw[thick, bookaccent] (-0.6,-0.3) -- (5.4,2.7)
+    node[right] {$\Bff = b + W$};
+  \draw[thick, bookaccent!50] (0.4,-1.5) -- (6.4,1.5)
+    node[right] {$\Bff' = b' + W$};
+  \fill (1,0.5) circle (1.6pt) node[above left] {$b$};
+  \fill (3,1.5) circle (1.6pt) node[above left] {$c$};
+  \draw[->, very thick, bookdef] (1,0.5) -- (3,1.5)
+    node[midway, below right] {$c - b\in W$};
+  \fill (2,-0.7) circle (1.6pt) node[below right] {$b'$};
+\end{tikzpicture}
+\caption{An affine subspace is a point plus a linear subspace of
+displacements. Two parallel lines share the direction $W$; neither of them
+is a vector space, and neither contains a preferred point.}
+\label{affine-spaces:fig:subspace}
+\end{figure}
+
+\begin{proposition}[Characterization by affine combinations]
+\label{affine-spaces:prop:subspace-comb}
+A non-empty subset $\Bff\subset\Aff$ is an affine subspace if and only if
+every affine combination of points of $\Bff$ belongs to $\Bff$.
+\end{proposition}
+
+\begin{proof}
+Suppose $\Bff = b + W$ and let $b_i = b + w_i$ be points of $\Bff$ and
+$\sum_i\lambda_i = 1$. Computing with the origin $b$,
+$\sum_i\lambda_ib_i = b + \sum_i\lambda_iw_i$, which is in $b + W$.
+
+Conversely, suppose $\Bff$ is stable under affine combinations, fix
+$b\in\Bff$ and let $W = \{c - b : c\in\Bff\}$, so that $\Bff = b + W$. We
+show that $W$ is a linear subspace. It contains $0 = b - b$. If
+$w = c - b\in W$ and $t\in\R$, the point $(1 - t)b + tc = b + tw$ is in
+$\Bff$, so $tw\in W$. If $w_1 = c_1 - b$ and $w_2 = c_2 - b$ are in $W$, the
+point $c_1 + c_2 - b$ (weights $1$, $1$, $-1$) is in $\Bff$, and computed
+with the origin $b$ it equals $b + w_1 + w_2$, so $w_1 + w_2\in W$.
+\end{proof}
+
+\begin{definition}[Affine hull, convex hull]
+The \emph{affine hull} $\aff(S)$ of a non-empty set $S\subset\Aff$ is the
+set of all affine combinations of points of $S$, and its \emph{convex hull}
+$\conv(S)$ is the set of all convex combinations of points of $S$.
+\end{definition}
+
+By \cref{affine-spaces:prop:associativity}, an affine combination of
+affine combinations of points of $S$ is again one, so $\aff(S)$ is an
+affine subspace by \cref{affine-spaces:prop:subspace-comb}. It is the
+smallest one containing $S$, since any affine subspace containing $S$
+contains all affine combinations of its points. Likewise $\conv(S)$ is
+convex, because the weights produced by
+\cref{affine-spaces:prop:associativity} are non-negative when the
+$\lambda_{ji}$ and the $\mu_j$ are. It is the smallest convex set containing
+$S$: a convex set $C$ contains every convex combination
+$\sum_{i=1}^k\lambda_ia_i$ of its points, by induction on $k$. For $k = 2$
+this is the definition. For $k > 2$ with $\lambda_k\neq1$, the point
+$b = \sum_{i<k}\frac{\lambda_i}{1 - \lambda_k}a_i$ is a convex combination of
+$k - 1$ points, hence in $C$, and
+$\sum_{i\leq k}\lambda_ia_i = (1 - \lambda_k)b + \lambda_ka_k$ by
+\cref{affine-spaces:prop:associativity}, which is on the segment
+$[b, a_k]$. For instance, the hyperplane $H$ of
+\cref{affine-spaces:ex:simplex} is the affine hull of the points
+$e_1,\dots,e_n$ of $\R^n$, and the set of probability vectors is their
+convex hull, the \emph{simplex}.
+
+\section{Affine maps}\label{affine-spaces:sec:maps}
+
+Let $\Aff$ and $\Bff$ be affine spaces with directions $V$ and $W$.
+
+\begin{definition}[Affine map]\label{affine-spaces:def:map}
+A map $f:\Aff\to\Bff$ is \emph{affine} if there is a linear map
+$\lin f:V\to W$ such that
+\[
+  f(a + v) = f(a) + \lin f(v)\qquad\text{for all }a\in\Aff,\ v\in V .
+\]
+The map $\lin f$ is the \emph{linear part} of $f$.
+\end{definition}
+
+The linear part is determined by $f$, since
+$\lin f(v) = f(a + v) - f(a)$. An affine map sends points to points, and
+its linear part says what it does to displacements: if $b = a + v$ then
+$f(b) - f(a) = \lin f(b - a)$.
+
+\begin{proposition}[One base point is enough]
+\label{affine-spaces:prop:one-point}
+Let $f:\Aff\to\Bff$ be a map. If there are a point $o\in\Aff$ and a linear
+map $L:V\to W$ such that $f(o + v) = f(o) + L(v)$ for all $v\in V$, then
+$f$ is affine with linear part $L$.
+\end{proposition}
+
+\begin{proof}
+Let $a = o + u$ be any point. By axiom 2 and the linearity of $L$,
+\[
+  f(a + v) = f\bigl(o + (u + v)\bigr) = f(o) + L(u) + L(v)
+  = f(o + u) + L(v) = f(a) + L(v) .
+\qedhere
+\]
+\end{proof}
+
+\paragraph{In coordinates.} Choose frames $(o; e_1,\dots,e_n)$ of $\Aff$ and
+$(o'; e'_1,\dots,e'_m)$ of $\Bff$. Let $A$ be the matrix of $\lin f$ in the
+two bases and let $\beta$ be the coordinates of the point $f(o)$. If $a$
+has coordinates $x$, then $f(a) = f(o) + \lin f(a - o)$ has coordinates
+\[
+  y = Ax + \beta .
+\]
+Conversely, by \cref{affine-spaces:prop:one-point}, every map of this form
+is affine. Now move the origin of $\Aff$ by a vector of components
+$\omega$: the new coordinates are $x' = x - \omega$, and
+\[
+  y = A(x' + \omega) + \beta = Ax' + (\beta + A\omega) .
+\]
+The matrix has not changed; the constant term has.
+
+\begin{keyidea}
+In $y = Ax + \beta$, the matrix $A$ represents the linear part of the map
+and depends only on the two bases. The constant $\beta$ is the position of
+the image of the origin and depends on both origins. An affine map has no
+intrinsic ``constant term''.
+\end{keyidea}
+
+\begin{proposition}[Affine maps and affine combinations]
+\label{affine-spaces:prop:map-comb}
+A map $f:\Aff\to\Bff$ is affine if and only if it preserves affine
+combinations: $f\bigl(\sum_i\lambda_ia_i\bigr) = \sum_i\lambda_if(a_i)$
+whenever $\sum_i\lambda_i = 1$.
+\end{proposition}
+
+\begin{proof}
+Suppose $f$ is affine and $\sum_i\lambda_i = 1$. Fix $o\in\Aff$. Then
+\[
+  f\Bigl(o + \sum_i\lambda_i(a_i - o)\Bigr)
+  = f(o) + \sum_i\lambda_i\lin f(a_i - o)
+  = f(o) + \sum_i\lambda_i\bigl(f(a_i) - f(o)\bigr) ,
+\]
+which is the affine combination $\sum_i\lambda_if(a_i)$ computed in $\Bff$
+with the origin $f(o)$.
+
+Conversely, suppose $f$ preserves affine combinations. Fix $o\in\Aff$ and
+define $L(v) = f(o + v) - f(o)$. For $t\in\R$, the point $o + tv$ is the
+affine combination $(1 - t)o + t(o + v)$, so
+$f(o + tv) = (1 - t)f(o) + tf(o + v) = f(o) + tL(v)$, hence
+$L(tv) = tL(v)$. For $u, v\in V$, the point $o + u + v$ is the affine
+combination $(o + u) + (o + v) - o$, so
+$f(o + u + v) = f(o + u) + f(o + v) - f(o) = f(o) + L(u) + L(v)$, hence
+$L(u + v) = L(u) + L(v)$. So $L$ is linear, and $f$ is affine by
+\cref{affine-spaces:prop:one-point}.
+\end{proof}
+
+\begin{proposition}[Composition, inverse, translations]
+\label{affine-spaces:prop:composition}
+\begin{enumerate}[nosep]
+  \item If $f:\Aff\to\Bff$ and $g:\Bff\to\mathcal C$ are affine, then
+        $g\circ f$ is affine, with linear part $\lin g\circ\lin f$.
+  \item An affine map $f$ is bijective if and only if $\lin f$ is, and then
+        $f^{-1}$ is affine with linear part $(\lin f)^{-1}$.
+  \item For $u\in V$, the \emph{translation} $\tau_u:a\mapsto a + u$ is
+        affine with linear part $\id_V$. Conversely, an affine map
+        $f:\Aff\to\Aff$ with linear part $\id_V$ is a translation.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) $g(f(a + v)) = g\bigl(f(a) + \lin f(v)\bigr)
+= g(f(a)) + \lin g(\lin f(v))$.
+
+(2) Fix $o\in\Aff$. Since $\Theta_o$ and $\Theta_{f(o)}$ are bijections and
+$\Theta_{f(o)}\circ f = \lin f\circ\Theta_o$, the map $f$ is bijective if
+and only if $\lin f$ is. In that case, for $b\in\Bff$ and $w\in W$, apply
+$f$ to the point $f^{-1}(b) + (\lin f)^{-1}(w)$: the result is $b + w$.
+Hence $f^{-1}(b + w) = f^{-1}(b) + (\lin f)^{-1}(w)$.
+
+(3) By axiom 2, $\tau_u(a + v) = a + v + u = \tau_u(a) + v$. Conversely, if
+$\lin f = \id_V$ then, by rule (4) of \cref{affine-spaces:prop:rules},
+$f(a + v) - (a + v) = (f(a) + v) - (a + v) = f(a) - a$ for all $v$. So the
+vector $u = f(a) - a$ is the same for all points, and $f = \tau_u$.
+\end{proof}
+
+\begin{proposition}[Level sets of affine maps]
+\label{affine-spaces:prop:fibre}
+Let $f:\Aff\to\Bff$ be affine and $c\in\Bff$. The set
+$f^{-1}(c) = \{a\in\Aff : f(a) = c\}$ is either empty or an affine subspace
+of $\Aff$ with direction $\ker\lin f$.
+\end{proposition}
+
+\begin{proof}
+Suppose $f(a_0) = c$. For $v\in V$, $f(a_0 + v) = c + \lin f(v)$, and by
+rule (1) of \cref{affine-spaces:prop:rules} this equals $c$ if and only if
+$\lin f(v) = 0$. So $f^{-1}(c) = a_0 + \ker\lin f$.
+\end{proof}
+
+This is the familiar statement that the general solution of $Ax = b$ is a
+particular solution plus the general solution of $Ax = 0$
+(\cref{affine-spaces:ex:system}).
+
+\begin{proposition}[Fixed points]\label{affine-spaces:prop:fixed-point}
+Let $f:\Aff\to\Aff$ be affine, with $\Aff$ finite-dimensional. If $1$ is
+not an eigenvalue of $\lin f$, then $f$ has exactly one fixed point $c$,
+and
+\[
+  f(c + v) = c + \lin f(v)\quad\text{for all }v\in V,
+  \qquad\text{so that}\qquad
+  f^k(a) - c = (\lin f)^k(a - c)
+\]
+for every point $a$ and every $k\geq0$.
+\end{proposition}
+
+\begin{proof}
+Fix $o\in\Aff$. The point $o + v$ is fixed if and only if
+$f(o) + \lin f(v) = o + v$, that is, $(\id_V - \lin f)(v) = f(o) - o$. Since
+$1$ is not an eigenvalue of $\lin f$, the map $\id_V - \lin f$ is injective,
+hence bijective in finite dimension, and this equation has exactly one
+solution. If $c$ is the fixed point, $f(c + v) = f(c) + \lin f(v)
+= c + \lin f(v)$, and the formula for $f^k$ follows by induction.
+\end{proof}
+
+\begin{intuition}
+Seen from its fixed point, an affine map is linear. The position of a
+point relative to $c$ is a vector, and the map transforms this vector by
+$\lin f$. All questions about the iterates of $f$ become questions about
+the powers of a linear map.
+\end{intuition}
+
+\begin{example}[Gradient descent on a quadratic is an affine map]
+\label{affine-spaces:ex:quadratic}
+In coordinates, let $L(x) = \frac12x^\top Hx - b^\top x$ with $H$ symmetric
+and invertible. The vector of its partial derivatives is $Hx - b$, and one
+step of gradient descent with step size $\eta$ is
+\[
+  x\ \longmapsto\ x - \eta(Hx - b) = (I - \eta H)x + \eta b ,
+\]
+an affine map with linear part $I - \eta H$. Its fixed point is the
+solution $x^*$ of $Hx = b$, and by \cref{affine-spaces:prop:fixed-point},
+\[
+  x_k - x^* = (I - \eta H)^k(x_0 - x^*) .
+\]
+The \emph{error} $x_k - x^*$ is a vector and evolves linearly. Whether and
+how fast gradient descent converges on this loss is entirely a question
+about the powers of $I - \eta H$, which \cref{ch:spectral-svd} answers.
+\end{example}
+
+\begin{mlthread}[Machine learning: layers are affine, not linear]
+A ``linear layer'' $x\mapsto Wx + b$ is an affine map. Three consequences
+follow from this section.
+\begin{itemize}[nosep]
+  \item The composition of affine maps is affine
+        (\cref{affine-spaces:prop:composition}), with
+        $W_2(W_1x + b_1) + b_2 = (W_2W_1)x + (W_2b_1 + b_2)$. A stack of such
+        layers without non-linearities computes nothing more than a single
+        one.
+  \item Translating the inputs, for instance subtracting their mean,
+        changes the bias and not the weight matrix: $Wx + b
+        = W(x - \mu) + (b + W\mu)$. A layer with a bias can absorb any
+        choice of origin of its input space. A layer without bias cannot:
+        the family of maps $x\mapsto Wx$ singles out the input that is
+        sent to zero (\cref{affine-spaces:exr:6}).
+  \item If $g$ is affine and $f$ is convex, then $f\circ g$ is convex
+        (\cref{affine-spaces:exr:9}). This is why least squares and
+        logistic regression are convex problems in their parameters: the
+        predictions depend on the parameters through an affine map.
+\end{itemize}
+\end{mlthread}
+
+\section{Points at height one}\label{affine-spaces:sec:homogeneous}
+
+There is a way of storing points and vectors in arrays that makes the type
+checking automatic. Append one extra number to each array:
+\[
+  \text{a point with coordinates }x\in\R^n\ \longmapsto\
+  \begin{bmatrix}x\\1\end{bmatrix},
+  \qquad
+  \text{a vector with coordinates }v\in\R^n\ \longmapsto\
+  \begin{bmatrix}v\\0\end{bmatrix} .
+\]
+
+\begin{proposition}[Homogeneous coordinates]
+\label{affine-spaces:prop:homogeneous}
+With this convention:
+\begin{enumerate}[nosep]
+  \item the last coordinate of $\sum_i\lambda_i\begin{bsmallmatrix}x^{(i)}\\
+        1\end{bsmallmatrix}$ is $\sum_i\lambda_i$, so a weighted sum of
+        points is a point when the last coordinate is $1$, a vector when it
+        is $0$, and neither otherwise;
+  \item the affine map $y = Ax + \beta$ acts on points and its linear part
+        acts on vectors through the same $(m + 1)\times(n + 1)$ matrix,
+        \[
+          \begin{bmatrix}A & \beta\\0 & 1\end{bmatrix}
+          \begin{bmatrix}x\\1\end{bmatrix}
+          = \begin{bmatrix}Ax + \beta\\1\end{bmatrix},
+          \qquad
+          \begin{bmatrix}A & \beta\\0 & 1\end{bmatrix}
+          \begin{bmatrix}v\\0\end{bmatrix}
+          = \begin{bmatrix}Av\\0\end{bmatrix} ;
+        \]
+  \item composition of affine maps corresponds to the product of these
+        matrices.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) and (2) are direct computations. For (3),
+\[
+  \begin{bmatrix}A_2 & \beta_2\\0 & 1\end{bmatrix}
+  \begin{bmatrix}A_1 & \beta_1\\0 & 1\end{bmatrix}
+  = \begin{bmatrix}A_2A_1 & A_2\beta_1 + \beta_2\\0 & 1\end{bmatrix},
+\]
+which is the matrix of $x\mapsto A_2(A_1x + \beta_1) + \beta_2$.
+\end{proof}
+
+Geometrically, the $n$-dimensional affine space has been placed in
+$\R^{n+1}$ as the hyperplane at height $1$, and its direction as the
+parallel hyperplane through the origin, at height $0$
+(\cref{affine-spaces:fig:homogeneous}). The height of an array is the
+total weight of \cref{affine-spaces:prop:affine-comb}, and the constant
+$\beta$ is invisible to vectors because it is multiplied by their last
+coordinate, $0$. In machine learning this device is known as the
+\emph{bias trick}: appending a constant feature $1$ to the input turns the
+affine layer $Wx + b$ into the linear map $[W\ b]$ of the extended input.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \draw[->, gray] (-3.4,0) -- (5.6,0);
+  \draw[->, gray] (0,-0.4) -- (0,2.7) node[above] {height};
+  \draw[thick, bookaccent] (-3.4,1) -- (5.6,1)
+    node[right] {points};
+  \draw[thick, bookdef] (-3.4,0) -- (5.6,0) node[right] {vectors};
+  \draw[thin, gray, dashed] (-3.4,2) -- (5.6,2);
+  \node[gray, anchor=west] at (5.6,2) {height $2$};
+  \fill (1,1) circle (1.6pt) node[below] {$a$};
+  \fill (3,1) circle (1.6pt) node[below] {$b$};
+  \fill[bookpitfall] (4,2) circle (1.6pt) node[above] {$a + b$};
+  \fill[bookaccent] (2,1) circle (1.8pt) node[above] {$\frac12a + \frac12b$};
+  \draw[->, very thick, bookdef] (0,0) -- (2,0)
+    node[midway, below] {$b - a$};
+  \fill[bookaccent] (-1,1) circle (1.6pt) node[above] {$2a - b$};
+\end{tikzpicture}
+\caption{Homogeneous coordinates for a one-dimensional affine space. Points
+are stored at height $1$ and vectors at height $0$. The midpoint and the
+reflection $2a - b$ stay at height $1$; the difference $b - a$ falls to
+height $0$; the ``sum'' $a + b$ lands at height $2$, where nothing lives.}
+\label{affine-spaces:fig:homogeneous}
+\end{figure}
+
+\section{The origin test}\label{affine-spaces:sec:origin-test}
+
+The computer does not check heights. On arrays, \texttt{x + y} and
+\texttt{2 * x} are as easy to write as \texttt{x + v}, and a formula that
+uses them still returns numbers. The question is whether those numbers
+mean anything.
+
+\begin{definition}[Origin test]\label{affine-spaces:def:origin-test}
+A formula computed on coordinates \emph{passes the origin test} if its
+result does not depend on the origin of the frame: when the origin is moved
+by $w$, the result has its coordinates shifted by $-\omega$ if it is meant
+to be a point, and unchanged if it is meant to be a vector or a number.
+\end{definition}
+
+By \cref{affine-spaces:prop:origin-change}, moving the origin by $w$ means
+replacing every array $x$ that stores a point by $x - \omega$ and leaving
+every array that stores a vector unchanged. \Cref{affine-spaces:tab:test}
+applies the test to common expressions. The last two lines anticipate
+\cref{ch:inner-products}: the distance between two points is the length of
+a vector, whereas the ``norm of a point'' and the cosine similarity
+$x\cdot y/(\norm x\norm y)$ of two points are computed on $x - o$ and
+$y - o$, and change with $o$. For instance, the points of coordinates
+$(1, 0)$ and $(0, 1)$ have cosine similarity $0$; seen from the origin
+placed at $(-1, -1)$ their coordinates are $(2, 1)$ and $(1, 2)$, and the
+cosine similarity is $\frac45$. Their distance is $\sqrt2$ in both cases.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Expression on coordinates & Meant to be & Origin test \\
+\midrule
+$x + v$ & a point & passes \\
+$y - x$ & a vector & passes \\
+$\frac12(x + y)$,\quad $\frac1k\sum_ix^{(i)}$ & a point & passes \\
+$\beta\bar x + (1 - \beta)x$ & a point & passes \\
+$x + \beta(x - x_{\mathrm{prev}})$ & a point & passes \\
+$x + y$,\quad $2x$,\quad $-x$ & a point & fails \\
+$(1 - \eta\lambda)x$ & a point & fails \\
+$\norm{y - x}$ & a number & passes \\
+$\norm x$,\quad $x\cdot y$,\quad cosine similarity of $x$ and $y$
+  & a number & fails \\
+\bottomrule
+\end{tabular}
+\caption{The origin test on common expressions; $x$, $y$, $\bar x$ store
+points and $v$ stores a vector.}
+\label{affine-spaces:tab:test}
+\end{table}
+
+\paragraph{Update rules.} A training algorithm produces at each step a
+vector to add to the current point. Abstractly, it uses a map
+$g:\Aff\to V$, a \emph{vector field}, and iterates
+\begin{equation}\label{affine-spaces:eq:update}
+  a_{k+1} = a_k + \eta\,g(a_k) .
+\end{equation}
+For gradient descent, $g = -\nabla L$; how a loss function $L$ produces
+such a field, and what else that requires, is the subject of
+\cref{ch:differential,ch:gradient-hessian}. Whatever $g$ is,
+\eqref{affine-spaces:eq:update} is a point plus a vector, and it passes the
+test: if $x_k$ are the coordinates of $a_k$ and $\gamma(x)$ those of
+$g(a)$, then in the frame with origin moved by $w$ the same field reads
+$\gamma'(x') = \gamma(x' + \omega)$, and
+$x'_{k+1} = x'_k + \eta\gamma'(x'_k)$ is $x_{k+1} - \omega$ whenever
+$x'_k = x_k - \omega$. The same holds for the heavy-ball momentum update,
+which adds the vector $\beta(a_k - a_{k-1})$, and for the averages of
+\cref{affine-spaces:sec:combinations}.
+
+\begin{example}[Weight decay has a hidden origin]
+\label{affine-spaces:ex:decay}
+Weight decay modifies the update \eqref{affine-spaces:eq:update} into
+\[
+  x_{k+1} = (1 - \eta\lambda)x_k + \eta\gamma(x_k) .
+\]
+The coefficient of the point $x_k$ is not $1$, and the formula fails the
+test: computed in two frames whose origins differ by $w$, from the same
+point, it gives two points that differ by the vector $\eta\lambda w$
+(\cref{affine-spaces:exr:5}). Written without coordinates, with $o$ the
+point whose coordinates are zero, the update is
+\[
+  a_{k+1} = \bigl(o + (1 - \eta\lambda)(a_k - o)\bigr) + \eta\,g(a_k) :
+\]
+a contraction of ratio $1 - \eta\lambda$ towards $o$, followed by the usual
+step. Each frame contracts towards its own origin.
+
+To see the effect on the result, take $g(a) = c - a$, a field that pulls
+every point towards a point $c$ (it is $-\nabla L$ for
+$L(a) = \frac12\norm{a - c}^2$ with the dot product). Then
+$a_{k+1} = a_k + \eta\bigl((c - a_k) + \lambda(o - a_k)\bigr)$ is an affine
+map with linear part $(1 - \eta(1 + \lambda))\id_V$. For
+$0 < \eta < 2/(1 + \lambda)$ it converges, by
+\cref{affine-spaces:prop:fixed-point}, to its fixed point
+\[
+  a^* = \frac1{1 + \lambda}\,c + \frac\lambda{1 + \lambda}\,o ,
+\]
+a barycentre of $c$ and $o$. With $\lambda = 1$ and $c$ of coordinates
+$(3, 1)$: if $o$ is the point $(0, 0)$, training ends at $(1.5, 0.5)$; if
+the decay is centred at the point $(2, 2)$ instead, it ends at
+$(2.5, 1.5)$ (\cref{affine-spaces:fig:decay}).
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.5]
+  \draw[thin, gray!60] (0,0) -- (3,1) -- (2,2);
+  \fill (3,1) circle (1.6pt) node[right] {$c$};
+  \fill[bookaccent] (0,0) circle (1.6pt) node[below left] {$o$};
+  \fill[bookpitfall] (2,2) circle (1.6pt) node[above right] {$o'$};
+  \fill (0.5,2.5) circle (1.6pt) node[above left] {$a_0$};
+  \draw[bookaccent, thick, mark=*, mark size=1.2pt] plot coordinates
+    {(0.5,2.5) (1.0,1.5) (1.25,1.0) (1.375,0.75) (1.4375,0.625)
+     (1.46875,0.5625) (1.5,0.5)};
+  \draw[bookpitfall, thick, mark=*, mark size=1.2pt] plot coordinates
+    {(0.5,2.5) (1.5,2.0) (2.0,1.75) (2.25,1.625) (2.375,1.5625)
+     (2.4375,1.53125) (2.5,1.5)};
+  \node[bookaccent, anchor=north west] at (1.5,0.45) {$a^*$ (decay to $o$)};
+  \node[bookpitfall, anchor=west] at (2.56,1.55) {$a^*$ (decay to $o'$)};
+\end{tikzpicture}
+\caption{The same training run with weight decay centred at two different
+points ($\lambda = 1$, $\eta = 0.25$, field $g(a) = c - a$). Each run ends
+at the midpoint of $c$ and its own centre of decay.}
+\label{affine-spaces:fig:decay}
+\end{figure}
+
+\begin{pitfall}[What the test says, and what it does not]
+The origin test does not say that weight decay is wrong. It says that the
+formula contains a choice, the point towards which the parameters are
+pulled, and that the notation $\lambda\theta$ hides it. For a network
+trained from scratch the zero weights are a meaningful centre: the
+parameter space of a neural network is a genuine vector space, in which
+the zero weights are the network whose output ignores its input. For a
+network fine-tuned from pretrained weights $\theta_0$, pulling towards
+$\theta_0$, that is, replacing $\lambda\theta$ by $\lambda(\theta - \theta_0)$,
+is often the better choice (the L2-SP regularizer of Li, Grandvalet and
+Davoine, 2018). The test sorts formulas into those that use an origin and
+those that do not, so that the choice is made knowingly.
+\end{pitfall}
+
+Moving the origin is one of two natural changes of frame. The other one,
+changing the basis, is the subject of the \emph{basis test} of
+\cref{ch:duality}. Coordinatewise optimizers such as Adam pass the origin
+test and fail the basis test.
+
+\section{Where the chapter leads}\label{affine-spaces:sec:outlook}
+
+An affine space has points, displacements, lines, parallelism, barycentres
+and convexity. It has no lengths and no angles, so no notion of
+``steepest''. The following chapters add structure one layer at a time.
+\begin{itemize}[nosep]
+  \item \Cref{ch:duality} studies the vector space $V$ and its dual $V^*$,
+        the space of linear forms on $V$. An \emph{affine form}
+        $\ell:\Aff\to\R$ has a linear part $\lin\ell\in V^*$: the first
+        example of a covector, and the model for the differential of a
+        loss.
+  \item \Cref{ch:inner-products} adds an inner product on $V$, which makes
+        $\Aff$ a \emph{Euclidean affine space} and turns covectors into
+        vectors.
+  \item \Cref{ch:differential} defines the differential of a map
+        $f:\Aff\to\Bff$ at a point $a$ as the linear part of the affine map
+        that best approximates $f$ near $a$. The velocity of a curve
+        $\gamma$ in $\Aff$,
+        \[
+          \gamma'(t) = \lim_{h\to0}\frac{\gamma(t + h) - \gamma(t)}h ,
+        \]
+        is a limit of vectors of $V$, whatever the point $\gamma(t)$. In an
+        affine space, velocities at all points live in the same space $V$.
+        This is what allows a vector computed at $a_k$ to be added to
+        $a_k$, and it is exactly what is lost on a curved space
+        (\cref{ch:submanifolds}).
+\end{itemize}
+
+\paragraph{Sources.} The two books that inspired this one treat the
+subject differently. Hubbard and Hubbard (\emph{Vector Calculus, Linear
+Algebra, and Differential Forms}, 5th ed., \S1.1) distinguish points from
+vectors, with separate notations and the rules that points cannot be added
+while vectors can, without naming the structure; the temperature example
+is adapted from theirs. Loomis and Sternberg (\emph{Advanced Calculus},
+\S1.2) build the
+correspondence between Euclidean space and $\R^3$ from a chosen origin and
+then transfer the geometric language to the vector space; affine subspaces
+appear in their \S1.4 as translates of linear subspaces of a vector space.
+Systematic treatments of affine spaces are in Berger (\emph{Geometry~I},
+Springer, 1987, Chapter~2) and Gallier (\emph{Geometric Methods and
+Applications}, 2nd ed., Springer, 2011, Chapter~2). The machine learning
+references are: B.~Polyak and A.~Juditsky, Acceleration of stochastic
+approximation by averaging, \emph{SIAM J.\ Control Optim.}, 1992;
+P.~Izmailov et al., Averaging weights leads to wider optima and better
+generalization, UAI, 2018; M.~Wortsman et al., Model soups, ICML, 2022;
+G.~Ilharco et al., Editing models with task arithmetic, ICLR, 2023;
+H.~Zhang et al., mixup: Beyond empirical risk minimization, ICLR, 2018;
+X.~Li, Y.~Grandvalet and F.~Davoine, Explicit inductive bias for transfer
+learning with convolutional networks, ICML, 2018.
+
+\paragraph{Notebook.} \notebook{01-affine-spaces.ipynb} checks the
+numerical claims of this chapter with PyTorch.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item An affine space is a set of points on which a vector space of
+        displacements acts: point $+$ vector $=$ point, point $-$ point $=$
+        vector, with exactly one displacement between any two points.
+        There is no sum of points and no origin.
+  \item Choosing an origin represents points by vectors. When the origin
+        moves by $w$, coordinates of points change by $-w$; coordinates of
+        vectors do not change.
+  \item A weighted sum of points is a point if the weights sum to $1$, a
+        vector if they sum to $0$, and meaningless otherwise. Midpoints,
+        means, moving averages and convexity are affine notions.
+  \item Affine subspaces are translates $b + W$ of linear subspaces;
+        solution sets of linear systems are the typical example.
+  \item An affine map is $x\mapsto Ax + \beta$ in coordinates. The matrix
+        $A$ is its linear part and acts on displacements; $\beta$ depends
+        on the origins. Seen from a fixed point, an affine map is linear.
+  \item Storing points with a last coordinate $1$ and vectors with a last
+        coordinate $0$ makes these rules automatic (the bias trick).
+  \item The origin test detects formulas that depend on the origin.
+        Updates of the form point $+$ vector pass; weight decay fails,
+        because it is a contraction towards a chosen point.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{affine-spaces:exr:1}
+Let $a, b, c, d$ be points of an affine space. Show that $b - a = c - d$
+if and only if $d - a = c - b$ (the quadrilateral $abcd$ is then a
+parallelogram), and that this happens if and only if the midpoints of
+$[a, c]$ and $[b, d]$ coincide.
+\solutionlink{affine-spaces:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{affine-spaces:exr:2}
+Let $a, b, c$ be points and $u$ a vector. Say whether each expression is a
+point, a vector, or undefined:
+\[
+  a + 2u,\quad \tfrac12(a + b),\quad a + b - c,\quad a - 2b + c,\quad
+  2a - b,\quad a + b,\quad \tfrac13(a + b + c) - a .
+\]
+\solutionlink{affine-spaces:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{affine-spaces:exr:3}
+Show that affine combinations of \emph{two} points are enough in
+\cref{affine-spaces:prop:subspace-comb,affine-spaces:prop:map-comb}:
+\begin{enumerate}[nosep]
+  \item a non-empty subset $\Bff\subset\Aff$ that contains the line through
+        any two of its points is an affine subspace;
+  \item a map $f$ such that $f((1 - t)a + tb) = (1 - t)f(a) + tf(b)$ for
+        all points $a, b$ and all $t\in\R$ is affine.
+\end{enumerate}
+\hint{$o + u + v$ is the midpoint of $o + 2u$ and $o + 2v$.}
+\solutionlink{affine-spaces:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{affine-spaces:exr:4}
+Let $a, b, c$ be three points and $g = \frac13a + \frac13b + \frac13c$.
+Use \cref{affine-spaces:prop:associativity} to show that $g$ lies on the
+segment joining $a$ to the midpoint of $[b, c]$, two thirds of the way
+from $a$. Conclude that the three medians of a triangle meet at $g$.
+\solutionlink{affine-spaces:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{affine-spaces:exr:5}
+Weight decay is run in coordinates $x$ and in the coordinates
+$x' = x - \omega$ of a frame whose origin has been moved by $w$:
+$x\mapsto(1 - \eta\lambda)x + \eta\gamma(x)$ and
+$x'\mapsto(1 - \eta\lambda)x' + \eta\gamma'(x')$, with
+$\gamma'(x') = \gamma(x' + \omega)$.
+\begin{enumerate}[nosep]
+  \item Starting from the same point, by how much do the two new points
+        differ after one step?
+  \item For $\gamma\equiv0$ and $0 < \eta\lambda < 2$, where do the two
+        sequences converge?
+  \item For $\gamma(x) = \chi - x$ (the field of
+        \cref{affine-spaces:ex:decay}, with $\chi$ the coordinates of $c$),
+        verify the fixed point and the condition on $\eta$ given in that
+        example.
+\end{enumerate}
+\solutionlink{affine-spaces:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{affine-spaces:exr:6}
+Let $\mathcal F_{\mathrm{aff}}$ be the set of maps $\R^n\to\R^m$ of the form
+$x\mapsto Wx + b$ and $\mathcal F_{\mathrm{lin}}$ the set of maps
+$x\mapsto Wx$. For $\omega\in\R^n$ let $\tau_\omega(x) = x + \omega$.
+\begin{enumerate}[nosep]
+  \item Show that $f\circ\tau_\omega\in\mathcal F_{\mathrm{aff}}$ for every
+        $f\in\mathcal F_{\mathrm{aff}}$, and give its weight matrix and
+        bias.
+  \item Show that for $f\in\mathcal F_{\mathrm{lin}}$,
+        $f\circ\tau_\omega\in\mathcal F_{\mathrm{lin}}$ if and only if
+        $W\omega = 0$.
+  \item A model without bias is fitted by least squares to inputs measured
+        in degrees Celsius, then to the same inputs in kelvins. Explain
+        why the two fitted models can make different predictions, and why
+        this cannot happen with a bias.
+\end{enumerate}
+\solutionlink{affine-spaces:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{affine-spaces:exr:7}
+On the circle $\mathcal C = \R/\Z$, whose points are the classes
+$[x] = x + \Z$, let $v\in\R$ act by $[x] + v = [x + v]$.
+\begin{enumerate}[nosep]
+  \item Show that this is well defined and satisfies axioms 1 and 2 of
+        \cref{affine-spaces:def:affine}, but not axiom 3.
+  \item Show that the ``midpoint'' $[(x + y)/2]$ of $[x]$ and $[y]$ depends
+        on the representatives $x$ and $y$, and takes exactly two values.
+\end{enumerate}
+\solutionlink{affine-spaces:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{affine-spaces:exr:8}
+In homogeneous coordinates
+(\cref{affine-spaces:prop:homogeneous}), let $M$ be the matrix of the
+affine map $y = Ax + \beta$, with $A$ invertible.
+\begin{enumerate}[nosep]
+  \item Compute $M^{-1}$ and check that it is the matrix of the inverse
+        affine map.
+  \item Write the matrix $T_\omega$ of the translation by $\omega$ and
+        verify that $MT_\omega$ is the matrix of the same map in the
+        coordinates $x' = x - \omega$, with the change of constant term
+        $\beta\mapsto\beta + A\omega$ of \cref{affine-spaces:sec:maps}.
+\end{enumerate}
+\solutionlink{affine-spaces:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{affine-spaces:exr:9}
+Let $g:\Aff\to\Bff$ be affine, $C\subset\Bff$ convex and $f:C\to\R$ convex.
+Show that $g^{-1}(C)$ is convex and that $f\circ g$ is convex on it. Deduce
+that for a matrix $X$, a vector $y$ and a convex function
+$\varphi:\R^m\to\R$, the function $\theta\mapsto\varphi(X\theta - y)$ is
+convex on $\R^n$.
+\solutionlink{affine-spaces:exr:9}
+\end{exercise}
+\end{notechapter}

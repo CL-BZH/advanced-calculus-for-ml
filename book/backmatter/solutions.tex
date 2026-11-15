@@ -1,0 +1,175 @@
+\chapter{Solutions to the Exercises}\label{ch:solutions}
+
+Solutions are grouped by chapter. Each exercise statement links to its
+solution, and each solution links back to its statement.
+
+% =====================================================================
+\section{\nameref*{ch:affine-spaces}}
+
+\solution{affine-spaces:exr:1}
+By Chasles' relation, $c - a = (b - a) + (c - b)$ and
+$c - a = (d - a) + (c - d)$, so
+\[
+  (b - a) - (c - d) = (d - a) - (c - b) .
+\]
+One side vanishes if and only if the other does, which is the first claim.
+For the second, the midpoints $\frac12a + \frac12c$ and $\frac12b + \frac12d$
+coincide if and only if their difference is zero. This difference is the
+combination $\frac12a - \frac12b + \frac12c - \frac12d$, whose weights sum
+to $0$: it is a vector, and computing it with the origin $d$ gives
+$\frac12\bigl((a - d) - (b - d) + (c - d)\bigr)
+= \frac12\bigl((a - b) + (c - d)\bigr)$. It vanishes if and only if
+$c - d = b - a$.
+
+\solution{affine-spaces:exr:2}
+Count the total weight on the points
+(\cref{affine-spaces:prop:affine-comb}).
+$a + 2u$: a point (point plus vector).
+$\frac12(a + b)$: weights $\frac12, \frac12$, total $1$, a point (the
+midpoint).
+$a + b - c$: total $1$, a point (the fourth vertex of the parallelogram
+with vertices $a$, $c$, $b$).
+$a - 2b + c$: total $0$, a vector (twice the displacement from $b$ to the
+midpoint of $[a, c]$).
+$2a - b$: total $1$, a point (the reflection of $b$ through $a$).
+$a + b$: total $2$, undefined.
+$\frac13(a + b + c) - a$: weights $-\frac23, \frac13, \frac13$, total $0$, a
+vector (from $a$ to the centroid).
+
+\solution{affine-spaces:exr:3}
+\begin{enumerate}[nosep]
+  \item Fix $b\in\Bff$ and let $W = \{c - b : c\in\Bff\}$. As in the proof of
+        \cref{affine-spaces:prop:subspace-comb}, $0\in W$, and if
+        $w = c - b\in W$ then $b + tw = (1 - t)b + tc$ is on the line
+        through $b$ and $c$, so $tw\in W$ for every $t\in\R$. Let
+        $w_1, w_2\in W$. Then $2w_1, 2w_2\in W$, so $b + 2w_1$ and
+        $b + 2w_2$ are in $\Bff$, and so is their midpoint. Computed with
+        the origin $b$, this midpoint is
+        $b + \frac12(2w_1) + \frac12(2w_2) = b + w_1 + w_2$. Hence
+        $w_1 + w_2\in W$, and $W$ is a linear subspace.
+  \item Fix $o$ and let $L(v) = f(o + v) - f(o)$. The identity
+        $o + tv = (1 - t)o + t(o + v)$ gives $L(tv) = tL(v)$ as in the
+        proof of \cref{affine-spaces:prop:map-comb}. For additivity,
+        $o + u + v$ is the midpoint of $o + 2u$ and $o + 2v$, so
+        \[
+          f(o + u + v) = \tfrac12f(o + 2u) + \tfrac12f(o + 2v)
+          = f(o) + \tfrac12L(2u) + \tfrac12L(2v) = f(o) + L(u) + L(v) ,
+        \]
+        where the midpoint in $\Bff$ was computed with the origin $f(o)$.
+        So $L$ is linear, and $f$ is affine by
+        \cref{affine-spaces:prop:one-point}.
+\end{enumerate}
+
+\solution{affine-spaces:exr:4}
+Let $m = \frac12b + \frac12c$. By
+\cref{affine-spaces:prop:associativity},
+$\frac13a + \frac23m = \frac13a + \frac13b + \frac13c = g$. The weights
+$\frac13$ and $\frac23$ are non-negative, so $g$ is on the segment
+$[a, m]$, and $g - a = \frac23(m - a)$. The expression of $g$ is symmetric
+in $a, b, c$, so the same holds for the other two medians: all three pass
+through $g$.
+
+\solution{affine-spaces:exr:5}
+\begin{enumerate}[nosep]
+  \item From $x$ and $x' = x - \omega$, the first computation gives
+        $x_1 = (1 - \eta\lambda)x + \eta\gamma(x)$, whose new coordinates
+        are
+        \[
+          x_1 - \omega = (1 - \eta\lambda)(x' + \omega) + \eta\gamma'(x')
+          - \omega
+          = \bigl[(1 - \eta\lambda)x' + \eta\gamma'(x')\bigr]
+          - \eta\lambda\omega .
+        \]
+        The bracket is the second computation. The two new points differ
+        by the vector $\eta\lambda w$.
+  \item $x_k = (1 - \eta\lambda)^kx_0\to0$ and
+        $x'_k = (1 - \eta\lambda)^kx'_0\to0$, since
+        $\abs{1 - \eta\lambda} < 1$. In the original coordinates the
+        second limit is the point $\omega$. Each sequence converges to its
+        own origin.
+  \item The map is
+        $x\mapsto(1 - \eta\lambda)x + \eta(\chi - x)
+        = (1 - \eta(1 + \lambda))x + \eta\chi$, affine with linear part
+        $\rho\,\id$, $\rho = 1 - \eta(1 + \lambda)$. Its fixed point solves
+        $\eta(1 + \lambda)x = \eta\chi$, so $x^* = \chi/(1 + \lambda)$,
+        which is the barycentre $\frac1{1 + \lambda}c
+        + \frac\lambda{1 + \lambda}o$ since $o$ has coordinates $0$. By
+        \cref{affine-spaces:prop:fixed-point},
+        $x_k - x^* = \rho^k(x_0 - x^*)$, which tends to $0$ if and only if
+        $\abs\rho < 1$, that is, $0 < \eta < 2/(1 + \lambda)$ (or
+        $x_0 = x^*$). With $\lambda = 1$ and $\chi = (3, 1)$,
+        $x^* = (1.5, 0.5)$. If the decay is centred at the point $(2, 2)$,
+        the same computation in the frame with that origin gives the
+        midpoint of $(3, 1)$ and $(2, 2)$, namely $(2.5, 1.5)$.
+\end{enumerate}
+
+\solution{affine-spaces:exr:6}
+\begin{enumerate}[nosep]
+  \item $(f\circ\tau_\omega)(x) = W(x + \omega) + b = Wx + (b + W\omega)$:
+        same weight matrix, bias $b + W\omega$.
+  \item $(f\circ\tau_\omega)(x) = Wx + W\omega$ is of the form $W'x$ if and
+        only if it vanishes at $x = 0$, that is, $W\omega = 0$ (and then
+        $W' = W$).
+  \item Passing from Celsius to kelvins replaces each input $x$ by
+        $x + \omega$ with $\omega = 273.15$. With a bias, by (1) the set
+        of functions of the physical temperature that the model can
+        represent is the same in both units, so least squares selects the
+        same function (when the minimizer is unique) and the predictions
+        agree. Without bias, the model in Celsius can only represent
+        functions that vanish at $0^\circ$C, and the model in kelvins only
+        functions that vanish at $0$~K. By (2) these two families share
+        only the zero function when $n = 1$, so the two fits differ
+        unless both are zero.
+\end{enumerate}
+
+\solution{affine-spaces:exr:7}
+\begin{enumerate}[nosep]
+  \item If $y - x\in\Z$ then $(y + v) - (x + v)\in\Z$, so $[x + v]$ depends
+        only on $[x]$. Axioms 1 and 2 hold because they hold in $\R$.
+        Axiom 3 fails: $[0.1] + v = [0.3]$ for every $v\in0.2 + \Z$, so the
+        displacement from $[0.1]$ to $[0.3]$ exists but is not unique.
+  \item Replacing $x$ by $x + m$ and $y$ by $y + k$ with $m, k\in\Z$
+        changes $(x + y)/2$ by $(m + k)/2$, which is an integer when
+        $m + k$ is even and a half-integer otherwise. So the class
+        $[(x + y)/2]$ takes exactly the two values $[(x + y)/2]$ and
+        $[(x + y)/2 + \frac12]$: two diametrically opposite points of the
+        circle. With angles measured in degrees, this is the pair
+        $0^\circ$ and $180^\circ$ found for $350^\circ$ and $10^\circ$.
+\end{enumerate}
+
+\solution{affine-spaces:exr:8}
+\begin{enumerate}[nosep]
+  \item Solving $y = Ax + \beta$ gives $x = A^{-1}y - A^{-1}\beta$, an
+        affine map with matrix
+        \[
+          \begin{bmatrix}A^{-1} & -A^{-1}\beta\\0 & 1\end{bmatrix} ,
+        \]
+        and the product of this matrix with
+        $M = \begin{bsmallmatrix}A & \beta\\0 & 1\end{bsmallmatrix}$, in
+        either order, is the identity:
+        $A^{-1}\beta - A^{-1}\beta = 0$ and
+        $-AA^{-1}\beta + \beta = 0$.
+  \item $T_\omega = \begin{bsmallmatrix}I & \omega\\0 & 1\end{bsmallmatrix}$
+        sends the new coordinates $x'$ of a point to its old coordinates
+        $x = x' + \omega$. Then
+        \[
+          MT_\omega
+          = \begin{bmatrix}A & A\omega + \beta\\0 & 1\end{bmatrix} ,
+        \]
+        the matrix of $x'\mapsto Ax' + (\beta + A\omega)$. On vectors,
+        $T_\omega$ acts as the identity, since their last coordinate
+        is~$0$.
+\end{enumerate}
+
+\solution{affine-spaces:exr:9}
+Let $a, b\in g^{-1}(C)$ and $t\in[0, 1]$. By
+\cref{affine-spaces:prop:map-comb},
+$g((1 - t)a + tb) = (1 - t)g(a) + tg(b)$, which is in $C$ because $C$ is
+convex. So $g^{-1}(C)$ is convex, and
+\[
+  f\bigl(g((1 - t)a + tb)\bigr) = f\bigl((1 - t)g(a) + tg(b)\bigr)
+  \leq(1 - t)f(g(a)) + tf(g(b)) .
+\]
+The map $\theta\mapsto X\theta - y$ is affine from $\R^n$ to $\R^m$, with
+linear part $X$, so $\theta\mapsto\varphi(X\theta - y)$ is convex. Least
+squares is the case $\varphi(r) = \norm r^2$.

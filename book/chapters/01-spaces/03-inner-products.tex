@@ -1,0 +1,30 @@
+\begin{notechapter}
+\chapter{Inner Products and Euclidean Affine Spaces}
+\label{ch:inner-products}
+\chaptersubtitle{%
+  Riesz, the adjoint, and how a metric turns covectors into vectors}
+
+\begin{chapterplan}
+\begin{itemize}[nosep]
+  \item Inner products, norms, Cauchy--Schwarz, orthogonality, Gram--Schmidt;
+        the Gram matrix $M$ of an inner product in a basis.
+  \item The Riesz representation theorem and the Riesz map $R_V:V\to V^*$.
+  \item The adjoint $\adj A = R_V^{-1}\circ\dual A\circ R_W$: it maps vectors to
+        vectors and depends on both inner products. Its matrix is $M^{-1}A^\top
+        N$; it reduces to $A^\top$ exactly in orthonormal bases (conjugate
+        transpose over $\C$).
+  \item Dual versus adjoint, side by side: what each one needs, where each one
+        lives, and why identifying $(\K^n)^*$ with $\K^n$ through the dual basis
+        agrees with the Riesz identification only for an orthonormal basis.
+  \item Orthogonal projections, least squares and the normal equations.
+  \item Euclidean affine spaces: distances, angles and isometries.
+\end{itemize}
+\smallskip\noindent\textbf{Machine learning threads.}
+\begin{itemize}[nosep]
+  \item Preconditioning is a change of inner product.
+  \item The gradient for the metric $M$ is $M^{-1}$ times the vector of partial
+        derivatives (\cref{ch:gradient-hessian}).
+  \item Whitening and the Mahalanobis distance.
+\end{itemize}
+\end{chapterplan}
+\end{notechapter}

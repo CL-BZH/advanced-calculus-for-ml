@@ -1,0 +1,28 @@
+% =====================================================================
+%  Advanced Calculus for Machine Learning -- main file
+%  Build:  latexmk -pdf main.tex      (or: make)
+% =====================================================================
+\documentclass[11pt,a4paper,openany]{book}
+\input{preamble/packages}
+\input{preamble/common}
+\input{preamble/style}
+
+% Build only some chapters, e.g.
+%   make chapter CH=chapters/01-spaces/01-affine-spaces
+\InputIfFileExists{includeonly.tex}{}{}
+
+\title{\Huge\bfseries Advanced Calculus\\[0.3em] for Machine Learning\\[1em]
+  \Large Affine Spaces, Differentials, Manifolds, Measures and Forms}
+\author{Christophe Louargant}
+\date{\today}
+
+\begin{document}
+\frontmatter
+\maketitle
+\input{frontmatter/preface}
+\tableofcontents
+
+\mainmatter
+\input{chapters}
+
+\end{document}

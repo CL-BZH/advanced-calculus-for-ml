@@ -1,0 +1,63 @@
+\chapter*{Preface}
+\addcontentsline{toc}{chapter}{Preface}
+
+This book is an advanced calculus course written for readers who come to
+the subject from machine learning. It is inspired by two texts: Loomis and
+Sternberg's \emph{Advanced Calculus}, for its rigour and its use of normed
+vector spaces from the start, and Hubbard and Hubbard's \emph{Vector
+Calculus, Linear Algebra, and Differential Forms}, for its care in
+separating points from vectors and its concrete route to manifolds and
+differential forms.
+
+It differs from both in one decision, taken on the first page: the spaces
+in which calculus happens are \emph{affine spaces}. A parameter of a model
+is a point; an update is a displacement; the two are stored in the same
+arrays and are not the same kind of object. Keeping them apart costs one
+chapter and pays for itself throughout the book.
+
+\paragraph{One structure at a time.} Each part adds one layer of structure
+and asks what it makes possible.
+\begin{itemize}
+  \item \textbf{Part I} sets up the spaces: affine spaces, the dual space
+        and the dual operator, inner products and the adjoint, norms and
+        completeness, the spectral theorem.
+  \item \textbf{Part II} is differential calculus: the differential, the
+        chain rule and automatic differentiation, the gradient and the
+        Hessian, Newton's method, the inverse and implicit function
+        theorems, constrained optimization.
+  \item \textbf{Part III} moves to manifolds, where tangent spaces vary
+        from point to point: submanifolds, abstract manifolds, Riemannian
+        optimization, the natural gradient.
+  \item \textbf{Part IV} develops measure theory and the Lebesgue integral,
+        up to $L^p$ spaces and the change of variables theorem.
+  \item \textbf{Part V} is the calculus of differential forms and of
+        flows: exterior derivative, Stokes' theorem, classical vector
+        calculus, differential equations.
+\end{itemize}
+
+\paragraph{Two tests.} Two questions are asked of every formula and every
+algorithm: does it change when the origin moves, and does it change when
+the basis changes? Formulas that pass both tests describe geometry.
+Formulas that fail one of them contain a choice, and the book says which.
+
+\paragraph{Three distinctions.} The text is organized so that three pairs
+of objects, which coincide in $\R^n$ with its dot product and standard
+basis, are never confused: points and vectors; the differential (a
+covector) and the gradient (a vector); the dual operator $A^\top$, which
+needs no extra structure, and the adjoint $A^*$, which needs an inner
+product.
+
+\paragraph{Conventions.} Each chapter opens with its goals and
+prerequisites, proves every result it states, explains in words what the
+formulas mean, and closes with a summary and exercises; all exercises have
+complete solutions at the end of the book. Machine learning examples are
+set in their own boxes. Figures are drawn wherever a picture helps. Each
+chapter has a companion PyTorch notebook, in the \texttt{notebooks}
+directory of the repository, that checks its numerical claims; the
+notebooks are small and run on a CPU.
+
+\paragraph{Status.} The book is being written. Chapters that are not yet
+drafted show their planned contents in a grey box.
+
+This book is a companion to \emph{Notes on Machine Learning}, whose chapter
+on the geometry of the gradient was its starting point.
