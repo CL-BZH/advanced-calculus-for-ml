@@ -4,22 +4,883 @@
 \chaptersubtitle{%
   Quadratic forms, eigenvalues and the shape of a linear map}
 
-\begin{chapterplan}
+\begin{chapterintro}
+Near a minimum, a loss looks like a quadratic form, and the speed of
+gradient descent is governed by ``the eigenvalues of the Hessian''.
+\Cref{ch:duality} warned that a bilinear form has no eigenvalues: under a
+change of basis its array becomes $P^\top GP$ and only the signs survive.
+Both statements are right. A quadratic form by itself has a
+\emph{signature}, and nothing more. Once an inner product is chosen, the
+form becomes a self-adjoint operator, which does have eigenvalues, and
+these depend on the inner product. This chapter makes both halves precise
+and then describes an arbitrary linear map between inner product spaces by
+its singular values. You will learn
 \begin{itemize}[nosep]
-  \item Self-adjoint operators (the notion depends on the inner product); the
-        spectral theorem; Rayleigh quotients and the Courant--Fischer principle.
-  \item Bilinear and quadratic forms as objects of their own; signature;
-        positive definiteness.
-  \item The singular value decomposition as the spectral theorem for $\adj AA$;
-        operator norm, condition number, pseudo-inverse.
-  \item Best low-rank approximation (Eckart--Young).
+  \item the signature of a quadratic form and Sylvester's law of inertia,
+        which need no inner product;
+  \item the spectral theorem for self-adjoint operators and the
+        Courant--Fischer characterization of their eigenvalues;
+  \item the exact convergence rate of gradient descent on a quadratic, the
+        role of the condition number, and why preconditioning changes it;
+  \item the singular value decomposition, the spectral norm, the
+        pseudo-inverse and the step sizes for which gradient descent
+        solves least squares;
+  \item the best approximation of a linear map by one of lower rank, with
+        principal component analysis as an application.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:duality,ch:inner-products,ch:norms-banach}. All
+vector spaces are real and finite-dimensional.}
+\end{chapterintro}
+
+\section{Quadratic forms and their signature}
+\label{spectral-svd:sec:signature}
+
+No inner product is used in this section.
+
+\begin{definition}[Quadratic form]\label{spectral-svd:def:quadratic}
+Let $b$ be a symmetric bilinear form on $V$
+(\cref{duality:def:bilinear}). The function $q(v) = b(v, v)$ is the
+\emph{quadratic form} of $b$. It determines $b$:
+\[
+  b(u, v) = \tfrac12\bigl(q(u + v) - q(u) - q(v)\bigr) .
+\]
+\end{definition}
+
+In a basis with Gram matrix $G$, $q(v) = [v]^\top G[v]$, and in another
+basis $G$ becomes $P^\top GP$ (\cref{duality:prop:three}).
+
+\begin{theorem}[Diagonal form]\label{spectral-svd:thm:diagonal}
+For every symmetric bilinear form $b$ on $V$ there is a basis
+$(v_1,\dots,v_n)$ such that $b(v_i, v_j) = 0$ for $i\neq j$ and
+$b(v_i, v_i)\in\{1, -1, 0\}$. If $p$, $m$ and $z$ are the numbers of basis
+vectors with value $1$, $-1$ and $0$, then in the coordinates of this
+basis, suitably ordered,
+\[
+  q(v) = x_1^2 + \dots + x_p^2 - x_{p+1}^2 - \dots - x_{p+m}^2 .
+\]
+\end{theorem}
+
+\begin{proof}
+By induction on $n = \dim V$; the case $n = 0$ is empty. If $q$ vanishes
+identically then so does $b$, by the formula of
+\cref{spectral-svd:def:quadratic}, and any basis works. Otherwise choose
+$v$ with $q(v)\neq0$ and let $v_1 = v/\sqrt{\abs{q(v)}}$, so that
+$q(v_1) = \pm1$. The linear form $\phi = b(v_1, \cdot)$ is non-zero, since
+$\phi(v_1)\neq0$. Its kernel $U$ is a hyperplane
+(\cref{duality:prop:kernel}) that does not contain $v_1$, so
+$V = \R v_1\oplus U$. By the induction hypothesis applied to the
+restriction of $b$ to $U$, there is a basis $(v_2,\dots,v_n)$ of $U$ with
+the required properties, and $b(v_1, v_j) = \phi(v_j) = 0$ for
+$j\geq2$.
+\end{proof}
+
+\begin{theorem}[Sylvester's law of inertia]\label{spectral-svd:thm:sylvester}
+The numbers $p$, $m$ and $z$ of \cref{spectral-svd:thm:diagonal} do not
+depend on the basis: $p$ is the largest dimension of a subspace on which
+$q$ is positive definite, and $m$ the largest dimension of a subspace on
+which $q$ is negative definite.
+\end{theorem}
+
+\begin{proof}
+Take a basis as in \cref{spectral-svd:thm:diagonal} and let $V_+$, $V_-$
+and $V_0$ be the spans of the basis vectors with value $1$, $-1$ and $0$.
+On $V_+$, $q(v) = \sum_ix_i^2 > 0$ for $v\neq0$, so there is a subspace of
+dimension $p$ on which $q$ is positive definite. Let $W$ be any such
+subspace. On $V_-\oplus V_0$, $q(v) = -\sum x_i^2\leq0$, so
+$W\cap(V_-\oplus V_0) = \{0\}$ and
+$\dim W\leq n - (m + z) = p$. This characterizes $p$ without reference to
+the basis. Applying the argument to $-q$ characterizes $m$, and
+$z = n - p - m$.
+\end{proof}
+
+\begin{definition}[Signature]\label{spectral-svd:def:signature}
+The pair $(p, m)$ is the \emph{signature} of $q$, and $p + m$ its
+\emph{rank}. The form is \emph{positive definite} if $p = n$,
+\emph{positive semidefinite} if $m = 0$, \emph{indefinite} if $p > 0$ and
+$m > 0$, and \emph{non-degenerate} if $z = 0$.
+\end{definition}
+
+In terms of arrays, the two theorems say that every symmetric matrix $G$
+can be brought to the form $P^\top GP = \diag(I_p, -I_m, 0)$ by an
+invertible $P$, and that $p$ and $m$ are the only invariants of $G$ under
+the rule $G\mapsto P^\top GP$. This is the statement about ``signs'' in
+\cref{duality:prop:three}.
+
+\begin{example}[Completing squares]\label{spectral-svd:ex:squares}
+On $\R^2$, $q(x) = x_1x_2 = \frac14(x_1 + x_2)^2 - \frac14(x_1 - x_2)^2$
+has signature $(1, 1)$: in the basis in which the coordinates are
+$\frac12(x_1 + x_2)$ and $\frac12(x_1 - x_2)$ it is $y_1^2 - y_2^2$. And
+$q(x) = x_1^2 + 4x_1x_2 + x_2^2 = (x_1 + 2x_2)^2 - 3x_2^2$ also has
+signature $(1, 1)$, although all the entries of its matrix are positive.
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \begin{scope}
+    \foreach \r in {0.4,0.8,1.2}
+      \draw[bookaccent, thick] (0,0) ellipse ({1.2*\r} and {0.8*\r});
+    \fill (0,0) circle (1.2pt);
+    \node[anchor=north] at (0,-1.5) {$(2, 0)$: a minimum};
+  \end{scope}
+  \begin{scope}[xshift=5cm]
+    \clip (-1.6,-1.25) rectangle (1.6,1.25);
+    \foreach \c in {0.25,0.8}{
+      \draw[bookaccent, thick, domain=-1.3:1.3, samples=40, variable=\t]
+        plot ({sqrt(\c + \t*\t)}, \t);
+      \draw[bookaccent, thick, domain=-1.3:1.3, samples=40, variable=\t]
+        plot ({-sqrt(\c + \t*\t)}, \t);
+      \draw[bookpitfall, thick, domain=-1.6:1.6, samples=40, variable=\t]
+        plot (\t, {sqrt(\c + \t*\t)});
+      \draw[bookpitfall, thick, domain=-1.6:1.6, samples=40, variable=\t]
+        plot (\t, {-sqrt(\c + \t*\t)});
+    }
+    \draw[gray, thin] (-1.6,-1.6) -- (1.6,1.6);
+    \draw[gray, thin] (-1.6,1.6) -- (1.6,-1.6);
+    \fill (0,0) circle (1.2pt);
+  \end{scope}
+  \node[anchor=north] at (5,-1.5) {$(1, 1)$: a saddle};
+  \begin{scope}[xshift=10cm]
+    \foreach \x in {0.4,0.8,1.2}{
+      \draw[bookaccent, thick] (\x,-1.2) -- (\x,1.2);
+      \draw[bookaccent, thick] (-\x,-1.2) -- (-\x,1.2);
+    }
+    \draw[gray, thin] (0,-1.2) -- (0,1.2);
+    \node[anchor=north] at (0,-1.5) {$(1, 0)$: a valley};
+  \end{scope}
+\end{tikzpicture}
+\caption{Level sets of quadratic forms on $\R^2$ with signatures $(2, 0)$,
+$(1, 1)$ and $(1, 0)$. In the middle picture, blue curves are positive
+levels and red curves negative ones. A change of basis deforms these
+pictures by a linear map; it cannot turn one into another.}
+\label{spectral-svd:fig:signatures}
+\end{figure}
+
+\begin{mlthread}[Machine learning: what a Hessian knows without a metric]
+At a critical point of a loss, the second-order behaviour is a quadratic
+form $q$ on parameter space (\cref{ch:gradient-hessian}). Its signature
+is intrinsic: $m$ is the number of independent directions along which the
+loss decreases, $z$ the number of flat directions, and the point is a
+strict local minimum when $p = n$. None of this depends on the
+parametrization. What does depend on it is every statement about the
+\emph{size} of the curvature: ``sharp'', ``flat'', ``ill-conditioned''.
+Those statements concern eigenvalues, and eigenvalues need the inner
+product of the next section.
+\end{mlthread}
+
+\section{Self-adjoint operators}\label{spectral-svd:sec:spectral}
+
+From now on $V$ is an inner product space.
+
+\begin{proposition}[Forms and self-adjoint operators]
+\label{spectral-svd:prop:form-operator}
+For every symmetric bilinear form $b$ on $V$ there is a unique operator
+$S:V\to V$ such that
+\[
+  b(u, v) = \inner u{Sv} \qquad\text{for all } u, v ,
+\]
+and $S$ is self-adjoint. In a basis where the inner product has Gram
+matrix $M$ and $b$ has Gram matrix $G$, $[S] = M^{-1}G$. Conversely every
+self-adjoint operator defines a symmetric bilinear form by this formula.
+\end{proposition}
+
+\begin{proof}
+For fixed $v$, $u\mapsto b(u, v)$ is a linear form, so by the Riesz
+theorem (\cref{inner-products:thm:riesz}) there is a unique vector $Sv$
+with $\inner u{Sv} = b(u, v)$ for all $u$. Uniqueness makes $S$ linear.
+By the symmetry of $b$ and of the inner product,
+$\inner u{Sv} = b(v, u) = \inner v{Su} = \inner{Su}v$: $S$ is
+self-adjoint. In components, $[u]^\top M[S][v] = [u]^\top G[v]$ for all
+$u, v$ gives $M[S] = G$.
+\end{proof}
+
+\begin{intuition}
+The operator $S$ is the form $b$ measured with the ruler
+$\inner\cdot\cdot$. The form is one object; each inner product turns it
+into a different operator $M^{-1}G$, with different eigenvalues. The
+``Hessian matrix'' of a loss is the array $G$. Its eigenvalues as a matrix
+are those of the operator obtained with the dot product of the
+coordinates.
+\end{intuition}
+
+A non-zero vector $v$ is an \emph{eigenvector} of an operator $S$, with
+\emph{eigenvalue} $\lambda$, if $Sv = \lambda v$.
+
+\begin{theorem}[Spectral theorem]\label{spectral-svd:thm:spectral}
+Let $S$ be a self-adjoint operator on an inner product space $V$ of
+dimension $n$. There is an orthonormal basis $(e_1,\dots,e_n)$ of $V$ made
+of eigenvectors of $S$: $Se_i = \lambda_ie_i$ with
+$\lambda_1\geq\dots\geq\lambda_n$ real.
+\end{theorem}
+
+\begin{proof}
+By induction on $n$. The unit sphere $\{v : \norm v = 1\}$ is compact
+(\cref{norms-banach:cor:finite}) and $v\mapsto\inner v{Sv}$ is continuous
+(in coordinates it is a polynomial), so by
+\cref{norms-banach:thm:extreme} it attains a largest value $\lambda_1$ at
+some unit vector $e_1$.
+
+\emph{$e_1$ is an eigenvector.} Let $u$ be orthogonal to $e_1$. For every
+$t\in\R$, the vector $e_1 + tu$ has squared norm $1 + t^2\norm u^2$, so
+by the maximality of $\lambda_1$ and homogeneity,
+$\inner{e_1 + tu}{S(e_1 + tu)}\leq\lambda_1(1 + t^2\norm u^2)$. Expanding
+the left-hand side with $\inner u{Se_1} = \inner{Su}{e_1}$,
+\[
+  \lambda_1 + 2t\inner u{Se_1} + t^2\inner u{Su}
+  \leq\lambda_1 + t^2\lambda_1\norm u^2 \qquad\text{for all } t .
+\]
+This forces $\inner u{Se_1} = 0$. So $Se_1$ is orthogonal to every vector
+orthogonal to $e_1$: by \cref{inner-products:prop:perp}, $Se_1 = ce_1$,
+and $c = \inner{e_1}{Se_1} = \lambda_1$.
+
+\emph{Induction.} Let $U = \{e_1\}^\perp$, of dimension $n - 1$. If
+$u\in U$ then $\inner{Su}{e_1} = \inner u{Se_1} = \lambda_1\inner u{e_1}
+= 0$, so $S$ maps $U$ into itself, and its restriction to $U$ is
+self-adjoint. By the induction hypothesis $U$ has an orthonormal basis
+$(e_2,\dots,e_n)$ of eigenvectors, with eigenvalues that are values of
+$\inner v{Sv}$ on unit vectors, hence at most $\lambda_1$.
+\end{proof}
+
+\begin{corollary}[Matrix forms of the spectral theorem]
+\label{spectral-svd:cor:matrix}
+\begin{enumerate}[nosep]
+  \item For every symmetric matrix $G$ there is a matrix $Q$ with
+        $Q^\top Q = I$ such that $Q^\top GQ$ is diagonal.
+  \item \emph{(Simultaneous diagonalization.)} If $M$ is symmetric positive
+        definite and $G$ symmetric, there is an invertible $P$ with
+        $P^\top MP = I$ and $P^\top GP = \diag(\lambda_1,\dots,\lambda_n)$,
+        where the $\lambda_i$ are the eigenvalues of $M^{-1}G$.
+  \item The signature of the form with matrix $G$ is $(p, m)$, where $p$
+        and $m$ are the numbers of positive and negative eigenvalues of
+        $M^{-1}G$, for \emph{any} symmetric positive definite $M$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(2) Let $S$ be the operator with matrix $M^{-1}G$
+(\cref{spectral-svd:prop:form-operator}) and $P$ the change of basis
+matrix to an orthonormal basis $(e_i)$ of eigenvectors. The Gram matrix of
+the inner product in that basis is $I$, and that of $b$ has entries
+$b(e_i, e_j) = \inner{e_i}{Se_j} = \lambda_j\delta_{ij}$. (1) is the case
+$M = I$. (3) Replacing each $e_i$ with $\lambda_i\neq0$ by
+$e_i/\sqrt{\abs{\lambda_i}}$ gives a basis as in
+\cref{spectral-svd:thm:diagonal}, with $p$ the number of positive
+$\lambda_i$ and $m$ the number of negative ones, and these do not depend
+on the basis by \cref{spectral-svd:thm:sylvester}.
+\end{proof}
+
+\begin{keyidea}
+A quadratic form has a signature. A quadratic form \emph{and} an inner
+product have eigenvalues, those of $M^{-1}G$. Changing the inner product
+changes the eigenvalues and keeps their signs.
+\end{keyidea}
+
+\begin{theorem}[Courant--Fischer]\label{spectral-svd:thm:minmax}
+Let $S$ be self-adjoint with eigenvalues
+$\lambda_1\geq\dots\geq\lambda_n$. For $k = 1,\dots,n$,
+\[
+  \lambda_k = \max_{\dim U = k}\ \min_{v\in U,\ \norm v = 1}\inner v{Sv}
+  = \min_{\dim U = n - k + 1}\ \max_{v\in U,\ \norm v = 1}\inner v{Sv} ,
+\]
+where $U$ ranges over the subspaces of $V$ of the stated dimension. In
+particular $\lambda_n\norm v^2\leq\inner v{Sv}\leq\lambda_1\norm v^2$ for
+all $v$.
+\end{theorem}
+
+\begin{proof}
+Let $(e_i)$ be an orthonormal basis of eigenvectors. For
+$v = \sum_ic_ie_i$ of norm $1$, $\inner v{Sv} = \sum_i\lambda_ic_i^2$ with
+$\sum_ic_i^2 = 1$. On $U_k = \Span(e_1,\dots,e_k)$ this is at least
+$\lambda_k$, with equality at $e_k$: the minimum over $U_k$ is
+$\lambda_k$. Now let $U$ be any subspace of dimension $k$. The subspace
+$\Span(e_k,\dots,e_n)$ has dimension $n - k + 1$, and
+$k + (n - k + 1) > n$, so it contains a unit vector $v$ of $U$; for this
+$v$, $\inner v{Sv} = \sum_{i\geq k}\lambda_ic_i^2\leq\lambda_k$. So the
+minimum over $U$ is at most $\lambda_k$. This proves the first equality.
+The second is the first applied to $-S$, whose $j$th largest eigenvalue is
+$-\lambda_{n-j+1}$, with $j = n - k + 1$.
+\end{proof}
+
+\begin{corollary}[Norm of a self-adjoint operator]
+\label{spectral-svd:cor:norm}
+For a self-adjoint $S$, the operator norm for the norm of the inner
+product is $\norm S = \max_i\abs{\lambda_i}
+= \max(\abs{\lambda_1}, \abs{\lambda_n})$.
+\end{corollary}
+
+\begin{proof}
+For $v = \sum_ic_ie_i$, $\norm{Sv}^2 = \sum_i\lambda_i^2c_i^2
+\leq\max_i\lambda_i^2\,\norm v^2$, with equality at an eigenvector for the
+eigenvalue of largest absolute value.
+\end{proof}
+
+\subsection{Gradient descent on a quadratic}
+
+Let $\Aff$ be a Euclidean affine space, $a^*\in\Aff$, and
+\begin{equation}\label{spectral-svd:eq:quadratic}
+  L(a) = c + \tfrac12\inner{a - a^*}{S(a - a^*)} ,
+\end{equation}
+with $S$ self-adjoint and \emph{positive definite} (all
+$\lambda_i > 0$), so that $a^*$ is the unique minimizer. Expanding,
+\[
+  L(a + v) = L(a) + \inner{S(a - a^*)}v + \tfrac12\inner v{Sv} :
+\]
+the linear part of $L$ at $a$ is the covector $R_V\bigl(S(a - a^*)\bigr)$,
+and the metric update \eqref{inner-products:eq:metric-gd} is
+\[
+  a_{k+1} = a_k - \eta\,S(a_k - a^*) .
+\]
+In coordinates, with $L(x) = c + \frac12(x - x^*)^\top H(x - x^*)$, this is
+$x_{k+1} = x_k - \eta M^{-1}H(x_k - x^*)$, and $S$ has the matrix
+$M^{-1}H$. For $M = I$ this is the affine map of
+\cref{affine-spaces:ex:quadratic}, whose powers are now easy to describe.
+
+\begin{theorem}[Convergence rate on a quadratic]\label{spectral-svd:thm:gd}
+Let $e_k = a_k - a^*$ and let $\lambda_1\geq\dots\geq\lambda_n > 0$ be the
+eigenvalues of $S$. Then $e_k = (\id - \eta S)^ke_0$, and
+\[
+  \norm{e_k}\leq r(\eta)^k\norm{e_0} ,
+  \qquad
+  r(\eta) = \max\bigl(\abs{1 - \eta\lambda_1}, \abs{1 - \eta\lambda_n}\bigr) ,
+\]
+with equality for a suitable $e_0$.
+\begin{enumerate}[nosep]
+  \item The iterates converge to $a^*$ from every starting point if and
+        only if $0 < \eta < 2/\lambda_1$.
+  \item The rate $r(\eta)$ is smallest for
+        $\eta = \dfrac2{\lambda_1 + \lambda_n}$, where it equals
+        $\dfrac{\kappa - 1}{\kappa + 1}$, with
+        $\kappa = \lambda_1/\lambda_n$ the \emph{condition number} of $S$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Subtracting $a^*$ from the update gives $e_{k+1} = (\id - \eta S)e_k$. The
+operator $\id - \eta S$ is self-adjoint, with the eigenvectors of $S$ and
+the eigenvalues $1 - \eta\lambda_i$, so its norm is
+$\max_i\abs{1 - \eta\lambda_i}$ (\cref{spectral-svd:cor:norm}). Since
+$t\mapsto\abs{1 - \eta t}$ is convex, its maximum over
+$[\lambda_n, \lambda_1]$ is attained at an end point: the norm is
+$r(\eta)$, and $\norm{e_k}\leq r(\eta)^k\norm{e_0}$ by
+\cref{norms-banach:prop:opnorm}, with equality when $e_0$ is an
+eigenvector for the extreme eigenvalue. (1) In the eigenbasis the $i$th
+component of $e_k$ is $(1 - \eta\lambda_i)^k$ times that of $e_0$. All
+components tend to $0$ for every $e_0$ if and only if
+$\abs{1 - \eta\lambda_i} < 1$ for all $i$, that is,
+$0 < \eta\lambda_i < 2$ for all $i$, that is, $0 < \eta < 2/\lambda_1$.
+(2) For $\eta > 0$, $r(\eta) = \max(1 - \eta\lambda_n, \eta\lambda_1 - 1)$,
+the maximum of a decreasing and an increasing function of $\eta$; it is
+smallest where they are equal, at $\eta = 2/(\lambda_1 + \lambda_n)$,
+where both equal $(\lambda_1 - \lambda_n)/(\lambda_1 + \lambda_n)$.
+\end{proof}
+
+\begin{example}[The zig-zag and its cure]\label{spectral-svd:ex:zigzag}
+Let $L(x) = x_1^2 + 4x_2^2$ on $\R^2$, so $H = \diag(2, 8)$ and
+$x^* = 0$. For the dot product, $S = H$ has eigenvalues $8$ and $2$ and
+$\kappa = 4$. Gradient descent converges for $\eta < \frac14$; the best
+step is $\eta = 0.2$, with rate $\frac35$. At that step each iteration
+multiplies $x_1$ by $1 - 0.4 = 0.6$ and $x_2$ by $1 - 1.6 = -0.6$: the
+iterates cross the valley at every step
+(\cref{spectral-svd:fig:zigzag}). For the inner product $M = H$, the
+operator is $S = M^{-1}H = \id$, $\kappa = 1$, and with $\eta = 1$ the
+update $x - M^{-1}Hx = 0$ reaches the minimum in one step. This is
+Newton's method (\cref{ch:gradient-hessian}).
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.7]
+  \foreach \c in {0.5,1.5,3.5,6.5}
+    \draw[bookaccent!45, thin] (0,0) ellipse ({sqrt(\c)} and {sqrt(\c)/2});
+  \draw[bookaccent, thick] (0,0) ellipse ({sqrt(10.25)} and {sqrt(10.25)/2});
+  \draw[bookpitfall, thick, mark=*, mark size=1pt] plot coordinates
+    {(2.5,1) (1.5,-0.6) (0.9,0.36) (0.54,-0.216) (0.324,0.1296)
+     (0.1944,-0.0778) (0.1166,0.0467)};
+  \draw[->, very thick, bookdef] (2.5,1) -- (0.04,0.016);
+  \fill (2.5,1) circle (1.2pt) node[above right] {$x_0$};
+  \fill (0,0) circle (1.2pt);
+  \draw[bookpitfall, thick] (-2.9,-1.9) -- (-2.5,-1.9)
+    node[right, font=\small] {dot product, $\eta = 0.2$};
+  \draw[->, very thick, bookdef] (0.5,-1.9) -- (0.9,-1.9)
+    node[right, font=\small] {$M = H$, $\eta = 1$};
+\end{tikzpicture}
+\caption{Level curves of $L(x) = x_1^2 + 4x_2^2$ and two runs from
+$x_0 = (2.5, 1)$. Gradient descent for the dot product with its best step
+size (red) gains a factor $0.6$ per step and oscillates across the valley.
+Gradient descent for the inner product $M = H$ (green) arrives in one
+step.}
+\label{spectral-svd:fig:zigzag}
+\end{figure}
+
+\begin{mlthread}[Machine learning: conditioning is relative to a metric]
+\Cref{spectral-svd:thm:gd} is the model for the behaviour of gradient
+descent near a minimum. Two remarks follow from the fact that the
+$\lambda_i$ are the eigenvalues of $M^{-1}H$, not of $H$ alone.
 \begin{itemize}[nosep]
-  \item Principal component analysis.
-  \item Hessians, curvature, and why conditioning governs the speed of gradient
-        descent.
-  \item Low-rank adaptation of large models.
+  \item The number of steps needed to gain a fixed factor grows like
+        $\kappa$: with $r = (\kappa - 1)/(\kappa + 1)$,
+        $r^k\leq\varepsilon$ requires
+        $k\approx\frac\kappa2\ln\frac1\varepsilon$ for large $\kappa$.
+        Re-expressing one feature in a unit $100$ times smaller
+        multiplies one diagonal entry of $H$ by $10^4$
+        (\cref{duality:ex:feature}) and can multiply $\kappa$ by $10^4$.
+  \item \emph{Preconditioning} chooses $M$ so that $M^{-1}H$ has a small
+        condition number. Standardizing features, diagonal scalings and
+        Newton's method are three points on the same scale, from cheap
+        and approximate to exact.
 \end{itemize}
-\end{chapterplan}
+The learning rate has units, too: the bound $\eta < 2/\lambda_1$ involves
+the largest eigenvalue of $M^{-1}H$, so a learning rate that is safe for
+one inner product may diverge for another.
+\end{mlthread}
+
+\section{The singular value decomposition}\label{spectral-svd:sec:svd}
+
+A self-adjoint operator maps a space to itself. A general linear map
+$A:V\to W$ goes between two different spaces and has no eigenvectors. With
+inner products on both spaces it has the next best thing.
+
+\begin{theorem}[Singular value decomposition]\label{spectral-svd:thm:svd}
+Let $A:V\to W$ be a linear map of rank $r$ between inner product spaces of
+dimensions $n$ and $m$. There are orthonormal bases $(v_1,\dots,v_n)$ of
+$V$ and $(w_1,\dots,w_m)$ of $W$ and numbers
+$\sigma_1\geq\dots\geq\sigma_r > 0$ such that
+\[
+  Av_i = \sigma_iw_i ,\quad \adj Aw_i = \sigma_iv_i \quad(i\leq r),
+  \qquad
+  Av_i = 0 \quad(i > r), \qquad \adj Aw_i = 0 \quad(i > r) .
+\]
+The $\sigma_i$, the \emph{singular values} of $A$, are determined by $A$
+and the two inner products: the $\sigma_i^2$ are the non-zero eigenvalues
+of $\adj AA$.
+\end{theorem}
+
+\begin{proof}
+By \cref{inner-products:prop:rules}, $\adj AA$ is self-adjoint with
+$\inner v{\adj AAv} = \norm{Av}^2\geq0$ and $\ker\adj AA = \ker A$. By
+the spectral theorem there is an orthonormal basis $(v_i)$ of $V$ with
+$\adj AAv_i = \lambda_iv_i$, $\lambda_1\geq\dots\geq\lambda_n\geq0$, and
+exactly $n - \dim\ker A = r$ of the $\lambda_i$ are positive. Put
+$\sigma_i = \sqrt{\lambda_i}$ and, for $i\leq r$, $w_i = Av_i/\sigma_i$.
+These are orthonormal:
+$\inner{Av_i}{Av_j} = \inner{v_i}{\adj AAv_j} = \lambda_j\delta_{ij}$.
+Complete them into an orthonormal basis of $W$
+(\cref{inner-products:thm:gs}). For $i\leq r$,
+$\adj Aw_i = \adj AAv_i/\sigma_i = \sigma_iv_i$. For $i > r$,
+$Av_i = 0$ because $\norm{Av_i}^2 = \lambda_i = 0$, and $w_i$ is
+orthogonal to $\Span(w_1,\dots,w_r) = \im A$, so
+$w_i\in(\im A)^\perp = \ker\adj A$ (\cref{inner-products:thm:four}).
+\end{proof}
+
+In other words $Av = \sum_{i\leq r}\sigma_i\inner{v_i}v\,w_i$: in the two
+orthonormal bases the matrix of $A$ is diagonal, with the $\sigma_i$
+followed by zeros. For matrices and dot products this is the factorization
+$A = U\Sigma V^\top$ with $U^\top U = I$ and $V^\top V = I$.
+
+\begin{intuition}
+Every linear map between inner product spaces does the same thing: it
+takes an orthonormal frame of the source, stretches its axes by the
+factors $\sigma_i$ (crushing $n - r$ of them to zero), and lays the result
+along an orthonormal frame of the target. The unit ball goes to an
+ellipsoid with semi-axes $\sigma_iw_i$
+(\cref{spectral-svd:fig:svd}).
+\end{intuition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=0.5]
+  \begin{scope}
+    \draw[bookaccent, thick] (0,0) circle (1);
+    \draw[->, very thick, bookdef] (0,0) -- (0.707,0.707)
+      node[above right] {$v_1$};
+    \draw[->, very thick, bookpitfall] (0,0) -- (0.707,-0.707)
+      node[below right] {$v_2$};
+    \fill (0,0) circle (2pt);
+  \end{scope}
+  \draw[->, thick, gray] (2.8,0) -- (5.8,0) node[midway, above] {$A$};
+  \begin{scope}[shift={(10,0)}]
+    \draw[gray, dashed] (0,0) circle (1);
+    \draw[bookaccent, thick, rotate=71.565] (0,0) ellipse (6.708 and 2.236);
+    \draw[->, very thick, bookdef] (0,0) -- (2.121,6.364)
+      node[right] {$\sigma_1w_1$};
+    \draw[->, very thick, bookpitfall] (0,0) -- (2.121,-0.707)
+      node[right] {$\sigma_2w_2$};
+    \fill (0,0) circle (2pt);
+  \end{scope}
+\end{tikzpicture}
+\caption{The singular value decomposition of
+$A = \begin{bsmallmatrix}3 & 0\\4 & 5\end{bsmallmatrix}$ for the dot
+products. The orthonormal vectors $v_1, v_2$ are sent to the orthogonal
+vectors $\sigma_1w_1, \sigma_2w_2$, with $\sigma_1 = 3\sqrt5$ and
+$\sigma_2 = \sqrt5$, and the unit circle to an ellipse with these
+semi-axes (\cref{spectral-svd:exr:5}). Both pictures are at the same
+scale; the dashed circle on the right is the unit circle of the target.}
+\label{spectral-svd:fig:svd}
+\end{figure}
+
+\begin{corollary}[What the singular values tell]\label{spectral-svd:cor:svd}
+With the notation of \cref{spectral-svd:thm:svd}:
+\begin{enumerate}[nosep]
+  \item $\ker A = \Span(v_{r+1},\dots,v_n)$,
+        $\im\adj A = \Span(v_1,\dots,v_r)$,
+        $\im A = \Span(w_1,\dots,w_r)$ and
+        $\ker\adj A = \Span(w_{r+1},\dots,w_m)$.
+  \item The operator norm of $A$ for the norms of the two inner products
+        is $\norm A = \sigma_1$, the \emph{spectral norm}.
+  \item If $A$ is invertible, $\norm{A^{-1}} = 1/\sigma_n$, and the
+        \emph{condition number} of $A$ is
+        $\norm A\norm{A^{-1}} = \sigma_1/\sigma_n$.
+  \item $A$ and $\adj A$ have the same singular values.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) and (4) are read off the theorem. (2) For $v = \sum_ic_iv_i$,
+$\norm{Av}^2 = \sum_{i\leq r}\sigma_i^2c_i^2\leq\sigma_1^2\norm v^2$, with
+equality at $v_1$. (3) $A^{-1}w_i = v_i/\sigma_i$, so the singular values
+of $A^{-1}$ are the $1/\sigma_i$ and the largest is $1/\sigma_n$.
+\end{proof}
+
+\begin{proposition}[Min--max for singular values]
+\label{spectral-svd:prop:minmax-sv}
+Put $\sigma_k = 0$ for $k > r$. For $k = 1,\dots,n$,
+\[
+  \sigma_k = \max_{\dim U = k}\ \min_{v\in U,\ \norm v = 1}\norm{Av}
+  = \min_{\dim U = n - k + 1}\ \max_{v\in U,\ \norm v = 1}\norm{Av} .
+\]
+Consequently, for two maps $A, B:V\to W$,
+\begin{enumerate}[nosep]
+  \item $\abs{\sigma_k(A) - \sigma_k(B)}\leq\norm{A - B}$ for all $k$;
+  \item if $B$ has rank at most $j$, then
+        $\sigma_{k+j}(A)\leq\sigma_k(A - B)$ for all $k$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+The formula is \cref{spectral-svd:thm:minmax} for the operator
+$\adj AA$, whose eigenvalues are the $\sigma_k^2$: indeed
+$\inner v{\adj AAv} = \norm{Av}^2$, and the square root is increasing.
+(1) $\norm{Av}\leq\norm{Bv} + \norm{A - B}$ for unit $v$; taking the
+minimum over $U$ and then the maximum over $U$ gives
+$\sigma_k(A)\leq\sigma_k(B) + \norm{A - B}$, and symmetrically. (2) Let
+$U$ be a subspace of dimension $n - k + 1$ on which
+$\norm{(A - B)v}\leq\sigma_k(A - B)$ for unit $v$; there is one by the
+second formula. If $k + j > n$ then $\sigma_{k+j}(A) = 0$ and there is
+nothing to prove. Otherwise $U' = U\cap\ker B$ has dimension at least
+$(n - k + 1) - j\geq1$, and on it $Av = (A - B)v$. A subspace
+$U''\subset U'$ of dimension $n - (k + j) + 1$ then has
+$\max\norm{Av}\leq\sigma_k(A - B)$, and by the second formula
+$\sigma_{k+j}(A)$ is at most this maximum.
+\end{proof}
+
+\subsection{Pseudo-inverse and least squares}
+
+\begin{definition}[Pseudo-inverse]\label{spectral-svd:def:pinv}
+The \emph{pseudo-inverse} of $A:V\to W$ is the linear map $A^+:W\to V$
+with $A^+w_i = v_i/\sigma_i$ for $i\leq r$ and $A^+w_i = 0$ for $i > r$.
+\end{definition}
+
+\begin{proposition}[What the pseudo-inverse computes]
+\label{spectral-svd:prop:pinv}
+For every $b\in W$, $A^+b$ is the least-squares solution of $Ax = b$ of
+smallest norm. If $A$ is injective, $A^+ = (\adj AA)^{-1}\adj A$.
+\end{proposition}
+
+\begin{proof}
+Let $x = A^+b = \sum_{i\leq r}\sigma_i^{-1}\inner{w_i}b\,v_i$. Then
+$Ax = \sum_{i\leq r}\inner{w_i}b\,w_i$ is the orthogonal projection of $b$
+on $\im A$ (\cref{inner-products:thm:projection}), so $x$ is a
+least-squares solution (\cref{inner-products:thm:ls}). It belongs to
+$\Span(v_1,\dots,v_r) = \im\adj A$, so by
+\cref{inner-products:thm:min-norm} with $x_0 = 0$ it is the solution
+closest to $0$. If $A$ is injective, $r = n$ and
+$(\adj AA)^{-1}\adj Aw_i = \sigma_i(\adj AA)^{-1}v_i = v_i/\sigma_i$ for
+$i\leq n$, and $0$ for $i > n$.
+\end{proof}
+
+The pseudo-inverse depends on both inner products, and ``smallest norm''
+means closest to the zero vector of $V$: on an affine parameter space it
+depends on the origin as well (\cref{ch:affine-spaces}).
+
+\begin{proposition}[Gradient descent for least squares]
+\label{spectral-svd:prop:ls-gd}
+The iteration $x_{k+1} = x_k - \eta\,\adj A(Ax_k - b)$ converges for every
+$x_0$ if and only if $0 < \eta < 2/\sigma_1^2$. Its limit is the
+least-squares solution $x^\infty$ closest to $x_0$, and
+\[
+  \norm{x_k - x^\infty}\leq
+  \max\bigl(\abs{1 - \eta\sigma_1^2}, \abs{1 - \eta\sigma_r^2}\bigr)^k
+  \norm{x_0 - x^\infty} .
+\]
+\end{proposition}
+
+\begin{proof}
+Let $x^\infty$ be the solution closest to $x_0$
+(\cref{inner-products:thm:min-norm}) and $e_k = x_k - x^\infty$. Since
+$\adj A(Ax^\infty - b) = 0$, the iteration gives
+$e_{k+1} = (\id - \eta\adj AA)e_k$. All iterates and $x^\infty$ lie in
+$x_0 + \im\adj A$, so $e_k\in\im\adj A = \Span(v_1,\dots,v_r)$, where
+$\adj AA$ has the eigenvalues $\sigma_1^2\geq\dots\geq\sigma_r^2 > 0$. The
+statement is \cref{spectral-svd:thm:gd} for the restriction of $\adj AA$
+to that subspace.
+\end{proof}
+
+This settles the question left open in \cref{ch:inner-products}: with a
+step size below $2/\sigma_1^2$, gradient descent on an underdetermined
+least-squares problem converges, at a rate set by the smallest
+\emph{non-zero} singular value, to the interpolating solution closest to
+its starting point.
+
+\section{Low-rank approximation}\label{spectral-svd:sec:low-rank}
+
+\begin{definition}[Hilbert--Schmidt norm]\label{spectral-svd:def:hs}
+For $A:V\to W$ and an orthonormal basis $(e_i)$ of $V$,
+\[
+  \norm A_{\mathrm{HS}}^2 = \sum_i\norm{Ae_i}^2 .
+\]
+\end{definition}
+
+The value does not depend on the basis: if $(f_j)$ is an orthonormal basis
+of $W$, then
+$\sum_i\norm{Ae_i}^2 = \sum_{i,j}\inner{f_j}{Ae_i}^2
+= \sum_{i,j}\inner{\adj Af_j}{e_i}^2 = \sum_j\norm{\adj Af_j}^2$, and the
+last expression does not involve $(e_i)$. With the bases of
+\cref{spectral-svd:thm:svd},
+$\norm A_{\mathrm{HS}}^2 = \sum_i\sigma_i^2$. In orthonormal bases it is
+the sum of the squares of the entries of the matrix, the \emph{Frobenius
+norm}; it is the norm of the inner product
+$\inner AB = \sum_i\inner{Ae_i}{Be_i}$ on the space of linear maps.
+
+\begin{theorem}[Eckart--Young--Mirsky]\label{spectral-svd:thm:eckart-young}
+Let $A:V\to W$ have the singular value decomposition of
+\cref{spectral-svd:thm:svd}, and for $k < r$ let
+\[
+  A_kv = \sum_{i\leq k}\sigma_i\inner{v_i}v\,w_i .
+\]
+Then $A_k$ has rank $k$, and for every $B:V\to W$ of rank at most $k$,
+\[
+  \norm{A - B}\geq\sigma_{k+1} = \norm{A - A_k} ,
+  \qquad
+  \norm{A - B}_{\mathrm{HS}}^2\geq\sum_{i > k}\sigma_i^2
+  = \norm{A - A_k}_{\mathrm{HS}}^2 .
+\]
+\end{theorem}
+
+\begin{proof}
+$A - A_k$ sends $v_i$ to $0$ for $i\leq k$ and to $\sigma_iw_i$ for
+$k < i\leq r$: its singular values are $\sigma_{k+1},\dots,\sigma_r$,
+which gives the two equalities. Let $B$ have rank at most $k$. By
+\cref{spectral-svd:prop:minmax-sv}(2) with $j = k$,
+$\sigma_{i+k}(A)\leq\sigma_i(A - B)$ for all $i$. For $i = 1$ this is
+$\sigma_{k+1}\leq\norm{A - B}$. Summing the squares over $i$,
+$\sum_{i > k}\sigma_i^2\leq\sum_i\sigma_i(A - B)^2
+= \norm{A - B}_{\mathrm{HS}}^2$.
+\end{proof}
+
+\begin{intuition}
+The singular values rank the directions of a linear map by importance,
+and the best way to describe the map with only $k$ directions is to keep
+the $k$ most stretched ones. The error is the first singular value that
+was dropped, or the root of the sum of squares of all those dropped,
+depending on the norm.
+\end{intuition}
+
+\begin{proposition}[Principal component analysis]
+\label{spectral-svd:prop:pca}
+Let $u_1,\dots,u_N$ be vectors of an inner product space $V$ (data points
+minus their mean), and
+\[
+  C = \frac1N\sum_ju_j\inner{u_j}\cdot ,
+\]
+the \emph{covariance operator}. It is self-adjoint and positive
+semidefinite. Among all subspaces $U$ of dimension $k$, the mean squared
+distance $\frac1N\sum_j\norm{u_j - \Pi_Uu_j}^2$ is smallest for the span of
+$k$ eigenvectors of $C$ with the largest eigenvalues, and its smallest
+value is the sum of the other eigenvalues.
+\end{proposition}
+
+\begin{proof}
+Let $D:\R^N\to V$ be the linear map with $De_j = u_j/\sqrt N$, where
+$\R^N$ has the dot product. Then $\adj Dv$ has components
+$\inner{u_j}v/\sqrt N$ and $D\adj D = C$, which is therefore self-adjoint
+and positive semidefinite; the singular values of $D$ are the square roots
+of the non-zero eigenvalues of $C$, and its vectors $w_i$ are eigenvectors
+of $C$. For a subspace $U$ of dimension $k$, $\Pi_UD$ has rank at most
+$k$, and
+$\norm{D - \Pi_UD}_{\mathrm{HS}}^2 = \frac1N\sum_j\norm{u_j - \Pi_Uu_j}^2$.
+By \cref{spectral-svd:thm:eckart-young} this is at least
+$\sum_{i > k}\sigma_i^2$, with equality when $\Pi_UD = D_k$, that is, for
+$U = \Span(w_1,\dots,w_k)$.
+\end{proof}
+
+\begin{mlthread}[Machine learning: principal components and low-rank
+updates]
+\begin{itemize}[nosep]
+  \item \emph{PCA depends on the inner product.} In coordinates,
+        $C$ has the matrix $\hat CM$, where
+        $\hat C = \frac1N\sum_j[u_j][u_j]^\top$ is the usual covariance
+        array. The array $\hat C$ transforms like a map $V^*\to V$
+        (\cref{duality:prop:three}): it has no eigenvectors of its own.
+        Diagonalizing $\hat C$ is PCA for the dot product of the
+        coordinates; standardizing the features first is PCA for
+        $M = \diag(1/s_i^2)$. Changing the unit of one feature changes
+        the principal components (\cref{spectral-svd:exr:8}).
+  \item \emph{Low-rank adaptation.} A weight matrix of size $m\times n$
+        has $mn$ entries; a matrix of rank $k$ can be stored as a product
+        of an $m\times k$ and a $k\times n$ matrix, with $k(m + n)$
+        entries. Low-rank adaptation (Hu et al., 2022) fine-tunes a model
+        by learning updates of this form.
+        \Cref{spectral-svd:thm:eckart-young} gives the smallest error of
+        any such compression of a given update.
+  \item \emph{Stability.} By \cref{spectral-svd:prop:minmax-sv}(1),
+        singular values are Lipschitz functions of the map, with constant
+        $1$: a small perturbation of a matrix moves each singular value
+        by at most its spectral norm. Singular \emph{vectors} have no
+        such stability when singular values are close.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{spectral-svd:sec:outlook}
+
+This chapter closes Part~I. The setting is now complete: an affine space
+of points, its space of displacements $V$, the dual $V^*$ where
+variations of functions live, an inner product that connects the two and
+gives self-adjoint operators their eigenvalues, and a topology that in
+finite dimension depends on none of these choices. Part~II is calculus:
+\cref{ch:differential} defines the differential of a map between affine
+spaces as a linear map between their directions,
+\cref{ch:chain-rule-autodiff} follows it through compositions, and
+\cref{ch:gradient-hessian} returns to the quadratic model of this chapter
+as the second-order approximation of a general loss.
+
+\paragraph{Sources.} Loomis and Sternberg diagonalize quadratic forms and
+prove the law of inertia in \S2.7 of \emph{Advanced Calculus}
+(Theorems~7.1 and~7.2; they call signature the integer $p - m$). Their
+proof of the spectral theorem (\S5.3, Theorem~3.1) maximizes
+$\inner{T\xi}\xi$ on the unit sphere, as here. Hubbard and Hubbard treat
+quadratic forms and their signature in \S3.5 (Theorem~3.5.3 and
+Definition~3.5.4), state the spectral theorem as Theorem~3.7.15, and
+derive the singular value decomposition from it in \S3.8 (Theorem~3.8.1),
+with principal components as an application. The approximation theorem is
+due to C.~Eckart and G.~Young (1936) for the Hilbert--Schmidt norm and to
+L.~Mirsky (1960) for a wider class of norms. Low-rank adaptation:
+E.~Hu et al., LoRA: Low-rank adaptation of large language models, ICLR,
+2022.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{05-spectral-svd.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A quadratic form has a signature $(p, m)$, invariant under
+        $G\mapsto P^\top GP$ (Sylvester). It has no eigenvalues.
+  \item With an inner product, a symmetric form becomes a self-adjoint
+        operator with matrix $M^{-1}G$, which has an orthonormal basis of
+        eigenvectors. The eigenvalues depend on the inner product; their
+        signs give the signature.
+  \item Courant--Fischer: $\lambda_k$ is a max--min of
+        $\inner v{Sv}$ over subspaces. The norm of a self-adjoint
+        operator is its largest $\abs{\lambda_i}$.
+  \item Gradient descent on a quadratic converges if and only if
+        $\eta < 2/\lambda_1$, at best at the rate
+        $(\kappa - 1)/(\kappa + 1)$, where $\kappa$ is the condition
+        number of $M^{-1}H$. Preconditioning changes $M$.
+  \item SVD: in suitable orthonormal bases a linear map is diagonal, with
+        entries $\sigma_1\geq\dots\geq\sigma_r > 0$. The spectral norm is
+        $\sigma_1$; the pseudo-inverse gives the least-squares solution of
+        smallest norm; gradient descent solves least squares for
+        $\eta < 2/\sigma_1^2$.
+  \item Eckart--Young--Mirsky: truncating the SVD gives the best
+        approximation of rank $k$. PCA is the case of the data map, and
+        depends on the inner product.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{spectral-svd:exr:1}
+Find the signature of the quadratic form
+$q(x) = x_1x_2 + x_2x_3 + x_1x_3$ on $\R^3$ by completing squares.
+\solutionlink{spectral-svd:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{spectral-svd:exr:2}
+Let $H = \begin{bsmallmatrix}2 & 1\\1 & 2\end{bsmallmatrix}$ be the array
+of a quadratic form on $\R^2$.
+\begin{enumerate}[nosep]
+  \item Compute the eigenvalues and the condition number of the
+        associated operator for the dot product and for
+        $M = \diag(1, 4)$.
+  \item Check that in both cases the signature is $(2, 0)$.
+\end{enumerate}
+\solutionlink{spectral-svd:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{spectral-svd:exr:3}
+Let $S$ be a self-adjoint operator. Show directly, without the spectral
+theorem, that eigenvectors of $S$ for two different eigenvalues are
+orthogonal, and that if a subspace $U$ is mapped into itself by $S$ then
+so is $U^\perp$.
+\solutionlink{spectral-svd:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{spectral-svd:exr:4}
+For $L(x) = x_1^2 + 4x_2^2$ and the dot product
+(\cref{spectral-svd:ex:zigzag}), how many steps of gradient descent with
+the best step size guarantee that the error is divided by $10^6$? What
+happens with $\eta = 0.25$, and with $\eta = 0.3$?
+\solutionlink{spectral-svd:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{spectral-svd:exr:5}
+Compute the singular value decomposition of
+$A = \begin{bsmallmatrix}3 & 0\\4 & 5\end{bsmallmatrix}$ for the dot
+products: the $\sigma_i$, $v_i$ and $w_i$. Give its spectral norm, its
+condition number, the best approximation $A_1$ of rank $1$, and the errors
+$\norm{A - A_1}$ and $\norm{A - A_1}_{\mathrm{HS}}$.
+\solutionlink{spectral-svd:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{spectral-svd:exr:6}
+Compute the pseudo-inverse of $A = [1\ \ 1]:\R^2\to\R$ for the dot product
+on $\R^2$ and for $M = \diag(1, 4)$ on $\R^2$ (with the usual product on
+$\R$). Relate the two results to \cref{inner-products:exr:8}.
+\solutionlink{spectral-svd:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{spectral-svd:exr:7}
+\begin{enumerate}[nosep]
+  \item Show that $\norm A\leq\norm A_{\mathrm{HS}}\leq\sqrt r\,\norm A$
+        for a map of rank $r$.
+  \item A weight matrix has size $1000\times1000$. How many numbers
+        describe an update of rank $8$ stored as a product of two
+        factors, and what fraction of the full matrix is that?
+\end{enumerate}
+\solutionlink{spectral-svd:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{spectral-svd:exr:8}
+Two features have the covariance array
+$\hat C = \begin{bsmallmatrix}1 & 0.5\\0.5 & 1\end{bsmallmatrix}$.
+\begin{enumerate}[nosep]
+  \item Find the first principal direction for the dot product and the
+        fraction of the variance it carries.
+  \item The first feature is re-expressed in a unit ten times smaller, so
+        that its values are multiplied by $10$. Compute the new covariance
+        array, its first principal direction and the fraction of variance.
+  \item Show that (2) is PCA in the original coordinates for the inner
+        product $M = \diag(100, 1)$.
+\end{enumerate}
+\solutionlink{spectral-svd:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{spectral-svd:exr:9}
+A map $A$ has singular values $5$, $3$ and $1$. Give the smallest
+possible values of $\norm{A - B}$ and of $\norm{A - B}_{\mathrm{HS}}$ when
+$B$ has rank at most $1$, and when $B$ has rank at most $2$. If $E$ is a
+perturbation with $\norm E\leq0.1$, in which intervals do the singular
+values of $A + E$ lie?
+\solutionlink{spectral-svd:exr:9}
+\end{exercise}
 \end{notechapter}

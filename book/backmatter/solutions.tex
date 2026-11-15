@@ -594,3 +594,136 @@ is closed by \cref{norms-banach:prop:closed}.
   \item $\abs{f(0)}\leq\max_t\abs{f(t)} = \norm f_\infty$, so
         $\norm{\delta_0}_*\leq1$, with equality for $f = 1$.
 \end{enumerate}
+
+\section{\nameref*{ch:spectral-svd}}
+
+\solution{spectral-svd:exr:1}
+Put $y_1 = \frac12(x_1 + x_2)$ and $y_2 = \frac12(x_1 - x_2)$, so that
+$x_1x_2 = y_1^2 - y_2^2$ and $(x_1 + x_2)x_3 = 2y_1x_3$. Then
+\[
+  q = y_1^2 + 2y_1x_3 - y_2^2 = (y_1 + x_3)^2 - y_2^2 - x_3^2 .
+\]
+The three forms $y_1 + x_3$, $y_2$ and $x_3$ are linearly independent, so
+they are the coordinates of a basis, in which $q$ has one positive and two
+negative squares: the signature is $(1, 2)$. The form is non-degenerate
+and indefinite. (For the dot product the eigenvalues of its matrix are
+$1$, $-\frac12$ and $-\frac12$, in agreement with
+\cref{spectral-svd:cor:matrix}.)
+
+\solution{spectral-svd:exr:2}
+\begin{enumerate}[nosep]
+  \item For the dot product the operator has the matrix $H$, with
+        characteristic polynomial $\lambda^2 - 4\lambda + 3$: eigenvalues
+        $3$ and $1$, $\kappa = 3$. For $M = \diag(1, 4)$ the operator has
+        the matrix
+        $M^{-1}H = \begin{bsmallmatrix}2 & 1\\0.25 & 0.5\end{bsmallmatrix}$,
+        with trace $2.5$ and determinant $0.75$: eigenvalues
+        $\frac12(2.5\pm\sqrt{3.25})\approx2.151$ and $0.349$, and
+        $\kappa\approx6.17$.
+  \item In both cases the two eigenvalues are positive, so the signature
+        is $(2, 0)$, as \cref{spectral-svd:cor:matrix} requires: the
+        eigenvalues changed, their signs did not. Directly,
+        $q(x) = 2x_1^2 + 2x_1x_2 + 2x_2^2
+        = 2(x_1 + \frac12x_2)^2 + \frac32x_2^2$.
+\end{enumerate}
+
+\solution{spectral-svd:exr:3}
+If $Su = \lambda u$ and $Sv = \mu v$, then
+$\lambda\inner uv = \inner{Su}v = \inner u{Sv} = \mu\inner uv$, so
+$(\lambda - \mu)\inner uv = 0$ and $\inner uv = 0$ when
+$\lambda\neq\mu$. If $S(U)\subset U$ and $v\in U^\perp$, then for every
+$u\in U$, $\inner{Sv}u = \inner v{Su} = 0$ because $Su\in U$; hence
+$Sv\in U^\perp$.
+
+\solution{spectral-svd:exr:4}
+The best step is $\eta = 2/(8 + 2) = 0.2$, with rate
+$(4 - 1)/(4 + 1) = 0.6$. The bound $0.6^k\leq10^{-6}$ holds for
+$k\geq6\ln10/\ln(1/0.6)\approx27.05$: $28$ steps. With $\eta = 0.25$ the
+factors are $1 - 0.5 = 0.5$ on $x_1$ and $1 - 2 = -1$ on $x_2$: the first
+coordinate tends to $0$ and the second changes sign for ever, so there is
+no convergence unless $x_2 = 0$ at the start. With $\eta = 0.3$ the
+factors are $0.4$ and $-1.4$: the second coordinate grows by $40\%$ at
+each step and the iterates diverge. Both agree with the threshold
+$2/\lambda_1 = 0.25$ of \cref{spectral-svd:thm:gd}.
+
+\solution{spectral-svd:exr:5}
+$A^\top A = \begin{bsmallmatrix}25 & 20\\20 & 25\end{bsmallmatrix}$ has
+eigenvalues $45$ and $5$ with unit eigenvectors
+$v_1 = \frac1{\sqrt2}(1, 1)$ and $v_2 = \frac1{\sqrt2}(1, -1)$. Hence
+$\sigma_1 = \sqrt{45} = 3\sqrt5$ and $\sigma_2 = \sqrt5$, and
+\[
+  w_1 = \frac{Av_1}{\sigma_1} = \frac{(3, 9)}{\sqrt2\cdot3\sqrt5}
+  = \frac{(1, 3)}{\sqrt{10}} ,
+  \qquad
+  w_2 = \frac{Av_2}{\sigma_2} = \frac{(3, -1)}{\sqrt{10}} .
+\]
+The spectral norm is $3\sqrt5\approx6.708$ and the condition number
+$\sigma_1/\sigma_2 = 3$. The best approximation of rank $1$ is
+\[
+  A_1 = \sigma_1w_1v_1^\top
+  = \frac{3\sqrt5}{\sqrt{20}}
+    \begin{bmatrix}1\\3\end{bmatrix}\begin{bmatrix}1 & 1\end{bmatrix}
+  = \begin{bmatrix}1.5 & 1.5\\4.5 & 4.5\end{bmatrix} ,
+  \qquad
+  A - A_1 = \begin{bmatrix}1.5 & -1.5\\-0.5 & 0.5\end{bmatrix} .
+\]
+Only one singular value is dropped, so both errors equal
+$\sigma_2 = \sqrt5$; indeed
+$\norm{A - A_1}_{\mathrm{HS}}^2 = 2.25 + 2.25 + 0.25 + 0.25 = 5$.
+
+\solution{spectral-svd:exr:6}
+$A$ is surjective, so $A\adj A$ is an invertible operator on $\R$ and
+$A^+ = \adj A(A\adj A)^{-1}$: this map sends $b$ into $\im\adj A$ and
+satisfies $AA^+b = b$, so it gives the solution of smallest norm
+(\cref{spectral-svd:prop:pinv}). For the dot product,
+$\adj A = (1, 1)^\top$, $A\adj A = 2$ and $A^+ = (\frac12, \frac12)^\top$.
+For $M = \diag(1, 4)$, $\adj A = M^{-1}A^\top = (1, \frac14)^\top$,
+$A\adj A = \frac54$ and $A^+ = (0.8, 0.2)^\top$. In
+\cref{inner-products:exr:8} the solution closest to $x_0$ is
+$x_0 + A^+(y - Ax_0)$; with $y = 2$ and $Ax_0 = 0$ this gives
+$(0.5, -0.5) + (1, 1) = (1.5, 0.5)$ and
+$(0.5, -0.5) + (1.6, 0.4) = (2.1, -0.1)$, as found there. The condition
+$0 < \eta < 1$ of that exercise is $\eta < 2/\sigma_1^2$ with
+$\sigma_1^2 = A\adj A = 2$.
+
+\solution{spectral-svd:exr:7}
+\begin{enumerate}[nosep]
+  \item $\norm A^2 = \sigma_1^2\leq\sum_{i\leq r}\sigma_i^2
+        = \norm A_{\mathrm{HS}}^2\leq r\sigma_1^2$.
+  \item The factors have sizes $1000\times8$ and $8\times1000$:
+        $16\,000$ numbers, against $10^6$ for the full matrix, that is
+        $1.6\%$.
+\end{enumerate}
+
+\solution{spectral-svd:exr:8}
+\begin{enumerate}[nosep]
+  \item $\hat C$ has eigenvalues $1.5$ and $0.5$, with eigenvectors
+        $(1, 1)$ and $(1, -1)$. The first principal direction is
+        $\frac1{\sqrt2}(1, 1)$ and carries $1.5/2 = 75\%$ of the variance.
+  \item The new array is
+        $\begin{bsmallmatrix}100 & 5\\5 & 1\end{bsmallmatrix}$, with trace
+        $101$ and determinant $75$: eigenvalues
+        $\frac12(101\pm\sqrt{9901})\approx100.252$ and $0.748$. The first
+        principal direction is proportional to $(5, 0.252)$, that is,
+        about $(0.9987, 0.0503)$ in the new coordinates: almost exactly
+        the rescaled feature, with $100.252/101\approx99.3\%$ of the
+        variance.
+  \item In the new coordinates $y = (10x_1, x_2)$ the dot product is
+        $y^\top y = 100x_1^2 + x_2^2 = x^\top Mx$ with
+        $M = \diag(100, 1)$. So (2) is PCA for the inner product $M$ in
+        the original coordinates: the covariance operator has the matrix
+        $\hat CM = \begin{bsmallmatrix}100 & 0.5\\50 & 1\end{bsmallmatrix}$,
+        with the same trace and determinant, hence the same eigenvalues.
+        Its first eigenvector is proportional to $(0.5, 0.252)$ in the
+        original coordinates, which is the direction found in (2) with
+        its first component divided by $10$.
+\end{enumerate}
+
+\solution{spectral-svd:exr:9}
+By \cref{spectral-svd:thm:eckart-young}: for rank at most $1$,
+$\norm{A - B}\geq3$ and
+$\norm{A - B}_{\mathrm{HS}}\geq\sqrt{9 + 1} = \sqrt{10}\approx3.162$; for
+rank at most $2$, both are at least $1$. All four bounds are attained by
+the truncated decompositions. By
+\cref{spectral-svd:prop:minmax-sv}(1), the singular values of $A + E$ lie
+in $[4.9, 5.1]$, $[2.9, 3.1]$ and $[0.9, 1.1]$.
