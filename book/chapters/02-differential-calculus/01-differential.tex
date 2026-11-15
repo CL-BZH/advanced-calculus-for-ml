@@ -4,25 +4,1053 @@
 \chaptersubtitle{%
   The best affine approximation of a map between affine spaces}
 
-\begin{chapterplan}
+\begin{chapterintro}
+In one variable the derivative is a number, the limit of a quotient
+$\bigl(f(a + h) - f(a)\bigr)/h$. In several variables $h$ is a vector and
+one cannot divide by it. What survives is the other reading of the
+derivative: near $a$, the function is almost an affine map. The
+\emph{differential} of $f$ at $a$ is the linear part of that affine map.
+It is a linear map between the spaces of displacements, defined without
+an origin, a basis or an inner product. Part~I was written so that this
+sentence makes sense. You will learn
 \begin{itemize}[nosep]
-  \item Little-$o$ and tangency of maps; the differential $Df(a):V\to W$ of a
-        map $f:U\subset\Aff\to\Bff$; uniqueness.
-  \item Directional and partial derivatives; the Jacobian matrix;
-        differentiability versus existence of partial derivatives; the $C^1$
-        criterion.
-  \item The tangent flat (an affine subspace) versus the tangent space (a vector
-        space).
-  \item Velocities of curves, and the identification $T_a\Aff = V$, which
-        involves no choice.
-  \item The differential of a scalar function is a covector, $\dd f_a\in V^*$.
-  \item Worked examples: linear, affine and bilinear maps; the determinant; the
-        inverse of a matrix.
+  \item the definition of the differential $Df(a):V\to W$ of a map
+        between normed affine spaces, and why it is unique;
+  \item how it acts on velocities of curves, and why the tangent space of
+        an affine space at any point is its space of displacements;
+  \item what partial derivatives and the Jacobian matrix are: the matrix
+        of $Df(a)$ in chosen bases, and when their existence is enough;
+  \item that the differential of a scalar function is a covector, whose
+        components are the partial derivatives;
+  \item how to compute differentials without coordinates, for bilinear
+        maps, the inverse and the determinant of a matrix;
+  \item the differentials of the usual layers of a network, and the
+        linearization of a model around its parameters.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{Part~I, in particular
+\cref{ch:affine-spaces,ch:duality,ch:norms-banach}; derivatives of
+functions of one real variable and the mean value theorem; the
+determinant of a matrix. Unless stated otherwise, all spaces are
+finite-dimensional.}
+\end{chapterintro}
+
+\section{Tangent maps}\label{differential:sec:tangent}
+
+Let $f:\R\to\R$ be differentiable at $a$. The definition of $f'(a)$ can be
+rewritten without a quotient:
+\[
+  f(a + h) = f(a) + f'(a)\,h + r(h) ,
+  \qquad \frac{r(h)}h\to0 \text{ as } h\to0 .
+\]
+The first two terms form an affine function of $h$, whose graph is the
+tangent line; the remainder $r(h)$ is small \emph{compared with} $h$
+(\cref{differential:fig:tangent}). This form of the definition generalizes
+word for word, once ``small compared with $h$'' is given a meaning for
+vectors.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.25]
+  \draw[->, gray] (-0.3,0) -- (5.2,0);
+  \draw[->, gray] (0,-0.3) -- (0,3.6);
+  \draw[bookaccent, very thick, domain=0.3:4.6, samples=60]
+    plot (\x, {0.6 + 0.14*\x*\x});
+  \draw[bookdef, thick] (0.4,0.348) -- (4.6,2.4648);
+  \fill (1.8,1.0536) circle (1.4pt);
+  \draw[densely dotted] (1.8,0) -- (1.8,1.0536);
+  \draw[densely dotted] (4.2,0) -- (4.2,2.2632);
+  \node[below] at (1.8,0) {$a$};
+  \node[below] at (4.2,0) {$a + h$};
+  \draw[<->, bookpitfall, thick] (4.2,2.2632) -- (4.2,3.0696)
+    node[midway, right] {$r(h)$};
+  \fill (4.2,3.0696) circle (1.2pt);
+  \fill[bookdef] (4.2,2.2632) circle (1.2pt);
+  \node[bookaccent, left] at (3.9,3.0) {$f$};
+  \node[bookdef, anchor=north west] at (2.2,1.2) {$f(a) + f'(a)h$};
+\end{tikzpicture}
+\caption{A differentiable function and its tangent affine function at
+$a$. The gap $r(h)$ between them is small compared with $h$: dividing it
+by $h$ still gives something that tends to $0$.}
+\label{differential:fig:tangent}
+\end{figure}
+
+Throughout the chapter, $\Aff$ and $\Bff$ are normed affine spaces with
+directions $V$ and $W$, and $U\subset\Aff$ is an open set. Recall that if
+$a$ is a point and $h$ a vector, $a + h$ is a point, and the difference of
+two points is a vector (\cref{ch:affine-spaces}).
+
+\begin{definition}[Little-$o$]\label{differential:def:little-o}
+Let $r$ be a map from a neighbourhood of $0$ in $V$ to $W$. We write
+$r(h) = o(h)$ if for every $\varepsilon > 0$ there is $\delta > 0$ such
+that
+\[
+  \norm{r(h)}\leq\varepsilon\norm h \qquad\text{whenever } \norm h < \delta .
+\]
+\end{definition}
+
+In particular $r(0) = 0$, and $r(h)/\norm h\to0$ as $h\to0$. In finite
+dimension the property does not depend on the norms of $V$ and $W$,
+because any two norms are equivalent (\cref{norms-banach:thm:equivalence}):
+replacing a norm by an equivalent one multiplies $\varepsilon$ by a
+constant.
+
+\begin{lemma}[Rules for little-$o$]\label{differential:lem:little-o}
+\begin{enumerate}[nosep]
+  \item If $r_1(h) = o(h)$ and $r_2(h) = o(h)$, then
+        $r_1(h) + r_2(h) = o(h)$ and $c\,r_1(h) = o(h)$.
+  \item If $r(h) = o(h)$ and $B:W\to X$ is a bounded linear map, then
+        $B\bigl(r(h)\bigr) = o(h)$.
+  \item If a linear map $L:V\to W$ satisfies $L(h) = o(h)$, then $L = 0$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(1) Add the two inequalities, with $\varepsilon/2$. (2)
+$\norm{B(r(h))}\leq\norm B\norm{r(h)}$. (3) Let $v\in V$ and
+$\varepsilon > 0$. For $t > 0$ small enough,
+$\norm{L(tv)}\leq\varepsilon\norm{tv}$, that is,
+$\norm{Lv}\leq\varepsilon\norm v$ after division by $t$. This holds for
+every $\varepsilon$, so $Lv = 0$.
+\end{proof}
+
+\section{The differential}\label{differential:sec:definition}
+
+\begin{definition}[Differential]\label{differential:def:differential}
+A map $f:U\to\Bff$ is \emph{differentiable at} $a\in U$ if there is a
+bounded linear map $L:V\to W$ such that
+\begin{equation}\label{differential:eq:definition}
+  f(a + h) = f(a) + L(h) + r(h), \qquad r(h) = o(h) .
+\end{equation}
+The map $L$ is the \emph{differential} of $f$ at $a$, written $Df(a)$.
+The map $f$ is \emph{differentiable} if it is differentiable at every
+point of $U$.
+\end{definition}
+
+The formula is well formed in an affine space: $a + h$ is a point of
+$\Aff$, defined for small $h$ because $U$ is open; $f(a + h)$ and $f(a)$
+are points of $\Bff$; $L(h)$ and
+$r(h) = f(a + h) - \bigl(f(a) + L(h)\bigr)$ are vectors of $W$. In finite
+dimension every linear map is bounded
+(\cref{norms-banach:cor:finite}), and the definition does not depend on
+the norms. No origin and no basis appear in it: differentiability and the
+differential pass the origin test and the basis test by construction.
+
+\begin{proposition}[Uniqueness]\label{differential:prop:unique}
+There is at most one linear map $L$ satisfying
+\eqref{differential:eq:definition}.
+\end{proposition}
+
+\begin{proof}
+If $L_1$ and $L_2$ both do, with remainders $r_1$ and $r_2$, subtracting
+gives $(L_1 - L_2)(h) = r_2(h) - r_1(h) = o(h)$, and $L_1 = L_2$ by
+\cref{differential:lem:little-o}.
+\end{proof}
+
+\begin{keyidea}
+The affine map $x\mapsto f(a) + Df(a)(x - a)$ is the \emph{tangent affine
+map} of $f$ at $a$: the only affine map whose difference with $f$ is
+$o(x - a)$. The differential is its linear part
+(\cref{affine-spaces:def:map}). Differential calculus replaces a map,
+near a point, by an affine map, and affine maps are the subject of
+\cref{ch:affine-spaces}.
+\end{keyidea}
+
+\begin{proposition}[First properties]\label{differential:prop:first}
+\begin{enumerate}[nosep]
+  \item If $f$ is differentiable at $a$, it is continuous at $a$; more
+        precisely there is $\delta > 0$ such that
+        $\norm{f(a + h) - f(a)}\leq(\norm{Df(a)} + 1)\norm h$ for
+        $\norm h < \delta$.
+  \item An affine map $f$ is differentiable, and $Df(a) = \lin f$, its
+        linear part, at every point. In particular a constant map has
+        differential $0$, and a linear map $A$ has $DA(a) = A$ at every
+        $a$.
+  \item If $f, g:U\to W$ take values in a normed space and are
+        differentiable at $a$, then so are $f + g$ and $cf$, with
+        $D(f + g)(a) = Df(a) + Dg(a)$ and $D(cf)(a) = c\,Df(a)$.
+  \item Let $\Bff = \Bff_1\times\Bff_2$, with direction $W_1\times W_2$
+        and norm $\max(\norm{w_1}, \norm{w_2})$. A map $f = (f_1, f_2)$ is
+        differentiable at $a$ if and only if $f_1$ and $f_2$ are, and then
+        $Df(a)h = \bigl(Df_1(a)h, Df_2(a)h\bigr)$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) Take $\varepsilon = 1$ in \cref{differential:def:little-o}:
+$\norm{f(a + h) - f(a)}\leq\norm{Df(a)h} + \norm{r(h)}
+\leq(\norm{Df(a)} + 1)\norm h$. (2) $f(a + h) = f(a) + \lin f(h)$ exactly:
+the remainder is $0$. (3) Add the two expansions and use
+\cref{differential:lem:little-o}. (4) A linear map into $W_1\times W_2$ is
+a pair of linear maps, and the remainder is the pair $(r_1, r_2)$ of the
+remainders, with $\norm{(r_1, r_2)} = \max(\norm{r_1}, \norm{r_2})$: it is
+$o(h)$ if and only if both components are.
+\end{proof}
+
+\begin{example}[A map of the plane]\label{differential:ex:polar}
+Let $f:\R^2\to\R^2$, $f(\rho, \theta) = (\rho\cos\theta, \rho\sin\theta)$.
+At $a = (2, \frac\pi6)$, we shall see in \cref{differential:sec:jacobian}
+that $Df(a)$ has the matrix
+\[
+  \begin{bmatrix}\cos\theta & -\rho\sin\theta\\
+                 \sin\theta & \rho\cos\theta\end{bmatrix}_{(2, \pi/6)}
+  = \begin{bmatrix}0.866 & -1\\0.5 & 1.732\end{bmatrix} .
+\]
+For $h = (0.1, 0.1)$, $f(a + h) = (1.7047, 1.2263)$ and
+$f(a) + Df(a)h = (1.7187, 1.2232)$: the remainder has norm $0.0143$, about
+$10\%$ of $\norm h = 0.141$. For $h = (0.01, 0.01)$ the remainder has norm
+$0.000142$, about $1\%$ of $\norm h$: dividing $h$ by $10$ divides the
+remainder by $100$. \Cref{differential:fig:polar} shows what the
+tangent affine map does to a small rectangle.
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth]
+  \begin{scope}[scale=1.9]
+    \draw[->, gray] (1.6,0.3) -- (3.0,0.3) node[right] {$\rho$};
+    \draw[->, gray] (1.7,0.2) -- (1.7,1.25) node[above] {$\theta$};
+    \filldraw[bookaccent, thick, fill=bookaccent!12]
+      (2,0.5236) rectangle (2.6,0.9236);
+    \fill (2,0.5236) circle (0.8pt) node[below left] {$a$};
+  \end{scope}
+  \draw[->, thick, gray] (6.0,1.4) -- (7.2,1.4) node[midway, above] {$f$};
+  \begin{scope}[xshift=5.6cm, yshift=-1.2cm, scale=1.9]
+    \draw[->, gray] (0.9,0.45) -- (2.6,0.45);
+    \draw[->, gray] (1.0,0.35) -- (1.0,2.3);
+    \filldraw[bookaccent, thick, fill=bookaccent!12]
+      (1.7321,1) -- (2.2517,1.3)
+      arc[start angle=30, end angle=52.918, radius=2.6]
+      -- (1.2059,1.5956)
+      arc[start angle=52.918, end angle=30, radius=2];
+    \draw[bookpitfall, thick, dashed]
+      (1.7321,1) -- (2.2517,1.3) -- (1.8517,1.9928) -- (1.3321,1.6928)
+      -- cycle;
+    \fill (1.7321,1) circle (0.8pt) node[below] {$f(a)$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The map of \cref{differential:ex:polar}. A rectangle with corner
+$a$ (left) is sent by $f$ to a curved quadrilateral (right, blue) and by
+the tangent affine map at $a$ to a parallelogram (red, dashed). The two
+agree to first order at $f(a)$, and the smaller the rectangle, the better
+the agreement relative to its size.}
+\label{differential:fig:polar}
+\end{figure}
+
+\begin{remark}[Infinite dimension]
+In a normed space of infinite dimension the definition is the same, and
+the requirement that $L$ be bounded matters
+(\cref{norms-banach:ex:unbounded}). The differential is then called the
+\emph{Fr\'echet derivative}, and in the calculus of variations the
+\emph{first variation}. Its existence may depend on the norm.
+\end{remark}
+
+\section{Velocities and directional derivatives}
+\label{differential:sec:velocity}
+
+\begin{definition}[Velocity]\label{differential:def:velocity}
+Let $I\subset\R$ be an open interval. The \emph{velocity} at $t\in I$ of a
+curve $c:I\to\Aff$ is the vector
+\[
+  c'(t) = \lim_{s\to0}\frac{c(t + s) - c(t)}s \in V ,
+\]
+when the limit exists.
+\end{definition}
+
+The quotient makes sense: $c(t + s) - c(t)$ is a difference of two points,
+a vector, and a vector can be divided by a number. The velocity of a curve
+of points is a vector, not a point.
+
+\begin{proposition}\label{differential:prop:curve}
+A curve $c$ is differentiable at $t$ if and only if its velocity $c'(t)$
+exists, and then $Dc(t)(s) = s\,c'(t)$.
+\end{proposition}
+
+\begin{proof}
+A linear map $\R\to V$ has the form $s\mapsto sv$. The relation
+$c(t + s) = c(t) + sv + r(s)$ with $r(s) = o(s)$ says exactly that
+$\bigl(c(t + s) - c(t)\bigr)/s - v = r(s)/s$ tends to $0$.
+\end{proof}
+
+\begin{theorem}[The differential acts on velocities]
+\label{differential:thm:velocity}
+Let $f:U\to\Bff$ be differentiable at $a$, and let $c:I\to U$ be a curve
+with $c(t_0) = a$ and velocity $c'(t_0) = v$. Then the curve $f\circ c$
+has a velocity at $t_0$, and
+\[
+  (f\circ c)'(t_0) = Df(a)\,v .
+\]
+\end{theorem}
+
+\begin{proof}
+Write $c(t_0 + s) = a + sv + \rho(s)$ with $\rho(s) = o(s)$, and let $r$
+be the remainder of $f$ at $a$. Then
+\[
+  f\bigl(c(t_0 + s)\bigr)
+  = f(a) + s\,Df(a)v + Df(a)\rho(s) + r\bigl(sv + \rho(s)\bigr) .
+\]
+The third term is $o(s)$ by \cref{differential:lem:little-o}. For the
+fourth, let $\varepsilon > 0$ and take $\delta$ such that
+$\norm{r(k)}\leq\varepsilon\norm k$ for $\norm k < \delta$. For $s$ small
+enough, $\norm{\rho(s)}\leq\abs s$, so
+$k = sv + \rho(s)$ satisfies $\norm k\leq(\norm v + 1)\abs s < \delta$ and
+$\norm{r(k)}\leq\varepsilon(\norm v + 1)\abs s$: the fourth term is
+$o(s)$. Hence $f(c(t_0 + s)) = f(a) + s\,Df(a)v + o(s)$, which is the
+claim by \cref{differential:prop:curve}.
+\end{proof}
+
+\begin{definition}[Directional derivative]\label{differential:def:directional}
+The \emph{derivative of $f$ at $a$ along} $v\in V$ is the velocity at
+$t = 0$ of the curve $t\mapsto f(a + tv)$:
+\[
+  D_vf(a) = \lim_{t\to0}\frac{f(a + tv) - f(a)}t \in W ,
+\]
+when the limit exists.
+\end{definition}
+
+\begin{corollary}\label{differential:cor:directional}
+If $f$ is differentiable at $a$, then $D_vf(a)$ exists for every $v$ and
+$D_vf(a) = Df(a)\,v$. In particular $v\mapsto D_vf(a)$ is linear.
+\end{corollary}
+
+\begin{proof}
+Apply \cref{differential:thm:velocity} to $c(t) = a + tv$, whose velocity
+at $0$ is $v$.
+\end{proof}
+
+\begin{intuition}
+To know $Df(a)v$, move through $a$ with velocity $v$, along any curve, and
+look at the velocity of the image. The differential transports
+velocities: it is the infinitesimal version of the rule ``an affine map
+sends the displacement $v$ to $\lin f(v)$''.
+\end{intuition}
+
+\paragraph{The tangent space of an affine space.} The set of velocities at
+$a$ of the differentiable curves through $a$ is called the \emph{tangent
+space} at $a$, written $T_a\Aff$. Every such velocity is a vector of $V$,
+and every $v\in V$ is the velocity at $a$ of the curve $t\mapsto a + tv$.
+So
+\[
+  T_a\Aff = V \quad\text{for every } a\in\Aff ,
+  \qquad Df(a):T_a\Aff\to T_{f(a)}\Bff .
+\]
+This identification involves no choice of origin or basis. It is special
+to affine spaces: on a curved space such as a sphere, the tangent spaces
+at two different points are two different vector spaces
+(\cref{ch:submanifolds,ch:tangent-bundles}).
+
+\begin{mlthread}[Machine learning: why momentum is allowed]
+Optimizers with momentum add update directions computed at different
+points of parameter space, and Adam averages their squares. This is
+legitimate because parameter space is affine: a displacement computed at
+the point $a_k$ and one computed at $a_{k+1}$ belong to the same vector
+space $V$. On a manifold the two would live in different tangent spaces,
+and a rule for transporting one to the other would be needed
+(\cref{ch:riemannian-optimization}).
+\end{mlthread}
+
+\begin{pitfall}[Directional derivatives are not enough]
+The converse of \cref{differential:cor:directional} is false. Let
+\[
+  f(x, y) = \frac{x^3y}{x^6 + y^2} \quad\text{for } (x, y)\neq(0, 0),
+  \qquad f(0, 0) = 0 .
+\]
+For $v = (v_1, v_2)$ with $v_2\neq0$,
+$f(tv)/t = tv_1^3v_2/(t^4v_1^6 + v_2^2)\to0$, and $f(tv) = 0$ if
+$v_2 = 0$. So $D_vf(0) = 0$ for every $v$, which is even linear in $v$.
+Yet $f(x, x^3) = \frac12$ for all $x\neq0$: $f$ is not continuous at the
+origin, hence not differentiable there. Along straight lines the function
+is flat at the origin; along the curve $y = x^3$ it jumps. The differential
+controls all directions \emph{at once}, uniformly, and that is more than
+controlling each direction separately.
+\end{pitfall}
+
+\section{Coordinates: partial derivatives and the Jacobian matrix}
+\label{differential:sec:jacobian}
+
+Choose a frame of $\Aff$ (an origin and a basis $(e_1,\dots,e_n)$ of $V$,
+\cref{affine-spaces:def:frame}) and a frame of $\Bff$ with basis
+$(e'_1,\dots,e'_m)$. A point $a$ has a column of coordinates $x\in\R^n$,
+and $f$ is represented by a map $F$ from an open set of $\R^n$ to $\R^m$:
+the coordinates of $f(a)$ are $F(x) = (F_1(x),\dots,F_m(x))$.
+
+\begin{definition}[Partial derivatives]\label{differential:def:partial}
+The $j$th \emph{partial derivative} of $f$ at $a$ is its derivative along
+the $j$th basis vector, $\partial_jf(a) = D_{e_j}f(a)\in W$. Its
+coordinates are the numbers
+\[
+  \partial_jF_i(x)
+  = \lim_{t\to0}\frac{F_i(x_1,\dots,x_j + t,\dots,x_n) - F_i(x)}t ,
+\]
+also written $\partial F_i/\partial x_j$: the derivative of $F_i$ as a
+function of its $j$th argument, the others being fixed.
+\end{definition}
+
+\begin{theorem}[Jacobian matrix]\label{differential:thm:jacobian}
+The map $f$ is differentiable at $a$ if and only if $F$ is differentiable
+at $x$. In that case all partial derivatives exist, and the matrix of
+$Df(a)$ in the bases $(e_j)$ and $(e'_i)$ is the \emph{Jacobian matrix}
+\[
+  J = \begin{bmatrix}
+    \partial_1F_1(x) & \cdots & \partial_nF_1(x)\\
+    \vdots & & \vdots\\
+    \partial_1F_m(x) & \cdots & \partial_nF_m(x)
+  \end{bmatrix} .
+\]
+\end{theorem}
+
+\begin{proof}
+Taking coordinates is an affine isomorphism, whose linear part
+$v\mapsto[v]$ and its inverse are bounded
+(\cref{norms-banach:cor:finite}). The relation
+$f(a + h) = f(a) + L(h) + r(h)$ reads, in coordinates,
+$F(x + [h]) = F(x) + [L][h] + [r(h)]$, and $[r(h)] = o([h])$ if and only
+if $r(h) = o(h)$. So $f$ is differentiable at $a$ if and only if $F$ is at
+$x$, and then the matrix of $Df(a)$ is that of $DF(x)$ in the standard
+bases. Its $j$th column is $[Df(a)e_j] = [D_{e_j}f(a)]$ by
+\cref{differential:cor:directional}, the column of the numbers
+$\partial_jF_i(x)$.
+\end{proof}
+
+\begin{intuition}
+The Jacobian matrix can be read in two ways. Its $j$th \emph{column} is a
+vector of $W$: the velocity of the image when only the $j$th coordinate
+moves, at unit speed. Its $i$th \emph{row} is a covector on $V$: the
+differential of the $i$th component function $F_i$
+(\cref{differential:sec:covector}).
+\end{intuition}
+
+In \cref{differential:ex:polar} the columns
+$(\cos\theta, \sin\theta)$ and $(-\rho\sin\theta, \rho\cos\theta)$ are the
+velocities of the image point when $\rho$ alone, or $\theta$ alone,
+increases at unit speed; they are the sides of the red parallelogram of
+\cref{differential:fig:polar}, scaled by the sides of the rectangle.
+
+\begin{corollary}[Change of frames]\label{differential:cor:change}
+If the bases are changed with matrices $P$ in $V$ and $Q$ in $W$, the
+Jacobian matrix becomes $Q^{-1}JP$. Moving the origins does not change it.
+\end{corollary}
+
+\begin{proof}
+This is the rule for the matrix of the linear map $Df(a)$
+(\cref{duality:prop:vector-change}); $Df(a)$ itself does not involve the
+origins.
+\end{proof}
+
+\begin{pitfall}[A partial derivative depends on all the coordinates]
+The notation $\partial f/\partial x_1$ suggests that this number depends
+only on the function $x_1$. It depends on the vector $e_1$, that is, on
+what is held fixed: on the \emph{other} coordinates. On $\R^2$ let
+$f = x_1x_2$ and take the new coordinates $u_1 = x_1$,
+$u_2 = x_1 + x_2$. Then $f = u_1(u_2 - u_1)$ and
+\[
+  \frac{\partial f}{\partial u_1} = u_2 - 2u_1 = x_2 - x_1
+  \qquad\text{whereas}\qquad
+  \frac{\partial f}{\partial x_1} = x_2 ,
+\]
+although $u_1$ and $x_1$ are the same function. Moving with $u_2$ fixed
+means moving along $e'_1 = e_1 - e_2$, not along $e_1$
+(\cref{differential:exr:4}). The directional derivative $D_vf(a)$ has no
+such ambiguity.
+\end{pitfall}
+
+Differentiability implies the existence of the partial derivatives. The
+pitfall of \cref{differential:sec:velocity} shows that the converse fails.
+It holds under a condition that is easy to check.
+
+\begin{theorem}[Continuous partial derivatives]\label{differential:thm:c1}
+Let $F$ be a map from an open set of $\R^n$ to $\R^m$. If all the partial
+derivatives $\partial_jF_i$ exist in a neighbourhood of $x$ and are
+continuous at $x$, then $F$ is differentiable at $x$.
+\end{theorem}
+
+\begin{proof}
+By \cref{differential:prop:first}(4) it is enough to treat each component:
+let $m = 1$. Use the norm $\norm\cdot_\infty$ and let $h$ be small enough
+for the ball $B(x, 2\norm h_\infty)$ to lie in the neighbourhood. Go from
+$x$ to $x + h$ by changing one coordinate at a time: put
+$h^{(j)} = (h_1,\dots,h_j, 0,\dots,0)$, so that $h^{(0)} = 0$ and
+$h^{(n)} = h$. By the mean value theorem in one variable, applied to
+$t\mapsto F(x + h^{(j-1)} + t\varepsilon_j)$ on the interval between $0$
+and $h_j$ ($\varepsilon_j$ being the $j$th standard basis vector),
+\[
+  F(x + h^{(j)}) - F(x + h^{(j-1)}) = h_j\,\partial_jF(\xi_j)
+\]
+for some point $\xi_j$ on the segment between $x + h^{(j-1)}$ and
+$x + h^{(j)}$; in particular $\norm{\xi_j - x}_\infty\leq\norm h_\infty$.
+Summing over $j$,
+\[
+  F(x + h) - F(x) - \sum_j\partial_jF(x)\,h_j
+  = \sum_jh_j\bigl(\partial_jF(\xi_j) - \partial_jF(x)\bigr) .
+\]
+Let $\varepsilon > 0$. The partial derivatives are continuous at $x$, so
+there is $\delta > 0$ such that, for all $j$,
+\[
+  \abs{\partial_jF(\xi) - \partial_jF(x)}\leq\varepsilon
+  \qquad\text{when } \norm{\xi - x}_\infty < \delta .
+\]
+For $\norm h_\infty < \delta$ the right-hand side above is then at most
+$n\varepsilon\norm h_\infty$ in absolute value: it is $o(h)$.
+\end{proof}
+
+\begin{definition}[Continuously differentiable]\label{differential:def:c1}
+A map $f:U\to\Bff$ is \emph{of class $C^1$}, or \emph{continuously
+differentiable}, if it is differentiable and the map
+$a\mapsto Df(a)$, from $U$ to the normed space $L(V, W)$, is continuous.
+\end{definition}
+
+\begin{corollary}\label{differential:cor:c1}
+$f$ is of class $C^1$ if and only if, in some frames (equivalently, in
+all), the partial derivatives $\partial_jF_i$ exist and are continuous on
+the whole domain.
+\end{corollary}
+
+\begin{proof}
+The map sending a linear map to its matrix is a linear isomorphism between
+finite-dimensional spaces, so it is continuous with its inverse
+(\cref{norms-banach:cor:finite}): $a\mapsto Df(a)$ is continuous if and
+only if each entry of its matrix is. If the partial derivatives are
+continuous, $f$ is differentiable by \cref{differential:thm:c1}, and its
+matrix is made of them by \cref{differential:thm:jacobian}.
+\end{proof}
+
+In practice this is how differentiability is established: a map whose
+components are built from polynomials, exponentials, quotients with
+non-vanishing denominators and the like has continuous partial
+derivatives, so it is of class $C^1$, and its differential is given by
+the Jacobian matrix.
+
+\section{The differential of a function is a covector}
+\label{differential:sec:covector}
+
+When $\Bff = \R$, the differential at $a$ is a linear map $V\to\R$: a
+linear form. We then write $\dd f(a)$ for $Df(a)$:
+\[
+  f(a + h) = f(a) + \dd f(a)(h) + o(h), \qquad \dd f(a)\in V^* .
+\]
+This is the general form of the remark made in \cref{ch:duality} for
+affine functions: the variation of a function, to first order, is a
+covector. It eats a displacement and returns a change of value. Everything
+said about linear forms applies. In a basis, $\dd f(a)$ has a \emph{row}
+of components, and by \cref{differential:thm:jacobian} it is the row of
+the partial derivatives:
+\[
+  [\dd f(a)] = \begin{bmatrix}\partial_1f(a) & \cdots & \partial_nf(a)
+  \end{bmatrix},
+  \qquad
+  \dd f(a)(h) = \sum_i\partial_if(a)\,h_i .
+\]
+
+\begin{proposition}[Partial derivatives are covector components]
+\label{differential:prop:components}
+Let $x_1,\dots,x_n:\Aff\to\R$ be the coordinate functions of a frame with
+basis $(e_i)$. Then $\dd x_i(a) = e_i^*$, the $i$th vector of the dual
+basis, at every point $a$, and for every $f$ differentiable at $a$,
+\[
+  \dd f(a) = \sum_i\partial_if(a)\,\dd x_i .
+\]
+Under a change of basis with matrix $P$, the row of partial derivatives
+becomes $[\dd f(a)]P$.
+\end{proposition}
+
+\begin{proof}
+Each $x_i$ is an affine function with linear part $e_i^*$
+(\cref{duality:thm:dual-basis}), so $\dd x_i(a) = e_i^*$ by
+\cref{differential:prop:first}. The components of the form $\dd f(a)$ in
+the dual basis are its values $\dd f(a)(e_i) = \partial_if(a)$. The last
+statement is \cref{duality:prop:covector-change}.
+\end{proof}
+
+The classical formula
+$\dd f = \frac{\partial f}{\partial x_1}\dd x_1 + \dots
++ \frac{\partial f}{\partial x_n}\dd x_n$
+is therefore an identity between linear forms, with nothing infinitesimal
+in it: it is the expansion of the covector $\dd f(a)$ in the dual basis.
+The geometric picture of a covector (\cref{ch:duality}) applies: the level
+sets of $\dd f(a)$ are parallel hyperplanes, and they are the level sets
+of the tangent affine function of $f$ at $a$
+(\cref{differential:fig:covector}).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.9]
+  \clip (-0.7,0.15) rectangle (3.9,2.6);
+  \foreach \r in {0.98,1.327,1.6,1.833,2.04}
+    \draw[bookaccent, thick] (0,0) ellipse ({2*\r} and {\r});
+  \foreach \k in {-2,-1,0,1,2}
+    \draw[bookpitfall, dashed]
+      ({1.6 + 0.0769*\k - 1.6*0.9608},{1.386 + 0.2665*\k + 1.6*0.2774})
+      -- ({1.6 + 0.0769*\k + 1.6*0.9608},{1.386 + 0.2665*\k - 1.6*0.2774});
+  \draw[->, very thick, bookdef] (1.6,1.386) -- (2.6,1.675)
+    node[below right] {$h$};
+  \fill (1.6,1.386) circle (1pt) node[below left] {$a$};
+\end{tikzpicture}
+\caption{Level curves of a function $f$ (blue) and of its tangent affine
+function at $a$ (red, dashed): the latter are the level sets of the
+covector $\dd f(a)$, drawn for the same equally spaced values. Near $a$
+the two families agree. The number $\dd f(a)(h)$ counts, with sign, the
+dashed lines crossed by $h$: two here. No right angle is used in this
+picture: the covector is defined before any inner product is chosen.}
+\label{differential:fig:covector}
+\end{figure}
+
+\begin{theorem}[Critical points]\label{differential:thm:fermat}
+If $f:U\to\R$ has a local maximum or a local minimum at $a\in U$ and is
+differentiable at $a$, then $\dd f(a) = 0$.
+\end{theorem}
+
+\begin{proof}
+For every $v$, the function $g(t) = f(a + tv)$ of one variable has a local
+extremum at $t = 0$ and is differentiable there, with
+$g'(0) = \dd f(a)(v)$ by \cref{differential:cor:directional}. Hence
+$g'(0) = 0$.
+\end{proof}
+
+A point where $\dd f(a) = 0$ is a \emph{critical point}. Being critical is
+a property of $f$ and $a$ alone: in coordinates it says that all partial
+derivatives vanish, and the row $[\dd f(a)]P$ is zero if and only if
+$[\dd f(a)]$ is.
+
+\begin{mlthread}[Machine learning: what \texttt{backward()} computes]
+For a loss $L$ on parameter space, automatic differentiation returns the
+array of the partial derivatives $\partial L/\partial x_i$ at the current
+point: the components of the covector $\dd L(a)$, in the dual of whatever
+basis the parameters are stored in. Three things follow from this
+chapter and from Part~I.
 \begin{itemize}[nosep]
-  \item Jacobians of the usual layers.
-  \item The linearization of a network around its parameters.
+  \item The first-order change of the loss for a parameter change $h$ is
+        $\dd L(a)(h) = \sum_i\partial_iL\,h_i$: a row times a column. This
+        number does not depend on the basis.
+  \item The array is called ``the gradient'' and is stored like a
+        parameter, but it transforms like a covector
+        (\cref{differential:prop:components}). Subtracting it from the
+        parameters is the update \eqref{duality:eq:gd}, which fails the
+        basis test (\cref{duality:prop:gd}).
+  \item Turning $\dd L(a)$ into a displacement requires a map
+        $V^*\to V$. An inner product provides one, and the result is the
+        \emph{gradient} $\nabla L(a)$ (\cref{ch:gradient-hessian}).
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\section{Tangent flat and tangent space}\label{differential:sec:flat}
+
+The graph of $f:U\to\Bff$ is the set
+$\Gamma = \{(x, f(x)) : x\in U\}$ in the product $\Aff\times\Bff$, an
+affine space with direction $V\times W$.
+
+\begin{proposition}[Tangent to a graph]\label{differential:prop:graph}
+Let $f$ be differentiable at $a$ and $p = (a, f(a))$. The velocities at
+$p$ of the differentiable curves through $p$ that lie in $\Gamma$ are
+exactly the vectors of
+\[
+  T_p\Gamma = \{(v, Df(a)v) : v\in V\}\subset V\times W ,
+\]
+the graph of the linear map $Df(a)$.
+\end{proposition}
+
+\begin{proof}
+A curve in $\Gamma$ through $p$ is $t\mapsto(c(t), f(c(t)))$ with
+$c(0) = a$. If it is differentiable at $0$, so is its first component $c$
+(\cref{differential:prop:first}), and with $v = c'(0)$ its velocity is
+$(v, Df(a)v)$ by \cref{differential:thm:velocity}. Conversely
+$c(t) = a + tv$ gives the velocity $(v, Df(a)v)$.
+\end{proof}
+
+Two different objects are tangent to the graph at $p$, and both are called
+``the tangent'' (\cref{differential:fig:flat}).
+\begin{itemize}[nosep]
+  \item The \emph{tangent space} $T_p\Gamma$ is a vector subspace of
+        $V\times W$: a set of velocities. It contains $0$.
+  \item The \emph{tangent flat} $p + T_p\Gamma$ is an affine subspace of
+        $\Aff\times\Bff$ (\cref{affine-spaces:def:subspace}): a set of
+        points. It contains $p$, and it is the graph of the tangent affine
+        map. This is the line or plane that one draws touching the graph.
+\end{itemize}
+The first is the direction of the second. The same distinction will be
+made for curved subsets of an affine space in \cref{ch:submanifolds}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.2]
+  \draw[->, gray] (-1.2,0) -- (4.8,0);
+  \draw[->, gray] (0,-1.0) -- (0,3.3);
+  \draw[bookaccent, very thick, domain=0.6:4.4, samples=60]
+    plot (\x, {2.7 - 0.22*(\x-2.6)*(\x-2.6) - 0.35*(\x-2.6)});
+  \draw[bookdef, thick] (0.6,3.4) -- (4.6,2.0);
+  \draw[bookpitfall, thick] (-1.2,0.42) -- (2.86,-1.0);
+  \fill (2.6,2.7) circle (1.5pt) node[above right] {$p$};
+  \fill (0,0) circle (1.5pt) node[below left] {$0$};
+  \node[bookdef, anchor=south west] at (3.75,2.3) {$p + T_p\Gamma$};
+  \node[bookpitfall, anchor=north east] at (1.5,-0.62) {$T_p\Gamma$};
+  \node[bookaccent, anchor=north] at (1.0,2.45) {$\Gamma$};
+\end{tikzpicture}
+\caption{The graph $\Gamma$ of a function of one variable, its tangent
+flat at $p$ (green), an affine line through $p$, and its tangent space
+(red), the parallel vector line through the origin.}
+\label{differential:fig:flat}
+\end{figure}
+
+\section{Differentials without coordinates}
+\label{differential:sec:examples}
+
+The definition can be used directly: expand $f(a + h)$, keep what is
+linear in $h$, and show that the rest is $o(h)$. For maps between spaces
+of matrices this is much simpler than writing a Jacobian matrix with
+$n^2$ rows and columns.
+
+\begin{proposition}[Bilinear maps]\label{differential:prop:bilinear}
+Let $B:V_1\times V_2\to W$ be bilinear. There is a constant $C$ such that
+$\norm{B(h, k)}\leq C\norm h\norm k$, and $B$ is differentiable, with
+\[
+  DB(a, b)(h, k) = B(h, b) + B(a, k) .
+\]
+\end{proposition}
+
+\begin{proof}
+In bases $(e_i)$ and $(f_j)$, $B(h, k) = \sum_{i,j}h_ik_jB(e_i, f_j)$, so
+\[
+  \norm{B(h, k)}\leq\Bigl(\sum_{i,j}\norm{B(e_i, f_j)}\Bigr)
+  \norm h_\infty\norm k_\infty ,
+\]
+and the bound follows by equivalence of norms. By bilinearity,
+\[
+  B(a + h, b + k) = B(a, b) + B(h, b) + B(a, k) + B(h, k) .
+\]
+The middle terms are linear in $(h, k)$, and
+$\norm{B(h, k)}\leq C\norm{(h, k)}^2$ for the norm
+$\norm{(h, k)} = \max(\norm h, \norm k)$: the last term is $o((h, k))$.
+\end{proof}
+
+This is the product rule: for the product of numbers it reads
+$D(ab)(h, k) = hb + ak$. The same computation with $a = b$ gives the
+differential of a quadratic map.
+
+\begin{corollary}\label{differential:cor:quadratic}
+If $B:V\times V\to W$ is bilinear and $q(x) = B(x, x)$, then
+$Dq(x)h = B(h, x) + B(x, h)$.
+\end{corollary}
+
+\begin{proof}
+$q(x + h) = q(x) + B(h, x) + B(x, h) + B(h, h)$ and
+$\norm{B(h, h)}\leq C\norm h^2$.
+\end{proof}
+
+\begin{example}\label{differential:ex:quadratic}
+\begin{enumerate}[nosep]
+  \item For a symmetric bilinear form $b$ and $q(x) = \frac12b(x, x)$,
+        $\dd q(x) = b(x, \cdot)$. In an inner product space, with
+        $b(u, v) = \inner u{Sv}$
+        (\cref{spectral-svd:prop:form-operator}),
+        $\dd q(x) = \inner{Sx}\cdot = R_V(Sx)$: this is the linear part
+        used for the quadratic loss in \cref{ch:spectral-svd}.
+  \item For the squared norm of an inner product,
+        $\dd(\norm x^2)(h) = 2\inner xh$.
+  \item On the space of $n\times n$ matrices, the product
+        $(A, B)\mapsto AB$ is bilinear, so its differential at $(A, B)$ is
+        $(H, K)\mapsto HB + AK$, and the square $S(A) = A^2$ has
+        \[
+          DS(A)H = AH + HA .
+        \]
+        It is $2AH$ only when $A$ and $H$ commute.
+\end{enumerate}
+\end{example}
+
+\begin{lemma}\label{differential:lem:neumann}
+If an operator $T$ on a normed space $V$ of finite dimension has
+$\norm T < 1$, then $\id - T$ is invertible and
+$\norm{(\id - T)^{-1}}\leq1/(1 - \norm T)$.
+\end{lemma}
+
+\begin{proof}
+$\norm{(\id - T)v}\geq\norm v - \norm{Tv}\geq(1 - \norm T)\norm v$. So
+$\id - T$ is injective, hence invertible, and taking
+$v = (\id - T)^{-1}w$ gives the bound.
+\end{proof}
+
+\begin{proposition}[The inverse]\label{differential:prop:inverse}
+The set $GL(V)$ of invertible operators is open in $L(V, V)$, and the map
+$\iota(A) = A^{-1}$ is differentiable on it, with
+\[
+  D\iota(A)H = -A^{-1}HA^{-1} .
+\]
+\end{proposition}
+
+\begin{proof}
+Let $A$ be invertible and $\norm H\leq1/(2\norm{A^{-1}})$. Then
+$A + H = A(\id + A^{-1}H)$ with $\norm{A^{-1}H}\leq\frac12$, so by
+\cref{differential:lem:neumann} $A + H$ is invertible and
+$\norm{(A + H)^{-1}}\leq2\norm{A^{-1}}$: $GL(V)$ contains a ball around
+each of its points. Next,
+\[
+  (A + H)^{-1} - A^{-1}
+  = (A + H)^{-1}\bigl(A - (A + H)\bigr)A^{-1}
+  = -(A + H)^{-1}HA^{-1} .
+\]
+Using this identity twice,
+\[
+  (A + H)^{-1} - A^{-1} + A^{-1}HA^{-1}
+  = \bigl(A^{-1} - (A + H)^{-1}\bigr)HA^{-1}
+  = (A + H)^{-1}HA^{-1}HA^{-1} ,
+\]
+whose norm is at most $2\norm{A^{-1}}^3\norm H^2$: it is $o(H)$.
+\end{proof}
+
+For $n = 1$ this is the derivative $-1/a^2$ of $1/a$. The order of the
+factors is forced: $H$ is sandwiched between two copies of $A^{-1}$.
+
+\begin{proposition}[The determinant]\label{differential:prop:det}
+The determinant is differentiable on the space of $n\times n$ matrices.
+At an invertible matrix $A$,
+\[
+  \dd(\det)(A)(H) = \det(A)\,\tr(A^{-1}H) ,
+\]
+and on the open set where $\det A > 0$,
+$\dd(\log\det)(A)(H) = \tr(A^{-1}H)$.
+\end{proposition}
+
+\begin{proof}
+The determinant is a polynomial in the entries, so it is of class $C^1$
+(\cref{differential:cor:c1}). \emph{At the identity.} In the expansion
+\[
+  \det(I + H)
+  = \sum_\sigma\mathrm{sign}(\sigma)\prod_i(\delta_{i\sigma(i)}
+    + H_{i\sigma(i)}) ,
+\]
+the identity permutation contributes
+$\prod_i(1 + H_{ii}) = 1 + \tr H + {}$products of at least two entries of
+$H$. Any other permutation moves at least two indices, so its term is a
+product containing at least two entries of $H$. Hence
+$\det(I + H) = 1 + \tr H + \rho(H)$, where $\rho$ is a polynomial all of
+whose monomials have degree at least $2$: $\abs{\rho(H)}\leq C\norm H^2$
+for $\norm H\leq1$. \emph{At $A$.} By multiplicativity,
+\[
+  \det(A + H) = \det(A)\det(I + A^{-1}H)
+  = \det(A)\bigl(1 + \tr(A^{-1}H) + \rho(A^{-1}H)\bigr) ,
+\]
+and $\rho(A^{-1}H) = o(H)$. \emph{Logarithm.} If $\det A > 0$,
+$\log\det(A + H) - \log\det A = \log(1 + u)$ with
+$u = \tr(A^{-1}H) + o(H)$, and $\log(1 + u) = u + o(u)$.
+\end{proof}
+
+\begin{remark}[Where the transposes of matrix calculus come from]
+\label{differential:rem:frobenius}
+The differential of the determinant at $A$ is the linear form
+$H\mapsto\tr(CH)$ with $C = \det(A)A^{-1}$. Tables of matrix derivatives
+state instead that ``the derivative of $\det A$ with respect to $A$ is
+$\det(A)A^{-\top}$''. That matrix is the Riesz representative of the same
+linear form for the inner product $\inner XY = \tr(X^\top Y)$ on the space
+of matrices, since $\tr(CH) = \inner{C^\top}H$. The transpose is the price
+of storing a covector as a vector, here as everywhere else
+(\cref{ch:inner-products}).
+\end{remark}
+
+\section{Layers and linearized models}\label{differential:sec:ml}
+
+\begin{mlthread}[Machine learning: differentials of the usual layers]
+\begin{itemize}[nosep]
+  \item \emph{Affine layer} $f(x) = Wx + b$. As a function of the input
+        it is affine: $Df(x) = W$ at every $x$. As a function of the
+        parameters $(W, b)$, for a fixed input, it is affine as well:
+        its differential is $(H, \beta)\mapsto Hx + \beta$. As a function
+        of both, by \cref{differential:prop:bilinear},
+        $(H, \beta, \xi)\mapsto Hx + W\xi + \beta$.
+  \item \emph{Activation} applied to each coordinate,
+        $\sigma(x)_i = s(x_i)$ with $s$ of class $C^1$:
+        $D\sigma(x) = \diag\bigl(s'(x_1),\dots,s'(x_n)\bigr)$ by
+        \cref{differential:cor:c1}. For the ReLU, $s(t) = \max(t, 0)$ is
+        not differentiable at $0$, so $\sigma$ is not differentiable at
+        the points having a zero coordinate. Libraries return $0$ there:
+        a convention, not a derivative.
+  \item \emph{Softmax} $p(z)_i = e^{z_i}/\sum_ke^{z_k}$:
+        $\partial_jp_i = p_i(\delta_{ij} - p_j)$, so
+        \[
+          Dp(z) = \diag(p) - pp^\top .
+        \]
+        It sends the vector $(1,\dots,1)$ to $0$, because adding the same
+        constant to all logits does not change $p$, and its image lies in
+        the hyperplane $\sum_ih_i = 0$, the direction of the simplex
+        (\cref{affine-spaces:ex:simplex}).
+  \item \emph{Cross-entropy on logits},
+        $\ell(z) = -z_y + \log\sum_ke^{z_k}$ for the label $y$: its
+        differential is the row $[\dd\ell(z)] = (p - e_y)^\top$, where
+        $e_y$ is the one-hot column of the label. It is a covector on the
+        space of logits. Its entries are those of the difference $p - y$
+        of \cref{affine-spaces:ex:simplex}; that they sum to zero says
+        that this covector vanishes on $(1,\dots,1)$.
+\end{itemize}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: the linearized model]
+Let $f(\theta, x)$ be the output of a network with parameters $\theta$ in
+an affine space $\Theta$ with direction $T$, and let $\theta_0$ be the
+parameters at initialization. For each input $x$, the tangent affine map
+at $\theta_0$ of $\theta\mapsto f(\theta, x)$ is
+\[
+  f_{\mathrm{lin}}(\theta, x)
+  = f(\theta_0, x) + D_\theta f(\theta_0, x)(\theta - \theta_0) .
+\]
+It is affine in the parameters, though not in the input: a linear model
+on the features $x\mapsto D_\theta f(\theta_0, x)$, a row of $\dim T$
+numbers for a scalar output. By definition
+$f - f_{\mathrm{lin}} = o(\theta - \theta_0)$. Very wide networks trained
+by gradient descent stay close enough to $\theta_0$ for the linearized
+model to describe them (Jacot, Gabriel and Hongler, 2018; Lee et al.,
+2019). The kernel of that theory,
+$K(x, x') = D_\theta f(\theta_0, x)\,\adj{D_\theta f(\theta_0, x')}$,
+uses an adjoint, hence an inner product on $T$: the dot product of the
+coordinates in which the parameters happen to be stored.
+\end{mlthread}
+
+\paragraph{Checking a differential numerically.} By
+\cref{differential:cor:directional}, $Df(a)v$ is approximated by the
+quotient $\bigl(f(a + tv) - f(a)\bigr)/t$ for small $t$. This is the
+standard test of a hand-written derivative, and the notebook uses it
+throughout. The step $t$ cannot be taken arbitrarily small: the
+subtraction loses digits, and in double precision the best accuracy of
+this quotient is about $10^{-8}$, reached near $t = 10^{-8}$. The
+symmetric quotient $\bigl(f(a + tv) - f(a - tv)\bigr)/2t$ does better.
+
+\section{Where the chapter leads}\label{differential:sec:outlook}
+
+This chapter defined the differential and computed it for single maps.
+\Cref{ch:chain-rule-autodiff} proves the chain rule, of which
+\cref{differential:thm:velocity} is a special case, and derives from it
+the two modes of automatic differentiation: vectors are pushed forward by
+$Df(a)$, covectors are pulled back by $\dual{Df(a)}$.
+\Cref{ch:gradient-hessian} adds an inner product, defines the gradient
+and studies the second differential. \Cref{ch:contractions-newton} proves
+the mean value inequality, the quantitative form of ``$f$ is close to its
+tangent affine map''.
+
+\paragraph{Sources.} Loomis and Sternberg define the differential in
+\S3.6 of \emph{Advanced Calculus}, for maps between normed linear spaces,
+after a section on the classes $O$ and $o$ of ``infinitesimals'' (\S3.5).
+Their \S3.7 treats tangent vectors of arcs and directional derivatives
+(Theorem~7.2 is \cref{differential:thm:velocity}), \S3.8 product spaces,
+and \S3.9 partial derivatives in $\R^n$ (Theorems~9.2 and~9.3 correspond
+to \cref{differential:thm:jacobian,differential:thm:c1}); the tangent
+plane to a graph is their Theorem~10.2. Hubbard and Hubbard define the
+derivative as a linear transformation in \S1.7 (Definition~1.7.9; the
+Jacobian matrix is Theorem~1.7.10), where the examples $A\mapsto A^2$ and
+$A\mapsto A^{-1}$ are Example~1.7.17 and Proposition~1.7.18. Their
+Theorem~1.9.8 is \cref{differential:thm:c1}, and the derivative of the
+determinant is their Theorem~4.8.15. Neither book works in affine
+spaces: both differentiate maps between vector spaces. The references on
+linearized networks are A.~Jacot, F.~Gabriel and C.~Hongler, Neural
+tangent kernel: convergence and generalization in neural networks,
+NeurIPS, 2018, and J.~Lee et al., Wide neural networks of any depth
+evolve as linear models under gradient descent, NeurIPS, 2019.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{06-differential.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item $f$ is differentiable at $a$ if
+        $f(a + h) = f(a) + Df(a)h + o(h)$ with $Df(a):V\to W$ linear. The
+        differential is unique, and it is the linear part of the tangent
+        affine map. No origin, basis or inner product is involved.
+  \item $Df(a)$ sends the velocity of a curve through $a$ to the velocity
+        of its image. The tangent space of an affine space at any point is
+        $V$.
+  \item In bases, the matrix of $Df(a)$ is the Jacobian matrix of partial
+        derivatives; it changes as $Q^{-1}JP$. Existence of partial or
+        directional derivatives does not imply differentiability;
+        continuity of the partial derivatives does.
+  \item For a scalar function, $\dd f(a)$ is a covector with components
+        $\partial_if(a)$, and $\dd f(a) = \sum_i\partial_if(a)\,\dd x_i$.
+        It vanishes at local extrema.
+  \item The tangent space of a graph is a vector subspace; the tangent
+        flat is the affine subspace through the point with that
+        direction.
+  \item Coordinate-free computations: $DB(a, b)(h, k) = B(h, b) + B(a, k)$
+        for bilinear $B$; $D(A^{-1})H = -A^{-1}HA^{-1}$;
+        $\dd(\det)(A)H = \det(A)\tr(A^{-1}H)$.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{differential:exr:1}
+Let $f(x, y) = (x^2 - y^2, 2xy)$. Write the Jacobian matrix of $f$ at
+$a = (1, 2)$. For $h = (0.1, -0.1)$ compute $f(a + h)$,
+$f(a) + Df(a)h$ and the remainder $r(h)$. Find the remainder $r(h)$ in
+closed form for every $h$ and check directly that it is $o(h)$.
+\solutionlink{differential:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{differential:exr:2}
+\begin{enumerate}[nosep]
+  \item Show that no norm on a non-zero vector space is differentiable at
+        $0$.
+  \item Show that $\norm\cdot_1$ on $\R^2$ is not differentiable at
+        $(1, 0)$, and find its differential at $(1, 2)$.
+\end{enumerate}
+\solutionlink{differential:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{differential:exr:3}
+Let $f(x, y) = x^2y/(x^2 + y^2)$ for $(x, y)\neq(0, 0)$ and
+$f(0, 0) = 0$. Show that $f$ is continuous at the origin, that $D_vf(0)$
+exists for every $v$, and that $f$ is not differentiable at the origin.
+\solutionlink{differential:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{differential:exr:4}
+In the pitfall of \cref{differential:sec:jacobian}, write the change of
+basis matrix $P$ from the coordinates $(x_1, x_2)$ to $(u_1, u_2)$, and
+recover both partial derivatives $\partial f/\partial u_1$ and
+$\partial f/\partial u_2$ from the row $[\dd f]$ in the coordinates $x$
+by the rule of \cref{differential:prop:components}.
+\solutionlink{differential:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{differential:exr:5}
+Compute the differentials of the following maps on the space of
+$n\times n$ matrices, directly from the definition:
+(1) $f(A) = A^3$; (2) $g(A) = A^\top A$; (3) $k(A) = \tr(A^\top A)$.
+\solutionlink{differential:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{differential:exr:6}
+Let $A = \begin{bsmallmatrix}2 & 1\\1 & 1\end{bsmallmatrix}$ and
+$H = \begin{bsmallmatrix}0 & 1\\0 & 0\end{bsmallmatrix}$. Compute
+$D\iota(A)H$ for the inverse map $\iota$ and $\dd(\det)(A)(H)$ with
+\cref{differential:prop:inverse,differential:prop:det}, and check both
+results by computing $(A + tH)^{-1}$ and $\det(A + tH)$ explicitly.
+\solutionlink{differential:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{differential:exr:7}
+For the logits $z = (0, 0, \ln2)$, compute the softmax $p(z)$, the matrix
+of $Dp(z)$, and the row $[\dd\ell(z)]$ of the cross-entropy for the label
+$y = 3$. Check that $Dp(z)$ sends $(1, 1, 1)$ to $0$ and that the entries
+of each of its columns sum to $0$.
+\solutionlink{differential:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{differential:exr:8}
+Let $f(x, y) = x^2 + xy + y^2 - 3x$ on $\R^2$.
+\begin{enumerate}[nosep]
+  \item Find its critical point.
+  \item Without computing, explain why the same point is found if the
+        computation is done in the coordinates $u = x + y$, $v = y$, and
+        then verify it.
+\end{enumerate}
+\solutionlink{differential:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{differential:exr:9}
+A model with two parameters and a scalar input is
+$f(w, x) = w_2\tanh(w_1x)$.
+\begin{enumerate}[nosep]
+  \item Compute the row $[\dd_wf(w, x)]$ of its differential with respect
+        to the parameters.
+  \item Write the linearized model at $w^0 = (0, 1)$. What family of
+        functions of $x$ does it describe?
+  \item Same question at $w^0 = (1, 1)$. Which features of $x$ does the
+        linearized model use?
+\end{enumerate}
+\solutionlink{differential:exr:9}
+\end{exercise}
 \end{notechapter}

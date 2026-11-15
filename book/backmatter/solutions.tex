@@ -727,3 +727,143 @@ rank at most $2$, both are at least $1$. All four bounds are attained by
 the truncated decompositions. By
 \cref{spectral-svd:prop:minmax-sv}(1), the singular values of $A + E$ lie
 in $[4.9, 5.1]$, $[2.9, 3.1]$ and $[0.9, 1.1]$.
+
+\section{\nameref*{ch:differential}}
+
+\solution{differential:exr:1}
+The partial derivatives are continuous, so $f$ is differentiable and
+\[
+  J = \begin{bmatrix}2x & -2y\\2y & 2x\end{bmatrix}_{(1, 2)}
+  = \begin{bmatrix}2 & -4\\4 & 2\end{bmatrix} .
+\]
+$f(a) = (-3, 4)$ and $Jh = (0.2 + 0.4, 0.4 - 0.2) = (0.6, 0.2)$, so
+$f(a) + Df(a)h = (-2.4, 4.2)$, whereas
+$f(a + h) = f(1.1, 1.9) = (1.21 - 3.61, 4.18) = (-2.4, 4.18)$. The
+remainder is $r(h) = (0, -0.02)$. In general, expanding
+$f(a + h)$ gives $r(h) = (h_1^2 - h_2^2, 2h_1h_2)$, which does not depend
+on $a$, and $\norm{r(h)}_\infty\leq2\norm h_\infty^2$: for
+$\norm h_\infty < \varepsilon/2$ this is at most
+$\varepsilon\norm h_\infty$.
+
+\solution{differential:exr:2}
+\begin{enumerate}[nosep]
+  \item Let $N(v) = \norm v$ and $v\neq0$. Then
+        $\bigl(N(tv) - N(0)\bigr)/t = \abs t\norm v/t$ equals $\norm v$
+        for $t > 0$ and $-\norm v$ for $t < 0$: it has no limit as
+        $t\to0$, so $D_vN(0)$ does not exist and $N$ is not differentiable
+        at $0$ (\cref{differential:cor:directional}).
+  \item At $a = (1, 0)$ and along $v = (0, 1)$,
+        $\norm{a + tv}_1 = 1 + \abs t$, and $\abs t/t$ has no limit: not
+        differentiable. Near $(1, 2)$ both coordinates are positive, so
+        $\norm x_1 = x_1 + x_2$ there: the function coincides with a
+        linear form near that point, and its differential is that form,
+        $h\mapsto h_1 + h_2$, with row $[1\ \ 1]$.
+\end{enumerate}
+
+\solution{differential:exr:3}
+Since $x^2\leq x^2 + y^2$, $\abs{f(x, y)}\leq\abs y$, which tends to $0$
+at the origin: $f$ is continuous there. For $v\neq0$ and $t\neq0$,
+$f(tv) = t\,v_1^2v_2/(v_1^2 + v_2^2) = t\,f(v)$, so $D_vf(0) = f(v)$
+exists. If $f$ were differentiable at $0$, the map $v\mapsto D_vf(0)$
+would be linear (\cref{differential:cor:directional}). But
+$f(1, 0) = f(0, 1) = 0$ and $f(1, 1) = \frac12$.
+
+\solution{differential:exr:4}
+The old coordinates in terms of the new ones are $x_1 = u_1$ and
+$x_2 = u_2 - u_1$, that is, $x = Pu$ with
+$P = \begin{bsmallmatrix}1 & 0\\-1 & 1\end{bsmallmatrix}$. The columns of
+$P$ are the new basis vectors: $e'_1 = e_1 - e_2$ and $e'_2 = e_2$. In the
+coordinates $x$, $[\dd f] = [x_2\ \ x_1]$, and
+\[
+  [\dd f]P = \begin{bmatrix}x_2 - x_1 & x_1\end{bmatrix}
+  = \begin{bmatrix}u_2 - 2u_1 & u_1\end{bmatrix} ,
+\]
+which are the partial derivatives of $u_1u_2 - u_1^2$ with respect to
+$u_1$ and $u_2$.
+
+\solution{differential:exr:5}
+\begin{enumerate}[nosep]
+  \item $(A + H)^3 = A^3 + (A^2H + AHA + HA^2) + \rho(H)$, where
+        $\rho(H)$ is the sum of the four products containing $H$ at least
+        twice, of norm at most $3\norm A\norm H^2 + \norm H^3$. So
+        $Df(A)H = A^2H + AHA + HA^2$.
+  \item $g(A) = B(A, A)$ with the bilinear map $B(X, Y) = X^\top Y$, so by
+        \cref{differential:cor:quadratic},
+        $Dg(A)H = H^\top A + A^\top H$.
+  \item $k = \tr\circ g$ and the trace is linear, so the remainder of
+        $k$ is the trace of that of $g$, which is $o(H)$
+        (\cref{differential:lem:little-o}):
+        $\dd k(A)(H) = \tr(H^\top A + A^\top H) = 2\tr(A^\top H)$. This is
+        $2\inner AH$ for the inner product of
+        \cref{differential:rem:frobenius}, in agreement with
+        \cref{differential:ex:quadratic}.
+\end{enumerate}
+
+\solution{differential:exr:6}
+$\det A = 1$ and $A^{-1} = \begin{bsmallmatrix}1 & -1\\-1 & 2
+\end{bsmallmatrix}$. Then
+$A^{-1}H = \begin{bsmallmatrix}0 & 1\\0 & -1\end{bsmallmatrix}$, and
+\[
+  D\iota(A)H = -A^{-1}HA^{-1}
+  = \begin{bmatrix}1 & -2\\-1 & 2\end{bmatrix},
+  \qquad
+  \dd(\det)(A)(H) = \det(A)\tr(A^{-1}H) = -1 .
+\]
+Directly, $A + tH = \begin{bsmallmatrix}2 & 1 + t\\1 & 1
+\end{bsmallmatrix}$ has determinant $1 - t$, with derivative $-1$ at
+$t = 0$, and
+\[
+  (A + tH)^{-1} = \frac1{1 - t}
+  \begin{bmatrix}1 & -(1 + t)\\-1 & 2\end{bmatrix} ,
+\]
+whose entries have the derivatives $1$, $-2$, $-1$ and $2$ at $t = 0$.
+
+\solution{differential:exr:7}
+The exponentials are $1$, $1$ and $2$, so
+$p = (\frac14, \frac14, \frac12)$ and
+\[
+  Dp(z) = \diag(p) - pp^\top
+  = \frac1{16}\begin{bmatrix}3 & -1 & -2\\-1 & 3 & -2\\-2 & -2 & 4
+  \end{bmatrix} .
+\]
+Each row sums to $0$, which is $Dp(z)(1, 1, 1)^\top = 0$, and each
+column sums to $0$, which says that the image lies in the hyperplane
+$h_1 + h_2 + h_3 = 0$. For the label $y = 3$,
+$[\dd\ell(z)] = (p - e_3)^\top = [\frac14\ \ \frac14\ \ {-\frac12}]$.
+
+\solution{differential:exr:8}
+\begin{enumerate}[nosep]
+  \item $[\dd f] = [2x + y - 3\ \ \ x + 2y]$. It vanishes when
+        $x = -2y$ and $-3y = 3$: at $(x, y) = (2, -1)$.
+  \item A critical point is a point where the linear form $\dd f(a)$ is
+        zero, and this does not involve coordinates: the row in the new
+        coordinates is $[\dd f]P$, zero if and only if $[\dd f]$ is.
+        Verification: $x = u - v$ and $y = v$ give
+        $f = u^2 - uv + v^2 - 3u + 3v$, with partial derivatives
+        $2u - v - 3$ and $-u + 2v + 3$. They vanish at
+        $(u, v) = (1, -1)$, which is the point $(x, y) = (2, -1)$.
+\end{enumerate}
+
+\solution{differential:exr:9}
+\begin{enumerate}[nosep]
+  \item With $\tanh' = 1 - \tanh^2$,
+        \[
+          [\dd_wf(w, x)]
+          = \begin{bmatrix}w_2x\bigl(1 - \tanh^2(w_1x)\bigr)
+            & \tanh(w_1x)\end{bmatrix} .
+        \]
+  \item At $w^0 = (0, 1)$: $f(w^0, x) = 0$ and the row is $[x\ \ 0]$, so
+        $f_{\mathrm{lin}}(w, x) = w_1x$. The linearized model is linear
+        regression through the origin, and $w_2$ has no effect to first
+        order.
+  \item At $w^0 = (1, 1)$: the row is
+        $[x(1 - \tanh^2x)\ \ \tanh x]$, and
+        \begin{align*}
+          f_{\mathrm{lin}}(w, x)
+          &= \tanh x + (w_1 - 1)\,x(1 - \tanh^2x) + (w_2 - 1)\tanh x\\
+          &= (w_1 - 1)\,x(1 - \tanh^2x) + w_2\tanh x .
+        \end{align*}
+        It is a linear model on the two features $x(1 - \tanh^2x)$ and
+        $\tanh x$, plus a fixed function. The features depend on the
+        point $w^0$ of linearization.
+\end{enumerate}
