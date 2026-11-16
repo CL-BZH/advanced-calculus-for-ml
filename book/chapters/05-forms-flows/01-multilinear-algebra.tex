@@ -4,21 +4,947 @@
 \chaptersubtitle{%
   Tensors, alternating forms and the determinant}
 
-\begin{chapterplan}
+\begin{chapterintro}
+Part~I studied linear maps and bilinear forms. This chapter studies
+functions of several vectors that are linear in each: tensors. Two
+kinds matter most. The symmetric ones are the higher differentials of
+\cref{ch:gradient-hessian}. The alternating ones, which change sign
+when two arguments are exchanged, measure signed lengths, areas and
+volumes: they are what will be integrated over curves, surfaces and
+manifolds in the rest of Part~V. Their algebra, the wedge product,
+contains the determinant, which appears here as the factor by which an
+operator multiplies volumes, with no basis in sight. The chapter ends
+with a careful account of which notions need which structure: nothing,
+an orientation, or an inner product. You will learn
 \begin{itemize}[nosep]
-  \item Multilinear maps and tensor products; tensors of type $(p,q)$ and how
-        their components change with the basis.
-  \item Alternating forms, the wedge product, bases and dimensions of
-        $\Lambda^kV^*$.
-  \item The determinant as the form of top degree; orientation.
-  \item The pull-back of forms: the dual operator once more.
-  \item What an inner product adds: the volume form, the Hodge star, and the
-        identifications of vectors with covectors.
+  \item multilinear maps, tensors of type $(p, q)$, their components and
+        how these change with the basis;
+  \item alternating forms and the wedge product, with the basis and the
+        dimension of $\Lambda^kV^*$;
+  \item the pull-back of forms and the determinant of an operator;
+  \item orientation;
+  \item what an inner product adds: the volume form and the Hodge star,
+        and with them the cross product of $\R^3$;
+  \item why a tensor is more than an array, and what that says about
+        Hessians and their eigenvalues.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:duality,ch:inner-products}: dual basis, dual
+operator, change of basis, bilinear forms, the Riesz map. Throughout,
+$V$ is a real vector space of dimension $n$, $e = (e_1,\dots,e_n)$ a
+basis and $e^* = (e_1^*,\dots,e_n^*)$ its dual basis.}
+\end{chapterintro}
+
+\section{Multilinear maps and tensors}\label{multilinear-algebra:sec:tensors}
+
+\begin{definition}[Multilinear map]\label{multilinear-algebra:def:multilinear}
+A map $T:V_1\times\dots\times V_k\to W$ between vector spaces is
+\emph{multilinear}, or $k$-linear, if it is linear in each argument when
+the others are fixed. A multilinear map with values in $\R$ is a
+\emph{multilinear form}.
+\end{definition}
+
+\begin{example}\label{multilinear-algebra:ex:multilinear}
+\begin{enumerate}[nosep]
+  \item A bilinear form (\cref{duality:def:bilinear}), in particular an
+        inner product; the evaluation $(\phi, v)\mapsto\phi(v)$ on
+        $V^*\times V$.
+  \item The second differential $D^2f(a)$, and more generally
+        $D^kf(a)$, a $k$-linear form on the space of displacements
+        (\cref{ch:gradient-hessian}).
+  \item The product of matrices $(A, B)\mapsto AB$, and the map
+        $(W, x)\mapsto Wx$ of a linear layer: a network is not linear
+        in its weights and inputs together, but each layer is linear in
+        each.
+  \item An attention score $(q, k)\mapsto q^\top Mk$, bilinear in the
+        query and the key.
+\end{enumerate}
+A multilinear map is not linear: $T(2u, 2v) = 4\,T(u, v)$.
+\end{example}
+
+\begin{definition}[Tensor]\label{multilinear-algebra:def:tensor}
+A \emph{tensor of type $(p, q)$} on $V$ is a multilinear form
+\[
+  T:\underbrace{V^*\times\dots\times V^*}_{p}
+    \times\underbrace{V\times\dots\times V}_{q}\to\R .
+\]
+Its \emph{components} in the basis $e$ are the $n^{p+q}$ numbers
+\[
+  T_{i_1\dots i_p;\,j_1\dots j_q}
+  = T\bigl(e_{i_1}^*,\dots,e_{i_p}^*,\,e_{j_1},\dots,e_{j_q}\bigr) .
+\]
+The \emph{tensor product} of a tensor $S$ of type $(p, q)$ and a tensor
+$T$ of type $(p', q')$ is the tensor of type $(p + p', q + q')$
+obtained by multiplying their values, each on its own arguments:
+$(S\otimes T)(\dots) = S(\dots)\,T(\dots)$.
+\end{definition}
+
+A tensor of type $(0, 1)$ is a covector. A tensor of type $(1, 0)$ is a
+linear form on $V^*$, that is, a vector (\cref{duality:thm:bidual}). A
+tensor of type $(0, 2)$ is a bilinear form. An operator $A:V\to V$ is a
+tensor of type $(1, 1)$, namely $(\phi, v)\mapsto\phi(Av)$, with
+components $e_i^*(Ae_j) = A_{ij}$. A tensor of type $(2, 0)$ is a
+bilinear form on covectors, like a covariance. For two covectors,
+$(\phi\otimes\psi)(u, v) = \phi(u)\,\psi(v)$; note that
+$\phi\otimes\psi\neq\psi\otimes\phi$ in general.
+
+\begin{theorem}[Components]\label{multilinear-algebra:thm:components}
+The tensors
+$e_{i_1}\otimes\dots\otimes e_{i_p}\otimes
+e_{j_1}^*\otimes\dots\otimes e_{j_q}^*$
+form a basis of the space of tensors of type $(p, q)$, which has
+dimension $n^{p+q}$; the coordinates of $T$ in this basis are its
+components. If $P$ is the change of basis matrix from $e$ to $e'$
+(\cref{duality:def:change}), the components in $e'$ are
+\[
+  T'_{i_1\dots i_p;\,j_1\dots j_q}
+  = \sum_{a, b}(P^{-1})_{i_1a_1}\cdots(P^{-1})_{i_pa_p}\;
+    P_{b_1j_1}\cdots P_{b_qj_q}\;T_{a_1\dots a_p;\,b_1\dots b_q} .
+\]
+\end{theorem}
+
+\begin{proof}
+Expanding each argument in the basis $e^*$ or $e$ and using
+multilinearity, $T(\phi_1,\dots,v_q)$ is the sum of the components of
+$T$ times the products of the components of the arguments; these
+products are the values of the proposed basis tensors. So they span,
+and evaluating a linear combination of them on basis vectors and
+covectors returns its coefficients, so they are independent. For the
+change of basis, substitute $e'_j = \sum_bP_{bj}e_b$ and
+$e'^{\,*}_i = \sum_a(P^{-1})_{ia}e_a^*$
+(\cref{duality:prop:covector-change}) in the definition of the
+components.
+\end{proof}
+
+\begin{keyidea}[One factor per index]
+Each index attached to a slot for covectors transforms with $P^{-1}$,
+like the components of a vector; each index attached to a slot for
+vectors transforms with $P$, like the components of a covector. The
+three rules of \cref{duality:prop:three} are the cases $(1, 1)$,
+$(0, 2)$ and $(2, 0)$ (\cref{multilinear-algebra:tab:types}). Many
+texts write the first kind of index as a superscript; this book writes
+all indices below and says in words what they are.
+\end{keyidea}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+type & example & in $e' = eP$ & invariant \\
+\midrule
+$(1, 0)$ & vector & $P^{-1}[v]$ & \\
+$(0, 1)$ & covector, differential & $[\phi]P$ & \\
+$(1, 1)$ & operator & $P^{-1}AP$ & trace, determinant, eigenvalues \\
+$(0, 2)$ & inner product, Hessian & $P^\top GP$
+  & symmetry, rank, signs \\
+$(2, 0)$ & covariance & $P^{-1}BP^{-\top}$ & symmetry, rank, signs \\
+$(0, n)$, alternating & volume form & $(\det P)\,c$
+  & sign, if $\det P > 0$ \\
+\bottomrule
+\end{tabular}
+\caption{Arrays of numbers with the same shape can represent tensors of
+different types. The type decides how the array changes with the basis,
+and therefore which numbers computed from it mean something. The last
+line is \cref{multilinear-algebra:thm:det}.}
+\label{multilinear-algebra:tab:types}
+\end{table}
+
+\begin{definition}[Contraction]\label{multilinear-algebra:def:contraction}
+The \emph{contraction} of a tensor of type $(p, q)$, with $p, q\geq1$,
+over one slot for covectors and one slot for vectors is the tensor of
+type $(p - 1, q - 1)$ obtained by putting $e_i^*$ and $e_i$ in these two
+slots and summing over $i$.
+\end{definition}
+
+\begin{proposition}\label{multilinear-algebra:prop:contraction}
+A contraction does not depend on the basis. The contraction of an
+operator is its trace; $\phi(v)$, $Av$ and $AB$ are contractions of
+$v\otimes\phi$, $A\otimes v$ and $A\otimes B$.
+\end{proposition}
+
+\begin{proof}
+In another basis the sum is
+\[
+  \sum_iT(\dots,e'^{\,*}_i,\dots,e'_i,\dots)
+  = \sum_{a, b}\Bigl(\sum_i(P^{-1})_{ia}P_{bi}\Bigr)\,
+    T(\dots,e_a^*,\dots,e_b,\dots) ,
+\]
+and the inner sum is $(PP^{-1})_{ba} = \delta_{ab}$. The examples are
+read off the components: $\sum_iA_{ii}$, $\sum_i\phi_iv_i$,
+$\sum_jA_{ij}v_j$, $\sum_jA_{ij}B_{jk}$.
+\end{proof}
+
+Two slots of the same kind cannot be contracted without more structure:
+$\sum_iG_{ii}$ is not invariant under $G\mapsto P^\top GP$. An inner
+product repairs this by converting one slot
+(\cref{multilinear-algebra:sec:metric}).
+
+\begin{mlthread}[Machine learning: a tensor is more than an array]
 \begin{itemize}[nosep]
-  \item Tensors in the mathematical sense versus multi-dimensional arrays.
-  \item Determinants and the change of volume in flows.
+  \item A \texttt{torch.Tensor} is an array of components. It records a
+        shape, not a type: nothing distinguishes the matrix of an
+        operator from the Gram matrix of a bilinear form. The
+        distinction lives in how the code uses it, and
+        \texttt{einsum} will happily sum over two indices of the same
+        kind.
+  \item \emph{Which numbers mean something.} The eigenvalues of an
+        operator are invariant. The eigenvalues of a bilinear form are
+        not: under a change of parameters $H\mapsto P^\top HP$ they
+        change, and only their signs survive
+        (\cref{spectral-svd:thm:sylvester}). So ``the largest eigenvalue of the
+        Hessian'', a common measure of the sharpness of a minimum,
+        depends on the parametrization. Rescaling one layer of a ReLU
+        network by $\alpha$ and the next by $1/\alpha$ leaves the
+        function unchanged and changes that number at will. Comparing
+        a Hessian $H$ with a metric $G$ gives the operator $G^{-1}H$,
+        of type $(1, 1)$, whose eigenvalues are invariant
+        (\cref{riemannian-optimization:prop:hessian}).
+  \item \emph{Rank.} A tensor of the form
+        $a\otimes b\otimes\dots$ has \emph{rank one}; the rank of a
+        tensor is the smallest number of rank-one terms that add up to
+        it. For type $(1, 1)$ this is the rank of the matrix, and a
+        low-rank adapter is a sum of $r$ terms $b_i\otimes a_i$
+        (\cref{spectral-svd:sec:low-rank}). The number of indices of an
+        array, which libraries sometimes call its rank, is the
+        \emph{order} $p + q$.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\section{Symmetric and alternating forms}
+\label{multilinear-algebra:sec:alternating}
+
+From now on we consider tensors of type $(0, k)$: $k$-linear forms on
+$V$. A permutation $\sigma$ of $\{1,\dots,k\}$ acts on them by permuting
+the arguments:
+$(\sigma T)(v_1,\dots,v_k) = T(v_{\sigma(1)},\dots,v_{\sigma(k)})$, and
+$\tau(\sigma T) = (\tau\sigma)T$.
+
+\begin{lemma}[Sign of a permutation]\label{multilinear-algebra:lem:sign}
+Let $\operatorname{sgn}(\sigma) = (-1)^N$, where $N$ is the number of
+pairs $i < j$ with $\sigma(i) > \sigma(j)$. Then
+$\operatorname{sgn}(\sigma\tau)
+= \operatorname{sgn}(\sigma)\operatorname{sgn}(\tau)$, and the exchange
+of two elements has sign $-1$.
+\end{lemma}
+
+\begin{proof}
+Let $\Delta(x_1,\dots,x_k) = \prod_{i<j}(x_j - x_i)$. Permuting the
+variables by $\sigma$ permutes the factors up to sign, one change of
+sign for each pair counted by $N$:
+$\Delta(x_{\sigma(1)},\dots,x_{\sigma(k)})
+= \operatorname{sgn}(\sigma)\Delta(x)$. Applying this twice gives the
+product rule. The exchange of two neighbours has $N = 1$, and the
+exchange of $i$ and $j$ is a product of $2(j - i) - 1$ exchanges of
+neighbours.
+\end{proof}
+
+\begin{definition}[Symmetric, alternating]
+\label{multilinear-algebra:def:alternating}
+A $k$-linear form $T$ is \emph{symmetric} if $\sigma T = T$ for every
+permutation $\sigma$, and \emph{alternating} if
+$\sigma T = \operatorname{sgn}(\sigma)T$. The alternating $k$-linear
+forms are also called \emph{$k$-forms}; they form a vector space
+$\Lambda^kV^*$, with $\Lambda^0V^* = \R$ and $\Lambda^1V^* = V^*$.
+\end{definition}
+
+The differentials $D^kf(a)$ are symmetric
+(\cref{gradient-hessian:thm:schwarz}). The rest of the chapter is about
+the alternating forms.
+
+\begin{proposition}\label{multilinear-algebra:prop:alternating}
+For a $k$-linear form $\omega$ the following are equivalent:
+\begin{enumerate}[nosep]
+  \item $\omega$ is alternating;
+  \item $\omega$ changes sign when two of its arguments are exchanged;
+  \item $\omega(v_1,\dots,v_k) = 0$ when two of the $v_i$ are equal;
+  \item $\omega(v_1,\dots,v_k) = 0$ when $v_1,\dots,v_k$ are linearly
+        dependent.
+\end{enumerate}
+In particular $\Lambda^kV^* = \{0\}$ for $k > n$.
+\end{proposition}
+
+\begin{proof}
+(1)$\Rightarrow$(2) is \cref{multilinear-algebra:lem:sign}, and
+(2)$\Rightarrow$(1) because every permutation is a product of
+exchanges. (2)$\Rightarrow$(3): exchanging two equal arguments gives
+$\omega(\dots) = -\omega(\dots)$. (3)$\Rightarrow$(2): expand
+$0 = \omega(\dots,u + v,\dots,u + v,\dots)$ by linearity; two of the
+four terms vanish. (3)$\Rightarrow$(4): if, say,
+$v_1 = \sum_{i>1}c_iv_i$, expand in the first argument; each term has
+two equal arguments. (4)$\Rightarrow$(3) is clear.
+\end{proof}
+
+For any $k$-linear form $T$ put
+$\mathcal A(T) = \sum_\sigma\operatorname{sgn}(\sigma)\,\sigma T$, the
+sum over all $k!$ permutations. For every permutation $\tau$,
+\[
+  \tau\mathcal A(T)
+  = \sum_\sigma\operatorname{sgn}(\sigma)\,(\tau\sigma)T
+  = \operatorname{sgn}(\tau)\,\mathcal A(T) , \qquad
+  \mathcal A(\tau T) = \operatorname{sgn}(\tau)\,\mathcal A(T) ,
+\]
+by the change of index $\rho = \tau\sigma$, respectively
+$\rho = \sigma\tau$. So $\mathcal A(T)$ is alternating, and
+$\mathcal A(\omega) = k!\,\omega$ if $\omega$ already is.
+
+\section{The wedge product}\label{multilinear-algebra:sec:wedge}
+
+\begin{definition}[Wedge product]\label{multilinear-algebra:def:wedge}
+The \emph{wedge product} of $\omega\in\Lambda^kV^*$ and
+$\eta\in\Lambda^lV^*$ is the $(k + l)$-form
+\[
+  \omega\wedge\eta = \frac1{k!\,l!}\,\mathcal A(\omega\otimes\eta) ,
+\]
+that is,
+$(\omega\wedge\eta)(v_1,\dots,v_{k+l}) = \frac1{k!\,l!}\sum_\sigma
+\operatorname{sgn}(\sigma)\,\omega(v_{\sigma(1)},\dots,v_{\sigma(k)})\,
+\eta(v_{\sigma(k+1)},\dots,v_{\sigma(k+l)})$.
+\end{definition}
+
+For two covectors,
+$(\phi\wedge\psi)(u, v) = \phi(u)\psi(v) - \phi(v)\psi(u)$.
+
+\begin{theorem}[Rules for the wedge product]
+\label{multilinear-algebra:thm:wedge}
+\begin{enumerate}[nosep]
+  \item The wedge product is bilinear.
+  \item It is associative, and for forms $\omega_i$ of degrees $k_i$,
+        $\omega_1\wedge\dots\wedge\omega_r
+        = \frac1{k_1!\cdots k_r!}\,
+        \mathcal A(\omega_1\otimes\dots\otimes\omega_r)$.
+  \item $\eta\wedge\omega = (-1)^{kl}\,\omega\wedge\eta$ for forms of
+        degrees $k$ and $l$. In particular
+        $\phi\wedge\psi = -\psi\wedge\phi$ and $\phi\wedge\phi = 0$ for
+        covectors.
+  \item For covectors $\phi_1,\dots,\phi_k$ and vectors
+        $v_1,\dots,v_k$,
+        \[
+          (\phi_1\wedge\dots\wedge\phi_k)(v_1,\dots,v_k)
+          = \sum_\sigma\operatorname{sgn}(\sigma)\,
+            \phi_1(v_{\sigma(1)})\cdots\phi_k(v_{\sigma(k)})
+          = \det\bigl[\phi_i(v_j)\bigr] .
+        \]
+\end{enumerate}
+\end{theorem}
+
+In (4), $\det M = \sum_\sigma\operatorname{sgn}(\sigma)
+M_{1\sigma(1)}\cdots M_{k\sigma(k)}$ is the determinant of a square
+matrix, by Leibniz's formula, which we take as its definition.
+
+\begin{proof}
+(1) is clear. (2) Let $T$ be an $m$-linear form and $S$ any multilinear
+form. Since
+$\mathcal A(T)\otimes S
+= \sum_\tau\operatorname{sgn}(\tau)\,\hat\tau(T\otimes S)$, where
+$\hat\tau$ permutes the first $m$ arguments as $\tau$ does and fixes
+the others, the rule
+$\mathcal A(\hat\tau U) = \operatorname{sgn}(\tau)\mathcal A(U)$ gives
+\[
+  \mathcal A\bigl(\mathcal A(T)\otimes S\bigr)
+  = m!\,\mathcal A(T\otimes S) ,
+  \qquad\text{and likewise}\qquad
+  \mathcal A\bigl(S\otimes\mathcal A(T)\bigr)
+  = m!\,\mathcal A(S\otimes T) .
+\]
+Hence, for forms of degrees $k, l, m$, both
+$(\omega\wedge\eta)\wedge\theta$ and $\omega\wedge(\eta\wedge\theta)$
+are equal to
+$\frac1{k!\,l!\,m!}\mathcal A(\omega\otimes\eta\otimes\theta)$; the
+general formula follows by induction. (3)
+$\eta\otimes\omega = \rho(\omega\otimes\eta)$ for the permutation
+$\rho$ that moves the last $k$ arguments in front of the first $l$; it
+is a product of $kl$ exchanges of neighbours, so
+$\mathcal A(\eta\otimes\omega) = (-1)^{kl}\mathcal A(\omega\otimes\eta)$.
+(4) is (2) with all $k_i = 1$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.05]
+  \begin{scope}
+    \clip (-0.6,-0.6) rectangle (4.6,3.9);
+    \foreach \k in {-1,...,5}
+      \draw[bookdef!70] (\k,-1) -- (\k,4.5);
+    \foreach \k in {-4,...,5}
+      \draw[bookpitfall!60] (-1,\k - 0.5) -- (5,\k + 2.5);
+    \fill[bookaccent!30, opacity=0.8] (0,0) -- (2,1) -- (2.5,3)
+      -- (0.5,2) -- cycle;
+    \draw[bookaccent, thick] (0,0) -- (2,1) -- (2.5,3) -- (0.5,2)
+      -- cycle;
+    \draw[->, very thick] (0,0) -- (2,1) node[below right=-1pt] {$u$};
+    \draw[->, very thick] (0,0) -- (0.5,2) node[left] {$v$};
+  \end{scope}
+  \node[bookdef] at (2.0,-0.9) {level lines of $\phi$};
+  \node[bookpitfall, rotate=26.6] at (5.0,2.2) {level lines of $\psi$};
+\end{tikzpicture}
+\caption{Two covectors of the plane, each drawn by its level lines at
+integer values, cut the plane into cells. The number
+$(\phi\wedge\psi)(u, v)$ is the number of cells covered by the
+parallelogram on $u$ and $v$, counted with a sign that changes when $u$
+and $v$ are exchanged. Here $\phi(u) = 2$, $\phi(v) = 0.5$,
+$\psi(u) = 0$, $\psi(v) = 1.75$, and the parallelogram covers
+$2\cdot1.75 - 0.5\cdot0 = 3.5$ cells. No length or angle is involved.}
+\label{multilinear-algebra:fig:cells}
+\end{figure}
+
+For an increasing multi-index $I = (i_1 < \dots < i_k)$ write
+$e_I^* = e_{i_1}^*\wedge\dots\wedge e_{i_k}^*$ and
+$e_I = (e_{i_1},\dots,e_{i_k})$.
+
+\begin{theorem}[Basis of $\Lambda^kV^*$]\label{multilinear-algebra:thm:basis}
+The forms $e_I^*$, for the increasing multi-indices $I$ of length $k$,
+are a basis of $\Lambda^kV^*$, and
+\[
+  \omega = \sum_I\omega(e_I)\,e_I^*\qquad\text{for every }
+  \omega\in\Lambda^kV^* .
+\]
+So $\dim\Lambda^kV^* = \binom nk$; in particular $\Lambda^nV^*$ is a
+line, spanned by $e_1^*\wedge\dots\wedge e_n^*$.
+\end{theorem}
+
+\begin{proof}
+By (4) of \cref{multilinear-algebra:thm:wedge}, for increasing $I$ and
+$J$ the number $e_I^*(e_J)$ is the determinant of a matrix of zeros and
+ones, which is the identity if $I = J$ and has a zero row otherwise:
+$e_I^*(e_J) = \delta_{IJ}$. So the $e_I^*$ are independent, and the
+form $\omega - \sum_I\omega(e_I)e_I^*$ vanishes on every $e_J$ with $J$
+increasing. An alternating form that vanishes on these vanishes on all
+families of basis vectors, by reordering or by repetition, hence
+everywhere by multilinearity.
+\end{proof}
+
+\begin{corollary}\label{multilinear-algebra:cor:independent}
+Covectors $\phi_1,\dots,\phi_k$ are linearly independent if and only
+if $\phi_1\wedge\dots\wedge\phi_k\neq0$.
+\end{corollary}
+
+\begin{proof}
+If they are dependent, expand one of them in terms of the others: every
+term has a repeated factor and vanishes by (3) of
+\cref{multilinear-algebra:thm:wedge}. If they are independent,
+complete them into a basis of $V^*$, which is the dual of a basis of
+$V$ (\cref{duality:thm:bidual}); the wedge product is then one of the
+basis forms of the theorem.
+\end{proof}
+
+\begin{example}[Forms on $\R^3$]\label{multilinear-algebra:ex:r3}
+The spaces $\Lambda^kV^*$ have dimensions $1, 3, 3, 1$ for
+$k = 0, 1, 2, 3$. A $2$-form is
+$\omega = a\,e_2^*\wedge e_3^* + b\,e_3^*\wedge e_1^*
++ c\,e_1^*\wedge e_2^*$, and $(e_1^*\wedge e_2^*)(u, v)
+= u_1v_2 - u_2v_1$ is the signed area of the shadow of the parallelogram
+on $u$ and $v$ in the plane of the first two coordinates
+(\cref{multilinear-algebra:fig:shadow}). That $2$-forms and vectors of
+$\R^3$ both have three components is a coincidence of dimension $3$,
+exploited in \cref{multilinear-algebra:sec:metric}.
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, x={(1.25cm,0cm)}, y={(0.62cm,0.44cm)},
+    z={(0cm,1.1cm)}]
+  \coordinate (A) at (0.5,0.4,1.5);
+  \coordinate (U) at (2.7,0.8,2.0);
+  \coordinate (V) at (1.0,2.4,2.4);
+  \coordinate (W) at (3.2,2.8,2.9);
+  \coordinate (A0) at (0.5,0.4,0);
+  \coordinate (U0) at (2.7,0.8,0);
+  \coordinate (V0) at (1.0,2.4,0);
+  \coordinate (W0) at (3.2,2.8,0);
+  \fill[gray!30] (A0) -- (U0) -- (W0) -- (V0) -- cycle;
+  \draw[gray] (A0) -- (U0) -- (W0) -- (V0) -- cycle;
+  \draw[->] (0,0,0) -- (4.3,0,0) node[right] {$x_1$};
+  \draw[->] (0,0,0) -- (0,2.8,0) node[above right=-2pt] {$x_2$};
+  \draw[->] (0,0,0) -- (0,0,2.6) node[above] {$x_3$};
+  \foreach \a/\b in {A/A0, U/U0, V/V0, W/W0}
+    \draw[densely dotted] (\a) -- (\b);
+  \fill[bookaccent!35, opacity=0.85] (A) -- (U) -- (W) -- (V) -- cycle;
+  \draw[bookaccent, thick] (A) -- (U) -- (W) -- (V) -- cycle;
+  \draw[->, very thick] (A) -- (U) node[pos=0.8, below] {$u$};
+  \draw[->, very thick] (A) -- (V) node[midway, above left=-2pt] {$v$};
+  \node[gray!50!black] at (1.9,1.6,0) {shadow};
+\end{tikzpicture}
+\caption{The $2$-form $e_1^*\wedge e_2^*$ of $\R^3$ measures the signed
+area of the shadow of a parallelogram on the horizontal plane. The
+three basis $2$-forms measure the three shadows; a general $2$-form is a
+weighted sum of them.}
+\label{multilinear-algebra:fig:shadow}
+\end{figure}
+
+\section{Pull-back and the determinant}\label{multilinear-algebra:sec:det}
+
+\begin{definition}[Pull-back]\label{multilinear-algebra:def:pullback}
+Let $A:V\to W$ be linear. The \emph{pull-back} of
+$\omega\in\Lambda^kW^*$ by $A$ is the $k$-form on $V$
+\[
+  (A^*\omega)(v_1,\dots,v_k) = \omega(Av_1,\dots,Av_k) .
+\]
+\end{definition}
+
+For $k = 1$ this is the dual operator: $A^*\psi = \psi\circ A
+= \dual A\psi$ (\cref{duality:def:dual-operator}). The pull-back is
+linear in $\omega$, and directly from the definitions
+\[
+  (AB)^* = B^*A^* , \qquad
+  A^*(\omega\wedge\eta) = A^*\omega\wedge A^*\eta .
+\]
+(In this part the star on a linear map means pull-back. The adjoint of
+\cref{ch:inner-products}, which needs inner products, will not be
+used.)
+
+\begin{definition}[Determinant of an operator]
+\label{multilinear-algebra:def:det}
+Let $A:V\to V$ be linear. Since $\Lambda^nV^*$ is a line, the linear map
+$A^*$ on it is the multiplication by a number, the
+\emph{determinant} of $A$:
+\[
+  A^*\omega = (\det A)\,\omega\qquad\text{for all }\omega\in\Lambda^nV^* .
+\]
+\end{definition}
+
+\begin{theorem}\label{multilinear-algebra:thm:det}
+\begin{enumerate}[nosep]
+  \item $\det(AB) = \det A\,\det B$ and $\det I = 1$.
+  \item $A$ is invertible if and only if $\det A\neq0$, and then
+        $\det(A^{-1}) = 1/\det A$.
+  \item In any basis, $\det A$ is the determinant of the matrix of $A$.
+        In particular the determinant of a matrix does not change under
+        $A\mapsto P^{-1}AP$, and
+        $\det(A^\top) = \det A$.
+  \item If $e' = eP$ is another basis, then
+        $\omega(e'_1,\dots,e'_n) = (\det P)\,\omega(e_1,\dots,e_n)$ for
+        every $\omega\in\Lambda^nV^*$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) $(AB)^* = B^*A^*$. (3) With
+$\omega = e_1^*\wedge\dots\wedge e_n^*$, which is $1$ on $e$,
+\[
+  \det A = (A^*\omega)(e_1,\dots,e_n) = \omega(Ae_1,\dots,Ae_n)
+  = \det\bigl[e_i^*(Ae_j)\bigr] = \det[A_{ij}] ,
+\]
+by (4) of \cref{multilinear-algebra:thm:wedge}. The definition involves
+no basis, so all matrices of $A$ have the same determinant. Replacing
+$\sigma$ by $\sigma^{-1}$ in Leibniz's formula shows that a matrix and
+its transpose have the same determinant. (2) If $A$ is invertible,
+$\det A\det A^{-1} = 1$ by (1). If not, the vectors $Ae_i$ are
+dependent and $\omega(Ae_1,\dots,Ae_n) = 0$
+(\cref{multilinear-algebra:prop:alternating}). (4) Let $A$ be the
+operator with $Ae_j = e'_j$; its matrix in $e$ is $P$, and
+$\omega(e') = (A^*\omega)(e) = \det P\,\omega(e)$.
+\end{proof}
+
+\begin{keyidea}[The determinant is a change of volume]
+A non-zero $n$-form $\omega$ is a way of measuring signed volumes:
+$\omega(v_1,\dots,v_n)$ is the volume of the parallelepiped on
+$v_1,\dots,v_n$, in the unit for which some chosen basis has volume
+$1$. Two such forms differ by a constant, so the ratio
+\[
+  \det A = \frac{\omega(Av_1,\dots,Av_n)}{\omega(v_1,\dots,v_n)}
+\]
+does not depend on the unit, nor on the parallelepiped. The determinant
+of an operator needs no basis and no inner product. The determinant of a
+bilinear form does: by (3) and (1),
+$\det(P^\top GP) = (\det P)^2\det G$.
+\end{keyidea}
+
+The absolute value $\abs{\omega(v_1,\dots,v_n)}$ is the Lebesgue measure
+of the parallelepiped in the frame where $\abs\omega = 1$
+(\cref{measures:thm:linear}). Forgetting the sign of an $n$-form gives a
+translation-invariant measure; this is the passage from $\det$ to
+$\abs{\det}$ between this chapter and \cref{ch:change-of-variables}.
+
+\begin{proposition}[Minors]\label{multilinear-algebra:prop:minors}
+Let $A:V\to W$ be linear, with matrix $[A]$ in bases $e$ of $V$ and $f$
+of $W$. For an increasing multi-index $J$ of length $k$,
+\[
+  A^*f_J^* = \sum_I\det\bigl([A]_{J, I}\bigr)\,e_I^* ,
+\]
+where $[A]_{J, I}$ is the $k\times k$ matrix of the rows $J$ and columns
+$I$ of $[A]$. Consequently, for matrices $A$ and $B$ that can be
+multiplied (Cauchy--Binet),
+\[
+  \det\bigl((AB)_{J, I}\bigr)
+  = \sum_K\det\bigl(A_{J, K}\bigr)\det\bigl(B_{K, I}\bigr) ,
+  \qquad
+  \det\bigl(M^\top M\bigr) = \sum_K\bigl(\det M_K\bigr)^2
+\]
+for an $n\times k$ matrix $M$, where $M_K$ is formed by the rows $K$.
+\end{proposition}
+
+\begin{proof}
+By \cref{multilinear-algebra:thm:basis} the coefficient of $e_I^*$ is
+$(A^*f_J^*)(e_I) = f_J^*(Ae_{i_1},\dots,Ae_{i_k})
+= \det[f_{j_a}^*(Ae_{i_b})]$. The second statement is
+$(AB)^* = B^*A^*$ written in components, and the third is the case
+$A = M^\top$, $B = M$, $J = I = (1,\dots,k)$.
+\end{proof}
+
+The last formula is a theorem of Pythagoras for areas: the squared
+$k$-volume of a parallelepiped in $\R^n$, which is the Gram determinant
+$\det(M^\top M)$ of \cref{change-of-variables:sec:volume}, is the sum of
+the squares of the volumes of its shadows on the coordinate $k$-planes.
+
+\section{Orientation}\label{multilinear-algebra:sec:orientation}
+
+\begin{definition}[Orientation]\label{multilinear-algebra:def:orientation}
+Two bases $e$ and $e' = eP$ of $V$ have the \emph{same orientation} if
+$\det P > 0$. This is an equivalence relation with two classes, and an
+\emph{orientation} of $V$ is the choice of one of them, whose bases are
+called \emph{positive}. Equivalently, an orientation is the choice of
+one of the two halves of the line $\Lambda^nV^*$ without $0$: the bases
+on which these forms are positive.
+\end{definition}
+
+The two descriptions agree by (4) of
+\cref{multilinear-algebra:thm:det}. An invertible operator of $V$ maps
+positive bases to positive bases if $\det A > 0$, and to negative ones
+if $\det A < 0$: it \emph{preserves} or \emph{reverses} the orientation.
+On $\R^n$ the standard orientation is that of the standard basis. A
+vector space has no preferred orientation; exchanging two basis
+vectors, or changing the sign of one, reverses it
+(\cref{multilinear-algebra:fig:orientation}).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \draw[->, very thick, bookaccent] (0,0) -- (1.8,0.3)
+      node[right] {$e_1$};
+    \draw[->, very thick, bookaccent] (0,0) -- (0.5,1.7)
+      node[above] {$e_2$};
+    \draw[->, thick] (0.75,0.125) arc (9.5:73.6:0.76);
+    \node at (0.9,-0.6) {$(e_1, e_2)$};
+  \end{scope}
+  \begin{scope}[xshift=3.9cm]
+    \draw[->, very thick, bookpitfall] (0,0) -- (0.5,1.7)
+      node[above] {$e'_1 = e_2$};
+    \draw[->, very thick, bookpitfall] (0,0) -- (1.8,0.3)
+      node[right] {$e'_2 = e_1$};
+    \draw[->, thick] (0.213,0.724) arc (73.6:9.5:0.76);
+    \node at (0.9,-0.6) {$(e_2, e_1)$};
+  \end{scope}
+  \begin{scope}[xshift=9.0cm, x={(1cm,0cm)}, y={(0.5cm,0.4cm)},
+      z={(0cm,1cm)}]
+    \draw[->, very thick, bookaccent] (0,0,0) -- (1.6,0,0)
+      node[right] {$e_1$};
+    \draw[->, very thick, bookaccent] (0,0,0) -- (0,1.9,0)
+      node[above right=-2pt] {$e_2$};
+    \draw[->, very thick, bookaccent] (0,0,0) -- (0,0,1.5)
+      node[above] {$e_3$};
+    \node at (0.9,-0.5,-0.55) {$(e_1, e_2, e_3)$};
+  \end{scope}
+  \begin{scope}[xshift=12.6cm, x={(1cm,0cm)}, y={(0.5cm,0.4cm)},
+      z={(0cm,1cm)}]
+    \draw[->, very thick, bookpitfall] (0,0,0) -- (1.6,0,0)
+      node[right] {$e_1$};
+    \draw[->, very thick, bookpitfall] (0,0,0) -- (0,1.9,0)
+      node[above right=-2pt] {$e_2$};
+    \draw[->, very thick, bookpitfall] (0,0,0) -- (0,0,-1.3)
+      node[below] {$-e_3$};
+    \node at (2.3,0,-1.0) {$(e_1, e_2, -e_3)$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The two orientations of a plane are the two senses of rotation
+from the first basis vector to the second. In space, a basis and its
+mirror image have opposite orientations. Neither is the correct one
+until a choice is made.}
+\label{multilinear-algebra:fig:orientation}
+\end{figure}
+
+\section{What an inner product adds}\label{multilinear-algebra:sec:metric}
+
+Let now $V$ carry an inner product, with Gram matrix $G$ in the basis
+$e$ and Riesz map $R:V\to V^*$ (\cref{inner-products:def:riesz}). The
+Riesz map turns a slot for covectors into a slot for vectors and back:
+with an inner product, tensors of types $(p, q)$ and $(p', q')$ with
+$p + q = p' + q'$ can be identified, and the identification changes the
+components by factors $G$ or $G^{-1}$. This is the only place where
+``vector'' and ``covector'' may be confused, and it is the choice of an
+inner product that allows it.
+
+\begin{theorem}[Volume form]\label{multilinear-algebra:thm:volume}
+On an oriented inner product space there is exactly one $n$-form
+$\operatorname{vol}$ that takes the value $1$ on every positive
+orthonormal basis. In a positive basis $e$ with Gram matrix $G$,
+\[
+  \operatorname{vol} = \sqrt{\det G}\;e_1^*\wedge\dots\wedge e_n^* .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $o$ be a positive orthonormal basis and
+$\operatorname{vol} = o_1^*\wedge\dots\wedge o_n^*$. If $e = oP$ is a
+basis, its Gram matrix is $G = P^\top P$, so $\det G = (\det P)^2$, and
+$\operatorname{vol}(e) = \det P$ by \cref{multilinear-algebra:thm:det}.
+If $e$ is orthonormal and positive, $\det P = 1$; if $e$ is positive,
+$\det P = \sqrt{\det G}$.
+\end{proof}
+
+Without the orientation only $\abs{\operatorname{vol}}$ is defined:
+that is the measure $\sqrt{\det G}\,\lambda_e$ of
+\cref{measures:prop:affine} and the volume of
+\cref{change-of-variables:sec:volume}.
+
+The inner product of $V$ gives one on $V^*$, for which the Riesz map
+preserves inner products, and then on each $\Lambda^kV^*$:
+\[
+  \inner{\phi_1\wedge\dots\wedge\phi_k}{\psi_1\wedge\dots\wedge\psi_k}
+  = \det\bigl[\inner{\phi_i}{\psi_j}\bigr] .
+\]
+Indeed, declare the forms $o_I^*$ of one orthonormal basis $o$ to be
+orthonormal. Both sides of the formula are then multilinear and
+alternating in the $\phi_i$ and in the $\psi_j$, and they agree when
+these are taken among the $o_i^*$. So the formula holds, and since it
+does not mention $o$, the inner product does not depend on it.
+
+\begin{theorem}[Hodge star]\label{multilinear-algebra:thm:hodge}
+On an oriented inner product space, for each $k$ there is exactly one
+linear map $\star:\Lambda^kV^*\to\Lambda^{n-k}V^*$ such that
+\[
+  \alpha\wedge\star\beta = \inner\alpha\beta\operatorname{vol}
+  \qquad\text{for all }\alpha, \beta\in\Lambda^kV^* .
+\]
+For a positive orthonormal basis $o$ and an increasing $I$ with
+complement $I^c$, also increasing,
+$\star\,o_I^* = \pm\,o_{I^c}^*$, the sign being that of
+$o_I^*\wedge o_{I^c}^* = \pm\operatorname{vol}$. Moreover
+$\star\star = (-1)^{k(n-k)}$ and $\star1 = \operatorname{vol}$.
+\end{theorem}
+
+\begin{proof}
+Define $\star$ on the basis by the stated formula. For increasing
+$J, I$ of length $k$, $o_J^*\wedge o_{I^c}^*$ contains a repeated
+factor unless $J = I$, so
+$o_J^*\wedge\star o_I^* = \delta_{JI}\operatorname{vol}
+= \inner{o_J^*}{o_I^*}\operatorname{vol}$, and the identity extends by
+bilinearity. Uniqueness: if $\alpha\wedge\gamma = 0$ for all
+$\alpha\in\Lambda^kV^*$, then taking $\alpha = o_J^*$ shows that the
+coefficient of $\gamma$ on $o_{J^c}^*$ is $0$, for every $J$. Finally,
+moving $k$ factors across $n - k$ factors gives
+$o_{I^c}^*\wedge o_I^* = (-1)^{k(n-k)}o_I^*\wedge o_{I^c}^*$, whence the
+formula for $\star\star$.
+\end{proof}
+
+\begin{example}[The cross product]\label{multilinear-algebra:ex:cross}
+In $\R^3$ with its usual inner product and orientation,
+\[
+  \star e_1^* = e_2^*\wedge e_3^* ,\quad
+  \star e_2^* = e_3^*\wedge e_1^* ,\quad
+  \star e_3^* = e_1^*\wedge e_2^* ,\qquad \star\star = 1 .
+\]
+The \emph{cross product} of two vectors is
+$u\times v = R^{-1}\bigl(\star(Ru\wedge Rv)\bigr)$: turn the vectors into
+covectors, multiply, apply the star, and turn the result back into a
+vector. In components this is
+$(u_2v_3 - u_3v_2,\; u_3v_1 - u_1v_3,\; u_1v_2 - u_2v_1)$, and
+$\inner{u\times v}w = \operatorname{vol}(u, v, w) = \det[u\ v\ w]$. The
+cross product uses both the inner product and the orientation; it
+changes sign with the orientation, and it has no analogue as a product
+of two vectors in other dimensions, where $\binom n2\neq n$.
+\end{example}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+structure on $V$ & what it defines \\
+\midrule
+none & tensors, contraction, trace; $k$-forms, $\wedge$, pull-back;
+  $\det$ of an operator \\
+an orientation & positive bases; the sign of an $n$-form;
+  ``counter-clockwise'' \\
+an inner product & $R:V\to V^*$; lengths and angles; the measure
+  $\abs{\operatorname{vol}}$; $\det$ of a bilinear form \\
+both & the form $\operatorname{vol}$; the Hodge star; the cross product
+  in dimension $3$ \\
+\bottomrule
+\end{tabular}
+\caption{Which structure each notion of this chapter needs.}
+\label{multilinear-algebra:tab:structure}
+\end{table}
+
+\begin{mlthread}[Machine learning: determinants as volumes]
+\begin{itemize}[nosep]
+  \item \emph{Flows.} The log-determinants of the layers of a
+        normalizing flow add (\cref{change-of-variables:sec:ml})
+        because the determinant is multiplicative, and it is
+        multiplicative because pulling back the volume form twice is
+        pulling it back by the composition. A coupling layer has a
+        positive determinant: it preserves orientation, like every
+        diffeomorphism that can be joined to the identity by a path of
+        diffeomorphisms (\cref{ch:odes-flows}).
+  \item \emph{Volume in a subspace.} For $k$ feature vectors in
+        $\R^n$, the columns of $M$, the Gram determinant
+        $\det(M^\top M)$ is the squared volume of the parallelepiped
+        they span. It is large when the vectors are long and far from
+        parallel, and $0$ when they are dependent. Determinantal point
+        processes select diverse subsets of items by making the
+        probability of a subset proportional to this number.
+  \item \emph{Derivative of the determinant.} Differentiating
+        $\omega((I + tA)e_1,\dots,(I + tA)e_n)$ at $t = 0$ gives
+        $\tr(A)\,\omega(e_1,\dots,e_n)$: the trace is the derivative of
+        the determinant at the identity
+        (\cref{multilinear-algebra:exr:6}). Hence the gradient
+        $\Sigma^{-1}$ of $\ln\det\Sigma$ that appears in Gaussian
+        likelihoods, and the divergence in continuous flows.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{multilinear-algebra:sec:outlook}
+
+A $k$-form eats $k$ vectors and returns a signed $k$-dimensional
+volume. \Cref{ch:differential-forms} lets the form depend on the point:
+a differential $k$-form on a manifold is a $k$-form on each tangent
+space. The wedge product and the pull-back extend pointwise, and a new
+operation appears, the exterior derivative, which generalizes the
+differential of a function. \Cref{ch:stokes} integrates $k$-forms over
+oriented $k$-dimensional manifolds, and \cref{ch:vector-calculus}
+translates everything into gradient, curl and divergence by means of
+the Riesz map and the Hodge star.
+
+\paragraph{Sources.} Loomis and Sternberg, \emph{Advanced Calculus},
+Chapter~7 (``Multilinear Functionals''), treat multilinear functionals,
+the sign of a permutation, alternating tensors, the determinant, the
+exterior algebra and the star operator, in that order. Hubbard and
+Hubbard define the determinant by its properties (Theorem and
+Definition~4.8.1), $k$-forms on $\R^n$ as multilinear antisymmetric
+functions (Definition~6.1.1), prove that the elementary forms are a
+basis (Theorem~6.1.8) with the binomial dimension (Theorem~6.1.10),
+define the wedge product by a sum over permutations
+(Definition~6.1.12, with its properties in Proposition~6.1.15), and
+orientations by the sign of a determinant (Definition~6.3.1). The
+normalization $\frac1{k!\,l!}$ of the wedge product is the one for
+which $e_1^*\wedge\dots\wedge e_n^*$ is the determinant; some texts use
+another. On the dependence of sharpness on the parametrization:
+L.~Dinh, R.~Pascanu, S.~Bengio and Y.~Bengio, Sharp minima can
+generalize for deep nets, ICML, 2017. On determinantal point processes:
+A.~Kulesza and B.~Taskar, Determinantal point processes for machine
+learning, \emph{Foundations and Trends in Machine Learning}, 2012.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{21-multilinear-algebra.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A tensor of type $(p, q)$ is a multilinear form of $p$ covectors
+        and $q$ vectors. Its components change with one $P^{-1}$ per
+        covector slot and one $P$ per vector slot. Contraction of a
+        covector slot with a vector slot is invariant.
+  \item A $k$-form is an alternating $k$-linear form; it vanishes on
+        dependent vectors. $\dim\Lambda^kV^* = \binom nk$, with basis
+        $e_I^*$.
+  \item The wedge product is bilinear, associative, and
+        $\eta\wedge\omega = (-1)^{kl}\omega\wedge\eta$;
+        $(\phi_1\wedge\dots\wedge\phi_k)(v_1,\dots,v_k)
+        = \det[\phi_i(v_j)]$.
+  \item $A^*\omega = \omega(A\,\cdot,\dots,A\,\cdot)$;
+        $(AB)^* = B^*A^*$; on $n$-forms $A^*$ is multiplication by
+        $\det A$. Hence $\det(AB) = \det A\det B$, and the determinant
+        of an operator needs no basis.
+  \item An orientation is a choice of sign for $n$-forms, or of a class
+        of bases.
+  \item With an inner product and an orientation:
+        $\operatorname{vol} = \sqrt{\det G}\,e_1^*\wedge\dots\wedge e_n^*$,
+        and $\alpha\wedge\star\beta = \inner\alpha\beta\operatorname{vol}$.
+        The cross product is $R^{-1}\star(Ru\wedge Rv)$.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{multilinear-algebra:exr:1}
+In a basis $e$ of $\R^2$ the array
+$\begin{bsmallmatrix}2 & 1\\ 0 & 1\end{bsmallmatrix}$ represents an
+operator $A$, and also a bilinear form $b$. Let $e'_1 = e_1$,
+$e'_2 = e_1 + e_2$. Compute both arrays in $e'$. Which of trace and
+determinant are unchanged, in each case?
+\solutionlink{multilinear-algebra:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{multilinear-algebra:exr:2}
+\begin{enumerate}[nosep]
+  \item Show that every bilinear form is, in one way only, the sum of a
+        symmetric and an alternating one, and do it for the form $b$ of
+        \cref{multilinear-algebra:exr:1}.
+  \item Show that $\phi\otimes\psi = \psi\otimes\phi$ only if $\phi$ and
+        $\psi$ are proportional.
+\end{enumerate}
+\solutionlink{multilinear-algebra:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{multilinear-algebra:exr:3}
+Compute the signs of the permutations $(1, 2, 3)\mapsto(2, 3, 1)$ and
+$(1, 2, 3, 4)\mapsto(2, 1, 4, 3)$, and express
+$e_3^*\wedge e_1^*\wedge e_2^*$ and
+$e_2^*\wedge e_1^*\wedge e_4^*\wedge e_3^*$ in terms of the basis forms
+with increasing indices.
+\solutionlink{multilinear-algebra:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{multilinear-algebra:exr:4}
+\begin{enumerate}[nosep]
+  \item In $\R^4$ let $\omega = e_1^*\wedge e_2^* + e_3^*\wedge e_4^*$.
+        Compute $\omega\wedge\omega$, and deduce that $\omega$ is not
+        the wedge product of two covectors.
+  \item Show that in $\R^3$ every $2$-form is the wedge product of two
+        covectors.
+\end{enumerate}
+\solutionlink{multilinear-algebra:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{multilinear-algebra:exr:5}
+In $\R^3$ let $\phi_1 = e_1^* + 2e_2^*$, $\phi_2 = e_2^* - e_3^*$,
+$\phi_3 = e_1^* + e_2^* + e_3^*$.
+\begin{enumerate}[nosep]
+  \item Compute $(\phi_1\wedge\phi_2)(u, v)$ for $u = (1, 0, 1)$ and
+        $v = (0, 1, 1)$.
+  \item Compute $\phi_1\wedge\phi_2\wedge\phi_3$. Are the three
+        covectors independent?
+\end{enumerate}
+\solutionlink{multilinear-algebra:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{multilinear-algebra:exr:6}
+\begin{enumerate}[nosep]
+  \item Show from Leibniz's formula that the determinant of a
+        triangular matrix is the product of its diagonal entries.
+  \item Show that $\frac{\dd}{\dd t}\det(I + tA)\big|_{t=0} = \tr A$, and
+        deduce that the differential of $\det$ at an invertible $A$ is
+        $H\mapsto\det A\,\tr(A^{-1}H)$.
+\end{enumerate}
+\solutionlink{multilinear-algebra:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{multilinear-algebra:exr:7}
+Let $A:\R^2\to\R^3$ have the matrix
+$\begin{bsmallmatrix}1 & 0\\ 1 & 1\\ 0 & 2\end{bsmallmatrix}$. Compute
+the pull-backs of the three basis $2$-forms of $\R^3$, and check the
+formula $\det(M^\top M) = \sum_K(\det M_K)^2$ on this matrix. What is
+the area of the parallelogram spanned by its columns?
+\solutionlink{multilinear-algebra:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{multilinear-algebra:exr:8}
+\begin{enumerate}[nosep]
+  \item Which of the bases $(e_2, e_3, e_1)$, $(e_2, e_1, e_3)$ and
+        $(e_1 + e_2, e_2, -e_3)$ of $\R^3$ are positive?
+  \item Show that $-I$ preserves the orientation of $\R^n$ if and only
+        if $n$ is even, and that a reflection across a hyperplane always
+        reverses it.
+\end{enumerate}
+\solutionlink{multilinear-algebra:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{multilinear-algebra:exr:9}
+\begin{enumerate}[nosep]
+  \item Check the component formula for the cross product in
+        \cref{multilinear-algebra:ex:cross}.
+  \item On $\R^2$ with the standard orientation, let the inner product
+        have the Gram matrix $\diag(1, 4)$ in the standard basis.
+        Compute $\operatorname{vol}$, $\star e_1^*$ and $\star e_2^*$.
+\end{enumerate}
+\solutionlink{multilinear-algebra:exr:9}
+\end{exercise}
 \end{notechapter}
