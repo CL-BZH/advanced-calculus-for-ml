@@ -4,18 +4,879 @@
 \chaptersubtitle{%
   Functions as points of a normed space}
 
-\begin{chapterplan}
+\begin{chapterintro}
+The integral turns functions into points of normed spaces: the norm
+$\norm f_p = (\int\abs f^p\,\dd\mu)^{1/p}$ measures a function the way
+$\norm x_p$ measures a vector. These spaces are complete, which the
+spaces of continuous functions of \cref{ch:norms-banach} were not, and
+for $p = 2$ they are Hilbert spaces. Two constructions of probability
+then come for free from the geometry of \cref{ch:norms-banach}. The
+orthogonal projection gives the conditional expectation, the best
+prediction of one variable from another. The Riesz representation gives
+the Radon--Nikodym theorem: a measure has a density with respect to
+another exactly when it charges no set that the other ignores. Densities
+of one probability with respect to another are likelihood ratios, and
+their logarithm, averaged, is the Kullback--Leibler divergence. You will
+learn
 \begin{itemize}[nosep]
-  \item H\"older's and Minkowski's inequalities; completeness of $L^p$.
-  \item $L^2$ as a Hilbert space; orthogonal projection and conditional
-        expectation.
-  \item Density of simple and of continuous functions.
-  \item Absolute continuity, densities and the Radon--Nikodym theorem.
+  \item the inequalities of Jensen, H\"older and Minkowski;
+  \item the spaces $L^p$, their completeness, and the dense subspaces of
+        simple, step and continuous functions;
+  \item conditional expectation as an orthogonal projection in $L^2$;
+  \item absolute continuity and the Radon--Nikodym theorem;
+  \item likelihood ratios, importance weights and the Kullback--Leibler
+        divergence between two arbitrary probability measures.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:measures,ch:lebesgue-integral,ch:fubini}, and
+from \cref{ch:norms-banach}: completeness, the projection on a complete
+subspace (\cref{norms-banach:thm:projection}) and the Riesz
+representation (\cref{norms-banach:thm:riesz}). A measure space
+$(X, \mathcal M, \mu)$ is fixed.}
+\end{chapterintro}
+
+\section{Three inequalities}\label{lp-spaces:sec:inequalities}
+
+A convex function is \emph{strictly convex} if the inequality that
+defines convexity is strict for distinct points and $0 < t < 1$.
+
+\begin{theorem}[Jensen's inequality]\label{lp-spaces:thm:jensen}
+Let $Z$ be an integrable random variable with values in an open interval
+$I$, and $\phi:I\to\R$ a convex differentiable function. Then
+$\E[Z]\in I$, the negative part of $\phi(Z)$ is integrable, and
+\[
+  \phi\bigl(\E[Z]\bigr)\leq\E\bigl[\phi(Z)\bigr]\in(-\infty, \infty] .
+\]
+If $\phi$ is strictly convex, equality holds only if $Z = \E[Z]$ almost
+surely.
+\end{theorem}
+
+\begin{proof}
+Let $m = \E[Z]$. If $a$ is a finite end point of $I$, say the left one,
+then $Z - a > 0$, so $\E[Z - a] > 0$
+(\cref{lebesgue-integral:prop:markov}): $m\in I$. A convex function lies
+above its tangents (\cref{gradient-hessian:thm:convex}):
+$\phi(z)\geq L(z)$ with $L(z) = \phi(m) + \phi'(m)(z - m)$. So
+$\phi(Z)\geq L(Z)$, which is integrable, and
+$\E[\phi(Z)]\geq\E[L(Z)] = \phi(m)$. If $\phi$ is strictly convex, then
+$\phi(z) > L(z)$ for $z\neq m$: otherwise at the midpoint $c$ of $m$ and
+$z$ we would have $\phi(c) < \frac12(L(m) + L(z)) = L(c)$. In case of
+equality, $\phi(Z) - L(Z)\geq0$ has integral $0$, hence vanishes almost
+surely, that is, $Z = m$.
+\end{proof}
+
+\begin{definition}[$p$-norms]\label{lp-spaces:def:norm}
+For a measurable $f:X\to\R$ and $1\leq p < \infty$,
+\[
+  \norm f_p = \Bigl(\int\abs f^p\,\dd\mu\Bigr)^{1/p}\in[0, \infty] ,
+  \qquad
+  \norm f_\infty
+  = \inf\bigl\{c : \abs f\leq c\text{ almost everywhere}\bigr\} .
+\]
+Two exponents $p, q\in[1, \infty]$ are \emph{conjugate} if
+$\frac1p + \frac1q = 1$, with $\frac1\infty = 0$.
+\end{definition}
+
+The infimum is attained: $\abs f\leq\norm f_\infty$ almost everywhere, as
+a countable union of null sets is null.
+
+\begin{theorem}[H\"older's inequality]\label{lp-spaces:thm:holder}
+If $p$ and $q$ are conjugate, then for all measurable $f, g$
+\[
+  \int\abs{fg}\,\dd\mu\leq\norm f_p\,\norm g_q .
+\]
+\end{theorem}
+
+\begin{proof}
+For $p = 1$, $\abs{fg}\leq\abs f\norm g_\infty$ almost everywhere, and
+$p = \infty$ is the same with $f$ and $g$ exchanged. Let
+$1 < p < \infty$. For $a, b > 0$, the convexity of the exponential
+gives \emph{Young's inequality}
+\[
+  ab = \exp\Bigl(\tfrac1p\ln a^p + \tfrac1q\ln b^q\Bigr)
+  \leq\frac{a^p}p + \frac{b^q}q ,
+\]
+which also holds if $a$ or $b$ is $0$. If one of the norms is $0$, then
+$fg = 0$ almost everywhere; if not, and one is infinite, there is nothing
+to prove. Otherwise apply Young's inequality to
+$a = \abs{f(x)}/\norm f_p$ and $b = \abs{g(x)}/\norm g_q$ and integrate:
+$\int\abs{fg}\,\dd\mu/(\norm f_p\norm g_q)\leq\frac1p + \frac1q = 1$.
+\end{proof}
+
+For $p = q = 2$ this is the Cauchy--Schwarz inequality
+(\cref{inner-products:thm:cs}) for $\inner fg = \int fg\,\dd\mu$.
+
+\begin{theorem}[Minkowski's inequality]\label{lp-spaces:thm:minkowski}
+For $1\leq p\leq\infty$ and measurable $f, g$,
+$\norm{f + g}_p\leq\norm f_p + \norm g_p$.
+\end{theorem}
+
+\begin{proof}
+For $p = 1$ and $p = \infty$ it follows from
+$\abs{f + g}\leq\abs f + \abs g$. Let $1 < p < \infty$ and assume the
+right-hand side finite. By the convexity of $t\mapsto t^p$,
+$\abs{f + g}^p\leq2^{p-1}(\abs f^p + \abs g^p)$, so
+$\norm{f + g}_p < \infty$. Let $q$ be conjugate to $p$, so that
+$(p - 1)q = p$. By H\"older's inequality,
+\[
+  \int\abs{f + g}^p\,\dd\mu
+  \leq\int\bigl(\abs f + \abs g\bigr)\abs{f + g}^{p-1}\dd\mu
+  \leq\bigl(\norm f_p + \norm g_p\bigr)
+      \Bigl(\int\abs{f + g}^p\,\dd\mu\Bigr)^{1/q} .
+\]
+Divide by the last factor, if it is not $0$; since $1 - \frac1q
+= \frac1p$, this is the claim.
+\end{proof}
+
+\begin{proposition}[Comparing exponents]\label{lp-spaces:prop:inclusion}
+Let $1\leq p\leq r\leq\infty$.
+\begin{enumerate}[nosep]
+  \item If $\mu(X) < \infty$, then
+        $\norm f_p\leq\mu(X)^{\frac1p - \frac1r}\norm f_r$. On a
+        probability space, $p\mapsto\norm f_p$ is non-decreasing.
+  \item For the counting measure, $\norm a_r\leq\norm a_p$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) For $r < \infty$, H\"older's inequality for $\abs f^p\cdot1$ with the
+exponent $r/p$ and its conjugate gives
+$\int\abs f^p\,\dd\mu
+\leq\bigl(\int\abs f^r\,\dd\mu\bigr)^{p/r}\mu(X)^{1 - p/r}$. For
+$r = \infty$, $\abs f^p\leq\norm f_\infty^p$ almost everywhere. (2) By
+homogeneity assume $\norm a_p = 1$. Then every $\abs{a_n}\leq1$, so
+$\abs{a_n}^r\leq\abs{a_n}^p$ and $\norm a_r\leq1$.
+\end{proof}
+
+\begin{pitfall}[No inclusion in general]
+On a probability space a square-integrable function is integrable; for
+sequences it is the other way round; on $\R$ with Lebesgue measure
+neither holds. The function $x^{-1/2}1_{(0, 1)}$ has a finite integral
+and an infinite $\norm\cdot_2$; for $x^{-1}1_{(1, \infty)}$ it is the
+opposite. Large $p$ penalizes high peaks, small $p$ penalizes long tails.
+\end{pitfall}
+
+\section{The spaces $L^p$}\label{lp-spaces:sec:spaces}
+
+By \cref{lebesgue-integral:prop:markov}, $\norm f_p = 0$ if and only if
+$f = 0$ almost everywhere. So $\norm\cdot_p$ is not a norm on functions,
+but it becomes one when functions equal almost everywhere are
+identified.
+
+\begin{definition}[$L^p$]\label{lp-spaces:def:lp}
+For $1\leq p\leq\infty$, $L^p(\mu)$, also written $L^p(X)$, is the set of
+measurable functions $f:X\to\R$ with $\norm f_p < \infty$, two functions
+being identified when they are equal almost everywhere. With
+$\norm\cdot_p$ it is a normed space, by Minkowski's inequality.
+\end{definition}
+
+An element of $L^p$ is thus a class of functions, and one writes
+``$f\in L^p$'' for a function $f$ of the class. Everything that is
+defined by integrals makes sense for a class. The value $f(x)$ at one
+point does not, when points are null sets; this is the measure-theoretic
+form of \cref{norms-banach:ex:unbounded}. For the counting measure on
+$\{1,\dots,n\}$, $L^p$ is $\R^n$ with the norm $\norm\cdot_p$ of
+\cref{norms-banach:ex:norms}; on the integers it is the sequence space
+$\ell^p$.
+
+\begin{theorem}[Riesz--Fischer]\label{lp-spaces:thm:complete}
+For $1\leq p\leq\infty$, $L^p(\mu)$ is complete. Moreover, if
+$f_k\to f$ in $L^p$, some subsequence of $(f_k)$ converges to $f$ almost
+everywhere.
+\end{theorem}
+
+\begin{proof}
+Let $p < \infty$ and let $(f_k)$ be a Cauchy sequence. Choose
+$k_1 < k_2 < \cdots$ with $\norm{f_{k_{j+1}} - f_{k_j}}_p\leq2^{-j}$,
+and put $g_j = f_{k_j}$ and $G = \sum_{j\geq1}\abs{g_{j+1} - g_j}$. By
+Minkowski's inequality the partial sums of $G$ have norm at most $1$,
+and by monotone convergence $\int G^p\,\dd\mu\leq1$. So $G$ is finite
+outside a null set $N$. There the series $\sum_j(g_{j+1} - g_j)$
+converges absolutely, that is, $g_j$ converges; let $f$ be its limit,
+and $f = 0$ on $N$. Then $\abs{f - g_j}\leq G$, and
+$\abs{f - g_j}^p\to0$ almost everywhere with the integrable bound $G^p$:
+by dominated convergence $\norm{f - g_j}_p\to0$, and $f\in L^p$ since
+$\abs f\leq\abs{g_1} + G$. A Cauchy sequence with a convergent
+subsequence converges (\cref{norms-banach:prop:cauchy}). For the last
+statement, apply this to the sequence $(f_k)$, which is Cauchy: a
+subsequence converges almost everywhere, and in $L^p$, to a function
+which must be $f$.
+
+For $p = \infty$: outside the null set where some
+$\abs{f_k - f_l}$ exceeds $\norm{f_k - f_l}_\infty$, the sequence is
+uniformly Cauchy; it converges uniformly there, to a bounded
+measurable function.
+\end{proof}
+
+\begin{pitfall}[Convergence in $L^p$ is not convergence at points]
+List the dyadic intervals of $[0, 1]$ by decreasing length:
+$[0, 1]$, $[0, \frac12]$, $[\frac12, 1]$, $[0, \frac14]$, \dots\ and
+let $f_k$ be the indicator of the $k$-th one
+(\cref{lp-spaces:fig:typewriter}). Then $\norm{f_k}_p\to0$ for every
+$p < \infty$, yet $f_k(x) = 1$ infinitely often for every $x$: the
+sequence converges at no point. The subsequence $1_{[0, 2^{-n}]}$ does
+converge to $0$ almost everywhere, as the theorem says. In the other
+direction, the three sequences of \cref{lebesgue-integral:fig:mass}
+converge at every point and not in $L^1$.
+\end{pitfall}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[xscale=3.1, yscale=0.55]
+  \foreach \n/\cnt/\yy in {0/1/0, 1/2/-2.7, 2/4/-5.4} {
+    \pgfmathtruncatemacro{\last}{\cnt - 1}
+    \foreach \k in {0,...,\last} {
+      \pgfmathtruncatemacro{\idx}{\cnt + \k}
+      \pgfmathsetmacro{\xo}{\k*1.22}
+      \pgfmathsetmacro{\a}{\k/\cnt}
+      \pgfmathsetmacro{\b}{(\k + 1)/\cnt}
+      \begin{scope}[shift={(\xo,\yy)}]
+        \fill[bookaccent!35] (\a,0) rectangle (\b,1);
+        \draw[bookaccent, thick] (0,0) -- (\a,0) -- (\a,1) -- (\b,1)
+          -- (\b,0) -- (1,0);
+        \draw (0,-0.12) -- (0,0.12);
+        \draw (1,-0.12) -- (1,0.12);
+        \node[below] at (0.5,-0.1) {\small$f_{\idx}$};
+      \end{scope}
+    }
+  }
+\end{tikzpicture}
+\caption{The first seven functions of a sequence that tends to $0$ in
+every $L^p$, $p < \infty$, and converges at no point: an indicator of
+shrinking width that keeps sweeping the interval.}
+\label{lp-spaces:fig:typewriter}
+\end{figure}
+
+\begin{theorem}[Dense subspaces]\label{lp-spaces:thm:dense}
+Let $1\leq p < \infty$.
+\begin{enumerate}[nosep]
+  \item The linear combinations of indicators of sets of finite measure
+        are dense in $L^p(\mu)$.
+  \item If $\mu$ is a measure on $\mathcal B(\R^n)$ that is finite on
+        bounded sets, such as Lebesgue measure or any finite measure,
+        the linear combinations of indicators of dyadic boxes are dense
+        in $L^p(\mu)$, and so are the continuous functions that vanish
+        outside a bounded set.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) Let $f\geq0$ be in $L^p$ and $s_k$ the simple functions of
+\cref{lebesgue-integral:lem:dyadic}. Then $\abs{f - s_k}^p\leq f^p$
+tends to $0$ at every point, and $\norm{f - s_k}_p\to0$ by dominated
+convergence. Each set $\{s_k = a\}$, $a > 0$, has finite measure, since
+$s_k\in L^p$. For a general $f$ use $f^+$ and $f^-$.
+
+(2) By (1) it is enough to approximate $1_B$ for a Borel set $B$ of
+finite measure, and $\norm{1_B - 1_U}_p^p = \mu(B\triangle U)$,
+the measure of the symmetric difference. Fix a cube $Q = [-k, k)^n$ and
+let $\mathcal D$ be the family of Borel sets $B\subset Q$ such that for
+every $\epsilon > 0$ there is a finite union $U$ of dyadic boxes of $Q$
+with $\mu(B\triangle U) < \epsilon$. The dyadic boxes of $Q$, with
+$\emptyset$, form a $\pi$-system, because two of them are nested or
+disjoint; they are in $\mathcal D$, and so is $Q$. And $\mathcal D$ is
+a $\lambda$-system on $Q$: if $A\subset B$ are approximated by $U_A$ and
+$U_B$, then
+$(B\setminus A)\triangle(U_B\setminus U_A)
+\subset(A\triangle U_A)\cup(B\triangle U_B)$,
+and $U_B\setminus U_A$ is again a finite union of dyadic boxes; if $B_j$
+increases to $B$, then $\mu(B\setminus B_j)\to0$, since $\mu(Q)$ is
+finite. By \cref{measures:thm:pilambda}, $\mathcal D$ contains every
+Borel subset of $Q$. For a general $B$ of finite measure,
+$\mu(B\setminus[-k, k)^n)\to0$ as $k\to\infty$.
+
+Finally, let $R = \prod_i[a_i, b_i)$ be a box and $0 < \delta < 1$. Let
+$h_i$ be the continuous function equal to $1$ on
+$[a_i, b_i - \delta]$, to $0$ outside $(a_i - \delta, b_i)$, and affine
+in between. The continuous function $\prod_ih_i(x_i)$ takes its values
+in $[0, 1]$ and differs from $1_R$ only on
+$S_\delta = \prod_i[a_i - \delta, b_i)\setminus
+\prod_i[a_i, b_i - \delta]$. These sets decrease to $\emptyset$ as
+$\delta\to0$ and have finite measure, so $\mu(S_\delta)\to0$
+(\cref{measures:thm:continuity}).
+\end{proof}
+
+So $L^1([0, 1])$ is a complete space in which the continuous functions
+are dense: it is the completion that
+\cref{norms-banach:ex:incomplete} was missing. And a bounded linear map
+defined on step functions or on continuous functions extends to $L^p$
+in one way only (\cref{norms-banach:thm:blt}); the integral itself was
+the first instance (\cref{lebesgue-integral:rem:extension}).
+
+\begin{mlthread}[Machine learning: losses are distances between
+functions]
 \begin{itemize}[nosep]
-  \item The regression function as an orthogonal projection in $L^2$.
-  \item Likelihood ratios and the Kullback--Leibler divergence.
+  \item The squared risk of a predictor is its squared distance to the
+        labels in $L^2(P)$; the mean absolute error is a distance in
+        $L^1(P)$; a worst-case guarantee is a bound in $L^\infty$. By
+        \cref{lp-spaces:prop:inclusion} these are ordered on a
+        probability space: a small worst-case error implies a small
+        squared error, and not conversely.
+  \item A predictor that is close to the target in $L^2(P_X)$ is close
+        on average over the data distribution. This says nothing at a
+        given point, and nothing on a set of inputs of probability
+        $0$. Guarantees at adversarially chosen inputs, or away from the
+        support of the data, are statements about another norm.
+  \item Approximation theorems for networks are density statements: a
+        class that is dense in the continuous functions on a compact set
+        $K$ for the sup norm is dense in $L^p(\mu)$ for every finite
+        measure $\mu$ on $K$ and $p < \infty$, by
+        \cref{lp-spaces:thm:dense,lp-spaces:prop:inclusion}.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\section{$L^2$ and conditional expectation}\label{lp-spaces:sec:l2}
+
+By H\"older's inequality, $\inner fg = \int fg\,\dd\mu$ is defined for
+$f, g\in L^2(\mu)$. It is an inner product, its norm is
+$\norm\cdot_2$, and by \cref{lp-spaces:thm:complete} $L^2(\mu)$ is a
+Hilbert space. The theorems of \cref{ch:norms-banach} apply to it.
+
+Let $(\Omega, \mathcal F, P)$ be a probability space and
+$\mathcal G\subset\mathcal F$ a smaller $\sigma$-algebra: a state of
+partial information (\cref{measures:ex:partition}). Write
+$L^2(\mathcal G)$ for the elements of $L^2(P)$ that have a
+$\mathcal G$-measurable representative. It is the image of
+$L^2(\Omega, \mathcal G, P)$, which is complete, by a map that preserves
+the norm: a complete subspace.
+
+\begin{theorem}[Conditional expectation in $L^2$]
+\label{lp-spaces:thm:condexp}
+For $Z\in L^2(P)$, let $\E[Z\mid\mathcal G]$ be the orthogonal
+projection of $Z$ on $L^2(\mathcal G)$.
+\begin{enumerate}[nosep]
+  \item It is the only $W\in L^2(\mathcal G)$ such that
+        $\E[WV] = \E[ZV]$ for all $V\in L^2(\mathcal G)$; in particular
+        $\E[W1_G] = \E[Z1_G]$ for $G\in\mathcal G$, and
+        $\E\bigl[\E[Z\mid\mathcal G]\bigr] = \E[Z]$.
+  \item It is linear in $Z$, and
+        $\E[UZ\mid\mathcal G] = U\,\E[Z\mid\mathcal G]$ for a bounded
+        $\mathcal G$-measurable $U$.
+  \item For every $V\in L^2(\mathcal G)$, with
+        $W = \E[Z\mid\mathcal G]$,
+        \[
+          \E\bigl[(Z - V)^2\bigr]
+          = \E\bigl[(Z - W)^2\bigr] + \E\bigl[(W - V)^2\bigr] .
+        \]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+By \cref{norms-banach:thm:projection} the closest point $W$ exists, is
+unique, and $Z - W$ is orthogonal to $L^2(\mathcal G)$: that is (1),
+with $V = 1_G$ and $V = 1$ as special cases. If $W'$ has the same
+property, $W - W'$ is in $L^2(\mathcal G)$ and orthogonal to it, hence
+$0$. (2) The property in (1) is linear in $Z$; and $UW$ is in
+$L^2(\mathcal G)$ with $\E[UWV] = \E[W(UV)] = \E[Z(UV)]$. (3) is the
+theorem of Pythagoras, as $Z - W$ is orthogonal to $W - V$.
+\end{proof}
+
+\begin{example}[Averaging over blocks]\label{lp-spaces:ex:blocks}
+Let $\mathcal G$ be generated by a partition of $\Omega$ into blocks
+$B_1,\dots,B_m$ of positive probability. A $\mathcal G$-measurable
+function is constant on each block, and (1) with $G = B_i$ gives
+\[
+  \E[Z\mid\mathcal G] = \frac{\E[Z1_{B_i}]}{P(B_i)}\quad\text{on }B_i :
+\]
+the average of $Z$ over the block that contains the outcome
+(\cref{lp-spaces:fig:condexp}).
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth]
+  \begin{scope}[xscale=6.2, yscale=2.2,
+      declare function={zz(\x) = 0.25 + 0.9*\x + 0.35*sin(540*\x);}]
+    \draw[->] (-0.03,0) -- (1.08,0) node[right] {$\omega$};
+    \draw[->] (0,-0.05) -- (0,1.5);
+    \foreach \a/\b/\m in {0/0.25/0.616, 0.25/0.5/0.482, 0.5/0.75/0.707,
+                          0.75/1/1.291} {
+      \fill[bookaccent!15] (\a,0) rectangle (\b,\m);
+      \draw[bookaccent, very thick] (\a,\m) -- (\b,\m);
+      \draw[densely dotted] (\b,0) -- (\b,1.45);
+    }
+    \draw[bookdef, thick, domain=0:1, samples=120, smooth]
+      plot ({\x}, {zz(\x)});
+    \node[bookdef] at (0.16,0.92) {$Z$};
+    \node[bookaccent, right] at (1.0,1.29) {$\E[Z\mid\mathcal G]$};
+    \foreach \i/\x in {1/0.125, 2/0.375, 3/0.625, 4/0.875}
+      \node[below] at (\x,0) {\small$B_\i$};
+  \end{scope}
+  \begin{scope}[xshift=10.2cm, yshift=0.3cm]
+    \fill[gray!12] (-0.6,0) -- (3.9,0) -- (4.9,1.3) -- (0.4,1.3) -- cycle;
+    \node[gray] at (3.6,0.25) {$L^2(\mathcal G)$};
+    \coordinate (W) at (1.6,0.7);
+    \coordinate (Z) at (1.6,3.0);
+    \coordinate (V) at (3.6,0.95);
+    \draw[bookdef, thick] (Z) -- (W);
+    \draw[bookaccent, thick] (W) -- (V);
+    \draw[bookpitfall, thick] (Z) -- (V);
+    \draw (1.6,0.95) -- (1.85,0.98) -- (1.85,0.73);
+    \fill (W) circle (1.5pt) node[left] {$W$};
+    \fill (Z) circle (1.5pt) node[above] {$Z$};
+    \fill (V) circle (1.5pt) node[right] {$V$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Left: a random variable on $[0, 1]$ and its conditional
+expectation given a partition into four blocks, the step function of
+its block averages. Right: the same statement in $L^2$. $W$ is the
+point of the subspace closest to $Z$, and for any other $V$ of the
+subspace the three points form a right triangle.}
+\label{lp-spaces:fig:condexp}
+\end{figure}
+
+When the information is the value of another random variable $X$, with
+values in a measurable space $S$, the $\sigma$-algebra is
+$\sigma(X) = \{X^{-1}(A) : A\text{ measurable}\}$, and one writes
+$\E[Z\mid X]$.
+
+\begin{lemma}[Doob--Dynkin]\label{lp-spaces:lem:doob}
+A function $W:\Omega\to\R$ is $\sigma(X)$-measurable if and only if
+$W = h\circ X$ for a measurable $h:S\to\R$.
+\end{lemma}
+
+\begin{proof}
+A composition is measurable. Conversely, the indicator of $X^{-1}(A)$ is
+$1_A\circ X$, so the claim holds for simple functions. A
+$\sigma(X)$-measurable $W\geq0$ is the limit of simple functions
+$h_k\circ X$; let $h$ be $\limsup_kh_k$ where this is finite and $0$
+elsewhere. At a point $X(\omega)$ the limit exists and is $W(\omega)$,
+so $h\circ X = W$. For a general $W$ use $W^+$ and $W^-$.
+\end{proof}
+
+\begin{keyidea}[The regression function is a projection]
+$\E[Z\mid X] = m(X)$ for a measurable function $m$, unique up to a
+$P_X$-null set, and by \cref{lp-spaces:thm:condexp}
+\[
+  \E\bigl[(Z - h(X))^2\bigr]
+  = \E\bigl[(Z - m(X))^2\bigr] + \E\bigl[(m(X) - h(X))^2\bigr]
+\]
+for every $h$ with $h(X)\in L^2$. No density is needed. When the pair
+has a joint density, $m$ is the conditional mean of
+\cref{fubini:prop:regression}, which satisfies the same identity.
+\end{keyidea}
+
+\begin{mlthread}[Machine learning: what a regression can and cannot
+learn]
+\begin{itemize}[nosep]
+  \item \emph{Excess risk.} For the squared loss, the risk of a
+        predictor $h$ exceeds the smallest possible risk by
+        $\norm{h - m}^2_{L^2(P_X)}$. Training a model is approximating
+        one function, $m$, in one norm.
+  \item \emph{Model classes.} If the predictors are restricted to a
+        closed subspace $\mathcal H$ of $L^2(P_X)$, the best one is the
+        projection of $m$ on $\mathcal H$, and for $h\in\mathcal H$ the
+        excess risk splits again by Pythagoras: the squared distance
+        from $m$ to its projection, the approximation error, plus the
+        squared distance from $h$ to that projection, the estimation
+        error.
+  \item \emph{Variance reduction.} With $V = \E[Z]$ in (3),
+        $\Var(Z) = \E\bigl[(Z - \E[Z\mid\mathcal G])^2\bigr]
+        + \Var\bigl(\E[Z\mid\mathcal G]\bigr)$. Replacing an estimator
+        by its conditional expectation given part of the randomness
+        keeps the mean and cannot increase the variance. Integrating
+        out a variable in closed form instead of sampling it uses this.
+\end{itemize}
+\end{mlthread}
+
+\section{Densities: the Radon--Nikodym theorem}
+\label{lp-spaces:sec:rn}
+
+\begin{definition}[Absolute continuity]\label{lp-spaces:def:ac}
+A measure $\nu$ on $\mathcal M$ is \emph{absolutely continuous} with
+respect to $\mu$, written $\nu\ll\mu$, if every $\mu$-null set is
+$\nu$-null.
+\end{definition}
+
+A measure with a density, $\nu(A) = \int_Af\,\dd\mu$, is absolutely
+continuous. A Dirac measure on $\R$ is not, with respect to Lebesgue
+measure. Neither is the generative model of
+\cref{measures:fig:generative}: it gives probability $1$ to a curve,
+which has area $0$.
+
+\begin{theorem}[Radon--Nikodym]\label{lp-spaces:thm:rn}
+Let $\mu$ and $\nu$ be $\sigma$-finite measures on $\mathcal M$ with
+$\nu\ll\mu$. There is a measurable $f:X\to[0, \infty)$ such that
+\[
+  \nu(A) = \int_Af\,\dd\mu\qquad\text{for all }A\in\mathcal M ,
+\]
+and it is unique up to a $\mu$-null set. It is the \emph{density} of
+$\nu$ with respect to $\mu$, written $\frac{\dd\nu}{\dd\mu}$.
+\end{theorem}
+
+\begin{proof}
+\emph{Finite measures.} Let $\rho = \mu + \nu$. On the Hilbert space
+$L^2(\rho)$ the linear form $\phi(g) = \int g\,\dd\nu$ is well defined
+and bounded:
+$\abs{\phi(g)}\leq\int\abs g\,\dd\rho\leq\rho(X)^{1/2}\norm g_{L^2(\rho)}$
+by \cref{lp-spaces:prop:inclusion}. By the Riesz representation
+(\cref{norms-banach:thm:riesz}) there is $u\in L^2(\rho)$ with
+\[
+  \int g\,\dd\nu = \int gu\,\dd\rho\qquad\text{for all }g\in L^2(\rho) .
+\]
+With $g = 1_A$: $\nu(A) = \int_Au\,\dd\rho$ and
+$\mu(A) = \int_A(1 - u)\,\dd\rho$. Taking $A = \{u < 0\}$ and
+$A = \{u > 1\}$, where these integrals would be negative unless
+$\rho(A) = 0$, shows that $0\leq u\leq1$ almost everywhere; change $u$ on
+a null set so that it holds everywhere. The displayed identity reads
+\[
+  \int g(1 - u)\,\dd\nu = \int gu\,\dd\mu ,
+\]
+first for bounded measurable $g$, which are in $L^2(\rho)$, then for all
+measurable $g\geq0$ by monotone convergence. Let $N = \{u = 1\}$. With
+$g = 1_N$ we get $\mu(N) = 0$, hence $\nu(N) = 0$: this is where
+absolute continuity is used. With $g = 1_{A\setminus N}/(1 - u)$,
+\[
+  \nu(A) = \nu(A\setminus N) = \int_{A\setminus N}\frac u{1 - u}\,\dd\mu
+  = \int_Af\,\dd\mu , \qquad
+  f = \frac u{1 - u}\text{ outside }N,\quad f = 0\text{ on }N .
+\]
+
+\emph{$\sigma$-finite measures.} Cut $X$ into countably many disjoint
+sets $X_k$ of finite measure for $\mu$ and for $\nu$, apply the first
+part on each, and add (\cref{lebesgue-integral:cor:additive}).
+
+\emph{Uniqueness.} If $f$ and $f'$ are two densities, the set
+$A = \{f > f'\}\cap X_k$ satisfies $\int_A(f - f')\,\dd\mu = 0$ with a
+positive integrand, so $\mu(A) = 0$; likewise with $f$ and $f'$
+exchanged.
+\end{proof}
+
+\begin{intuition}
+The proof compares both measures to their sum. The function
+$u = \frac{\dd\nu}{\dd(\mu + \nu)}$ always exists, takes its values in
+$[0, 1]$, and says which fraction of the mass near a point belongs to
+$\nu$. The density is the ratio $u/(1 - u)$ of the two fractions; it is
+finite where $\mu$ has some mass, and absolute continuity says that the
+rest does not matter.
+\end{intuition}
+
+By \cref{fubini:lem:density}, $\int g\,\dd\nu = \int g\,
+\frac{\dd\nu}{\dd\mu}\,\dd\mu$. If $\nu\ll\mu\ll\rho$, applying this twice
+and using uniqueness gives the chain rule
+$\frac{\dd\nu}{\dd\rho} = \frac{\dd\nu}{\dd\mu}\frac{\dd\mu}{\dd\rho}$,
+$\rho$-almost everywhere.
+
+\begin{corollary}[Conditional expectation in $L^1$]
+\label{lp-spaces:cor:condexp}
+Let $Z\geq0$ be an integrable random variable and
+$\mathcal G\subset\mathcal F$ a $\sigma$-algebra. There is a
+$\mathcal G$-measurable $W\geq0$, unique up to a null set, with
+$\E[W1_G] = \E[Z1_G]$ for all $G\in\mathcal G$.
+\end{corollary}
+
+\begin{proof}
+$\nu(G) = \E[Z1_G]$ is a finite measure on $\mathcal G$, absolutely
+continuous with respect to the restriction of $P$ to $\mathcal G$. Its
+density is $W$.
+\end{proof}
+
+For an integrable $Z$ one sets
+$\E[Z\mid\mathcal G] = \E[Z^+\mid\mathcal G] - \E[Z^-\mid\mathcal G]$;
+for $Z\in L^2$ it is the projection of \cref{lp-spaces:thm:condexp}, by
+(1) of that theorem and uniqueness.
+
+\section{Likelihood ratios and the Kullback--Leibler divergence}
+\label{lp-spaces:sec:kl}
+
+Let $P$ and $Q$ be probability measures on the same measurable space.
+If $Q\ll P$, the density $\frac{\dd Q}{\dd P}$ is the \emph{likelihood
+ratio}. If both have densities $p, q$ with respect to a measure $\mu$,
+then $Q\ll P$ exactly when $q = 0$ almost everywhere on $\{p = 0\}$,
+and $\frac{\dd Q}{\dd P} = q/p$ on $\{p > 0\}$, by
+\cref{fubini:lem:density}. Since
+$\E_Q[g] = \E_P\bigl[g\,\frac{\dd Q}{\dd P}\bigr]$, an expectation
+under $Q$ can be estimated from samples of $P$, weighted by the ratio
+(\cref{lp-spaces:fig:ratio}).
+
+\begin{definition}[Kullback--Leibler divergence]\label{lp-spaces:def:kl}
+For probability measures $P, Q$,
+\[
+  D(Q\,\|\,P) = \int\ln\frac{\dd Q}{\dd P}\,\dd Q
+  = \int\frac{\dd Q}{\dd P}\ln\frac{\dd Q}{\dd P}\,\dd P
+  \quad\text{if }Q\ll P , \qquad
+  D(Q\,\|\,P) = \infty\quad\text{otherwise,}
+\]
+with the convention $0\ln0 = 0$.
+\end{definition}
+
+\begin{theorem}\label{lp-spaces:thm:kl}
+\begin{enumerate}[nosep]
+  \item The integral is well defined, $D(Q\,\|\,P)\in[0, \infty]$, and
+        $D(Q\,\|\,P) = 0$ if and only if $Q = P$.
+  \item If $P$ and $Q$ have densities $p$ and $q$ with respect to a
+        $\sigma$-finite measure $\mu$, and $Q\ll P$, then
+        $D(Q\,\|\,P) = \int q\ln\frac qp\,\dd\mu$.
+  \item If $T$ is a measurable bijection onto another measurable space,
+        with a measurable inverse, then
+        $D(T_\#Q\,\|\,T_\#P) = D(Q\,\|\,P)$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) Let $f = \frac{\dd Q}{\dd P}$ and $\phi(t) = t\ln t$, a strictly
+convex function on $[0, \infty)$ with tangent $t - 1$ at $t = 1$. So
+$\phi(f)\geq f - 1$, which is integrable with
+$\int(f - 1)\,\dd P = Q(X) - P(X) = 0$: the integral of $\phi(f)$ is
+defined and non-negative. If it is $0$, then $\phi(f) - (f - 1)\geq0$
+has integral $0$, so $f = 1$ almost everywhere, that is, $Q = P$.
+
+(2) $\int\phi(f)\,\dd P = \int_{\{p > 0\}}\frac qp\ln\frac qp\,p\,\dd\mu$
+by \cref{fubini:lem:density}.
+
+(3) $P$ and $T_\#P$ have corresponding null sets, so
+$T_\#Q\ll T_\#P$ if and only if $Q\ll P$. The density of $T_\#Q$ with
+respect to $T_\#P$ is then $f\circ T^{-1}$, as
+$\int_Bf\circ T^{-1}\,\dd(T_\#P) = \int_{T^{-1}(B)}f\,\dd P
+= Q(T^{-1}(B))$ by \cref{lebesgue-integral:thm:transfer}; and the same
+theorem gives
+$\int\phi(f\circ T^{-1})\,\dd(T_\#P) = \int\phi(f)\,\dd P$.
+\end{proof}
+
+For the counting measure on a finite set, (2) is the divergence of
+\cref{natural-gradient:def:kl}, and (1) is
+\cref{natural-gradient:prop:kl}. The definition needs no reference
+measure and no coordinates, and (3) says that it does not change under
+a change of units or of parametrization of the outcomes.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth,
+    declare function={
+      pp(\x) = exp(-\x*\x/2)/sqrt(2*pi);
+      qq(\x) = exp(-(\x-1.5)*(\x-1.5)/2)/sqrt(2*pi);
+      ww(\x) = exp(1.5*\x - 1.125);}]
+  \begin{scope}[xscale=0.95, yscale=6.5]
+    \draw[->] (-3.3,0) -- (4.9,0) node[right] {$x$};
+    \draw[->] (-3.2,-0.01) -- (-3.2,0.5);
+    \draw[bookdef, very thick, domain=-3.2:4.7, samples=90, smooth]
+      plot ({\x}, {pp(\x)});
+    \draw[bookaccent, very thick, domain=-3.2:4.7, samples=90, smooth]
+      plot ({\x}, {qq(\x)});
+    \node[bookdef] at (-0.9,0.42) {$p$};
+    \node[bookaccent] at (2.4,0.42) {$q$};
+    \draw[densely dotted] (0.75,0) -- (0.75,0.31);
+    \node[below] at (0.75,0) {\small$0.75$};
+    \node[below] at (0,0) {\small$0$};
+    \node[below] at (1.5,0) {\small$1.5$};
+  \end{scope}
+  \begin{scope}[xshift=8.9cm, xscale=0.95, yscale=0.47]
+    \draw[->] (-3.3,0) -- (2.6,0) node[right] {$x$};
+    \draw[->] (-3.2,-0.15) -- (-3.2,6.9);
+    \draw[bookpitfall, very thick, domain=-3.2:1.98, samples=80, smooth]
+      plot ({\x}, {ww(\x)});
+    \draw[densely dotted] (-3.2,1) -- (0.75,1) -- (0.75,0);
+    \node[left] at (-3.2,1) {\small$1$};
+    \node[left] at (-3.2,5) {\small$5$};
+    \draw (-3.27,5) -- (-3.13,5);
+    \node[below] at (0.75,0) {\small$0.75$};
+    \node[bookpitfall, left] at (1.5,5.2)
+      {$\dfrac{\dd Q}{\dd P} = \dfrac qp$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Two Gaussian densities with means $0$ and $1.5$, and their
+likelihood ratio $e^{1.5x - 1.125}$. Samples of $P$ represent $Q$ when
+each is weighted by the ratio. The weights are largest where $P$ rarely
+samples, which is what makes such estimates noisy
+(\cref{lp-spaces:exr:9}).}
+\label{lp-spaces:fig:ratio}
+\end{figure}
+
+\begin{pitfall}[Differential entropy is not a divergence]
+For a density $q$ on $\R^n$ the number $-\int q\ln q\,\dd\lambda$ looks
+like the entropy of a discrete distribution, but it compares $Q$ with
+Lebesgue measure, which is not a probability and depends on the unit of
+length. It can be negative, and it changes by $\ln\abs{\det A}$ under a
+linear change of variables $A$ (\cref{lp-spaces:exr:8}). Differences of
+such quantities, and Kullback--Leibler divergences, do not depend on the
+unit.
+\end{pitfall}
+
+\begin{mlthread}[Machine learning: ratios of probabilities]
+\begin{itemize}[nosep]
+  \item \emph{Maximum likelihood.} If the data distribution $P^\ast$ and
+        the model $P_\theta$ have densities $p^\ast, p_\theta$, then
+        $D(P^\ast\,\|\,P_\theta)
+        = \E_{P^\ast}[\ln p^\ast] - \E_{P^\ast}[\ln p_\theta]$:
+        minimizing the expected negative log-likelihood, the
+        cross-entropy, is minimizing the divergence from the data to the
+        model.
+  \item \emph{When the divergence is infinite.} If the model lives on a
+        null set, as in \cref{measures:fig:generative}, or the data do,
+        the divergence is $\infty$ for every parameter and gives no
+        gradient. Adding noise, which is a convolution
+        (\cref{fubini:thm:convolution}), restores densities; other
+        notions of distance between measures avoid the ratio.
+  \item \emph{Importance weights.} Off-policy evaluation in
+        reinforcement learning and corrections for a shift between
+        training and test inputs average under $P$ with the weights
+        $\frac{\dd Q}{\dd P}$. They need $Q\ll P$, and their variance is
+        $\int(\frac{\dd Q}{\dd P})^2\,\dd P - 1$, which can be huge or
+        infinite.
+  \item \emph{Discriminators.} The function $u$ in the proof of
+        \cref{lp-spaces:thm:rn}, the density of $\nu$ with respect to
+        $\mu + \nu$, is what the ideal discriminator of a generative
+        adversarial network computes: the probability that a point
+        comes from one of two sources. The likelihood ratio is
+        $u/(1 - u)$.
+  \item \emph{Variational bounds.} For a latent variable model and any
+        density $r$ on the latent space, Jensen's inequality for the
+        logarithm gives
+        $\ln p_\theta(x)
+        = \ln\E_{z\sim r}\bigl[\frac{p_\theta(x, z)}{r(z)}\bigr]
+        \geq\E_{z\sim r}\bigl[\ln\frac{p_\theta(x, z)}{r(z)}\bigr]$,
+        the evidence lower bound. The gap is the divergence from $r$ to
+        the posterior $p_\theta(z\mid x)$.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{lp-spaces:sec:outlook}
+
+Functions are now points of complete normed spaces, $L^2$ has the
+geometry of \cref{ch:inner-products}, and measures have densities. The
+last chapter of this part, \cref{ch:change-of-variables}, computes the
+density of the push-forward of Lebesgue measure by a diffeomorphism,
+which is the Radon--Nikodym derivative
+$\frac{\dd(g_\#\lambda)}{\dd\lambda}$.
+
+Not proved here: for $1\leq p < \infty$ and $\sigma$-finite $\mu$,
+every bounded linear form on $L^p$ is $g\mapsto\int fg\,\dd\mu$ for one
+$f\in L^q$, with $q$ conjugate to $p$, and its dual norm is
+$\norm f_q$. For $p = 2$ this is \cref{norms-banach:thm:riesz}; that
+the norm is $\norm f_q$ is \cref{lp-spaces:exr:3}.
+
+\paragraph{Sources.} Hubbard and Hubbard remark that their
+Theorem~4.11.17 on series is, in the standard treatment, the statement
+that $L^1$ is complete; the proof of \cref{lp-spaces:thm:complete}
+follows that pattern. The Hilbert space results used here are those of
+\cref{ch:norms-banach}, with their sources. The proof of the
+Radon--Nikodym theorem through the Riesz representation is due to
+J.~von Neumann; see W.~Rudin, \emph{Real and Complex Analysis},
+McGraw-Hill, 1987, Chapter~6, and M.~Capi\'nski and E.~Kopp,
+\emph{Measure, Integral and Probability}, Springer, 2004. The divergence
+is from S.~Kullback and R.~A.~Leibler, On information and sufficiency,
+\emph{Annals of Mathematical Statistics}, 1951. The ideal discriminator
+is computed in I.~Goodfellow et al., Generative adversarial nets,
+NeurIPS, 2014.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{19-lp-spaces.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item Jensen: $\phi(\E Z)\leq\E\phi(Z)$ for convex $\phi$. H\"older:
+        $\int\abs{fg}\leq\norm f_p\norm g_q$ for conjugate exponents.
+        Minkowski: $\norm\cdot_p$ satisfies the triangle inequality.
+  \item $L^p(\mu)$, functions up to equality almost everywhere, is a
+        Banach space; a sequence that converges in $L^p$ has a
+        subsequence that converges almost everywhere. Simple functions,
+        and on $\R^n$ step and continuous functions, are dense for
+        $p < \infty$.
+  \item On a probability space $\norm f_p$ increases with $p$; for
+        sequences it decreases; on $\R^n$ there is no inclusion.
+  \item $L^2$ is a Hilbert space. $\E[Z\mid\mathcal G]$ is the
+        orthogonal projection on the $\mathcal G$-measurable functions;
+        $\E[Z\mid X] = m(X)$, and $m$ minimizes the squared risk.
+  \item $\nu\ll\mu$ if and only if $\nu$ has a density
+        $\frac{\dd\nu}{\dd\mu}$ with respect to $\mu$, for
+        $\sigma$-finite measures.
+  \item $D(Q\,\|\,P) = \int\ln\frac{\dd Q}{\dd P}\,\dd Q$ is defined for
+        any two probability measures, is non-negative, vanishes only
+        for $Q = P$, is $\infty$ unless $Q\ll P$, and is invariant under
+        measurable bijections.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{lp-spaces:exr:1}
+For $a > 0$ let $f_a(x) = x^{-a}$. For which $p\in[1, \infty)$ is $f_a$
+in $L^p((0, 1))$? In $L^p((1, \infty))$? Deduce a function that is in
+$L^p((0, \infty))$ for $p = 2$ only among $p\in\{1, 2, 3\}$.
+\solutionlink{lp-spaces:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{lp-spaces:exr:2}
+On a probability space let $f\in L^\infty$. Show that
+$\norm f_p\to\norm f_\infty$ as $p\to\infty$, and compute $\norm f_p$ for
+$f(x) = x$ on $[0, 1]$.
+\solutionlink{lp-spaces:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{lp-spaces:exr:3}
+Let $1 < p < \infty$, $q$ conjugate to $p$, and $f\in L^q$ with
+$f\neq0$. Show that $g = \sign(f)\abs f^{q-1}/\norm f_q^{q-1}$ has
+$\norm g_p = 1$ and $\int fg\,\dd\mu = \norm f_q$. Conclude that the
+dual norm of the linear form $g\mapsto\int fg\,\dd\mu$ on $L^p$ is
+$\norm f_q$.
+\solutionlink{lp-spaces:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{lp-spaces:exr:4}
+For the sequence of \cref{lp-spaces:fig:typewriter}, write $f_k$ for
+$k = 2^n + j$ with $0\leq j < 2^n$, compute $\norm{f_k}_p$, and show
+that $\limsup_kf_k(x) = 1$ and $\liminf_kf_k(x) = 0$ for every
+$x\in[0, 1]$.
+\solutionlink{lp-spaces:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{lp-spaces:exr:5}
+A fair die shows $Z\in\{1,\dots,6\}$, and $\mathcal G$ is generated by
+the blocks $\{1, 2\}$, $\{3\}$, $\{4, 5, 6\}$. Compute
+$W = \E[Z\mid\mathcal G]$, check that $Z - W$ is orthogonal to the
+indicator of each block, and verify
+$\Var(Z) = \E[(Z - W)^2] + \Var(W)$.
+\solutionlink{lp-spaces:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{lp-spaces:exr:6}
+Deduce from Jensen's inequality, for a random variable $Z$:
+\begin{enumerate}[nosep]
+  \item $(\E\abs Z)^2\leq\E[Z^2]$, with equality only if $\abs Z$ is
+        almost surely constant;
+  \item $\exp(\E[\ln Z])\leq\E[Z]$ for $Z > 0$ with $\ln Z$ integrable,
+        and the inequality between the geometric and arithmetic means
+        of $n$ positive numbers;
+  \item $\E[Z]\leq\ln\E[e^Z]$.
+\end{enumerate}
+\solutionlink{lp-spaces:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{lp-spaces:exr:7}
+\begin{enumerate}[nosep]
+  \item On $[0, 1]$ let $\mu = \lambda$ and
+        $\nu(A) = \int_A2x\,\dd x$. Compute the function $u$ of the
+        proof of \cref{lp-spaces:thm:rn} and check that
+        $u/(1 - u) = 2x$.
+  \item On $\{1, 2, 3\}$ let $P = (\frac12, \frac12, 0)$ and
+        $Q = (\frac14, \frac14, \frac12)$. Which of $P\ll Q$, $Q\ll P$
+        hold? Compute the density and both divergences.
+\end{enumerate}
+\solutionlink{lp-spaces:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{lp-spaces:exr:8}
+Let $P = N(m_1, s^2)$ and $Q = N(m_2, s^2)$ on $\R$.
+\begin{enumerate}[nosep]
+  \item Show that $D(Q\,\|\,P) = (m_1 - m_2)^2/(2s^2)$.
+  \item Check directly that this is unchanged when $x$ is replaced by
+        $ax + b$, $a\neq0$.
+  \item Show that $-\int q\ln q\,\dd x = \frac12\ln(2\pi es^2)$, and
+        that it changes by $\ln\abs a$ under the same replacement. For
+        which $s$ is it negative?
+\end{enumerate}
+\solutionlink{lp-spaces:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{lp-spaces:exr:9}
+Let $P = N(0, 1)$ and $Q = N(\theta, 1)$, with likelihood ratio
+$w(x) = e^{\theta x - \theta^2/2}$.
+\begin{enumerate}[nosep]
+  \item Check that $\E_P[w] = 1$ and $\E_P[xw(x)] = \theta$.
+  \item Show that $\E_P[w^2] = e^{\theta^2}$. How many samples of $P$
+        does it take for the average of the weights to have standard
+        deviation $0.1$ when $\theta = 1$? When $\theta = 3$?
+\end{enumerate}
+\solutionlink{lp-spaces:exr:9}
+\end{exercise}
 \end{notechapter}

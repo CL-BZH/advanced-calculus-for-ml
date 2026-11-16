@@ -2395,3 +2395,109 @@ inner expectation.
         fixed order of the labels gives a measurable predictor, and the
         integral is monotone.
 \end{enumerate}
+
+\section{\nameref*{ch:lp-spaces}}
+
+\solution{lp-spaces:exr:1}
+$\int_0^1x^{-ap}\,\dd x$ is finite if and only if $ap < 1$, and
+$\int_1^\infty x^{-ap}\,\dd x$ if and only if $ap > 1$. So $f_a$ is in
+$L^p((0, 1))$ for $p < 1/a$, in $L^p((1, \infty))$ for $p > 1/a$, and
+never in $L^p((0, \infty))$. Take
+$f = x^{-2/5}1_{(0, 1)} + x^{-3/4}1_{(1, \infty)}$. Near $0$ it is in
+$L^p$ for $p < \frac52$, at infinity for $p > \frac43$: among
+$1, 2, 3$ only $p = 2$ passes both tests.
+
+\solution{lp-spaces:exr:2}
+By \cref{lp-spaces:prop:inclusion}, $\norm f_p\leq\norm f_\infty$.
+Conversely let $0\leq c < \norm f_\infty$. The set $\{\abs f > c\}$ has
+a measure $\delta > 0$, and
+$\norm f_p\geq(c^p\delta)^{1/p} = c\,\delta^{1/p}\to c$ as
+$p\to\infty$. So $\liminf_p\norm f_p\geq c$ for every such $c$. For
+$f(x) = x$ on $[0, 1]$, $\norm f_p = (p + 1)^{-1/p}$, which increases
+to $1 = \norm f_\infty$.
+
+\solution{lp-spaces:exr:3}
+Since $(q - 1)p = q$,
+$\int\abs g^p\,\dd\mu
+= \int\abs f^q\,\dd\mu/\norm f_q^{q} = 1$, and
+$\int fg\,\dd\mu = \int\abs f^q\,\dd\mu/\norm f_q^{q-1} = \norm f_q$. By
+H\"older's inequality $\abs{\int fg\,\dd\mu}\leq\norm f_q$ whenever
+$\norm g_p\leq1$, and this $g$ attains the bound: the dual norm is
+$\norm f_q$. For $p = q = 2$, $g = f/\norm f_2$, as in
+\cref{norms-banach:thm:riesz}.
+
+\solution{lp-spaces:exr:4}
+$f_k$ is the indicator of $[j2^{-n}, (j + 1)2^{-n}]$, so
+$\norm{f_k}_p = 2^{-n/p}$, which tends to $0$ as $k\to\infty$ since
+$n\geq\log_2k - 1$. Fix $x\in[0, 1]$. For each $n$ the $2^n$ intervals
+of generation $n$ cover $[0, 1]$, so $f_k(x) = 1$ for at least one $k$
+in $[2^n, 2^{n+1})$: $\limsup_kf_k(x) = 1$. And $x$ belongs to at most
+two of them, so for $n\geq2$ some $k$ of the same range has
+$f_k(x) = 0$: $\liminf_kf_k(x) = 0$.
+
+\solution{lp-spaces:exr:5}
+$W$ is the average over each block: $W = \frac32$ on $\{1, 2\}$, $3$ on
+$\{3\}$, $5$ on $\{4, 5, 6\}$. The values of $Z - W$ are
+$-\frac12, \frac12$; $0$; $-1, 0, 1$: they add up to $0$ on each block,
+which is the orthogonality to its indicator. Then
+\[
+  \E[(Z - W)^2] = \frac{\frac14 + \frac14 + 0 + 1 + 0 + 1}6 = \frac5{12} ,
+  \qquad
+  \Var(W) = \frac{2\cdot\frac94 + 9 + 3\cdot25}6 - \frac{49}4
+  = \frac52 ,
+\]
+and $\frac5{12} + \frac{30}{12} = \frac{35}{12} = \Var(Z)$.
+
+\solution{lp-spaces:exr:6}
+\begin{enumerate}[nosep]
+  \item $\phi(t) = t^2$ on $\R$, applied to $\abs Z$ (if
+        $\E[Z^2] = \infty$ there is nothing to prove). It is strictly
+        convex, so equality forces $\abs Z = \E\abs Z$ almost surely.
+  \item $\phi = \exp$ on $\R$, applied to $\ln Z$:
+        $\exp(\E[\ln Z])\leq\E[\exp(\ln Z)]$. For $Z$ uniform on
+        positive numbers $z_1,\dots,z_n$ this reads
+        $(z_1\cdots z_n)^{1/n}\leq\frac1n(z_1 + \cdots + z_n)$.
+  \item $\phi = \exp$ applied to $Z$ gives $e^{\E Z}\leq\E[e^Z]$; take
+        logarithms.
+\end{enumerate}
+
+\solution{lp-spaces:exr:7}
+\begin{enumerate}[nosep]
+  \item $\rho = \mu + \nu$ has the density $1 + 2x$ with respect to
+        $\lambda$, so $\nu(A) = \int_A\frac{2x}{1 + 2x}\,\dd\rho$:
+        $u = \frac{2x}{1 + 2x}$, $1 - u = \frac1{1 + 2x}$, and
+        $u/(1 - u) = 2x$.
+  \item $P\ll Q$, since $Q$ charges every point. $Q$ is not absolutely
+        continuous with respect to $P$: $P\{3\} = 0$ and
+        $Q\{3\} = \frac12$. The density is
+        $\frac{\dd P}{\dd Q} = (2, 2, 0)$, and
+        $D(P\,\|\,Q) = \frac12\ln2 + \frac12\ln2 = \ln2$, while
+        $D(Q\,\|\,P) = \infty$.
+\end{enumerate}
+
+\solution{lp-spaces:exr:8}
+\begin{enumerate}[nosep]
+  \item $\ln\frac qp = \frac{(x - m_1)^2 - (x - m_2)^2}{2s^2}
+        = \frac{(m_2 - m_1)(2x - m_1 - m_2)}{2s^2}$, and under $Q$ the
+        mean of $x$ is $m_2$:
+        $D(Q\,\|\,P) = \frac{(m_2 - m_1)^2}{2s^2}$.
+  \item The laws of $ax + b$ are $N(am_i + b, a^2s^2)$, and
+        $\frac{a^2(m_2 - m_1)^2}{2a^2s^2}$ is the same number.
+  \item $-\ln q = \frac12\ln(2\pi s^2) + \frac{(x - m_2)^2}{2s^2}$, of
+        mean $\frac12\ln(2\pi s^2) + \frac12$ under $Q$. Replacing $s$
+        by $\abs as$ adds $\ln\abs a$. It is negative for
+        $s < (2\pi e)^{-1/2}\approx0.242$.
+\end{enumerate}
+
+\solution{lp-spaces:exr:9}
+\begin{enumerate}[nosep]
+  \item $\E_P[w] = Q(\R) = 1$ and $\E_P[xw] = \E_Q[x] = \theta$, by the
+        definition of the density.
+  \item $w^2 = e^{2\theta x - \theta^2}$, and
+        $\E_P[e^{tx}] = e^{t^2/2}$ for a standard Gaussian, so
+        $\E_P[w^2] = e^{2\theta^2 - \theta^2} = e^{\theta^2}$. The
+        variance of one weight is $e^{\theta^2} - 1$, and the average of
+        $N$ of them has standard deviation $0.1$ for
+        $N = 100(e^{\theta^2} - 1)$: about $172$ samples for
+        $\theta = 1$, and about $810\,000$ for $\theta = 3$.
+\end{enumerate}
