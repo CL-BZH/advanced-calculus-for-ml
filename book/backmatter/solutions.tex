@@ -2528,3 +2528,138 @@ and $\frac5{12} + \frac{30}{12} = \frac{35}{12} = \Var(Z)$.
         = 1 - 2\sigma + \frac{4\sigma}3 = 1 - \frac{2\sigma}3
         \leq1 = \norm g_2^2$.
 \end{enumerate}
+
+\section{\nameref*{ch:change-of-variables}}
+
+\solution{change-of-variables:exr:1}
+The linear map $g(u, v) = (au, bv)$ sends the unit disc onto the
+ellipse and has determinant $ab$: the area is $\pi ab$
+(\cref{change-of-variables:cor:sets}, or already
+\cref{measures:thm:linear}). For the ellipsoid write
+$\Sigma = LL^\top$; then $x^\top\Sigma^{-1}x = \norm{L^{-1}x}^2$, so the
+ellipsoid is the image of the unit ball by $L$, of volume
+$\abs{\det L}\,\omega_n = \sqrt{\det\Sigma}\;\omega_n$.
+
+\solution{change-of-variables:exr:2}
+\begin{enumerate}[nosep]
+  \item In polar coordinates,
+        $2\pi\int_0^\infty r(1 + r^2)^{-2}\,\dd r
+        = 2\pi\bigl[-\frac12(1 + r^2)^{-1}\bigr]_0^\infty = \pi$.
+  \item By \cref{change-of-variables:thm:polar},
+        $\int_{\{\norm x\leq1\}}\norm x^{-a}\,\dd x
+        = \sigma(S^{n-1})\int_0^1r^{n-1-a}\,\dd r$, finite if and only
+        if $a < n$; outside the ball the integral is
+        $\sigma(S^{n-1})\int_1^\infty r^{n-1-a}\,\dd r$, finite if and
+        only if $a > n$. The critical exponent is the dimension.
+\end{enumerate}
+
+\solution{change-of-variables:exr:3}
+\begin{enumerate}[nosep]
+  \item $g(u) = -\ln u$ is a diffeomorphism of $(0, 1)$ onto
+        $(0, \infty)$ with inverse $e^{-y}$, so the density is
+        $1\cdot\abs{\frac{\dd}{\dd y}e^{-y}} = e^{-y}$: an exponential
+        variable. For $u^2$ the inverse is $\sqrt y$ and the density is
+        $\frac1{2\sqrt y}$ on $(0, 1)$.
+  \item Let $R = \sqrt{-2\ln U_1}$ and $\Theta = 2\pi U_2$. The map
+        $(u_1, u_2)\mapsto(r, \theta)$ is a diffeomorphism of the open
+        square onto $(0, \infty)\times(0, 2\pi)$ with inverse
+        $(e^{-r^2/2}, \theta/2\pi)$, whose Jacobian determinant has
+        absolute value $re^{-r^2/2}/(2\pi)$: that is the density of
+        $(R, \Theta)$. Then $(Z_1, Z_2) = P(R, \Theta)$, and by
+        \cref{change-of-variables:thm:pushforward} with
+        $\abs{\det DP} = r$ its density is
+        \[
+          \frac{re^{-r^2/2}}{2\pi}\cdot\frac1r
+          = \frac{e^{-z_1^2/2}}{\sqrt{2\pi}}\cdot
+            \frac{e^{-z_2^2/2}}{\sqrt{2\pi}} ,
+        \]
+        a product: $Z_1$ and $Z_2$ are independent standard Gaussians.
+\end{enumerate}
+
+\solution{change-of-variables:exr:4}
+With $g = \exp$ and $g^{-1} = \ln$,
+\[
+  q(y) = \frac1{ys\sqrt{2\pi}}
+         \exp\Bigl(-\frac{(\ln y - m)^2}{2s^2}\Bigr) ,
+  \qquad y > 0 .
+\]
+In the variable $t = \ln y$, $\ln q = -\frac{(t - m)^2}{2s^2} - t$ up to
+a constant, which is largest for $t = m - s^2$: the mode of $Y$ is
+$e^{m - s^2}$, smaller than the image $e^m$ of the mode of $X$. The
+median of $Y$ is $e^m$, the image of the median of $X$, because
+$P(Y\leq e^m) = P(X\leq m) = \frac12$.
+
+\solution{change-of-variables:exr:5}
+Take the logarithm of the first form in
+\cref{change-of-variables:ex:gauss}; for a triangular matrix
+$\det L = \prod_iL_{ii}$. In practice $L$ is computed once, in about
+$n^3/3$ operations; then $L^{-1}(x - m)$ is obtained by solving a
+triangular system, in $n^2$ operations, without ever forming
+$\Sigma^{-1}$; and the determinant, which easily overflows or
+underflows, is never formed either, only the sum of the logarithms of
+the diagonal.
+
+\solution{change-of-variables:exr:6}
+\begin{enumerate}[nosep]
+  \item $\displaystyle D(y_1, y_2)
+        = \begin{bmatrix}I & 0\\ * & \diag\bigl(e^{s(x_1)}\bigr)
+        \end{bmatrix}$, where the block $*$ contains the derivatives of
+        $s$ and $t$ and plays no role in the determinant, which is
+        $\exp\bigl(\sum_is_i(x_1)\bigr) > 0$.
+  \item $x_1 = y_1$ and $x_2 = (y_2 - t(y_1))\odot e^{-s(y_1)}$. No
+        inverse of $s$ or $t$ is needed.
+  \item With $\varphi$ the standard Gaussian density on $\R$,
+        $q(y) = \varphi(y_1)\,\varphi\bigl((y_2 - y_1^2)e^{-y_1}\bigr)\,
+        e^{-y_1}$.
+\end{enumerate}
+
+\solution{change-of-variables:exr:7}
+\begin{enumerate}[nosep]
+  \item The surface is the graph of $\phi = \frac12(x^2 + y^2)$, with
+        $\nabla\phi = (x, y)$ and $\sqrt{\det G} = \sqrt{1 + r^2}$. In
+        polar coordinates the area is
+        $2\pi\int_0^1r\sqrt{1 + r^2}\,\dd r
+        = \frac{2\pi}3\bigl(2\sqrt2 - 1\bigr)$.
+  \item $\sqrt{\det G} = 4(1 + \norm u^2)^{-2}$, and by
+        \cref{change-of-variables:exr:2}
+        $\int_{\R^2}4(1 + \norm u^2)^{-2}\,\dd u = 4\pi$. The same area
+        as with longitude and latitude, as
+        \cref{change-of-variables:thm:independent} requires.
+\end{enumerate}
+
+\solution{change-of-variables:exr:8}
+\begin{enumerate}[nosep]
+  \item With $\Gamma(1) = 1$, $\Gamma(\frac32) = \frac{\sqrt\pi}2$ and
+        $\Gamma(2) = 1$: the areas are $2\pi$, $4\pi$, $2\pi^2$ and the
+        volumes $\pi$, $\frac43\pi$, $\frac12\pi^2$. As
+        $\Gamma(\frac n2 + 1)$ grows faster than any power
+        $\pi^{n/2}$, the volume of the unit ball tends to $0$; it is
+        largest for $n = 5$. Since the cube $[-1, 1]^n$ has volume
+        $2^n$, the ball fills a vanishing fraction of it.
+  \item $\E[\norm x^2] = \sum_i\E[x_i^2] = n$. The density of the
+        radius is proportional to $r^{n-1}e^{-r^2/2}$; its logarithm
+        $(n - 1)\ln r - \frac{r^2}2$ has derivative
+        $\frac{n - 1}r - r$, which vanishes at $r = \sqrt{n - 1}$.
+\end{enumerate}
+
+\solution{change-of-variables:exr:9}
+\begin{enumerate}[nosep]
+  \item With $\theta = \sin^2t$,
+        $\int_0^1\frac{\dd\theta}{\sqrt{\theta(1 - \theta)}}
+        = \int_0^{\pi/2}2\,\dd t = \pi$. The map
+        $S(\theta) = 2(\sqrt\theta, \sqrt{1 - \theta})$ sends the model
+        onto a quarter of the circle of radius $2$, of length $\pi$,
+        and the Fisher metric is the pull-back of the metric of that
+        circle: the Riemannian volume is the length along the arc.
+  \item $\theta = 1/(1 + e^{-\eta})$ and
+        $\frac{\dd\theta}{\dd\eta} = \theta(1 - \theta)$. A metric
+        transforms with the square of this factor:
+        $F_\eta = F\,(\frac{\dd\theta}{\dd\eta})^2 = \theta(1 - \theta)$.
+        So $\sqrt{F_\eta}\,\dd\eta = \sqrt{\theta(1 - \theta)}\,\dd\eta$,
+        and
+        $\sqrt F\,\dd\theta
+        = \frac{\theta(1 - \theta)}{\sqrt{\theta(1 - \theta)}}\,\dd\eta$
+        is the same.
+  \item $1\cdot\abs{\frac{\dd\theta}{\dd\eta}} = \theta(1 - \theta)
+        = e^\eta/(1 + e^\eta)^2$, the logistic density: far from flat.
+\end{enumerate}

@@ -4,18 +4,836 @@
 \chaptersubtitle{%
   How densities transform}
 
-\begin{chapterplan}
+\begin{chapterintro}
+A linear map multiplies volumes by the absolute value of its
+determinant (\cref{measures:thm:linear}). A diffeomorphism does the
+same thing point by point, with the determinant of its differential:
+that is the change of variables theorem. It says how integrals are
+computed in curvilinear coordinates, and how a probability density
+changes when the variable is transformed: by composition \emph{and}
+division by a Jacobian determinant. A density is therefore not a
+function on the space. The same computation with a rectangular Jacobian
+matrix gives lengths, areas and volumes on submanifolds through the Gram
+determinant $\sqrt{\det G}$, the volume of a Riemannian manifold, and
+the surprising geometry of high-dimensional balls and Gaussians. You
+will learn
 \begin{itemize}[nosep]
-  \item The change of variables theorem for $C^1$ diffeomorphisms, with proof.
-  \item Polar and spherical coordinates.
-  \item The density of the push-forward of a measure by a diffeomorphism.
-  \item The volume of a parametrized submanifold through the Gram determinant.
+  \item the change of variables theorem for $C^1$ diffeomorphisms, with
+        its proof;
+  \item the density of the push-forward of a measure by a
+        diffeomorphism, and why modes are not invariant;
+  \item polar coordinates in the plane and in $\R^n$;
+  \item the volume measure of a submanifold and its independence of the
+        parametrization;
+  \item the area of spheres, the volume of balls, and where the mass of
+        a high-dimensional Gaussian sits;
+  \item normalizing flows, and the prior that is the same in all
+        parametrizations.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:measures,ch:lebesgue-integral,ch:fubini}, the
+density theorem \cref{lp-spaces:thm:dense}, diffeomorphisms and the
+inverse function theorem (\cref{ch:inverse-implicit}), and for the last
+sections the parametrizations of \cref{ch:submanifolds}. Integrals over
+subsets of $\R^n$ are for Lebesgue measure $\lambda$, written $\dd x$.}
+\end{chapterintro}
+
+\section{The theorem}\label{change-of-variables:sec:theorem}
+
+Throughout, $U$ and $V$ are open subsets of $\R^n$ and $g:U\to V$ is a
+diffeomorphism of class $C^1$ (\cref{inverse-implicit:def:diffeo}). By
+the inverse function theorem, an injective map of class $C^1$ on $U$
+whose differential is invertible at every point is a diffeomorphism
+onto its image, which is open.
+
+\begin{theorem}[Change of variables]\label{change-of-variables:thm:cov}
+For every measurable $f:V\to[0, \infty]$,
+\[
+  \int_Vf(y)\,\dd y = \int_Uf\bigl(g(x)\bigr)\,\abs{\det Dg(x)}\,\dd x .
+\]
+A measurable $f:V\to\R$ is integrable on $V$ if and only if
+$(f\circ g)\abs{\det Dg}$ is integrable on $U$, and the formula then
+holds.
+\end{theorem}
+
+\begin{intuition}
+Substitute $y = g(x)$ and replace $\dd y$ by
+$\abs{\det Dg(x)}\,\dd x$. Near a point $a$ the map is close to the
+affine map $x\mapsto g(a) + Dg(a)(x - a)$, which multiplies the volume
+of a small cube by $\abs{\det Dg(a)}$
+(\cref{change-of-variables:fig:polar}). The proof makes ``close to''
+precise on cubes that shrink.
+\end{intuition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth]
+  \begin{scope}
+    \draw[->] (-0.2,0) -- (3.9,0) node[right] {$r$};
+    \draw[->] (0,-0.2) -- (0,3.5) node[above] {$\theta$};
+    \foreach \r in {1,2,3} \draw[gray!60] (\r,0) -- (\r,3.2);
+    \foreach \t in {0.8,1.6,2.4,3.2} \draw[gray!60] (0,\t) -- (3.4,\t);
+    \fill[bookaccent!45] (2,0.8) rectangle (3,1.6);
+    \draw[bookaccent, thick] (2,0.8) rectangle (3,1.6);
+    \node[below] at (2.5,0) {$\dd r$};
+    \node[left] at (0,1.2) {$\dd\theta$};
+    \draw[densely dotted] (2,0) -- (2,0.8) (3,0) -- (3,0.8);
+    \draw[densely dotted] (0,0.8) -- (2,0.8) (0,1.6) -- (2,1.6);
+  \end{scope}
+  \draw[->, thick] (4.6,1.7) -- node[above] {$P$} (6.0,1.7);
+  \begin{scope}[xshift=7.6cm, yshift=0.3cm, scale=1.05]
+    \draw[->] (-0.2,0) -- (3.9,0) node[right] {$x$};
+    \draw[->] (0,-0.2) -- (0,3.4) node[above] {$y$};
+    \foreach \r in {1,2,3} \draw[gray!60] (\r,0) arc (0:90:\r);
+    \foreach \t in {22.5,45,67.5} \draw[gray!60] (0,0) -- (\t:3.4);
+    \fill[bookaccent!45] (22.5:2) -- (22.5:3) arc (22.5:45:3)
+      -- (45:2) arc (45:22.5:2) -- cycle;
+    \draw[bookaccent, thick] (22.5:2) -- (22.5:3) arc (22.5:45:3)
+      -- (45:2) arc (45:22.5:2) -- cycle;
+    \node[right] at (26:3.05) {$r\,\dd\theta$};
+    \node[below] at (15:2.55) {$\dd r$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The theorem for polar coordinates
+(\cref{change-of-variables:sec:polar}). A cell of the $(r, \theta)$ grid
+and its image, which has sides $\dd r$ and about $r\,\dd\theta$: the
+cells further from the origin are larger, by the factor
+$r = \abs{\det DP}$.}
+\label{change-of-variables:fig:polar}
+\end{figure}
+
+On $\R^n$ we use the norm $\norm x_\infty = \max_i\abs{x_i}$, whose
+balls are cubes, and the corresponding operator norm. A \emph{closed
+cube} is a set $\{x : \norm{x - c}_\infty\leq r\}$.
+
+\begin{lemma}\label{change-of-variables:lem:cube}
+Let $h:U\to\R^n$ be of class $C^1$ and $Q\subset U$ a closed cube. If
+$\norm{Dh(x)}\leq K$ for all $x\in Q$, then
+$\lambda(h(Q))\leq K^n\lambda(Q)$.
+\end{lemma}
+
+\begin{proof}
+Let $c$ be the centre of $Q$ and $r$ its half-side. For $x\in Q$ the
+segment $[c, x]$ lies in $Q$, and by the mean value inequality
+(\cref{contractions-newton:thm:mvi})
+$\norm{h(x) - h(c)}_\infty\leq Kr$. So $h(Q)$, which is compact, lies in
+a cube of half-side $Kr$.
+\end{proof}
+
+\begin{lemma}\label{change-of-variables:lem:local}
+For every closed cube $Q\subset U$,
+$\lambda(g(Q))\leq\int_Q\abs{\det Dg}\,\dd\lambda$.
+\end{lemma}
+
+\begin{proof}
+Let $\epsilon > 0$. There is a $\delta > 0$ such that
+\[
+  \norm{Dg(a)^{-1}Dg(x)}\leq1 + \epsilon
+  \qquad\text{whenever }a, x\in Q,\ \norm{x - a}_\infty\leq\delta .
+\]
+Otherwise there would be $a_k, x_k\in Q$ with
+$\norm{x_k - a_k}_\infty\to0$ violating it. Since $Q$ is compact
+(\cref{norms-banach:thm:bw}) a subsequence of $(a_k)$ converges to some
+$a\in Q$, and so does $(x_k)$. But $x\mapsto Dg(x)$ and
+$x\mapsto Dg(x)^{-1} = D(g^{-1})(g(x))$ are continuous, so
+$Dg(a_k)^{-1}Dg(x_k)$ tends to the identity along the subsequence: a
+contradiction.
+
+Cut $Q$ into finitely many closed cubes $Q_i$ of side at most $\delta$.
+In each, let $a_i$ be a point where the continuous function
+$\abs{\det Dg}$ is smallest (\cref{norms-banach:thm:extreme}) and put
+$T = Dg(a_i)$. The map $h = T^{-1}\circ g$ has
+$\norm{Dh(x)} = \norm{Dg(a_i)^{-1}Dg(x)}\leq1 + \epsilon$ on $Q_i$. By
+\cref{measures:thm:linear,change-of-variables:lem:cube},
+\[
+  \lambda\bigl(g(Q_i)\bigr) = \abs{\det T}\,\lambda\bigl(h(Q_i)\bigr)
+  \leq(1 + \epsilon)^n\abs{\det Dg(a_i)}\,\lambda(Q_i)
+  \leq(1 + \epsilon)^n\int_{Q_i}\abs{\det Dg}\,\dd\lambda .
+\]
+The $Q_i$ overlap only along faces, which are null sets. Adding up
+gives $\lambda(g(Q))\leq(1 + \epsilon)^n\int_Q\abs{\det Dg}\,\dd\lambda$,
+for every $\epsilon > 0$.
+\end{proof}
+
+\begin{lemma}\label{change-of-variables:lem:borel}
+For every Borel set $A\subset U$, the set $g(A)$ is a Borel set and
+$\lambda(g(A))\leq\int_A\abs{\det Dg}\,\dd\lambda$.
+\end{lemma}
+
+\begin{proof}
+Since $g^{-1}$ is continuous, $g(A) = (g^{-1})^{-1}(A)$ is a Borel set,
+and $\nu(A) = \lambda(g(A))$ is a measure on $\mathcal B(U)$, as is
+$\rho(A) = \int_A\abs{\det Dg}\,\dd\lambda$. We must show
+$\nu\leq\rho$.
+
+A \emph{dyadic cube} is a half-open box
+$\prod_i[m_i2^{-j}, (m_i + 1)2^{-j})$ with integers $m_i$ and $j\geq0$;
+two dyadic cubes are nested or disjoint. Let $K$ be a dyadic cube whose
+closure $\bar K$ lies in $U$. By \cref{change-of-variables:lem:local},
+$\nu(K)\leq\nu(\bar K)\leq\rho(\bar K) = \rho(K) < \infty$, and the same
+holds for every dyadic cube inside $K$. So $\int s\,\dd\nu
+\leq\int s\,\dd\rho$ for every function $s = \sum_ic_i1_{C_i}$ with
+$c_i\geq0$ and $C_i$ dyadic cubes inside $K$. Now let $B\subset K$ be a
+Borel set and $\epsilon > 0$. The measure $\mu(E) = (\nu + \rho)(E\cap K)$
+is finite, so by \cref{lp-spaces:thm:dense} there is a combination
+$\varphi$ of indicators of dyadic boxes with
+$\int\abs{1_B - \varphi}\,\dd\mu < \epsilon$. Cutting these boxes into
+dyadic cubes of one size, smaller than $K$, we may assume that they are
+disjoint cubes and that each lies inside $K$ or outside it; those
+outside can be dropped. Then
+$s = \max(\varphi, 0)$ is a function of the kind above, and
+$\abs{1_B - s}\leq\abs{1_B - \varphi}$. Hence
+\[
+  \nu(B)\leq\int s\,\dd\nu + \epsilon\leq\int s\,\dd\rho + \epsilon
+  \leq\rho(B) + 2\epsilon .
+\]
+
+Finally, every point of $U$ lies in a dyadic cube with closure in $U$,
+and in a largest one, since the sides are at most $1$. These largest
+cubes are disjoint, countably many, and cover $U$. Apply the above to
+the pieces of $A$ in each of them and add.
+\end{proof}
+
+\begin{proof}[Proof of \cref{change-of-variables:thm:cov}]
+Let $f = 1_B$ for a Borel set $B\subset V$. With $A = g^{-1}(B)$,
+\cref{change-of-variables:lem:borel} reads
+$\int_V1_B\,\dd\lambda\leq\int_U(1_B\circ g)\abs{\det Dg}\,\dd\lambda$. By
+linearity and monotone convergence along simple functions,
+\[
+  \int_Vf\,\dd\lambda\leq\int_U(f\circ g)\,\abs{\det Dg}\,\dd\lambda
+  \qquad\text{for every measurable }f\geq0 .
+\]
+The same inequality holds for the diffeomorphism $g^{-1}:V\to U$ and the
+function $F = (f\circ g)\abs{\det Dg}$ on $U$:
+\[
+  \int_U(f\circ g)\,\abs{\det Dg}\,\dd\lambda
+  \leq\int_VF\bigl(g^{-1}(y)\bigr)\,\abs{\det D(g^{-1})(y)}\,\dd y
+  = \int_Vf\,\dd\lambda ,
+\]
+because $F(g^{-1}(y)) = f(y)\abs{\det Dg(g^{-1}(y))}$ and
+$Dg(g^{-1}(y))\,D(g^{-1})(y) = I$. So both inequalities are equalities.
+For a real $f$, apply this to $\abs f$, $f^+$ and $f^-$.
+\end{proof}
+
+\begin{corollary}\label{change-of-variables:cor:sets}
+For every Borel set $A\subset U$,
+$\lambda(g(A)) = \int_A\abs{\det Dg}\,\dd\lambda$. In particular a
+diffeomorphism maps null sets to null sets.
+\end{corollary}
+
+\section{How densities transform}\label{change-of-variables:sec:density}
+
+\begin{theorem}[Density of a push-forward]
+\label{change-of-variables:thm:pushforward}
+Let $\mu$ be a measure on $U$ with density $p$ with respect to Lebesgue
+measure. Then $g_\#\mu$ has the density
+\[
+  q(y) = p\bigl(g^{-1}(y)\bigr)\,\abs{\det D(g^{-1})(y)} ,
+  \qquad\text{that is,}\qquad
+  q\bigl(g(x)\bigr) = \frac{p(x)}{\abs{\det Dg(x)}} .
+\]
+\end{theorem}
+
+\begin{proof}
+For a Borel set $B\subset V$, apply
+\cref{change-of-variables:thm:cov} to the diffeomorphism $g^{-1}$ and
+the function $1_{g^{-1}(B)}\,p$ on $U$:
+$g_\#\mu(B) = \int_U1_{g^{-1}(B)}\,p\,\dd\lambda
+= \int_V1_B(y)\,p(g^{-1}(y))\,\abs{\det D(g^{-1})(y)}\,\dd y$. The second
+form follows from $D(g^{-1})(g(x)) = Dg(x)^{-1}$.
+\end{proof}
+
+In logarithms, $\ln q(g(x)) = \ln p(x) - \ln\abs{\det Dg(x)}$. For a
+composition the determinants multiply, by the chain rule, so the
+corrections add:
+$\ln\abs{\det D(g_2\circ g_1)(x)}
+= \ln\abs{\det Dg_1(x)} + \ln\abs{\det Dg_2(g_1(x))}$.
+
+\begin{keyidea}[A density is not a function]
+Under a change of variables $y = g(x)$ a \emph{function} keeps its
+values: $h$ becomes $h\circ g^{-1}$. A \emph{density} does not: it is
+also divided by $\abs{\det Dg}$, because it is a quantity per unit of
+volume and $g$ changes the unit from point to point. What is invariant
+is the measure: the probability of a set and of its image are the same
+(\cref{change-of-variables:fig:density}). This is the non-linear form
+of the remark that closes \cref{measures:sec:lebesgue}; Part~V will
+describe the same behaviour as that of a differential form of top
+degree.
+\end{keyidea}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth,
+    declare function={
+      nn(\x) = exp(-\x*\x/2)/sqrt(2*pi);
+      lnn(\y) = exp(-ln(\y)*ln(\y)/2)/(\y*sqrt(2*pi));}]
+  \begin{scope}[xscale=1.0, yscale=5.2]
+    \fill[bookaccent!30] plot[domain=-0.5:0.5, samples=30]
+      ({\x}, {nn(\x)}) -- (0.5,0) -- (-0.5,0) -- cycle;
+    \draw[->] (-3.1,0) -- (3.3,0) node[right] {$x$};
+    \draw[bookdef, very thick, domain=-3:3, samples=80, smooth]
+      plot ({\x}, {nn(\x)});
+    \draw[densely dotted] (0,0) -- (0,0.399);
+    \node[below] at (0,0) {\small$0$};
+    \node[below] at (-0.6,0) {\small$-\frac12$};
+    \node[below] at (0.6,0) {\small$\frac12$};
+    \node[bookdef] at (1.6,0.33) {$p$};
+  \end{scope}
+  \begin{scope}[xshift=5.2cm, xscale=1.5, yscale=5.2]
+    \fill[bookaccent!30] plot[domain=0.6065:1.6487, samples=40]
+      ({\x}, {lnn(\x)}) -- (1.6487,0) -- (0.6065,0) -- cycle;
+    \draw[->] (-0.1,0) -- (4.6,0) node[right] {$y$};
+    \draw[bookpitfall, very thick, domain=0.012:4.4, samples=160, smooth]
+      plot ({\x}, {lnn(\x)});
+    \draw[densely dotted] (1,0) -- (1,0.399);
+    \draw[densely dotted] (0.3679,0) -- (0.3679,0.658);
+    \node[below] at (1,0) {\small$1$};
+    \node[below] at (0.33,0) {\small$e^{-1}$};
+    \node[below] at (1.75,0) {\small$e^{1/2}$};
+    \node[bookpitfall] at (2.0,0.3) {$q$};
+  \end{scope}
+\end{tikzpicture}
+\caption{A standard Gaussian density $p$ and the density
+$q(y) = p(\ln y)/y$ of its push-forward by $y = e^x$. The two shaded
+areas are equal: they are the probability of
+$[-\frac12, \frac12]$ and of its image. The heights are not: the mode of
+$p$ is at $x = 0$, the mode of $q$ at $y = e^{-1}$, not at $e^0 = 1$.}
+\label{change-of-variables:fig:density}
+\end{figure}
+
+\begin{pitfall}[The most probable point depends on the coordinates]
+The point where a density is largest is not carried along by a change
+of variables (\cref{change-of-variables:fig:density}). So ``the most
+probable value'' of a continuous quantity, such as a maximum a
+posteriori estimate of a parameter, depends on how the quantity is
+parametrized. Statements about probabilities of sets, expectations,
+medians of real variables and maxima of likelihoods (which are
+functions of the parameter, not densities in it) do not.
+\end{pitfall}
+
+\begin{example}[Gaussian measures]\label{change-of-variables:ex:gauss}
+By \cref{fubini:ex:gauss} and Tonelli's theorem,
+$p(z) = (2\pi)^{-n/2}e^{-\norm z^2/2}$ is a probability density on
+$\R^n$, the standard Gaussian. Let $L$ be an invertible matrix and
+$m\in\R^n$. By \cref{change-of-variables:thm:pushforward} the law of
+$x = m + Lz$ has the density
+\[
+  q(x) = \frac{e^{-\frac12\norm{L^{-1}(x - m)}^2}}
+              {(2\pi)^{n/2}\abs{\det L}}
+  = \frac{e^{-\frac12(x - m)^\top\Sigma^{-1}(x - m)}}
+         {(2\pi)^{n/2}\sqrt{\det\Sigma}} ,
+  \qquad\Sigma = LL^\top .
+\]
+The normalizing constant of a Gaussian is a Jacobian determinant.
+\end{example}
+
+\section{Polar coordinates}\label{change-of-variables:sec:polar}
+
+The map $P(r, \theta) = (r\cos\theta, r\sin\theta)$ is injective on
+$(0, \infty)\times(-\pi, \pi)$, of class $C^1$, with
+\[
+  \det DP(r, \theta)
+  = \det\begin{bmatrix}\cos\theta & -r\sin\theta\\
+                       \sin\theta & r\cos\theta\end{bmatrix} = r > 0 .
+\]
+Its image is the plane without the half-line $\{(x, 0) : x\leq0\}$,
+which is a null set. So for every measurable $f\geq0$ on $\R^2$, by
+\cref{change-of-variables:thm:cov} and Tonelli's theorem,
+\[
+  \int_{\R^2}f\,\dd\lambda
+  = \int_0^\infty\Bigl(\int_{-\pi}^\pi
+    f(r\cos\theta, r\sin\theta)\,\dd\theta\Bigr)r\,\dd r .
+\]
+For $f = e^{-x^2 - y^2}$ this gives
+$2\pi\int_0^\infty re^{-r^2}\dd r = \pi$, the square of the Gaussian
+integral, in agreement with \cref{fubini:ex:gauss}. The factor $r$ is
+the one read off \cref{change-of-variables:fig:polar}.
+
+\section{The volume of a submanifold}
+\label{change-of-variables:sec:volume}
+
+Let $M$ be a submanifold of dimension $k$ of $\R^n$ with its usual inner
+product, and $\psi:\Omega\to M$ a parametrization of an open piece of
+$M$ (\cref{submanifolds:thm:four}), with $\Omega\subset\R^k$ open. The
+columns $\partial_1\psi,\dots,\partial_k\psi$ of $D\psi(u)$ are a basis
+of the tangent space at $\psi(u)$, with \emph{Gram matrix}
+\[
+  G(u) = D\psi(u)^\top D\psi(u) , \qquad
+  g_{ij} = \partial_i\psi\cdot\partial_j\psi .
+\]
+By \cref{measures:prop:affine}, in the tangent space the unit cube of
+these coordinates has the $k$-dimensional volume $\sqrt{\det G(u)}$. So a
+small cell $\dd u$ of $\Omega$ is mapped to a piece of $M$ of volume
+about $\sqrt{\det G(u)}\,\dd u$
+(\cref{change-of-variables:fig:surface}).
+
+\begin{definition}[Volume in a parametrization]
+\label{change-of-variables:def:volume}
+For a Borel set $A\subset\psi(\Omega)$,
+\[
+  \operatorname{vol}_M(A)
+  = \int_{\psi^{-1}(A)}\sqrt{\det G(u)}\,\dd u .
+\]
+\end{definition}
+
+\begin{theorem}\label{change-of-variables:thm:independent}
+The number $\operatorname{vol}_M(A)$ does not depend on the
+parametrization: if $A$ also lies in the image of a parametrization
+$\tilde\psi$, with Gram matrix $\tilde G$, then
+$\int_{\tilde\psi^{-1}(A)}\sqrt{\det\tilde G}\,\dd\lambda
+= \int_{\psi^{-1}(A)}\sqrt{\det G}\,\dd\lambda$.
+\end{theorem}
+
+\begin{proof}
+On the common part of the two images, $\tilde\psi = \psi\circ h$ for a
+diffeomorphism $h$ between open subsets of $\R^k$
+(\cref{submanifolds:cor:transition}). By the chain rule
+$D\tilde\psi = (D\psi\circ h)\,Dh$, so
+\[
+  \tilde G = Dh^\top\,(G\circ h)\,Dh , \qquad
+  \sqrt{\det\tilde G} = \abs{\det Dh}\,\sqrt{\det G}\circ h .
+\]
+Apply \cref{change-of-variables:thm:cov} to $h$ and
+$f = 1_{\psi^{-1}(A)}\sqrt{\det G}$, noting that
+$f\circ h = 1_{\tilde\psi^{-1}(A)}\sqrt{\det G}\circ h$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth]
+  \begin{scope}
+    \draw[->] (-0.2,0) -- (3.4,0) node[right] {$u_1$};
+    \draw[->] (0,-0.2) -- (0,2.7) node[above] {$u_2$};
+    \draw[gray!60] (0.5,0.4) rectangle (3.0,2.3);
+    \fill[bookaccent!45] (1.4,1.0) rectangle (2.1,1.6);
+    \draw[bookaccent, thick] (1.4,1.0) rectangle (2.1,1.6);
+    \fill (1.4,1.0) circle (1.3pt) node[below left] {$u$};
+    \node[gray] at (2.75,2.05) {$\Omega$};
+  \end{scope}
+  \draw[->, thick] (4.0,1.4) -- node[above] {$\psi$} (5.2,1.4);
+  \begin{scope}[xshift=6.0cm, yshift=-0.1cm]
+    \path[fill=gray!12, draw=gray!70]
+      (0.2,0.5) .. controls (1.6,1.5) and (3.2,1.4) .. (5.2,0.4)
+      .. controls (5.9,1.4) and (6.3,2.2) .. (6.6,2.9)
+      .. controls (4.6,3.7) and (2.8,3.7) .. (1.2,2.9)
+      .. controls (0.9,2.1) and (0.5,1.2) .. (0.2,0.5);
+    \coordinate (p) at (2.6,1.75);
+    \path[fill=bookaccent!45, draw=bookaccent, thick]
+      (p) .. controls (3.0,1.82) and (3.4,1.82) .. (3.85,1.7)
+      .. controls (4.0,2.0) and (4.1,2.25) .. (4.2,2.5)
+      .. controls (3.75,2.62) and (3.3,2.64) .. (2.9,2.58)
+      .. controls (2.8,2.3) and (2.7,2.0) .. (p);
+    \draw[->, bookpitfall, very thick] (p) -- (4.05,1.95)
+      node[below right=-1pt] {$\partial_1\psi$};
+    \draw[->, bookpitfall, very thick] (p) -- (2.95,2.85)
+      node[above left=-2pt] {$\partial_2\psi$};
+    \draw[bookpitfall, densely dashed] (4.05,1.95) -- (4.4,3.05)
+      -- (2.95,2.85);
+    \fill (p) circle (1.3pt) node[below] {$\psi(u)$};
+    \node[gray] at (5.6,2.6) {$M$};
+  \end{scope}
+\end{tikzpicture}
+\caption{A cell of the parameter domain and its image on the surface.
+The image is close to the parallelogram spanned, in the tangent plane,
+by $\partial_1\psi\,\dd u_1$ and $\partial_2\psi\,\dd u_2$, whose area is
+$\sqrt{\det G}\,\dd u_1\,\dd u_2$.}
+\label{change-of-variables:fig:surface}
+\end{figure}
+
+A submanifold of $\R^n$ is covered by countably many images of
+parametrizations, because the open sets of $\R^n$ have a countable
+base. Cutting $M$ into disjoint Borel pieces, each inside one image, and
+adding their volumes defines a measure $\operatorname{vol}_M$ on the
+Borel sets of $M$; by \cref{change-of-variables:thm:independent} it does
+not depend on the pieces. By \cref{fubini:lem:density} and the transfer
+theorem, for measurable $f\geq0$,
+\[
+  \int_{\psi(\Omega)}f\,\dd\!\operatorname{vol}_M
+  = \int_\Omega f\bigl(\psi(u)\bigr)\sqrt{\det G(u)}\,\dd u .
+\]
+
+\begin{example}\label{change-of-variables:ex:volumes}
+\begin{enumerate}[nosep]
+  \item \emph{Open sets.} For $k = n$, $\psi$ is a diffeomorphism and
+        $\sqrt{\det(D\psi^\top D\psi)} = \abs{\det D\psi}$: the volume
+        is Lebesgue measure, and the definition is
+        \cref{change-of-variables:cor:sets}.
+  \item \emph{Curves.} For $k = 1$, $G = \norm{\psi'(t)}^2$ and the
+        volume is the length $\int\norm{\psi'(t)}\,\dd t$
+        (\cref{riemannian-optimization:def:length}).
+  \item \emph{Graphs.} For $\psi(u) = (u, \phi(u))$ with
+        $\phi:\Omega\to\R$, $G = I + \nabla\phi\,\nabla\phi^\top$ and
+        $\det G = 1 + \norm{\nabla\phi}^2$.
+  \item \emph{The sphere.} With longitude $\theta$ and latitude
+        $\varphi$,
+        $\psi(\theta, \varphi) = (\cos\varphi\cos\theta,
+        \cos\varphi\sin\theta, \sin\varphi)$ has
+        $G = \diag(\cos^2\varphi, 1)$. The area of the unit sphere is
+        $\int_{-\pi}^\pi\int_{-\pi/2}^{\pi/2}\cos\varphi\,
+        \dd\varphi\,\dd\theta = 4\pi$; the meridian that the chart
+        omits has area $0$.
+\end{enumerate}
+\end{example}
+
+\begin{remark}[Riemannian volume]\label{change-of-variables:rem:riemann}
+Only the Gram matrix entered. On a Riemannian manifold
+(\cref{riemannian-optimization:def:metric}) the Gram matrices $G$ and
+$\tilde G$ of the metric in two charts are related as in the proof of
+\cref{change-of-variables:thm:independent}, so
+$\sqrt{\det G(u)}\,\dd u$ defines the same measure in every chart: the
+\emph{Riemannian volume}. A metric determines a measure; this is what
+\cref{riemannian-optimization:sec:outlook} announced.
+\end{remark}
+
+\begin{proposition}[Push-forward by a parametrization]
+\label{change-of-variables:prop:injective}
+Let $\mu$ be a measure on $\Omega$ with density $p$ with respect to
+Lebesgue measure. Then $\psi_\#\mu$ is carried by $M$ and has the
+density $p/\sqrt{\det G}$, evaluated at $\psi^{-1}$, with respect to
+$\operatorname{vol}_M$.
+\end{proposition}
+
+\begin{proof}
+$\psi_\#\mu(A) = \int_{\psi^{-1}(A)}p\,\dd\lambda
+= \int_{\psi^{-1}(A)}\frac p{\sqrt{\det G}}\sqrt{\det G}\,\dd\lambda$,
+which is the integral of $(p/\sqrt{\det G})\circ\psi^{-1}$ over $A$ for
+$\operatorname{vol}_M$.
+\end{proof}
+
+So the generative model of \cref{measures:fig:generative}, which has no
+density in the plane, has one with respect to the length of its curve
+when $g$ is a parametrization of it: $p(z)/\norm{g'(z)}$ at the point
+$g(z)$.
+
+\section{Spheres, balls and high dimension}
+\label{change-of-variables:sec:spheres}
+
+Let $S^{n-1}$ be the unit sphere of $\R^n$, $n\geq2$, and $\sigma$ its
+volume measure, the \emph{area}.
+
+\begin{theorem}[Polar coordinates in $\R^n$]
+\label{change-of-variables:thm:polar}
+For every measurable $f:\R^n\to[0, \infty]$,
+\[
+  \int_{\R^n}f\,\dd\lambda
+  = \int_0^\infty\Bigl(\int_{S^{n-1}}f(r\omega)\,\dd\sigma(\omega)\Bigr)
+    r^{n-1}\,\dd r .
+\]
+\end{theorem}
+
+\begin{proof}
+The inverse of the stereographic projection,
+$\psi(u) = (2u, \norm u^2 - 1)/(\norm u^2 + 1)$, is a parametrization of
+the sphere without the point $e_n$ by $\R^{n-1}$; let $G$ be its Gram
+matrix. The map $\Phi(r, u) = r\psi(u)$ is a bijection of
+$(0, \infty)\times\R^{n-1}$ onto $\R^n$ without the half-line
+$\{te_n : t\geq0\}$, which is a null set. Its matrix is
+$D\Phi = \begin{bsmallmatrix}\psi & rD\psi\end{bsmallmatrix}$. Since
+$\norm\psi^2 = 1$, differentiating gives $\psi^\top D\psi = 0$, so
+\[
+  D\Phi^\top D\Phi
+  = \begin{bmatrix}1 & 0\\ 0 & r^2G\end{bmatrix} , \qquad
+  \abs{\det D\Phi} = \sqrt{\det(D\Phi^\top D\Phi)}
+  = r^{n-1}\sqrt{\det G} .
+\]
+In particular $D\Phi$ is invertible and $\Phi$ is a diffeomorphism. By
+\cref{change-of-variables:thm:cov} and Tonelli's theorem,
+\[
+  \int_{\R^n}f\,\dd\lambda
+  = \int_0^\infty\Bigl(\int_{\R^{n-1}}f\bigl(r\psi(u)\bigr)
+    \sqrt{\det G(u)}\,\dd u\Bigr)r^{n-1}\,\dd r ,
+\]
+and the inner integral is $\int_{S^{n-1}}f(r\omega)\,\dd\sigma(\omega)$,
+the point $e_n$ having area $0$.
+\end{proof}
+
+Let $\Gamma(s) = \int_0^\infty t^{s-1}e^{-t}\,\dd t$ for $s > 0$; an
+integration by parts gives $\Gamma(s + 1) = s\Gamma(s)$, so
+$\Gamma(n + 1) = n!$, and $\Gamma(\frac12) = \sqrt\pi$ by
+\cref{fubini:ex:gauss}.
+
+\begin{corollary}\label{change-of-variables:cor:ball}
+The area of the unit sphere and the volume of the ball of radius $R$ in
+$\R^n$ are
+\[
+  \sigma(S^{n-1}) = \frac{2\pi^{n/2}}{\Gamma(\frac n2)} , \qquad
+  \lambda\bigl(\{\norm x\leq R\}\bigr)
+  = \frac{\sigma(S^{n-1})}n\,R^n
+  = \frac{\pi^{n/2}}{\Gamma(\frac n2 + 1)}\,R^n .
+\]
+\end{corollary}
+
+\begin{proof}
+Take $f(x) = e^{-\norm x^2}$ in \cref{change-of-variables:thm:polar}. The
+left-hand side is $\pi^{n/2}$, by Tonelli's theorem. The right-hand side
+is $\sigma(S^{n-1})\int_0^\infty e^{-r^2}r^{n-1}\,\dd r
+= \frac12\sigma(S^{n-1})\Gamma(\frac n2)$, with $t = r^2$. For the ball
+take $f = 1_{\{\norm x\leq R\}}$ and use $\int_0^Rr^{n-1}\dd r = R^n/n$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, xscale=1.15, yscale=5.2]
+  \draw[->] (-0.1,0) -- (10.6,0) node[right] {$r$};
+  \draw[->] (0,-0.02) -- (0,0.75);
+  \draw[bookaccent, very thick, domain=0.01:6, samples=90, smooth]
+    plot ({\x}, {exp(ln(\x) - \x*\x/2)});
+  \draw[bookdef, very thick, domain=0.3:7.5, samples=90, smooth]
+    plot ({\x}, {exp(9*ln(\x) - \x*\x/2 - 5.95064)});
+  \draw[bookpitfall, very thick, domain=3.6:10.4, samples=110, smooth]
+    plot ({\x}, {exp(49*ln(\x) - \x*\x/2 - 71.42026)});
+  \foreach \x/\t in {1/1, 3/3, 7/7} {
+    \draw (\x,0.012) -- (\x,-0.012) node[below] {\small$\t$};
+  }
+  \draw (0.07,0.5) -- (-0.07,0.5) node[left] {\small$0.5$};
+  \node[bookaccent] at (1.5,0.68) {$n = 2$};
+  \node[bookdef] at (3.6,0.65) {$n = 10$};
+  \node[bookpitfall] at (8.3,0.6) {$n = 50$};
+\end{tikzpicture}
+\caption{The density of the distance to the origin of a standard
+Gaussian point of $\R^n$, proportional to $r^{n-1}e^{-r^2/2}$. It is
+largest at $r = \sqrt{n - 1}$ and its width does not grow with $n$: in
+high dimension the samples lie in a thin shell, far from the origin
+where the density of the Gaussian itself is largest.}
+\label{change-of-variables:fig:shell}
+\end{figure}
+
+\begin{mlthread}[Machine learning: high-dimensional volume]
 \begin{itemize}[nosep]
-  \item Normalizing flows and log-determinants of Jacobians.
-  \item Why a density is not a function: it transforms like a form of top degree
-        (\cref{ch:multilinear-algebra}).
+  \item \emph{Balls are all skin.} The fraction of the volume of a ball
+        that lies within $(1 - \epsilon)$ of its radius is
+        $(1 - \epsilon)^n$. For $n = 100$ and $\epsilon = 0.05$ it is
+        less than $1\%$: almost all the volume is in the outer shell.
+  \item \emph{Gaussians are bubbles.} By
+        \cref{change-of-variables:thm:polar} the radius of a standard
+        Gaussian point has the density
+        $\sigma(S^{n-1})(2\pi)^{-n/2}\,r^{n-1}e^{-r^2/2}$
+        (\cref{change-of-variables:fig:shell}): the factor $r^{n-1}$,
+        which comes from the area of the sphere of radius $r$, beats
+        the decay of the density up to $r = \sqrt{n - 1}$. The mode of
+        the density, the origin, is nowhere near a typical sample. This
+        is the pitfall of \cref{change-of-variables:sec:density} in its
+        sharpest form.
+  \item \emph{Consequences.} In a latent space of dimension $n$ with a
+        Gaussian prior, codes have norm about $\sqrt n$; the midpoint
+        of two independent codes has norm about $\sqrt{n/2}$ and falls
+        inside the bubble, where the decoder has seen almost no
+        training codes. Likewise the ball inscribed in a cube occupies
+        a vanishing fraction of it
+        (\cref{change-of-variables:exr:8}): uniform samples of a cube
+        almost never fall near its centre.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\section{Densities in machine learning}
+\label{change-of-variables:sec:ml}
+
+\begin{mlthread}[Machine learning: normalizing flows]
+A normalizing flow is a diffeomorphism $g_\theta$ of $\R^n$ applied to a
+simple distribution, usually $z\sim N(0, I)$ with density $p_Z$. By
+\cref{change-of-variables:thm:pushforward}, $x = g_\theta(z)$ has the
+density
+\[
+  \ln p_\theta(x) = \ln p_Z(z) - \ln\abs{\det Dg_\theta(z)} ,
+  \qquad z = g_\theta^{-1}(x) .
+\]
+\begin{itemize}[nosep]
+  \item The model has an exact likelihood and can be trained by
+        maximum likelihood, unlike the models of
+        \cref{measures:sec:ml} that have no density.
+  \item A determinant of size $n$ costs about $n^3$ operations, so
+        flows are built from layers whose Jacobian matrix is
+        triangular: the determinant is the product of the diagonal. A
+        \emph{coupling layer} splits $x = (x_1, x_2)$ and sets
+        $y_1 = x_1$, $y_2 = x_2\odot e^{s(x_1)} + t(x_1)$, for arbitrary
+        networks $s$ and $t$. Its Jacobian matrix is block triangular,
+        $\ln\abs{\det} = \sum_is_i(x_1)$, and the inverse is explicit
+        (\cref{change-of-variables:exr:6}).
+  \item Layers compose and their log-determinants add, as noted after
+        \cref{change-of-variables:thm:pushforward}.
+  \item When the latent dimension is smaller than the data dimension,
+        \cref{change-of-variables:prop:injective} replaces the theorem:
+        the density lives on a submanifold and the correction is
+        $\frac12\ln\det(Dg_\theta^\top Dg_\theta)$.
+  \item The differential entropy of the output is that of the input
+        plus $\E[\ln\abs{\det Dg_\theta(z)}]$, which generalizes the
+        term $\ln\abs a$ of \cref{lp-spaces:exr:8}.
+\end{itemize}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: a prior that is the same in every
+parametrization]
+A ``uniform'' prior density on a parameter $\theta$ is not uniform
+after a change of parameter, by
+\cref{change-of-variables:thm:pushforward}: flat in a probability $p$
+is not flat in $\ln\frac p{1 - p}$. A statistical model carries a
+Riemannian metric that no parametrization has to choose, the Fisher
+metric of \cref{ch:natural-gradient}. By
+\cref{change-of-variables:rem:riemann} its volume
+$\sqrt{\det F(\theta)}\,\dd\theta$ is the same measure in every
+parametrization. When its total mass is finite, normalizing it gives
+the \emph{Jeffreys prior}. For a coin with probability $\theta$ of
+heads, $F = 1/(\theta(1 - \theta))$ and the prior is
+$\frac1\pi\theta^{-1/2}(1 - \theta)^{-1/2}$: it is the uniform
+distribution on the quarter circle of \cref{natural-gradient:fig:arc}
+(\cref{change-of-variables:exr:9}).
+\end{mlthread}
+
+\section{Where the chapter leads}\label{change-of-variables:sec:outlook}
+
+Part~IV is complete: measures, the integral and its limit theorems,
+products, spaces of functions, and changes of variables. Two features of
+this chapter point to Part~V. First, the absolute value: the theorem
+ignores whether $g$ preserves or reverses orientation.
+\Cref{ch:multilinear-algebra,ch:differential-forms} introduce objects
+that transform with $\det Dg$ itself, differential forms, which can be
+integrated over oriented manifolds without any metric. Second, the
+divergence: the derivative of $\ln\abs{\det Dg_t}$ along a flow is the
+divergence of the velocity field, which governs how densities evolve
+in \cref{ch:odes-flows} and what the boundary term is in Stokes'
+theorem (\cref{ch:stokes}).
+
+\paragraph{Sources.} The proof of the theorem, through the inequality
+$\lambda(g(A))\leq\int_A\abs{\det Dg}$ on cubes and its application to
+$g^{-1}$, is that of Loomis and Sternberg, \emph{Advanced Calculus},
+\S8.11 (Theorem~11.1 and Lemma~11.1), adapted from contented sets to
+Borel sets. Hubbard and Hubbard state the theorem for Riemann integrals
+(Theorem~4.10.12) and for the Lebesgue integral (Theorem~4.11.20), treat
+polar and spherical coordinates (Propositions~4.10.3 and~4.10.7), and
+define the volume of a parametrized manifold by
+$\int\sqrt{\det(D\gamma^\top D\gamma)}$ (Definition~5.3.1). Coupling
+layers are from L.~Dinh, D.~Krueger and Y.~Bengio, NICE: non-linear
+independent components estimation, 2014, and L.~Dinh, J.~Sohl-Dickstein
+and S.~Bengio, Density estimation using Real NVP, ICLR, 2017; a survey:
+G.~Papamakarios et al., Normalizing flows for probabilistic modeling
+and inference, \emph{Journal of Machine Learning Research}, 2021. The
+invariant prior is from H.~Jeffreys, An invariant form for the prior
+probability in estimation problems, \emph{Proceedings of the Royal
+Society A}, 1946.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{20-change-of-variables.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item For a $C^1$ diffeomorphism $g:U\to V$,
+        $\int_Vf(y)\,\dd y = \int_Uf(g(x))\abs{\det Dg(x)}\,\dd x$, and
+        $\lambda(g(A)) = \int_A\abs{\det Dg}\,\dd\lambda$.
+  \item If $\mu$ has density $p$, then $g_\#\mu$ has density
+        $q(g(x)) = p(x)/\abs{\det Dg(x)}$. Densities are not functions:
+        their modes move under a change of variables.
+  \item Polar coordinates: $\dd x\,\dd y = r\,\dd r\,\dd\theta$, and in
+        $\R^n$, $\dd\lambda = r^{n-1}\,\dd r\,\dd\sigma$.
+  \item The volume of a piece of submanifold is
+        $\int\sqrt{\det G}\,\dd u$ with $G = D\psi^\top D\psi$,
+        whatever the parametrization; a Riemannian metric defines a
+        volume in the same way.
+  \item $\sigma(S^{n-1}) = 2\pi^{n/2}/\Gamma(\frac n2)$; in high
+        dimension the volume of a ball is near its surface and a
+        Gaussian sample is at distance about $\sqrt n$ from the mean.
+  \item Flows: $\ln p_\theta(x) = \ln p_Z(z) - \ln\abs{\det Dg_\theta(z)}$.
+        The measure $\sqrt{\det F}\,\dd\theta$ of the Fisher metric does
+        not depend on the parametrization.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{change-of-variables:exr:1}
+Compute the area of the ellipse $\{x^2/a^2 + y^2/b^2\leq1\}$, and the
+volume of the ellipsoid $\{x\in\R^n : x^\top\Sigma^{-1}x\leq1\}$ for a
+symmetric positive definite $\Sigma$, in terms of the volume $\omega_n$
+of the unit ball.
+\solutionlink{change-of-variables:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{change-of-variables:exr:2}
+\begin{enumerate}[nosep]
+  \item Compute $\int_{\R^2}(1 + \norm x^2)^{-2}\,\dd x$.
+  \item In $\R^n$, for which $a > 0$ is $\norm x^{-a}$ integrable on the
+        unit ball? Outside it?
+\end{enumerate}
+\solutionlink{change-of-variables:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{change-of-variables:exr:3}
+Let $U_1, U_2$ be independent and uniform on $(0, 1)$.
+\begin{enumerate}[nosep]
+  \item Find the densities of $-\ln U_1$ and of $U_1^2$.
+  \item (Box--Muller.) Show that
+        $Z_1 = \sqrt{-2\ln U_1}\cos(2\pi U_2)$ and
+        $Z_2 = \sqrt{-2\ln U_1}\sin(2\pi U_2)$ are independent standard
+        Gaussian variables.
+\end{enumerate}
+\solutionlink{change-of-variables:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{change-of-variables:exr:4}
+Let $X\sim N(m, s^2)$ and $Y = e^X$. Find the density of $Y$, its mode
+and its median, and compare them with the images of the mode and of the
+median of $X$.
+\solutionlink{change-of-variables:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{change-of-variables:exr:5}
+Let $\Sigma = LL^\top$ with $L$ lower triangular with positive diagonal
+(the Cholesky factor). Show that the logarithm of the Gaussian density
+of \cref{change-of-variables:ex:gauss} is
+\[
+  \ln q(x) = -\tfrac12\norm{L^{-1}(x - m)}^2 - \sum_i\ln L_{ii}
+  - \tfrac n2\ln(2\pi) ,
+\]
+and explain why this is how it is computed in practice.
+\solutionlink{change-of-variables:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{change-of-variables:exr:6}
+For the coupling layer $y_1 = x_1$, $y_2 = x_2\odot e^{s(x_1)} + t(x_1)$
+on $\R^{d}\times\R^{n-d}$:
+\begin{enumerate}[nosep]
+  \item write the Jacobian matrix in blocks and its determinant;
+  \item write the inverse map;
+  \item for $n = 2$, $s(x_1) = x_1$, $t(x_1) = x_1^2$ and a standard
+        Gaussian input, write the density of the output.
+\end{enumerate}
+\solutionlink{change-of-variables:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{change-of-variables:exr:7}
+\begin{enumerate}[nosep]
+  \item Compute the area of the paraboloid
+        $z = \frac12(x^2 + y^2)$ over the unit disc.
+  \item For $n = 3$ the parametrization $\psi$ of the proof of
+        \cref{change-of-variables:thm:polar} has
+        $G = 4(1 + \norm u^2)^{-2}I$. Recover the area of the unit
+        sphere from it.
+\end{enumerate}
+\solutionlink{change-of-variables:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{change-of-variables:exr:8}
+\begin{enumerate}[nosep]
+  \item Compute $\sigma(S^{n-1})$ and the volume of the unit ball for
+        $n = 2, 3, 4$. What happens to the volume as $n\to\infty$?
+  \item For a standard Gaussian point $x$ of $\R^n$, compute
+        $\E[\norm x^2]$ and the mode of the density of $\norm x$.
+\end{enumerate}
+\solutionlink{change-of-variables:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{change-of-variables:exr:9}
+For the family of coin tosses, $F(\theta) = 1/(\theta(1 - \theta))$ on
+$(0, 1)$.
+\begin{enumerate}[nosep]
+  \item Compute the total mass of $\sqrt{F(\theta)}\,\dd\theta$, and
+        relate it to \cref{natural-gradient:prop:sphere}.
+  \item Compute the Fisher information in the parameter
+        $\eta = \ln\frac\theta{1 - \theta}$ and check that
+        $\sqrt{F}\,\dd\theta$ and $\sqrt{F_\eta}\,\dd\eta$ are the same
+        measure.
+  \item What is the density, in $\eta$, of the prior that is uniform
+        in $\theta$?
+\end{enumerate}
+\solutionlink{change-of-variables:exr:9}
+\end{exercise}
 \end{notechapter}
