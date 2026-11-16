@@ -25,7 +25,9 @@ learn
   \item conditional expectation as an orthogonal projection in $L^2$;
   \item absolute continuity and the Radon--Nikodym theorem;
   \item likelihood ratios, importance weights and the Kullback--Leibler
-        divergence between two arbitrary probability measures.
+        divergence between two arbitrary probability measures;
+  \item convolution as a bounded operator on $L^p$, and smoothing by a
+        kernel that narrows.
 \end{itemize}
 \prerequisites{\cref{ch:measures,ch:lebesgue-integral,ch:fubini}, and
 from \cref{ch:norms-banach}: completeness, the projection on a complete
@@ -729,6 +731,186 @@ unit.
 \end{itemize}
 \end{mlthread}
 
+\section{Convolution in $L^p$}\label{lp-spaces:sec:convolution}
+
+\Cref{ch:fubini} convolved a finite measure with a non-negative
+density. With the norms of this chapter, convolution extends to
+functions of any sign and becomes a bounded operator. In this section
+the measure is Lebesgue measure on $\R^n$, and
+$(\tau_vg)(x) = g(x - v)$ is the translate of $g$ by $v$, which has the
+same norm as $g$ in every $L^p$ (\cref{measures:thm:translation}).
+
+\begin{theorem}[Young's inequality for convolutions]
+\label{lp-spaces:thm:young}
+Let $f\in L^1(\R^n)$ and $g\in L^p(\R^n)$, $1\leq p\leq\infty$. For
+almost every $z$ the function $y\mapsto f(y)\,g(z - y)$ is integrable,
+and the \emph{convolution}
+\[
+  (f*g)(z) = \int f(y)\,g(z - y)\,\dd y
+  \qquad\text{satisfies}\qquad
+  \norm{f*g}_p\leq\norm f_1\,\norm g_p .
+\]
+\end{theorem}
+
+\begin{proof}
+The function $(y, z)\mapsto f(y)g(z - y)$ is measurable on $\R^{2n}$, as
+a product of compositions, so
+$F(z) = \int\abs{f(y)}\abs{g(z - y)}\,\dd y$ is a measurable function
+with values in $[0, \infty]$ (\cref{fubini:thm:tonelli}). For
+$p = \infty$, $F(z)\leq\norm f_1\norm g_\infty$ for every $z$. Let
+$p < \infty$ and $q$ be conjugate to $p$. By H\"older's inequality
+applied to $\abs f^{1/q}$ and $\abs f^{1/p}\abs{g(z - \cdot)}$,
+\[
+  F(z)^p\leq\norm f_1^{p/q}\int\abs{f(y)}\abs{g(z - y)}^p\,\dd y ,
+\]
+which for $p = 1$ is an equality. Integrate in $z$ and exchange by
+Tonelli's theorem; since $\int\abs{g(z - y)}^p\,\dd z = \norm g_p^p$ for
+every $y$,
+\[
+  \int F^p\,\dd\lambda
+  \leq\norm f_1^{p/q}\int\abs{f(y)}\,\norm g_p^p\,\dd y
+  = \norm f_1^p\,\norm g_p^p ,
+\]
+because $\frac pq + 1 = p$. So $F$ is finite almost everywhere; where
+it is, $f*g$ is defined and $\abs{f*g}\leq F$. It is measurable, as the
+difference of the integrals of the positive and negative parts of the
+integrand. Changing $f$ or $g$ on a null set changes the integrand on a
+null set of $\R^{2n}$, hence $f*g$ on a null set.
+\end{proof}
+
+\begin{intuition}
+$(f*g)(z) = \int f(y)\,(\tau_yg)(z)\,\dd y$ is a combination of
+translates of $g$ with the weights $f(y)$. When $f$ is a probability
+density it is an average of translates, and an average of functions of
+norm $\norm g_p$ has norm at most $\norm g_p$. Convolution with $f$ is
+a bounded linear map of every $L^p$ into itself, of norm at most
+$\norm f_1$.
+\end{intuition}
+
+The substitution $y\mapsto z - y$ gives $f*g = g*f$. The proof used
+only H\"older, Tonelli and the invariance of the measure under
+translations, so the theorem holds for the counting measure on $\Z^n$,
+where the integral is a sum.
+
+\begin{lemma}[Translation is continuous in $L^p$]
+\label{lp-spaces:lem:translation}
+If $1\leq p < \infty$ and $g\in L^p(\R^n)$, then
+$\norm{\tau_vg - g}_p\to0$ as $v\to0$.
+\end{lemma}
+
+\begin{proof}
+Let first $h$ be continuous and vanish outside a ball of radius $R$.
+For $\norm v\leq1$, $\abs{\tau_vh - h}^p$ is bounded by
+$(2\max\abs h)^p$ times the indicator of the ball of radius $R + 1$,
+and tends to $0$ at every point as $v\to0$: by dominated convergence,
+$\norm{\tau_vh - h}_p\to0$. For a general $g$ and $\epsilon > 0$ choose
+such an $h$ with $\norm{g - h}_p < \epsilon$
+(\cref{lp-spaces:thm:dense}). Then
+\[
+  \norm{\tau_vg - g}_p
+  \leq\norm{\tau_v(g - h)}_p + \norm{\tau_vh - h}_p + \norm{h - g}_p
+  < 2\epsilon + \norm{\tau_vh - h}_p ,
+\]
+which is less than $3\epsilon$ for $v$ small.
+\end{proof}
+
+\begin{theorem}[Smoothing by a narrowing kernel]
+\label{lp-spaces:thm:mollifier}
+Let $k\geq0$ be an integrable function on $\R^n$ with
+$\int k\,\dd\lambda = 1$, and $k_\sigma(x) = \sigma^{-n}k(x/\sigma)$ for
+$\sigma > 0$. If $1\leq p < \infty$ and $g\in L^p(\R^n)$, then
+\[
+  \norm{k_\sigma*g - g}_p\to0\qquad\text{as }\sigma\to0 .
+\]
+\end{theorem}
+
+\begin{proof}
+By \cref{measures:thm:linear}, the substitution $y = \sigma u$ gives
+$\int k_\sigma\,\dd\lambda = 1$ and
+$(k_\sigma*g)(z) = \int k(u)\,g(z - \sigma u)\,\dd u$, so
+\[
+  (k_\sigma*g)(z) - g(z)
+  = \int k(u)\bigl(g(z - \sigma u) - g(z)\bigr)\dd u .
+\]
+Apply H\"older's inequality as in the proof of
+\cref{lp-spaces:thm:young}, with $\norm k_1 = 1$, then integrate in $z$
+and exchange:
+\[
+  \norm{k_\sigma*g - g}_p^p
+  \leq\int k(u)\,\norm{\tau_{\sigma u}g - g}_p^p\,\dd u .
+\]
+For every $u$ the integrand tends to $0$ as $\sigma\to0$
+(\cref{lp-spaces:lem:translation}), and it is at most
+$k(u)(2\norm g_p)^p$, which is integrable. Conclude by dominated
+convergence.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, xscale=4.6, yscale=2.8]
+  \draw[->] (-0.6,0) -- (1.7,0) node[right] {$x$};
+  \draw[->] (-0.5,-0.05) -- (-0.5,1.3);
+  \draw (-0.52,1) -- (-0.48,1) node[left=3pt] {$1$};
+  \draw (-0.52,0.5) -- (-0.48,0.5) node[left=3pt] {$\frac12$};
+  \draw[bookaccent, thick] (-0.5,0) -- (-0.4,0) -- (0.4,1) -- (0.6,1)
+    -- (1.4,0) -- (1.6,0);
+  \draw[bookdef, thick] (-0.5,0) -- (-0.2,0) -- (0.2,1) -- (0.8,1)
+    -- (1.2,0) -- (1.6,0);
+  \draw[bookpitfall, thick] (-0.5,0) -- (-0.05,0) -- (0.05,1)
+    -- (0.95,1) -- (1.05,0) -- (1.6,0);
+  \draw[very thick, densely dashed] (-0.5,0) -- (0,0) -- (0,1) -- (1,1)
+    -- (1,0) -- (1.6,0);
+  \fill (0,0.5) circle (0.6pt);
+  \fill (1,0.5) circle (0.6pt);
+  \node[below] at (0,0) {$0$};
+  \node[below] at (1,0) {$1$};
+  \foreach \c/\y/\t in {bookaccent/1.0/0.4, bookdef/0.78/0.2,
+                        bookpitfall/0.56/0.05} {
+    \draw[\c, thick] (1.95,\y) -- (2.1,\y);
+    \node[right] at (2.1,\y) {$\sigma = \t$};
+  }
+  \node at (0.5,1.15) {$g = 1_{[0, 1]}$};
+\end{tikzpicture}
+\caption{The indicator of $[0, 1]$ (dashed) convolved with
+$k_\sigma = \frac1{2\sigma}1_{[-\sigma, \sigma]}$: a moving average over a
+window of half-width $\sigma$. The area between $k_\sigma*g$ and $g$ is
+$\sigma$, so $k_\sigma*g\to g$ in $L^1$. But every $k_\sigma*g$ passes
+through the two marked points, at distance $\frac12$ from $g$: there is
+no convergence in $L^\infty$.}
+\label{lp-spaces:fig:mollifier}
+\end{figure}
+
+For $p = \infty$ both statements fail for $g = 1_{[0, 1]}$:
+$\norm{\tau_vg - g}_\infty = 1$ for every $v\neq0$, and
+$\norm{k_\sigma*g - g}_\infty = \frac12$ in
+\cref{lp-spaces:fig:mollifier}.
+
+\begin{mlthread}[Machine learning: smoothing and filters]
+\begin{itemize}[nosep]
+  \item \emph{Blurring is a contraction.} Convolving a signal or an
+        image with a non-negative filter of total weight $1$ cannot
+        increase any of its $L^p$ norms, and two inputs come out at
+        least as close as they went in.
+  \item \emph{Convolution layers.} On $\Z^n$ with the counting measure,
+        a layer with one filter $f$ computes a convolution, up to a
+        reflection of the filter. By \cref{lp-spaces:thm:young} it is
+        Lipschitz from $\ell^p$ to $\ell^p$ with constant at most
+        $\norm f_1$, the sum of the absolute values of its weights.
+        This bound does not depend on the size of the input.
+  \item \emph{Small noise.} If the data have a density $g$, the data
+        plus independent noise $\sigma\varepsilon$ have the density
+        $k_\sigma*g$, where $k$ is the density of $\varepsilon$
+        (\cref{fubini:thm:convolution}). By
+        \cref{lp-spaces:thm:mollifier} it tends to $g$ in $L^1$ as
+        the noise level goes to $0$.
+  \item \emph{Kernel density estimates.} The expectation of the
+        estimate $\frac1N\sum_ik_\sigma(z - x_i)$ over the sample is
+        $k_\sigma*g$. Its systematic error therefore vanishes in $L^1$
+        as the bandwidth $\sigma$ tends to $0$; its variance is another
+        matter, since it grows as the bumps get narrower.
+\end{itemize}
+\end{mlthread}
+
 \section{Where the chapter leads}\label{lp-spaces:sec:outlook}
 
 Functions are now points of complete normed spaces, $L^2$ has the
@@ -783,6 +965,9 @@ with PyTorch in \notebook{19-lp-spaces.ipynb}.
         any two probability measures, is non-negative, vanishes only
         for $Q = P$, is $\infty$ unless $Q\ll P$, and is invariant under
         measurable bijections.
+  \item $\norm{f*g}_p\leq\norm f_1\norm g_p$. For a probability density
+        $k$ and $p < \infty$, $k_\sigma*g\to g$ in $L^p$ as
+        $\sigma\to0$.
 \end{itemize}
 \end{chaptersummary}
 
@@ -878,5 +1063,18 @@ $w(x) = e^{\theta x - \theta^2/2}$.
         deviation $0.1$ when $\theta = 1$? When $\theta = 3$?
 \end{enumerate}
 \solutionlink{lp-spaces:exr:9}
+\end{exercise}
+
+\begin{exercise}\label{lp-spaces:exr:10}
+Let $g = 1_{[0, 1]}$ on $\R$ and
+$k_\sigma = \frac1{2\sigma}1_{[-\sigma, \sigma]}$ with
+$0 < \sigma\leq\frac12$.
+\begin{enumerate}[nosep]
+  \item Compute $k_\sigma*g$.
+  \item Compute $\norm{k_\sigma*g - g}_p$ for $p = 1$, $p = 2$ and
+        $p = \infty$.
+  \item Check $\norm{k_\sigma*g}_p\leq\norm g_p$ for $p = 2$.
+\end{enumerate}
+\solutionlink{lp-spaces:exr:10}
 \end{exercise}
 \end{notechapter}

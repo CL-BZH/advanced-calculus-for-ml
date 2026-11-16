@@ -2501,3 +2501,30 @@ and $\frac5{12} + \frac{30}{12} = \frac{35}{12} = \Var(Z)$.
         $N = 100(e^{\theta^2} - 1)$: about $172$ samples for
         $\theta = 1$, and about $810\,000$ for $\theta = 3$.
 \end{enumerate}
+
+\solution{lp-spaces:exr:10}
+\begin{enumerate}[nosep]
+  \item $(k_\sigma*g)(x)$ is the length of
+        $[x - \sigma, x + \sigma]\cap[0, 1]$ divided by $2\sigma$: a
+        trapezoid, equal to $0$ for $x\leq-\sigma$, to
+        $(x + \sigma)/(2\sigma)$ on $[-\sigma, \sigma]$, to $1$ on
+        $[\sigma, 1 - \sigma]$, to $(1 + \sigma - x)/(2\sigma)$ on
+        $[1 - \sigma, 1 + \sigma]$, and to $0$ beyond.
+  \item The difference $k_\sigma*g - g$ lives on the two intervals of
+        length $2\sigma$ around $0$ and $1$, and on each of their four
+        halves its absolute value is $t/(2\sigma)$, where
+        $t\in[0, \sigma]$ is the distance to the far end of the half.
+        So
+        \[
+          \norm{k_\sigma*g - g}_1 = 4\int_0^\sigma\frac t{2\sigma}\,\dd t
+          = \sigma , \qquad
+          \norm{k_\sigma*g - g}_2^2
+          = 4\int_0^\sigma\frac{t^2}{4\sigma^2}\,\dd t = \frac\sigma3 ,
+        \]
+        and $\norm{k_\sigma*g - g}_\infty = \frac12$ for every $\sigma$,
+        the values near $x = 0$ and $x = 1$.
+  \item $\norm{k_\sigma*g}_2^2
+        = (1 - 2\sigma) + 2\int_0^{2\sigma}\frac{t^2}{4\sigma^2}\,\dd t
+        = 1 - 2\sigma + \frac{4\sigma}3 = 1 - \frac{2\sigma}3
+        \leq1 = \norm g_2^2$.
+\end{enumerate}
