@@ -587,6 +587,15 @@ The map $\iota$ was defined without any basis, and bases appeared only in
 the proof. It is therefore legitimate to \emph{identify} $V^{**}$ with $V$
 and to write $v(\phi) = \phi(v)$. Vectors are the covectors of covectors.
 
+Note which half of this is a shortcut. That a vector defines a linear
+form on $V^*$ needs no identification: it is the evaluation
+$\phi\mapsto\phi(v)$, which is $\iota(v)$ by definition. The
+identification is used in the other direction, when a linear form on
+$V^*$ is called a vector. That step relies on the theorem: every linear
+form on $V^*$ is $\iota(v)$ for exactly one $v$. It also relies on the
+dimension being finite, since the proof that $\iota$ is onto goes
+through a basis; in infinite dimension $\iota$ need not be onto.
+
 \begin{proposition}[The dual of the dual operator]
 \label{duality:prop:double-dual}
 For $A:V\to W$, $\dual{(\dual A)}\circ\iota_V = \iota_W\circ A$. With the
