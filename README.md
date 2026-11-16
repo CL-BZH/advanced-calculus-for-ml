@@ -19,7 +19,7 @@ book keeps three such pairs apart from beginning to end:
 and it applies two tests to every formula and algorithm: does it change
 when the **origin** moves, and does it change when the **basis** changes?
 
-**Status: work in progress.** Chapters 1 to 17 are drafted. The other
+**Status: work in progress.** Chapters 1 to 18 are drafted. The other
 chapters contain their planned contents.
 
 The PDF is rebuilt by GitHub Actions on every push to `main`:
@@ -58,7 +58,7 @@ Each part adds one layer of structure.
 
 16. Measures *(drafted)*
 17. The Lebesgue Integral *(drafted)*
-18. Product Measures and the Fubini–Tonelli Theorem
+18. Product Measures and the Fubini–Tonelli Theorem *(drafted)*
 19. *Lᵖ* Spaces
 20. Change of Variables
 

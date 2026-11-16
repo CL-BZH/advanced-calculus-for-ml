@@ -2242,3 +2242,156 @@ $\int g\,\dd(h_\#P_Z)$, with $g(y) = y^2$.
         = \infty$. Hypothesis (2) holds for every
         $\varepsilon\neq-\mu$.
 \end{enumerate}
+
+\section{\nameref*{ch:fubini}}
+
+\solution{fubini:exr:1}
+The integral is taken over the triangle
+$T = \{(x, y) : 0\leq y\leq x\leq1\}$. Its horizontal sections are
+$T^y = [y, 1]$, which is the order given, and its vertical sections are
+$T_x = [0, x]$. The integrand is non-negative, so by Tonelli's theorem
+\[
+  \int_0^1\Bigl(\int_y^1e^{x^2}\dd x\Bigr)\dd y
+  = \int_0^1e^{x^2}\Bigl(\int_0^x\dd y\Bigr)\dd x
+  = \int_0^1xe^{x^2}\dd x = \frac{e - 1}2 .
+\]
+The inner integral of the first form has no elementary expression; the
+second order makes it disappear.
+
+\solution{fubini:exr:2}
+$\zeta(n) - 1 = \sum_{k\geq2}k^{-n}$, a double series with non-negative
+terms, which may be summed in the other order
+(\cref{fubini:ex:series}). For $k\geq2$ the sum over $n\geq2$ is a
+geometric series:
+\[
+  \sum_{n\geq2}\bigl(\zeta(n) - 1\bigr)
+  = \sum_{k\geq2}\sum_{n\geq2}k^{-n}
+  = \sum_{k\geq2}\frac{k^{-2}}{1 - k^{-1}}
+  = \sum_{k\geq2}\Bigl(\frac1{k - 1} - \frac1k\Bigr) = 1 .
+\]
+
+\solution{fubini:exr:3}
+\begin{enumerate}[nosep]
+  \item The derivative of $y/(x^2 + y^2)$ in $y$ is
+        $\bigl((x^2 + y^2) - 2y^2\bigr)/(x^2 + y^2)^2 = f$. So
+        $\int_0^1f\,\dd y = 1/(x^2 + 1)$ and
+        $\int_0^1\bigl(\int_0^1f\,\dd y\bigr)\dd x = \arctan1 = \pi/4$.
+        Since $f(y, x) = -f(x, y)$, the other iterated integral is
+        $-\pi/4$.
+  \item On the triangle $y < x$ the function is positive, and by
+        Tonelli's theorem
+        \[
+          \int\abs f\,\dd\lambda^2
+          \geq\int_0^1\Bigl(\int_0^xf\,\dd y\Bigr)\dd x
+          = \int_0^1\frac x{2x^2}\,\dd x
+          = \int_0^1\frac{\dd x}{2x} = \infty .
+        \]
+        It also follows from (1): if $f$ were integrable, Fubini's
+        theorem would make the two iterated integrals equal.
+\end{enumerate}
+
+\solution{fubini:exr:4}
+$(e^{-ax} - e^{-bx})/x = \int_a^be^{-xt}\,\dd t$, and $e^{-xt}\geq0$. By
+Tonelli's theorem
+\[
+  \int_0^\infty\frac{e^{-ax} - e^{-bx}}x\,\dd x
+  = \int_a^b\Bigl(\int_0^\infty e^{-xt}\,\dd x\Bigr)\dd t
+  = \int_a^b\frac{\dd t}t = \ln\frac ba .
+\]
+
+\solution{fubini:exr:5}
+\begin{enumerate}[nosep]
+  \item $Z^p = \int_0^Zpt^{p-1}\,\dd t
+        = \int_0^\infty pt^{p-1}1_{\{t < Z\}}\,\dd t$. The function
+        $(\omega, t)\mapsto pt^{p-1}1_{\{t < Z(\omega)\}}$ is
+        non-negative and measurable on $\Omega\times[0, \infty)$ (the
+        set $\{t < Z(\omega)\}$ is the one of
+        \cref{fubini:prop:layer}). Taking the expectation and
+        exchanging by Tonelli's theorem gives the formula, since
+        $\E[1_{\{t < Z\}}] = P(Z > t)$.
+  \item Uniform: $P(Z > t) = 1 - t$ on $[0, 1]$ and
+        $\int_0^1pt^{p-1}(1 - t)\,\dd t = 1 - \frac p{p+1}
+        = \frac1{p+1} = \int_0^1z^p\,\dd z$. Exponential:
+        $\int_0^\infty2te^{-t}\,\dd t = 2 = \int_0^\infty z^2e^{-z}\,\dd z$.
+\end{enumerate}
+
+\solution{fubini:exr:6}
+Let $v_n = \lambda^n(\Delta_n)$; the simplex is closed, hence a Borel
+set, and $v_1 = 1$. Write $x = (x', t)$ with $x'\in\R^{n-1}$. For
+$0\leq t\leq1$ the section of $\Delta_n$ at $x_n = t$ is
+$\{x' : x'_i\geq0,\ \sum_ix'_i\leq1 - t\} = (1 - t)\Delta_{n-1}$, of
+measure $(1 - t)^{n-1}v_{n-1}$ by \cref{measures:thm:linear}; the other
+sections are empty. Since $\lambda^n = \lambda^{n-1}\otimes\lambda$,
+\[
+  v_n = \int_0^1(1 - t)^{n-1}v_{n-1}\,\dd t = \frac{v_{n-1}}n ,
+  \qquad\text{so}\qquad v_n = \frac1{n!} .
+\]
+The set of probability vectors with $n + 1$ entries, parametrized by its
+first $n$ entries, is this simplex: it occupies a fraction $1/n!$ of the
+unit cube.
+
+\solution{fubini:exr:7}
+\begin{enumerate}[nosep]
+  \item By \cref{fubini:thm:convolution}, for $z > 0$,
+        $(f*f)(z) = \int_0^ze^{-x}e^{-(z - x)}\,\dd x = ze^{-z}$, and
+        $(f*f)(z) = 0$ for $z\leq0$.
+  \item With $a = \frac1{s^2} + \frac1{t^2} = \frac{r^2}{s^2t^2}$,
+        completing the square in $y$,
+        \[
+          \frac{(z - y)^2}{s^2} + \frac{y^2}{t^2}
+          = a\Bigl(y - \frac z{as^2}\Bigr)^2
+            + \frac{z^2}{s^2}\Bigl(1 - \frac1{as^2}\Bigr)
+          = a\Bigl(y - \frac z{as^2}\Bigr)^2 + \frac{z^2}{r^2} ,
+        \]
+        because $1 - \frac1{as^2} = 1 - \frac{t^2}{r^2}
+        = \frac{s^2}{r^2}$. Since
+        $\int e^{-a(y - c)^2/2}\,\dd y = \sqrt{2\pi/a}
+        = \sqrt{2\pi}\,st/r$,
+        \[
+          (\varphi_s*\varphi_t)(z)
+          = \frac1{2\pi st}\,e^{-z^2/(2r^2)}\,\frac{\sqrt{2\pi}\,st}r
+          = \varphi_r(z) .
+        \]
+\end{enumerate}
+
+\solution{fubini:exr:8}
+\begin{enumerate}[nosep]
+  \item $\E[\hat g_N^2] = \Var(\hat g_N) + (\E\hat g_N)^2
+        = \sigma^2/N + m^2$.
+  \item \Cref{fubini:prop:product}:
+        $\E[g(Z_1)g(Z_2)] = \E[g(Z_1)]\E[g(Z_2)] = m^2$.
+  \item $m = \frac12$ and $\sigma^2 = \frac14$. The average of two
+        samples is $0$, $\frac12$, $1$ with probabilities
+        $\frac14, \frac12, \frac14$, and its square has mean
+        $\frac12\cdot\frac14 + \frac14 = \frac38
+        = \frac14 + \frac18$. The product $g(Z_1)g(Z_2)$ is $1$ with
+        probability $\frac14$ and $0$ otherwise: its mean is
+        $\frac14 = m^2$.
+\end{enumerate}
+The second estimator uses the same two samples and has no bias. The
+same remark applies whenever a loss is a non-linear function of an
+inner expectation.
+
+\solution{fubini:exr:9}
+\begin{enumerate}[nosep]
+  \item $p_X(x) = \int_0^1(x + y)\,\dd y = x + \frac12$, so
+        $p(y\mid x) = (x + y)/(x + \frac12)$ and
+        \[
+          m(x) = \frac{\int_0^1y(x + y)\,\dd y}{x + \frac12}
+          = \frac{\frac x2 + \frac13}{x + \frac12}
+          = \frac{3x + 2}{6x + 3} .
+        \]
+        They are not independent: the product of the marginals,
+        $(x + \frac12)(y + \frac12)$, is not $x + y$; equivalently, $m$
+        is not constant ($m(0) = \frac23$, $m(1) = \frac59$).
+  \item By \cref{fubini:prop:marginal} with the counting measure,
+        \[
+          P\bigl(\hat y(x)\neq y\bigr)
+          = \int_X\Bigl(\sum_{y\neq\hat y(x)}p(y\mid x)\Bigr)\dd P_X(x)
+          = \int_X\bigl(1 - p(\hat y(x)\mid x)\bigr)\dd P_X(x) .
+        \]
+        The integrand is smallest, for each $x$, when $\hat y(x)$
+        maximizes $p(\cdot\mid x)$; choosing the first maximizer in a
+        fixed order of the labels gives a measurable predictor, and the
+        integral is monotone.
+\end{enumerate}
