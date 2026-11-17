@@ -748,6 +748,30 @@ changes sign with the orientation, and it has no analogue as a product
 of two vectors in other dimensions, where $\binom n2\neq n$.
 \end{example}
 
+\begin{remark}[The antisymmetric matrix of a vector]
+\label{multilinear-algebra:rem:hat}
+For $u\in\R^3$ the map $v\mapsto u\times v$ is linear. Its matrix
+\[
+  [u]_\times = \begin{bmatrix}0 & -u_3 & u_2\\ u_3 & 0 & -u_1\\
+                              -u_2 & u_1 & 0\end{bmatrix}
+\]
+is antisymmetric (one also says skew-symmetric). It is the same object
+as the $2$-form $\star(Ru)$, that is,
+$(v, w)\mapsto\operatorname{vol}(u, v, w) = \inner{u\times v}w$: the
+form is of type $(0, 2)$, with array $-[u]_\times$, and the inner
+product turns it into the operator of type $(1, 1)$ with array
+$[u]_\times$. Its three entries are the three components of a $2$-form,
+the coincidence $\binom32 = 3$ once more. In dimension $n$ a $2$-form
+is still an antisymmetric array, with $\binom n2$ independent entries,
+but it no longer corresponds to a vector: what a product
+$Ru\wedge Rv$ singles out is the plane of $u$ and $v$, with a sense of
+rotation and a magnitude, not an axis. So $Ru\wedge Rv$ makes sense in
+every dimension, and $u\times v$ only in dimension $3$. Antisymmetric
+matrices were the tangent vectors of the
+orthogonal group at the identity (\cref{submanifolds:tab:examples});
+they return in \cref{ch:odes-flows} as the velocities of rotations.
+\end{remark}
+
 \begin{table}[ht]
 \centering
 \begin{tabular}{@{}ll@{}}
