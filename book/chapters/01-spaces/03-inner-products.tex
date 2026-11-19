@@ -590,6 +590,78 @@ surjective, $\im\adj A = R_V^{-1}(\im\dual A) = R_V^{-1}\bigl((\ker
 A)^\circ\bigr) = (\ker A)^\perp$.
 \end{proof}
 
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \def\px{0.7071}
+  % the two subspaces of V
+  \begin{scope}
+    \fill[bookaccent!18] (0,0) -- ({-2.3*\px},{2.3*\px}) -- (0,{4.6*\px})
+      -- ({2.3*\px},{2.3*\px}) -- cycle;
+    \draw[bookaccent, thick] (0,0) -- ({-2.3*\px},{2.3*\px})
+      -- (0,{4.6*\px}) -- ({2.3*\px},{2.3*\px}) -- cycle;
+    \fill[bookpitfall!14] (0,0) -- ({-1.9*\px},{-1.9*\px})
+      -- (0,{-3.8*\px}) -- ({1.9*\px},{-1.9*\px}) -- cycle;
+    \draw[bookpitfall, thick] (0,0) -- ({-1.9*\px},{-1.9*\px})
+      -- (0,{-3.8*\px}) -- ({1.9*\px},{-1.9*\px}) -- cycle;
+    \draw ({-0.22*\px},{0.22*\px}) -- ({-0.44*\px},0)
+      -- ({-0.22*\px},{-0.22*\px});
+    \fill (0,0) circle (1.6pt) node[left=7pt] {$0$};
+    \node[align=center] at (0,{2.3*\px})
+      {$\im\adj A$\\$= (\ker A)^\perp$\\[1pt]\small dimension $r$};
+    \node[align=center] at (0,{-1.9*\px})
+      {$\ker A$\\[1pt]\small dimension\\[-1pt]\small$n - r$};
+    \node at (-2.6,0) {\large$V$};
+  \end{scope}
+  % the two subspaces of W
+  \begin{scope}[shift={(8.6,0)}]
+    \fill[bookaccent!18] (0,0) -- ({-2.3*\px},{2.3*\px}) -- (0,{4.6*\px})
+      -- ({2.3*\px},{2.3*\px}) -- cycle;
+    \draw[bookaccent, thick] (0,0) -- ({-2.3*\px},{2.3*\px})
+      -- (0,{4.6*\px}) -- ({2.3*\px},{2.3*\px}) -- cycle;
+    \fill[bookpitfall!14] (0,0) -- ({-2.7*\px},{-2.7*\px})
+      -- (0,{-5.4*\px}) -- ({2.7*\px},{-2.7*\px}) -- cycle;
+    \draw[bookpitfall, thick] (0,0) -- ({-2.7*\px},{-2.7*\px})
+      -- (0,{-5.4*\px}) -- ({2.7*\px},{-2.7*\px}) -- cycle;
+    \draw ({0.22*\px},{0.22*\px}) -- ({0.44*\px},0)
+      -- ({0.22*\px},{-0.22*\px});
+    \fill (0,0) circle (1.6pt) node[right=7pt] {$0$};
+    \node[align=center] at (0,{2.3*\px})
+      {$\im A$\\[1pt]\small dimension $r$};
+    \node[align=center] at (0,{-2.45*\px})
+      {$\ker\adj A$\\$= (\im A)^\perp$\\[1pt]\small dimension $m - r$};
+    \node at (2.6,0) {\large$W$};
+  \end{scope}
+  % the maps
+  \draw[->, thick] (1.45,{2.75*\px}) to[bend left=10]
+    node[above] {$A$, one-to-one and onto} (7.15,{2.75*\px});
+  \draw[->, thick] (7.15,{1.85*\px}) to[bend left=10]
+    node[below] {$\adj A$} (1.45,{1.85*\px});
+  \draw[->, thick, bookpitfall] ({1.9*\px+0.08},{-1.9*\px+0.05})
+    -- node[above, pos=0.72] {$A$} (8.42,-0.1);
+  \draw[->, thick, bookpitfall] ({8.6-2.7*\px-0.08},{-2.7*\px+0.05})
+    -- node[below, pos=0.42] {$\adj A$} (0.18,-0.1);
+\end{tikzpicture}
+\caption{The four subspaces of a linear map $A:V\to W$ of rank $r$
+between inner product spaces of dimensions $n$ and $m$. In each space
+the two subspaces are orthogonal complements of each other. $A$ sends
+$\ker A$ to $0$ and is one-to-one from $(\ker A)^\perp$ onto $\im A$,
+because $(\ker A)^\perp$ is a complement of $\ker A$; the adjoint does
+the same in the other direction. The right angles are those of the
+chosen inner products. Without inner products, $\ker A$ and $\im A$
+are still defined, but their partners are the annihilators
+$(\ker A)^\circ\subset V^*$ and $(\im A)^\circ\subset W^*$
+(\cref{duality:thm:four}), which live in the dual spaces and cannot be
+drawn at an angle with them.}
+\label{inner-products:fig:four}
+\end{figure}
+
+\Cref{inner-products:fig:four} shows the theorem. The Riesz maps bring
+the annihilators into $V$ and $W$ (\cref{inner-products:prop:perp}), at
+positions that depend on the inner products: with another inner product
+on $V$, the subspace $\ker A$ stays where it is and $(\ker A)^\perp$
+turns around it.
+
 \begin{pitfall}[Self-adjoint is not ``symmetric matrix'']
 An operator $A:V\to V$ is \emph{self-adjoint} if $\adj A = A$. By
 \cref{inner-products:thm:matrix} this means $M[A] = [A]^\top M$: the array
