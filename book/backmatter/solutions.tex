@@ -728,6 +728,30 @@ the truncated decompositions. By
 \cref{spectral-svd:prop:minmax-sv}(1), the singular values of $A + E$ lie
 in $[4.9, 5.1]$, $[2.9, 3.1]$ and $[0.9, 1.1]$.
 
+\solution{spectral-svd:exr:10}
+\begin{enumerate}[nosep]
+  \item $D = \begin{bsmallmatrix}0 & 9 & 16\\ 9 & 0 & 25\\ 16 & 25 & 0
+        \end{bsmallmatrix}$. The centroid is $(1, \frac43)$, so
+        $v_1 = (-1, -\frac43)$, $v_2 = (2, -\frac43)$,
+        $v_3 = (-1, \frac83)$ and
+        $B = \frac19\begin{bsmallmatrix}25 & -2 & -23\\ -2 & 52 & -50\\
+        -23 & -50 & 73\end{bsmallmatrix}$, which is $-\frac12HDH$. Then
+        $B_{11} + B_{22} - 2B_{12} = \frac{25 + 52 + 4}9 = 9$.
+  \item As in the proof of \cref{spectral-svd:prop:distances},
+        $x^\top Bx' = -\frac12x^\top Dx'$ when the entries of $x$ and
+        of $x'$ sum to $0$. So $a^\top Ba = D_{12} = 1$,
+        $b^\top Bb = D_{13} = 1$ and
+        $a^\top Bb = \frac12(D_{12} + D_{13} - D_{23}) = -\frac72$. A
+        positive semi-definite $B$ would satisfy the Cauchy--Schwarz
+        inequality $(a^\top Bb)^2\leq(a^\top Ba)(b^\top Bb)$, and
+        $\frac{49}4 > 1$. The distances $1, 1, 3$ violate the triangle
+        inequality.
+  \item The function of $t$ is a sum of squared norms; its differential
+        vanishes when $\sum_i(Qx_i + t - y_i) = 0$, that is,
+        $t = \bar y - Q\bar x$, and this is its minimum since it is
+        convex. Then $Qx_i + t - y_i = Q(x_i - \bar x) - (y_i - \bar y)$.
+\end{enumerate}
+
 \section{\nameref*{ch:differential}}
 
 \solution{differential:exr:1}
@@ -1234,6 +1258,21 @@ $2 - \frac\pi2 > 0$ at $x = 1$ and $3 - 3.194 < 0$ at $x = 1.5$, so
 $x_c$ lies between them ($x_c\approx1.3917$). Starting below $x_c$ the
 iterates shrink in absolute value; starting above, they grow.
 
+\solution{contractions-newton:exr:10}
+\begin{enumerate}[nosep]
+  \item With $A = I$, $u = \mathbf 1$ and $\phi = \mathbf 1^\top$,
+        $s = 1 + n$: the inverse is
+        $I - \frac1{n + 1}\mathbf 1\mathbf 1^\top$ and the determinant
+        is $n + 1$.
+  \item $U(I + CU) = (I + UC)U$; multiply by $(I + UC)^{-1}$ on the
+        left and by $(I + CU)^{-1}$ on the right, which exists by
+        \cref{contractions-newton:prop:woodbury} applied to $A = I$.
+        With $U = X^\top/\lambda$ and $C = X$ this gives
+        $(I + X^\top X/\lambda)^{-1}X^\top
+        = X^\top(I + XX^\top/\lambda)^{-1}$, and the factors $\lambda$
+        cancel.
+\end{enumerate}
+
 \section{\nameref*{ch:inverse-implicit}}
 
 \solution{inverse-implicit:exr:1}
@@ -1365,6 +1404,22 @@ $\norm{D_zg} < 1$.
         $\norm{f(x) - f(x')}\geq\norm{x - x'} - \norm{F(x) - F(x')}
         \geq(1 - \kappa)\norm{x - x'}$, so $f^{-1}$ is Lipschitz with
         constant $1/(1 - \kappa)$.
+\end{enumerate}
+
+\solution{inverse-implicit:exr:10}
+\begin{enumerate}[nosep]
+  \item $v_0 = (1, 0)$, and the row $\phi_0 = [1\ \ 1]$ satisfies
+        $[1\ \ 1]A_0 = [2\ \ 2]$; $\phi_0(v_0) = 1$. So
+        $D\lambda(A_0)H = \phi_0(Hv_0) = a + c$. The characteristic
+        polynomial of $A_0 + \epsilon H$ is
+        $x^2 - (3 + \epsilon(a + d))x + 2 + \epsilon(a + 2d - c)
+        + O(\epsilon^2)$. Substituting $x = 2 + \epsilon\mu$, the terms
+        of order $\epsilon$ are $\mu - a - c$: $\mu = a + c$.
+  \item The eigenvalues are $1 + t$ and $1 - t$, with derivatives $1$
+        and $-1$. By the theorem, with the unit eigenvectors
+        $\frac1{\sqrt2}(1, 1)$ and $\frac1{\sqrt2}(1, -1)$ and
+        $H = A'(1) = \begin{bsmallmatrix}0 & 1\\ 1 & 0
+        \end{bsmallmatrix}$: $\inner{v}{Hv} = 1$ and $-1$.
 \end{enumerate}
 
 \section{\nameref*{ch:constrained-optimization}}

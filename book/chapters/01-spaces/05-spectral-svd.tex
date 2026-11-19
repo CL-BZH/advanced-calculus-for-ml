@@ -740,6 +740,150 @@ updates]
 \end{itemize}
 \end{mlthread}
 
+\section{Positions from distances, and the best rotation}
+\label{spectral-svd:sec:distances}
+
+Two problems about configurations of points are solved by the
+decompositions of this chapter. The first shows what a configuration
+retains when every frame is forgotten; the second finds the isometry
+that best matches two configurations.
+
+Let $p_1,\dots,p_N$ be points of a Euclidean affine space
+(\cref{inner-products:def:euclidean}) and
+\[
+  D_{ij} = \norm{p_i - p_j}^2
+\]
+the matrix of their squared distances. Let
+$c = \frac1N\sum_ip_i$ be their centroid, a barycentre, defined without
+an origin (\cref{ch:affine-spaces}), $v_i = p_i - c$, and
+$B_{ij} = \inner{v_i}{v_j}$ the Gram matrix of the centred
+configuration. Write $\mathbf 1$ for the column of $N$ ones and
+$H = I - \frac1N\mathbf 1\mathbf 1^\top$.
+
+\begin{proposition}[Distances determine a configuration]
+\label{spectral-svd:prop:distances}
+\begin{enumerate}[nosep]
+  \item $B = -\frac12\,HDH$.
+  \item If two configurations $(p_i)$ and $(p'_i)$, possibly in
+        different Euclidean affine spaces, have the same matrix $D$,
+        there is a linear isometry $Q$ from
+        $\Span(v_1,\dots,v_N)$ onto $\Span(v'_1,\dots,v'_N)$ such that
+        $p'_i = c' + Q(p_i - c)$ for all $i$.
+  \item A symmetric matrix $D$ with zero diagonal is the matrix of
+        squared distances of $N$ points of a Euclidean space of
+        dimension $k$ if and only if $-\frac12HDH$ is positive
+        semi-definite of rank at most $k$. If
+        $-\frac12HDH = \sum_{a\leq k}\lambda_a\,u_au_a^\top$ with
+        orthonormal columns $u_a$ and $\lambda_a\geq0$
+        (\cref{spectral-svd:thm:spectral}), the points
+        $x_i = \bigl(\sqrt{\lambda_1}\,(u_1)_i,\dots,
+        \sqrt{\lambda_k}\,(u_k)_i\bigr)$ of $\R^k$ have these squared
+        distances.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) With $b_i = \norm{v_i}^2$,
+$D_{ij} = \norm{v_i - v_j}^2 = b_i + b_j - 2B_{ij}$, that is,
+$D = b\mathbf 1^\top + \mathbf 1b^\top - 2B$. Now $H\mathbf 1 = 0$, and
+$B\mathbf 1 = 0$ because $\sum_jv_j = 0$; so $HBH = B$ and
+$HDH = -2B$.
+
+(2) By (1) the two centred configurations have the same Gram matrix
+$B$. For coefficients $a_i$,
+$\norm{\sum_ia_iv_i}^2 = a^\top Ba = \norm{\sum_ia_iv'_i}^2$. So
+$\sum_ia_iv_i\mapsto\sum_ia_iv'_i$ is well defined, because a
+combination that vanishes is sent to a vector of norm $0$; it is linear,
+preserves norms, and sends $v_i$ to $v'_i$.
+
+(3) If $D$ comes from points of a space of dimension $k$, then
+$-\frac12HDH = B$ is a Gram matrix: $a^\top Ba\geq0$, and its rank is
+the dimension of $\Span(v_i)$, at most $k$. Conversely let
+$B = -\frac12HDH$ be positive semi-definite of rank at most $k$, so
+that $B_{ij} = \inner{x_i}{x_j}$ for the points $x_i$ of the statement.
+Since $H(e_i - e_j) = e_i - e_j$,
+\[
+  \norm{x_i - x_j}^2 = (e_i - e_j)^\top B\,(e_i - e_j)
+  = -\tfrac12(e_i - e_j)^\top D\,(e_i - e_j)
+  = -\tfrac12(D_{ii} + D_{jj} - 2D_{ij}) = D_{ij} ,
+\]
+because $D$ is symmetric with zero diagonal.
+\end{proof}
+
+\begin{keyidea}
+The matrix of distances passes the origin test and more: it is
+unchanged by every isometry. By (2) it is a complete description of
+the configuration up to isometry. A configuration \emph{is} its
+distances; coordinates are one way of writing them down, and (3)
+produces such coordinates from the spectral theorem.
+\end{keyidea}
+
+For the second problem, let $(x_i)$ and $(y_i)$ be two families of $N$
+vectors of an inner product space $V$, for instance two centred
+configurations. We look for the orthogonal operator $Q$ of $V$ that
+brings the first as close as possible to the second.
+
+\begin{proposition}[Orthogonal Procrustes problem]
+\label{spectral-svd:prop:procrustes}
+Let $M = \sum_iy_i\inner{x_i}\cdot$, the operator
+$v\mapsto\sum_i\inner{x_i}v\,y_i$, with the singular value
+decomposition $Mv_a = \sigma_aw_a$ of \cref{spectral-svd:thm:svd}. The
+orthogonal operator $Q$ defined by $Qv_a = w_a$ for $a = 1,\dots,n$
+minimizes $\sum_i\norm{Qx_i - y_i}^2$ among orthogonal operators. It is
+the only minimizer if $M$ is invertible.
+\end{proposition}
+
+\begin{proof}
+For orthogonal $Q$,
+$\sum_i\norm{Qx_i - y_i}^2 = \sum_i\norm{x_i}^2 + \sum_i\norm{y_i}^2
+- 2\sum_i\inner{Qx_i}{y_i}$, so one must maximize
+$\sum_i\inner{Qx_i}{y_i}$. Expanding $x_i$ in the orthonormal basis
+$(v_a)$,
+\[
+  \sum_i\inner{Qx_i}{y_i}
+  = \sum_a\Bigl\langle Qv_a, \sum_i\inner{x_i}{v_a}y_i\Bigr\rangle
+  = \sum_a\inner{Qv_a}{Mv_a}
+  = \sum_{a\leq r}\sigma_a\inner{Qv_a}{w_a}
+  \leq\sum_{a\leq r}\sigma_a ,
+\]
+by the Cauchy--Schwarz inequality, since $Qv_a$ and $w_a$ are unit
+vectors. Equality holds if and only if $Qv_a = w_a$ for all $a\leq r$.
+The operator of the statement is orthogonal, as it maps an orthonormal
+basis to an orthonormal basis, and it is the only one with this
+property when $r = n$.
+\end{proof}
+
+In matrices, with the $x_i^\top$ and $y_i^\top$ as the rows of $X$ and
+$Y$: if $Y^\top X = W\Sigma\,V^\top$ is a singular value decomposition,
+then $Q = WV^\top$, and the largest value of
+$\sum_i\inner{Qx_i}{y_i}$ is the sum of the singular values. When a
+translation is allowed as well, the best one matches the centroids
+(\cref{spectral-svd:exr:10}). When $Q$ must be a rotation and
+$\det(WV^\top) = -1$, one changes the sign of the last column of $W$;
+that this is optimal among rotations needs a further argument, omitted
+here.
+
+\begin{mlthread}[Machine learning: embeddings and alignment]
+\begin{itemize}[nosep]
+  \item \emph{Multidimensional scaling.} Given only dissimilarities
+        between $N$ items, (3) of
+        \cref{spectral-svd:prop:distances} places the items in $\R^k$:
+        keep the $k$ largest eigenvalues of $-\frac12HDH$. When the
+        dissimilarities are Euclidean distances this is principal
+        component analysis started from the distances instead of the
+        coordinates.
+  \item \emph{Aligning embeddings.} Two embeddings of the same items
+        trained separately, say word vectors for two languages or two
+        runs of the same model, are comparable only up to an
+        isometry: their distances can agree while their coordinates
+        do not. \Cref{spectral-svd:prop:procrustes} computes the
+        isometry before any comparison.
+  \item \emph{Registration.} The same computation aligns two point
+        clouds, or an estimated trajectory of a robot with a reference
+        one, before the error between them is measured.
+\end{itemize}
+\end{mlthread}
+
 \section{Where the chapter leads}\label{spectral-svd:sec:outlook}
 
 This chapter closes Part~I. The setting is now complete: an affine space
@@ -766,6 +910,12 @@ due to C.~Eckart and G.~Young (1936) for the Hilbert--Schmidt norm and to
 L.~Mirsky (1960) for a wider class of norms. Low-rank adaptation:
 E.~Hu et al., LoRA: Low-rank adaptation of large language models, ICLR,
 2022.
+
+The description of a configuration by its distances goes back to
+I.~J.~Schoenberg (1935) and to the classical scaling of
+W.~S.~Torgerson (1952); the orthogonal Procrustes problem was solved by
+P.~H.~Sch\"onemann (1966), and its version for rotations by W.~Kabsch
+(1976).
 
 \paragraph{Notebook.} The numerical claims of this chapter are checked
 with PyTorch in \notebook{05-spectral-svd.ipynb}.
@@ -882,5 +1032,24 @@ $B$ has rank at most $1$, and when $B$ has rank at most $2$. If $E$ is a
 perturbation with $\norm E\leq0.1$, in which intervals do the singular
 values of $A + E$ lie?
 \solutionlink{spectral-svd:exr:9}
+\end{exercise}
+
+\begin{exercise}\label{spectral-svd:exr:10}
+\begin{enumerate}[nosep]
+  \item For the points $(0, 0)$, $(3, 0)$, $(0, 4)$ of the plane,
+        write $D$, compute $B = -\frac12HDH$ from the centred
+        configuration, and check that
+        $B_{11} + B_{22} - 2B_{12} = D_{12}$.
+  \item Show that the symmetric matrix with zero diagonal and
+        $D_{12} = D_{13} = 1$, $D_{23} = 9$ is not a matrix of squared
+        distances, by evaluating $a^\top Bb$ for $a = e_2 - e_1$ and
+        $b = e_3 - e_1$.
+  \item Show that $\sum_i\norm{Qx_i + t - y_i}^2$, for a fixed
+        orthogonal $Q$, is smallest for $t = \bar y - Q\bar x$, with
+        $\bar x$ and $\bar y$ the centroids, and that the problem then
+        reduces to \cref{spectral-svd:prop:procrustes} for the centred
+        configurations.
+\end{enumerate}
+\solutionlink{spectral-svd:exr:10}
 \end{exercise}
 \end{notechapter}

@@ -566,6 +566,89 @@ shorten the step until the residual decreases; near the zero the full
 step is accepted and the quadratic rate is recovered.
 \end{pitfall}
 
+\section{Updating an inverse}\label{contractions-newton:sec:woodbury}
+
+Each step of Newton's method solves a linear system with a new
+operator. Many algorithms change the operator only by a term of low
+rank from one step to the next. The inverse then changes by a term of
+low rank as well, which can be computed from the old inverse.
+
+For $u\in V$ and $\phi\in V^*$, write $u\otimes\phi$ for the operator
+$v\mapsto\phi(v)\,u$, of rank one when $u$ and $\phi$ are not zero; its
+matrix is the column $[u]$ times the row $[\phi]$.
+
+\begin{proposition}[Low-rank updates]\label{contractions-newton:prop:woodbury}
+Let $A$ be an invertible operator on $V$, and $U:\R^k\to V$ and
+$C:V\to\R^k$ linear maps.
+\begin{enumerate}[nosep]
+  \item $A + UC$ is invertible if and only if the $k\times k$ matrix
+        $S = I + CA^{-1}U$ is, and then
+        \[
+          (A + UC)^{-1} = A^{-1} - A^{-1}U\,S^{-1}\,CA^{-1} .
+        \]
+  \item In particular $A + u\otimes\phi$ is invertible if and only if
+        $s = 1 + \phi(A^{-1}u)\neq0$, and then
+        \[
+          (A + u\otimes\phi)^{-1}
+          = A^{-1} - \frac1s\,(A^{-1}u)\otimes(\phi\circ A^{-1}) ,
+          \qquad
+          \det(A + u\otimes\phi) = s\,\det A .
+        \]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) If $S$ is invertible, multiply:
+\[
+  (A + UC)\bigl(A^{-1} - A^{-1}US^{-1}CA^{-1}\bigr)
+  = I + UCA^{-1} - U\,(I + CA^{-1}U)\,S^{-1}CA^{-1} = I .
+\]
+If $S$ is not, take $z\neq0$ with $Sz = 0$ and let $w = A^{-1}Uz$. Then
+$Cw = -z\neq0$, so $w\neq0$, and $(A + UC)w = Uz + UCw = 0$.
+
+(2) is the case $k = 1$, $U:t\mapsto tu$ and $C = \phi$. For the
+determinant, $A + u\otimes\phi = A\bigl(I + (A^{-1}u)\otimes\phi\bigr)$,
+so it is enough to show $\det(I + w\otimes\phi) = 1 + \phi(w)$. This is
+clear if $w = 0$. Otherwise complete $w$ into a basis
+$(w, e_2,\dots,e_n)$: the matrix of $I + w\otimes\phi$ is the identity
+plus the row $[\phi]$ added to its first row, a triangular matrix with
+diagonal $(1 + \phi(w), 1,\dots,1)$.
+\end{proof}
+
+The formulas are named after Sherman, Morrison and Woodbury. Given
+$A^{-1}$, they cost a number of operations of order $n^2k$, and the
+inversion of a $k\times k$ matrix, instead of $n^3$. To first order in
+$H = UC$ they reduce to $-A^{-1}HA^{-1}$, the differential of the
+inverse (\cref{differential:prop:inverse}); they are the exact form of
+that differential for increments of low rank.
+
+\begin{mlthread}[Machine learning: where inverses are updated]
+\begin{itemize}[nosep]
+  \item \emph{Quasi-Newton methods.} BFGS replaces the inverse of the
+        Hessian by an approximation corrected at each step by a term
+        of rank two, built from the last displacement and the last
+        change of the gradient. A step costs $n^2$ operations instead
+        of $n^3$, and the limited-memory variant stores only the last
+        few corrections.
+  \item \emph{Conditioning a Gaussian.} Observing $z = Hx + $ noise of
+        covariance $R$ turns the prior covariance $\Sigma$ of $x$ into
+        $(\Sigma^{-1} + H^\top R^{-1}H)^{-1}
+        = \Sigma - \Sigma H^\top(H\Sigma H^\top + R)^{-1}H\Sigma$: an
+        inverse of the size of the observation instead of the size of
+        the state. This is the update of the Kalman filter.
+  \item \emph{Ridge regression.} The identity
+        $(X^\top X + \lambda I)^{-1}X^\top
+        = X^\top(XX^\top + \lambda I)^{-1}$
+        (\cref{contractions-newton:exr:10}) trades a matrix of the
+        size of the features for one of the size of the data, which is
+        what allows kernels.
+  \item \emph{Flows.} A layer $x\mapsto x + u\,h(\phi(x) + b)$ has the
+        differential $I + h'\,u\otimes\phi$, of determinant
+        $1 + h'\,\phi(u)$: the density of a ``planar'' normalizing flow
+        is computed in $n$ operations.
+\end{itemize}
+\end{mlthread}
+
 \section{Where the chapter leads}\label{contractions-newton:sec:outlook}
 
 The mean value inequality and the contraction principle are the two tools
@@ -584,6 +667,11 @@ Theorem~2.8.13, with a proof in their appendix; their hypothesis is
 written with $\norm{F(a_0)}\,\norm{DF(a_0)^{-1}}^2$ where ours has
 $\beta_0\eta_0$. Fixed-point layers: S.~Bai, J.~Z.~Kolter and V.~Koltun,
 Deep equilibrium models, NeurIPS, 2019.
+
+The formulas for the inverse after a change of low rank are due to
+J.~Sherman and W.~J.~Morrison (1950) and M.~A.~Woodbury (1950); planar
+flows are from D.~J.~Rezende and S.~Mohamed, Variational inference with
+normalizing flows, ICML, 2015.
 
 \paragraph{Notebook.} The numerical claims of this chapter are checked
 with PyTorch in \notebook{09-contractions-newton.ipynb}.
@@ -692,5 +780,20 @@ $-x_c$ for ever when $a_0 = x_c$, where $x_c > 0$ solves
 $2x = (1 + x^2)\arctan x$, and locate $x_c$ between the two starting
 points.
 \solutionlink{contractions-newton:exr:9}
+\end{exercise}
+
+\begin{exercise}\label{contractions-newton:exr:10}
+\begin{enumerate}[nosep]
+  \item Compute the inverse and the determinant of the $n\times n$
+        matrix $I + \mathbf 1\mathbf 1^\top$, where $\mathbf 1$ is the
+        column of ones.
+  \item For $U:\R^k\to V$ and $C:V\to\R^k$ with $I + UC$
+        invertible, show that $(I + UC)^{-1}U = U(I + CU)^{-1}$, and
+        deduce that
+        $(X^\top X + \lambda I)^{-1}X^\top
+        = X^\top(XX^\top + \lambda I)^{-1}$ for every matrix $X$ and
+        $\lambda > 0$.
+\end{enumerate}
+\solutionlink{contractions-newton:exr:10}
 \end{exercise}
 \end{notechapter}

@@ -518,6 +518,148 @@ How such maps transform probability densities is the change of variables
 formula of \cref{ch:change-of-variables}.
 \end{mlthread}
 
+\section{The derivative of an eigenvalue}
+\label{inverse-implicit:sec:eigen}
+
+An eigenvalue is defined by an equation, $Av = \lambda v$, and the
+implicit function theorem tells when it is a differentiable function of
+the operator, and gives its differential. Let $V$ be a real vector
+space of dimension $n$.
+
+\begin{definition}[Simple eigenvalue]\label{inverse-implicit:def:simple}
+An eigenvalue $\lambda_0$ of an operator $A_0$ of $V$ is \emph{simple}
+if $\ker(A_0 - \lambda_0I)$ is a line that meets
+$\im(A_0 - \lambda_0I)$ only at $0$.
+\end{definition}
+
+\begin{theorem}[Derivative of a simple eigenvalue]
+\label{inverse-implicit:thm:eigen}
+Let $\lambda_0$ be a simple eigenvalue of $A_0$, with eigenvector
+$v_0$.
+\begin{enumerate}[nosep]
+  \item There is a covector $\phi_0\neq0$, unique up to a factor, such
+        that $\phi_0\circ A_0 = \lambda_0\phi_0$: an eigenvector of the
+        dual operator $\dual{A_0}$. Moreover $\phi_0(v_0)\neq0$.
+  \item There are an open set $\mathcal U\ni A_0$ in $L(V, V)$ and
+        maps $\lambda:\mathcal U\to\R$ and $v:\mathcal U\to V$ of class
+        $C^1$, with $\lambda(A_0) = \lambda_0$ and $v(A_0) = v_0$, such
+        that
+        \[
+          A\,v(A) = \lambda(A)\,v(A) , \qquad
+          \phi_0\bigl(v(A)\bigr) = \phi_0(v_0) .
+        \]
+  \item For every operator $H$,
+        \[
+          D\lambda(A_0)H = \frac{\phi_0(Hv_0)}{\phi_0(v_0)} .
+        \]
+\end{enumerate}
+If $V$ has an inner product and $A_0$ is self-adjoint, then
+$\phi_0 = \inner{v_0}\cdot$ and
+$D\lambda(A_0)H = \inner{v_0}{Hv_0}/\norm{v_0}^2$.
+\end{theorem}
+
+\begin{proof}
+Let $N = A_0 - \lambda_0I$. (1) Its kernel is a line, so its image is a
+hyperplane, whose annihilator is a line in $V^*$
+(\cref{duality:prop:annihilator}). By \cref{duality:thm:four} this
+annihilator is $\ker\dual N$, the set of covectors with
+$\phi\circ N = 0$. Let $\phi_0$ span it. Then $\im N$ is the set of
+zeros of $\phi_0$, and $v_0\notin\im N$ because $\lambda_0$ is simple:
+$\phi_0(v_0)\neq0$.
+
+(2) Apply \cref{inverse-implicit:thm:implicit} to
+\[
+  G\bigl(A, (v, \lambda)\bigr)
+  = \bigl(Av - \lambda v,\ \phi_0(v) - \phi_0(v_0)\bigr)\in V\times\R ,
+\]
+a polynomial map that vanishes at $(A_0, (v_0, \lambda_0))$. Its
+differential with respect to $(v, \lambda)$ at that point is
+\[
+  (w, \mu)\mapsto\bigl(Nw - \mu v_0,\ \phi_0(w)\bigr) ,
+\]
+an operator of $V\times\R$. It is injective: if $Nw = \mu v_0$ and
+$\phi_0(w) = 0$, applying $\phi_0$ gives $0 = \mu\,\phi_0(v_0)$, so
+$\mu = 0$; then $w\in\ker N$, $w = cv_0$, and
+$c\,\phi_0(v_0) = 0$ gives $w = 0$. So it is invertible.
+
+(3) Differentiate $A\,v(A) = \lambda(A)\,v(A)$ at $A_0$ in the
+direction $H$, with $w = Dv(A_0)H$ and $\mu = D\lambda(A_0)H$:
+$Hv_0 + A_0w = \mu v_0 + \lambda_0w$. Apply $\phi_0$; the terms
+$\phi_0(A_0w)$ and $\lambda_0\phi_0(w)$ are equal, and
+$\phi_0(Hv_0) = \mu\,\phi_0(v_0)$ remains.
+
+If $A_0$ is self-adjoint,
+$\inner{v_0}{A_0v} = \inner{A_0v_0}v = \lambda_0\inner{v_0}v$.
+\end{proof}
+
+In matrices, $\phi_0$ is a row with $[\phi_0][A_0] = \lambda_0[\phi_0]$,
+a ``left eigenvector'', and $D\lambda(A_0)$ is a covector on the space
+of matrices: its component on the entry $H_{ij}$ is
+$(\phi_0)_i(v_0)_j/\phi_0(v_0)$. For a self-adjoint operator an
+eigenvalue whose eigenspace is a line is always simple, since the
+kernel and the image of $N$ are then orthogonal
+(\cref{inner-products:thm:four}).
+
+\begin{corollary}[Derivative of a singular value]
+\label{inverse-implicit:cor:singular}
+Let $W_0:V\to W$ be a linear map between inner product spaces, and
+$\sigma_0 > 0$ a singular value of $W_0$ such that $\sigma_0^2$ is a
+simple eigenvalue of $\adj{W_0}W_0$, with unit singular vectors
+$v_0$ and $w_0 = W_0v_0/\sigma_0$. Then this singular value is a
+function $\sigma$ of class $C^1$ of the map near $W_0$, and
+\[
+  D\sigma(W_0)H = \inner{w_0}{Hv_0} .
+\]
+\end{corollary}
+
+\begin{proof}
+$\sigma(W)^2 = \lambda(\adj WW)$ with $\lambda$ from the theorem, and
+$W\mapsto\adj WW$ has the differential
+$H\mapsto\adj HW_0 + \adj{W_0}H$ at $W_0$
+(\cref{differential:prop:bilinear}). By the chain rule,
+\[
+  2\sigma_0\,D\sigma(W_0)H
+  = \inner{v_0}{(\adj HW_0 + \adj{W_0}H)v_0}
+  = 2\inner{W_0v_0}{Hv_0} = 2\sigma_0\inner{w_0}{Hv_0} .
+\]
+\end{proof}
+
+\begin{pitfall}[Multiple eigenvalues]
+Where eigenvalues meet, the theorem says nothing, and the conclusion
+fails. The matrix
+$\begin{bsmallmatrix}0 & 1\\ t & 0\end{bsmallmatrix}$ has the
+eigenvalues $\pm\sqrt t$ for $t > 0$ and none for $t < 0$; at $t = 0$
+the eigenvalue $0$ is not simple, although its eigenspace is a line.
+For the symmetric matrix $\diag(t, -t)$ the largest eigenvalue is
+$\abs t$: continuous, and not differentiable at the crossing.
+\end{pitfall}
+
+\begin{mlthread}[Machine learning: differentiating spectra]
+\begin{itemize}[nosep]
+  \item \emph{Spectral norm.} By
+        \cref{inverse-implicit:cor:singular} the differential of the
+        largest singular value of a weight matrix is
+        $H\mapsto\inner{w_1}{Hv_1}$: its array of partial derivatives
+        is $w_1v_1^\top$, of rank one. Penalties on the spectral norm,
+        and the normalization of a layer by its spectral norm, use
+        this with $v_1$ and $w_1$ estimated by a few steps of power
+        iteration.
+  \item \emph{Sharpness.} The largest eigenvalue of the Hessian of a
+        loss is differentiable in the parameters where it is simple,
+        with differential $D^3L(\theta)(v, v, \cdot)$ for a unit
+        eigenvector $v$. Where the two largest eigenvalues cross it has
+        a kink, like $\abs t$.
+  \item \emph{Automatic differentiation of decompositions.} The
+        differential $w = Dv(A_0)H$ of the eigenvector solves
+        $Nw = \mu v_0 - Hv_0$, and inverting $N$ on the other
+        eigenvectors produces factors
+        $1/(\lambda_i - \lambda_0)$. Gradients through an
+        eigendecomposition or an SVD are therefore unstable when
+        eigenvalues are close, however accurate the decomposition
+        itself (\cref{ch:spectral-svd}).
+\end{itemize}
+\end{mlthread}
+
 \section{Where the chapter leads}\label{inverse-implicit:sec:outlook}
 
 \Cref{ch:constrained-optimization} uses the implicit function theorem to
@@ -542,6 +684,10 @@ residual layers: J.~Behrmann, W.~Grathwohl, R.~T.~Q.~Chen, D.~Duvenaud
 and J.-H.~Jacobsen, Invertible residual networks, ICML, 2019. Fixed-point
 layers: S.~Bai, J.~Z.~Kolter and V.~Koltun, Deep equilibrium models,
 NeurIPS, 2019.
+
+On the normalization of a layer by its spectral norm: T.~Miyato et
+al., Spectral normalization for generative adversarial networks, ICLR,
+2018.
 
 \paragraph{Notebook.} The numerical claims of this chapter are checked
 with PyTorch in \notebook{10-inverse-implicit.ipynb}.
@@ -666,5 +812,21 @@ denominators do not vanish.
         iteration $x_{k+1} = y - F(x_k)$ converges to $f^{-1}(y)$.
 \end{enumerate}
 \solutionlink{inverse-implicit:exr:9}
+\end{exercise}
+
+\begin{exercise}\label{inverse-implicit:exr:10}
+\begin{enumerate}[nosep]
+  \item Let $A_0 = \begin{bsmallmatrix}2 & 1\\ 0 & 1\end{bsmallmatrix}$
+        and $\lambda_0 = 2$. Find $v_0$ and $\phi_0$, and compute
+        $D\lambda(A_0)H$ for
+        $H = \begin{bsmallmatrix}a & b\\ c & d\end{bsmallmatrix}$.
+        Check the result with the characteristic polynomial of
+        $A_0 + \epsilon H$.
+  \item For
+        $A(t) = \begin{bsmallmatrix}1 & t\\ t & 1\end{bsmallmatrix}$
+        compute the two eigenvalues and their derivatives at $t = 1$
+        in two ways.
+\end{enumerate}
+\solutionlink{inverse-implicit:exr:10}
 \end{exercise}
 \end{notechapter}
