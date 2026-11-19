@@ -2792,3 +2792,229 @@ three shadows on the coordinate planes have areas $1$, $2$ and $2$.
         $\star o_1^* = o_2^*$ and $\star o_2^* = -o_1^*$:
         $\star e_1^* = 2e_2^*$ and $\star e_2^* = -\frac12e_1^*$.
 \end{enumerate}
+
+\section{\nameref*{ch:differential-forms}}
+
+\solution{differential-forms:exr:1}
+\begin{enumerate}[nosep]
+  \item $\dd\alpha = (z\,\dd y + y\,\dd z)\wedge\dd x
+        + 2x\,\dd x\wedge\dd z
+        = (y - 2x)\,\dd z\wedge\dd x - z\,\dd x\wedge\dd y$, in
+        agreement with \cref{differential-forms:ex:r3} for
+        $(P, Q, R) = (yz, 0, x^2)$. Next
+        $\dd\gamma = \dd x\wedge\dd y$, and
+        $\dd\beta = \dd x\wedge\dd y\wedge\dd z$, since
+        $\dd(y^2)\wedge\dd x\wedge\dd y = 0$. Finally
+        $\alpha\wedge\gamma = xyz\,\dd x\wedge\dd y
+        + x^3\,\dd z\wedge\dd y
+        = xyz\,\dd x\wedge\dd y - x^3\,\dd y\wedge\dd z$.
+  \item Write $\mu = \dd x\wedge\dd y\wedge\dd z$. The components of
+        $\dd\alpha$ are $(a, b, c) = (0, y - 2x, -z)$, so
+        $\dd(\dd\alpha) = (0 + 1 - 1)\,\mu = 0$. The components of
+        $\alpha\wedge\gamma$ are $(-x^3, 0, xyz)$, so
+        $\dd(\alpha\wedge\gamma) = (-3x^2 + xy)\,\mu$. On the other
+        side, $\dd\alpha\wedge\gamma
+        = x(y - 2x)\,\dd z\wedge\dd x\wedge\dd y = (xy - 2x^2)\,\mu$
+        and $\alpha\wedge\dd\gamma = x^2\,\dd z\wedge\dd x\wedge\dd y
+        = x^2\mu$. The difference is $(xy - 3x^2)\,\mu$.
+\end{enumerate}
+
+\solution{differential-forms:exr:2}
+\begin{enumerate}[nosep]
+  \item $\dd\alpha = \dd x\wedge\dd y - \dd y\wedge\dd x
+        = 2\,\dd x\wedge\dd y$, so
+        $F^*(\dd\alpha) = 2r\,\dd r\wedge\dd\theta$ by
+        \cref{differential-forms:ex:polar}. By the same example
+        $F^*\alpha = r^2\,\dd\theta$, and
+        $\dd(r^2\,\dd\theta) = 2r\,\dd r\wedge\dd\theta$. They agree,
+        as \cref{differential-forms:thm:natural} says.
+  \item $G^*\dd x = 2u\,\dd u - 2v\,\dd v$ and
+        $G^*\dd y = 2v\,\dd u + 2u\,\dd v$, so
+        $G^*(\dd x\wedge\dd y) = 4u^2\,\dd u\wedge\dd v
+        - 4v^2\,\dd v\wedge\dd u = 4(u^2 + v^2)\,\dd u\wedge\dd v$. The
+        Jacobian matrix
+        $\begin{bsmallmatrix}2u & -2v\\ 2v & 2u\end{bsmallmatrix}$ has
+        determinant $4(u^2 + v^2)$.
+\end{enumerate}
+
+\solution{differential-forms:exr:3}
+\begin{enumerate}[nosep]
+  \item The map $x\mapsto\omega(x) = b(x - p_0, \cdot)$ is affine, with
+        linear part $u\mapsto b(u, \cdot)$. So
+        $D\omega(x)u = b(u, \cdot)$, and by
+        \cref{differential-forms:thm:affine},
+        $\dd\omega(x)(u, v) = b(u, v) - b(v, u)$.
+  \item $\dd\omega = 0$ means $b(u, v) = b(v, u)$ for all $u, v$. Then,
+        with $h = x - p_0$,
+        \[
+          K\omega(x) = \int_0^1b(th, h)\,\dd t = \tfrac12b(h, h) .
+        \]
+        Indeed the differential of $x\mapsto\frac12b(h, h)$ is
+        $v\mapsto\frac12\bigl(b(v, h) + b(h, v)\bigr)$
+        (\cref{differential:prop:bilinear}), which is $b(h, v)$ when
+        $b$ is symmetric.
+  \item $\omega(x)(v) = (x - p_0)^\top Bv$: the row of components is
+        $(x - p_0)^\top B$, that is,
+        $\omega_j = \sum_i(x - p_0)_iB_{ij}$. Then
+        $\partial_i\omega_j = B_{ij}$ and
+        $\dd\omega = \sum_{i<j}(B_{ij} - B_{ji})\,\dd x_i\wedge\dd x_j$.
+\end{enumerate}
+
+\solution{differential-forms:exr:4}
+\begin{enumerate}[nosep]
+  \item $\dd\alpha = \dd y\wedge\dd x - \dd x\wedge\dd y
+        = -2\,\dd x\wedge\dd y\neq0$. But
+        $\alpha/y^2 = \frac1y\,\dd x - \frac x{y^2}\,\dd y
+        = \dd\bigl(\frac xy\bigr)$, which is exact, hence closed.
+  \item $h\alpha = h\wedge\alpha$ with $h$ of degree $0$, so rule (b)
+        of \cref{differential-forms:thm:d} gives
+        $\dd(h\alpha) = \dd h\wedge\alpha + h\,\dd\alpha$. If this is
+        $0$ and $h$ has no zero,
+        $\dd\alpha = -\frac1h\,\dd h\wedge\alpha$ and
+        $\alpha\wedge\dd\alpha = -\frac1h\,\alpha\wedge\dd h\wedge\alpha
+        = \frac1h\,\dd h\wedge\alpha\wedge\alpha = 0$. In dimension $2$
+        the condition is empty. In dimension $3$ it is not: for
+        $\alpha = \dd z - y\,\dd x$,
+        $\alpha\wedge\dd\alpha = \dd z\wedge\dd x\wedge\dd y\neq0$, so
+        no multiple of $\alpha$ by a function without zero is closed.
+\end{enumerate}
+
+\solution{differential-forms:exr:5}
+\begin{enumerate}[nosep]
+  \item In the chart $x$ the component is $1$, with derivative $0$. In
+        the chart $s$, $\alpha = \dd(e^s) = e^s\,\dd s$: the component
+        is $e^s$, and its derivative with respect to $s$ is $e^s$.
+  \item The derivative of the component vanishes in one chart and not
+        in the other, so its vanishing says nothing about $\alpha$.
+        The responsible term is the last one,
+        $\alpha_1\,\partial^2x/\partial s^2 = e^s$: the transition map
+        is not affine. On a line there is no antisymmetric part, and
+        indeed $\dd\alpha = 0$ in both charts.
+\end{enumerate}
+
+\solution{differential-forms:exr:6}
+\begin{enumerate}[nosep]
+  \item By (2) of \cref{differential-forms:prop:interior},
+        $\sigma = x\,\dd y\wedge\dd z - y\,\dd x\wedge\dd z
+        + z\,\dd x\wedge\dd y
+        = x\,\dd y\wedge\dd z + y\,\dd z\wedge\dd x
+        + z\,\dd x\wedge\dd y$, and $\dd\sigma = 3\mu$ by
+        \cref{differential-forms:ex:r3}.
+  \item From $r^2 = x^2 + y^2 + z^2$,
+        $r\,\dd r = x\,\dd x + y\,\dd y + z\,\dd z$, so
+        $\dd(r^{-3}) = -3r^{-5}(x\,\dd x + y\,\dd y + z\,\dd z)$. And
+        $(x\,\dd x + y\,\dd y + z\,\dd z)\wedge\sigma
+        = (x^2 + y^2 + z^2)\,\mu = r^2\mu$, each $\dd x_i$ keeping one
+        term of $\sigma$. Hence
+        $\dd(r^{-3}\sigma) = \dd(r^{-3})\wedge\sigma + r^{-3}\,\dd\sigma
+        = -3r^{-3}\mu + 3r^{-3}\mu = 0$.
+  \item $i_X\mu = \sum_i(-1)^{i-1}X_i\,
+        \dd x_1\wedge\dots\wedge\widehat{\dd x_i}\wedge\dots\wedge
+        \dd x_n$. In $\dd X_i\wedge\dd x_1\wedge\dots\wedge
+        \widehat{\dd x_i}\wedge\dots$ only the term
+        $\partial_iX_i\,\dd x_i$ of $\dd X_i$ survives, and bringing
+        $\dd x_i$ to its place costs $(-1)^{i-1}$. So
+        $\dd(i_X\mu) = \sum_i\partial_iX_i\,\mu$.
+\end{enumerate}
+
+\solution{differential-forms:exr:7}
+\begin{enumerate}[nosep]
+  \item With $(P, Q, R) = (2xy + z, x^2, x)$:
+        $\partial_yP = 2x = \partial_xQ$,
+        $\partial_zP = 1 = \partial_xR$ and
+        $\partial_zQ = 0 = \partial_yR$. Then
+        \[
+          K\alpha(x, y, z)
+          = \int_0^1\bigl((2t^2xy + tz)\,x + t^2x^2\,y + tx\,z\bigr)\,
+            \dd t
+          = \int_0^1(3t^2x^2y + 2txz)\,\dd t = x^2y + xz ,
+        \]
+        whose differential is $\alpha$.
+  \item For $\omega = \dd x\wedge\dd y$, $k = 2$ and
+        $K\omega = \int_0^1t\,\dd t\;i_E(\dd x\wedge\dd y)
+        = \frac12(x\,\dd y - y\,\dd x)$. Then
+        $\dd(K\omega) = \dd x\wedge\dd y$ and $K(\dd\omega) = 0$. For
+        $\omega = z\,\dd x\wedge\dd y$,
+        $g = \int_0^1t\cdot tz\,\dd t = \frac z3$ and
+        $K\omega = \frac z3(x\,\dd y - y\,\dd x)$, so
+        \begin{align*}
+          \dd(K\omega)
+          &= \tfrac13\bigl((z\,\dd x + x\,\dd z)\wedge\dd y
+            - (z\,\dd y + y\,\dd z)\wedge\dd x\bigr) \\
+          &= \tfrac13\bigl(2z\,\dd x\wedge\dd y - x\,\dd y\wedge\dd z
+            - y\,\dd z\wedge\dd x\bigr) .
+        \end{align*}
+        Also $\dd\omega = \mu$ and, with $k = 3$,
+        $K\mu = \int_0^1t^2\,\dd t\;i_E\,\mu
+        = \frac13(x\,\dd y\wedge\dd z + y\,\dd z\wedge\dd x
+        + z\,\dd x\wedge\dd y)$
+        (\cref{differential-forms:exr:6}). The sum is
+        $z\,\dd x\wedge\dd y$.
+\end{enumerate}
+
+\solution{differential-forms:exr:8}
+\begin{enumerate}[nosep]
+  \item Substituting $x = \cos mt$, $y = \sin mt$:
+        $x\,\dd y - y\,\dd x = m(\cos^2mt + \sin^2mt)\,\dd t$ and
+        $x^2 + y^2 = 1$, so $c_m^*\omega = m\,\dd t$. The loop $c_m$
+        turns $m$ times around the hole.
+  \item Let $(x, y)\in U$. The points of the segment from $(1, 0)$ are
+        $(1 + t(x - 1), ty)$. If $y\neq0$, their second coordinate is
+        not $0$ for $t > 0$. If $y = 0$, then $x > 0$ and the segment
+        lies in the positive half of the first axis. So the segment is
+        in $U$. On $U$ the polar angle $\theta$ with values in
+        $(-\pi, \pi)$ is smooth and $\dd\theta = \omega$
+        (\cref{differential-forms:ex:angle}). By
+        \cref{differential-forms:cor:potential}, $K\omega$ and
+        $\theta$ differ by a constant, and both vanish at $(1, 0)$.
+  \item $\R^2\setminus\{0\}$ is not star-shaped with respect to any
+        point $p_0$: the segment from $p_0$ to its opposite passes
+        through $0$.
+\end{enumerate}
+
+\solution{differential-forms:exr:9}
+\begin{enumerate}[nosep]
+  \item $\xi = \partial_xf\,\dd x + \partial_yg\,\dd y
+        = (y + \epsilon x)\,\dd x + (-x + \epsilon y)\,\dd y$, and
+        $\dd\xi = \bigl(\partial_x(-x + \epsilon y)
+        - \partial_y(y + \epsilon x)\bigr)\,\dd x\wedge\dd y
+        = -2\,\dd x\wedge\dd y$. Since $\xi$ is not closed, it is not
+        the differential of a function, for any $\epsilon$.
+  \item $A = \begin{bsmallmatrix}\epsilon & 1\\ -1 & \epsilon
+        \end{bsmallmatrix}$ and $I - \eta A
+        = \begin{bsmallmatrix}1 - \eta\epsilon & -\eta\\
+        \eta & 1 - \eta\epsilon\end{bsmallmatrix}$, a rotation
+        multiplied by $\sqrt{(1 - \eta\epsilon)^2 + \eta^2}$, which
+        gives the formula. The iterates converge to $0$ if and only if
+        $(1 - \eta\epsilon)^2 + \eta^2 < 1$, that is,
+        $0 < \eta < 2\epsilon/(1 + \epsilon^2)$.
+  \item The interval is empty: the factor is $\sqrt{1 + \eta^2} > 1$
+        for every step size, and the iterates diverge. For small
+        $\epsilon > 0$ the step must be smaller than about
+        $2\epsilon$: the rotation, not the curvature, limits the step
+        size.
+\end{enumerate}
+
+\solution{differential-forms:exr:10}
+\begin{enumerate}[nosep]
+  \item Let $\varphi(t) = F(x' + t(x - x'))$. By the chain rule
+        $\varphi'(t) = \sum_i\partial_iF(x' + t(x - x'))\,(x_i - x'_i)$,
+        and $F(x) - F(x') = \int_0^1\varphi'(t)\,\dd t = \sum_iA_i$.
+  \item On the segment, $\partial_1F = tx_2$ and $\partial_2F = tx_1$,
+        so $A_1 = x_1\int_0^1tx_2\,\dd t = \frac12x_1x_2 = A_2$. On the
+        other path, the first leg has $\dd x_2 = 0$ and
+        $\partial_1F = x_2 = 0$, so it contributes nothing; the second
+        has $\dd x_1 = 0$ and $\partial_2F = x_1$, and contributes
+        $x_1x_2$ to the second feature. The result is $(0, x_1x_2)$.
+  \item $x_1 = \frac12(u_1 + u_2)$, $x_2 = \frac12(u_1 - u_2)$ and
+        $F = \frac14(u_1^2 - u_2^2)$. Along the segment the
+        attributions are
+        $u_1\int_0^1\frac12tu_1\,\dd t = \frac14u_1^2$ and
+        $-\frac14u_2^2$. At $x = (2, 1)$, where $u = (3, 1)$, they are
+        $(\frac94, -\frac14)$, while the attributions to $x_1, x_2$ are
+        $(1, 1)$; both sum to $F = 2$. The change of basis matrix has
+        the columns $\frac12(1, 1)$ and $\frac12(1, -1)$. The rule for
+        vectors, $P^{-1}[A]$, gives $(2, 0)$; the rule for covectors,
+        $[A]P$, gives $(1, 0)$. Neither is $(\frac94, -\frac14)$: the
+        attributions are not the components of a tensor.
+\end{enumerate}

@@ -4,17 +4,1340 @@
 \chaptersubtitle{%
   The calculus of covector fields}
 
-\begin{chapterplan}
+\begin{chapterintro}
+A covector field gives a covector at each point, and the differential of
+a function is the first example. This chapter lets the alternating forms
+of \cref{ch:multilinear-algebra} depend on the point in the same way. A
+differential $k$-form is what will be integrated over a $k$-dimensional
+oriented manifold in \cref{ch:stokes}. Here we study what can be done
+with forms before integrating them: they are multiplied, pulled back by
+any smooth map, and differentiated by one operator, the exterior
+derivative $\dd$, which extends the differential of functions and
+commutes with every smooth map. No inner product, no orientation and no
+choice of coordinates enters. You will learn
 \begin{itemize}[nosep]
-  \item $k$-forms on open sets of affine spaces and on manifolds; pull-back.
-  \item The exterior derivative; $\dd\circ\dd = 0$; naturality, $f^*\dd = \dd
-        f^*$. No metric is needed.
-  \item Closed and exact forms; the Poincar\'e lemma.
+  \item differential forms on manifolds and on open sets of affine
+        spaces, and their pull-back, in which the determinant appears
+        without an absolute value;
+  \item the exterior derivative: existence, uniqueness,
+        $\dd\circ\dd = 0$, and why it needs no extra structure;
+  \item its meaning in an affine space: the antisymmetric part of a
+        differential, and the circulation around a small parallelogram;
+  \item closed and exact forms, and the Poincar\'e lemma with an
+        explicit potential;
+  \item how to tell whether a field of updates is the differential of a
+        loss, in games and in score-based models.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:tangent-bundles}: manifolds, charts, covector
+fields and their pull-back. \cref{ch:multilinear-algebra}: alternating
+forms, the wedge product, the pull-back and the determinant.
+\cref{ch:gradient-hessian} for the symmetry of second derivatives and
+\cref{ch:lebesgue-integral} for differentiation under the integral
+sign. Throughout, $M$ and $N$ are manifolds, every map is smooth, and
+$\Aff$ is an affine space with direction $V$ of dimension $n$.}
+\end{chapterintro}
+
+\section{Fields of alternating forms}\label{differential-forms:sec:forms}
+
+\begin{definition}[Differential form]\label{differential-forms:def:form}
+A \emph{differential form of degree $k$}, or \emph{$k$-form}, on a
+manifold $M$ is a map $\omega$ that assigns to each point $p\in M$ an
+alternating $k$-linear form $\omega(p)\in\Lambda^kT_p^*M$ on the tangent
+space at $p$, and that is smooth: in every chart $(U, x)$, the functions
+\[
+  \omega_I = \omega(\partial_{i_1},\dots,\partial_{i_k}):U\to\R ,
+  \qquad I = (i_1 < \dots < i_k) ,
+\]
+are smooth. The vector space of $k$-forms on $M$ is denoted
+$\Omega^k(M)$.
+\end{definition}
+
+By \cref{multilinear-algebra:thm:basis} applied at each point of $U$,
+the functions $\omega_I$ are the components of $\omega$ in the basis
+that the chart provides:
+\begin{equation}\label{differential-forms:eq:components}
+  \omega = \sum_I\omega_I\,\dd x_I \quad\text{on }U ,
+  \qquad
+  \dd x_I = \dd x_{i_1}\wedge\dots\wedge\dd x_{i_k} ,
+\end{equation}
+the sum being over the increasing multi-indices of length $k$. In another
+chart $x'$ the components are
+$\omega'_J = \sum_I\omega_I\det\bigl[\partial x_{i_a}/\partial
+x'_{j_b}\bigr]$, by \cref{tangent-bundles:thm:change} and
+\cref{multilinear-algebra:prop:minors}: sums of products of smooth
+functions. So it is enough to check smoothness in the charts of one
+atlas.
+
+The extreme degrees are familiar. A $0$-form is a smooth function. A
+$1$-form is a covector field (\cref{tangent-bundles:def:fields}). A form
+of degree $n = \dim M$ has one component,
+$\omega = f\,\dd x_1\wedge\dots\wedge\dd x_n$, and there are no forms of
+higher degree other than $0$.
+
+On an open subset $U$ of the affine space $\Aff$, every tangent space is
+$V$ (\cref{tangent-bundles:prop:consistent}), so a $k$-form on $U$ is a
+smooth map
+\[
+  \omega:U\to\Lambda^kV^*
+\]
+into one fixed vector space. In the affine coordinates of a frame
+$(o; e_1,\dots,e_n)$, the forms $\dd x_i = e_i^*$ are the same at all
+points.
+
+Forms are added and multiplied by functions pointwise, and so is the
+wedge product:
+\[
+  (\omega\wedge\eta)(p) = \omega(p)\wedge\eta(p) ,
+  \qquad \omega\in\Omega^k(M),\ \eta\in\Omega^l(M) .
+\]
+The result is a $(k + l)$-form, whose components are sums of products of
+those of $\omega$ and $\eta$. The rules of
+\cref{multilinear-algebra:thm:wedge} hold at each point: the product is
+associative, bilinear, also with respect to multiplication by functions,
+and $\eta\wedge\omega = (-1)^{kl}\,\omega\wedge\eta$. For a function $f$,
+$f\wedge\omega = f\omega$. Finally, a $k$-form applied to $k$ vector
+fields gives a smooth function,
+$p\mapsto\omega(p)\bigl(X_1(p),\dots,X_k(p)\bigr)$.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}clcl@{}}
+\toprule
+degree & general form on $\R^3$ & components & measures \\
+\midrule
+$0$ & $f$ & $1$ & a value at a point \\
+$1$ & $P\,\dd x + Q\,\dd y + R\,\dd z$ & $3$
+  & a small displacement \\
+$2$ & $a\,\dd y\wedge\dd z + b\,\dd z\wedge\dd x + c\,\dd x\wedge\dd y$
+  & $3$ & a small oriented parallelogram \\
+$3$ & $g\,\dd x\wedge\dd y\wedge\dd z$ & $1$
+  & a small oriented parallelepiped \\
+\bottomrule
+\end{tabular}
+\caption{Differential forms on $\R^3$. The numbers of components are the
+binomial coefficients $\binom3k$. Forms of degree $1$ and $2$ both have
+three components, and once the dot product is chosen both are replaced
+by vector fields (\cref{ch:vector-calculus}). They remain different
+objects: they pull back differently, and they are integrated over
+curves and over surfaces respectively.}
+\label{differential-forms:tab:degrees}
+\end{table}
+
+\begin{intuition}
+A $k$-form is a machine placed at every point, which takes $k$ small
+displacements from that point and returns a number, linear in each and
+changing sign when two are exchanged: the signed size of the small
+parallelepiped that they span, as measured by the form at that point.
+Adding these numbers over a $k$-dimensional surface cut into small
+pieces is the integral of \cref{ch:stokes}. Until then, a form is a
+thing to compute with.
+\end{intuition}
+
+\section{The pull-back}\label{differential-forms:sec:pullback}
+
+\begin{definition}[Pull-back]\label{differential-forms:def:pullback}
+Let $F:M\to N$ be smooth and $\omega\in\Omega^k(N)$. The
+\emph{pull-back} of $\omega$ by $F$ is the $k$-form on $M$
+\[
+  (F^*\omega)(p)(v_1,\dots,v_k)
+  = \omega\bigl(F(p)\bigr)\bigl(DF(p)v_1,\dots,DF(p)v_k\bigr) ,
+  \qquad v_1,\dots,v_k\in T_pM .
+\]
+\end{definition}
+
+At each point this is the pull-back of
+\cref{multilinear-algebra:def:pullback} by the linear map $DF(p)$. For a
+function, $F^*f = f\circ F$. For a covector field it is the pull-back of
+\cref{tangent-bundles:prop:pullback}.
+
+\begin{proposition}[Rules for the pull-back]
+\label{differential-forms:prop:pullback}
+Let $F:M\to N$ and $G:N\to P$ be smooth.
+\begin{enumerate}[nosep]
+  \item $F^*$ is linear, and
+        $F^*(\omega\wedge\eta) = F^*\omega\wedge F^*\eta$; in particular
+        $F^*(f\omega) = (f\circ F)\,F^*\omega$ for a function $f$.
+  \item $(G\circ F)^* = F^*\circ G^*$.
+  \item $F^*(\dd g) = \dd(g\circ F)$ for every function $g$ on $N$.
+  \item If $y$ is a chart of $N$ and $F_i = y_i\circ F$, then
+        \[
+          F^*\Bigl(\sum_I\omega_I\,\dd y_I\Bigr)
+          = \sum_I(\omega_I\circ F)\;
+            \dd F_{i_1}\wedge\dots\wedge\dd F_{i_k} .
+        \]
+        In particular $F^*\omega$ is smooth.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) and (2) hold at each point by the rules that follow
+\cref{multilinear-algebra:def:pullback}, with the chain rule
+$D(G\circ F)(p) = DG(F(p))\circ DF(p)$ for (2). (3) is
+\cref{tangent-bundles:prop:pullback}. (4) follows from (1) and (3),
+since $F^*\dd y_i = \dd(y_i\circ F)$.
+\end{proof}
+
+Rule (4) says how to compute: \emph{substitute}. Replace each coordinate
+$y_i$ by its expression $F_i$, each $\dd y_i$ by the differential of
+that expression, and multiply out with the rules of the wedge product.
+
+\begin{example}[Polar coordinates]\label{differential-forms:ex:polar}
+Let $F(r, \theta) = (r\cos\theta, r\sin\theta)$. Substituting
+$x = r\cos\theta$ and $y = r\sin\theta$,
+\[
+  F^*\dd x = \cos\theta\,\dd r - r\sin\theta\,\dd\theta ,
+  \qquad
+  F^*\dd y = \sin\theta\,\dd r + r\cos\theta\,\dd\theta ,
+\]
+the rows of the Jacobian matrix (\cref{tangent-bundles:ex:polar}).
+Since $\dd r\wedge\dd r = 0 = \dd\theta\wedge\dd\theta$ and
+$\dd\theta\wedge\dd r = -\dd r\wedge\dd\theta$,
+\begin{align*}
+  F^*(\dd x\wedge\dd y)
+  &= \bigl(r\cos^2\theta + r\sin^2\theta\bigr)\,\dd r\wedge\dd\theta
+   = r\,\dd r\wedge\dd\theta , \\
+  F^*(x\,\dd y - y\,\dd x)
+  &= r\cos\theta\,(\sin\theta\,\dd r + r\cos\theta\,\dd\theta)
+   - r\sin\theta\,(\cos\theta\,\dd r - r\sin\theta\,\dd\theta)
+   = r^2\,\dd\theta .
+\end{align*}
+The factor $r$ of the first line is the Jacobian determinant of
+\cref{change-of-variables:thm:polar}. It was produced by the algebra of
+the wedge product alone.
+\end{example}
+
+\begin{theorem}[Pull-back in top degree]\label{differential-forms:thm:top}
+Let $M$ and $N$ have the same dimension $n$, with charts $x$ and $y$,
+and let $F:M\to N$ be smooth, with $F_i = y_i\circ F$. Then
+\[
+  F^*\bigl(g\,\dd y_1\wedge\dots\wedge\dd y_n\bigr)
+  = (g\circ F)\,\det\Bigl[\frac{\partial F_i}{\partial x_j}\Bigr]\,
+    \dd x_1\wedge\dots\wedge\dd x_n .
+\]
+\end{theorem}
+
+\begin{proof}
+By \cref{differential-forms:prop:pullback}, the left-hand side is
+$(g\circ F)\,\dd F_1\wedge\dots\wedge\dd F_n$. This $n$-form is a
+multiple of $\dd x_1\wedge\dots\wedge\dd x_n$, and the factor is its
+value on $(\partial_1,\dots,\partial_n)$
+(\cref{multilinear-algebra:thm:basis}), which is
+$\det[\dd F_i(\partial_j)] = \det[\partial F_i/\partial x_j]$ by (4) of
+\cref{multilinear-algebra:thm:wedge}.
+\end{proof}
+
+\begin{keyidea}
+Compare with the change of variables theorem
+(\cref{change-of-variables:thm:cov}), where a density $g$ becomes
+$(g\circ F)\,\abs{\det DF}$. A form of top degree transforms with
+$\det DF$ itself, without the absolute value: it is a density that
+remembers orientation. When $F$ preserves orientation the two rules
+agree, and this is what will make the integral of an $n$-form over an
+oriented manifold independent of the chart. When $F$ reverses
+orientation the form changes sign, like $\int_a^b = -\int_b^a$.
+\end{keyidea}
+
+\paragraph{Restriction.} If $S$ is a submanifold of $M$, the inclusion
+$\iota:S\to M$ is smooth and $\iota^*\omega$ is the \emph{restriction}
+of $\omega$ to $S$: the same form, fed only with vectors tangent to $S$.
+It is $0$ when $k > \dim S$. For instance, the unit circle is
+parametrized by $c(\theta) = F(1, \theta)$ and the restriction of
+$x\,\dd y - y\,\dd x$ to it reads $\dd\theta$ in this parameter, by
+\cref{differential-forms:ex:polar}. Two forms that differ on $M$ can
+have the same restriction to $S$: $r^2\,\dd\theta$ and $\dd\theta$ do on
+the circle $r = 1$.
+
+\section{The exterior derivative}\label{differential-forms:sec:d}
+
+The differential sends functions to $1$-forms. It extends to forms of
+all degrees in one way only, once three rules are imposed. We first work
+in one chart, where the extension is given by a formula.
+
+\begin{lemma}[In one chart]\label{differential-forms:lem:chart}
+Let $(U, x)$ be a chart of $M$. For $k\geq0$ define
+\begin{equation}\label{differential-forms:eq:d}
+  \dd_x:\Omega^k(U)\to\Omega^{k+1}(U) ,
+  \qquad
+  \dd_x\Bigl(\sum_I\omega_I\,\dd x_I\Bigr)
+  = \sum_I\dd\omega_I\wedge\dd x_I .
+\end{equation}
+These linear maps satisfy
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item $\dd_xf = \dd f$, the differential, for functions;
+  \item $\dd_x(\omega\wedge\eta)
+        = \dd_x\omega\wedge\eta + (-1)^k\,\omega\wedge\dd_x\eta$ when
+        $\omega$ has degree $k$;
+  \item $\dd_x(\dd_x\omega) = 0$.
+\end{enumerate}
+Conversely, if linear maps $D:\Omega^k(U)\to\Omega^{k+1}(U)$, $k\geq0$,
+satisfy \textup{(a)}, \textup{(b)} and $D(Df) = 0$ for every function
+$f$, then $D = \dd_x$.
+\end{lemma}
+
+\begin{proof}
+(a) is the case $k = 0$ of the definition. The formula
+$\dd_x(f\,\dd x_J) = \dd f\wedge\dd x_J$ holds for every multi-index
+$J$, increasing or not: $\dd x_J$ is $0$ if an index is repeated, and
+$\pm\dd x_I$ with $I$ increasing otherwise.
+
+(b) Both sides are bilinear, so it is enough to take
+$\omega = f\,\dd x_I$ and $\eta = g\,\dd x_J$. Then
+$\omega\wedge\eta = fg\,\dd x_I\wedge\dd x_J$, and with
+$\dd(fg) = g\,\dd f + f\,\dd g$,
+\[
+  \dd_x(\omega\wedge\eta)
+  = (\dd f\wedge\dd x_I)\wedge(g\,\dd x_J)
+  + (-1)^k(f\,\dd x_I)\wedge(\dd g\wedge\dd x_J) ,
+\]
+where the sign comes from moving the $1$-form $\dd g$ across the
+$k$-form $\dd x_I$.
+
+(c) For a function, with $\partial_if = \partial f/\partial x_i$,
+\[
+  \dd_x(\dd f) = \dd_x\Bigl(\sum_i\partial_if\,\dd x_i\Bigr)
+  = \sum_{i,j}\partial_j\partial_if\;\dd x_j\wedge\dd x_i = 0 ,
+\]
+because $\partial_j\partial_if$ is symmetric in $(i, j)$, by
+\cref{gradient-hessian:thm:schwarz} applied to $f$ read in the chart,
+and $\dd x_j\wedge\dd x_i$ is antisymmetric. Next,
+$\dd_x(\dd x_I) = \dd1\wedge\dd x_I = 0$. So by (b),
+\[
+  \dd_x\bigl(\dd_x(f\,\dd x_I)\bigr) = \dd_x(\dd f\wedge\dd x_I)
+  = \dd_x(\dd f)\wedge\dd x_I - \dd f\wedge\dd_x(\dd x_I) = 0 .
+\]
+
+\emph{Uniqueness.} Let $D$ be as stated. Then $D(\dd x_i) = D(Dx_i) = 0$,
+and by induction on $k$ with (b),
+\[
+  D(\dd x_{i_1}\wedge\dots\wedge\dd x_{i_k})
+  = D(\dd x_{i_1})\wedge(\dd x_{i_2}\wedge\dots)
+  - \dd x_{i_1}\wedge D(\dd x_{i_2}\wedge\dots\wedge\dd x_{i_k}) = 0 .
+\]
+Hence $D(f\,\dd x_I) = Df\wedge\dd x_I + f\,D(\dd x_I)
+= \dd f\wedge\dd x_I$, by (b) with $k = 0$ and (a).
+\end{proof}
+
+\begin{theorem}[Exterior derivative]\label{differential-forms:thm:d}
+There is exactly one way to give, for every manifold $M$ and every
+$k\geq0$, a linear map
+\[
+  \dd:\Omega^k(M)\to\Omega^{k+1}(M)
+\]
+such that
+\begin{enumerate}[nosep,label=(\alph*)]
+  \item on functions, $\dd f$ is the differential;
+  \item $\dd(\omega\wedge\eta)
+        = \dd\omega\wedge\eta + (-1)^k\,\omega\wedge\dd\eta$ when
+        $\omega$ has degree $k$;
+  \item $\dd(\dd\omega) = 0$;
+  \item $\dd$ is local: $(\dd\omega)|_W = \dd(\omega|_W)$ for every open
+        subset $W$ of $M$.
+\end{enumerate}
+In a chart it is given by \eqref{differential-forms:eq:d}. The form
+$\dd\omega$ is the \emph{exterior derivative} of $\omega$.
+\end{theorem}
+
+\begin{proof}
+\emph{Existence.} For $\omega\in\Omega^k(M)$ and a chart $(U, x)$, put
+$\dd\omega = \dd_x(\omega|_U)$ on $U$. We must show that two charts
+$(U, x)$ and $(U', x')$ give the same form on $W = U\cap U'$. The
+restrictions of $x$ and $x'$ to $W$ are two charts of the manifold $W$,
+and restricting commutes with \eqref{differential-forms:eq:d}, which
+involves only values near each point. By
+\cref{differential-forms:lem:chart}, the operators $\dd_x$ and
+$\dd_{x'}$ on the forms of $W$ both satisfy (a), (b) and (c); by its
+uniqueness part, applied to the chart $x$ and to $D = \dd_{x'}$, they
+are equal. So $\dd\omega$ is well defined on $M$, and smooth since it is
+in each chart. Properties (a), (b), (c) are equalities between forms;
+they can be checked on each chart domain, where they are those of
+$\dd_x$. Property (d) holds by construction.
+
+\emph{Uniqueness.} Let $\dd'$ be another such family and $(U, x)$ a
+chart. On the manifold $U$, the maps $\dd'$ satisfy (a), (b), (c), so
+$\dd' = \dd_x$ there by the lemma. By (d),
+$(\dd'\omega)|_U = \dd'(\omega|_U) = \dd_x(\omega|_U)
+= (\dd\omega)|_U$.
+\end{proof}
+
+For a $1$-form $\alpha = \sum_i\alpha_i\,\dd x_i$, formula
+\eqref{differential-forms:eq:d} gives
+$\dd\alpha = \sum_{i,j}\partial_i\alpha_j\,\dd x_i\wedge\dd x_j$, that is,
+\begin{equation}\label{differential-forms:eq:one-form}
+  \dd\alpha = \sum_{i<j}\bigl(\partial_i\alpha_j - \partial_j\alpha_i
+  \bigr)\,\dd x_i\wedge\dd x_j .
+\end{equation}
+The components of $\dd\alpha$ are the entries of the antisymmetric part
+of the Jacobian matrix $[\partial_i\alpha_j]$ of the components, up to
+the factor $2$.
+
+\begin{example}[Forms on $\R^3$]\label{differential-forms:ex:r3}
+With the notation of \cref{differential-forms:tab:degrees},
+\begin{align*}
+  \dd f &= \partial_xf\,\dd x + \partial_yf\,\dd y
+          + \partial_zf\,\dd z , \\
+  \dd(P\,\dd x + Q\,\dd y + R\,\dd z)
+  &= (\partial_yR - \partial_zQ)\,\dd y\wedge\dd z
+   + (\partial_zP - \partial_xR)\,\dd z\wedge\dd x \\
+  &\quad + (\partial_xQ - \partial_yP)\,\dd x\wedge\dd y , \\
+  \dd(a\,\dd y\wedge\dd z + b\,\dd z\wedge\dd x
+      + c\,\dd x\wedge\dd y)
+  &= (\partial_xa + \partial_yb + \partial_zc)\,
+     \dd x\wedge\dd y\wedge\dd z .
+\end{align*}
+For the last line, $\dd a\wedge\dd y\wedge\dd z$ keeps only the term
+$\partial_xa\,\dd x$ of $\dd a$, and
+$\dd y\wedge\dd z\wedge\dd x = \dd x\wedge\dd y\wedge\dd z
+= \dd z\wedge\dd x\wedge\dd y$. The components that appear are those of
+the gradient, the curl and the divergence. One operator and one rule,
+$\dd\circ\dd = 0$, contain the three operators of vector calculus and
+the identities $\operatorname{curl}\operatorname{grad} = 0$ and
+$\operatorname{div}\operatorname{curl} = 0$
+(\cref{ch:vector-calculus}).
+\end{example}
+
+\begin{theorem}[Naturality]\label{differential-forms:thm:natural}
+For every smooth map $F:M\to N$ and every form $\omega$ on $N$,
+\[
+  \dd(F^*\omega) = F^*(\dd\omega) .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $(U', y)$ be a chart of $N$ and $W = F^{-1}(U')$, an open subset of
+$M$. It is enough to prove the equality on $W$, since these sets cover
+$M$. On $U'$ write $\omega = \sum_I\omega_I\,\dd y_I$; on $W$,
+$F^*\omega = \sum_I(\omega_I\circ F)\,\dd F_{i_1}\wedge\dots\wedge
+\dd F_{i_k}$ by \cref{differential-forms:prop:pullback}. As in the proof
+of \cref{differential-forms:lem:chart}, rules (b) and (c) give
+$\dd(\dd F_{i_1}\wedge\dots\wedge\dd F_{i_k}) = 0$. Therefore
+\[
+  \dd(F^*\omega)
+  = \sum_I\dd(\omega_I\circ F)\wedge\dd F_{i_1}\wedge\dots\wedge
+    \dd F_{i_k}
+  = \sum_IF^*(\dd\omega_I)\wedge F^*(\dd y_I)
+  = F^*\Bigl(\sum_I\dd\omega_I\wedge\dd y_I\Bigr) ,
+\]
+which is $F^*(\dd\omega)$. The middle equality is the chain rule
+$\dd(g\circ F) = F^*\dd g$.
+\end{proof}
+
+\begin{center}
+\begin{tikzcd}[column sep=large]
+\Omega^k(N) \arrow[r, "\dd"] \arrow[d, "F^*"']
+  & \Omega^{k+1}(N) \arrow[d, "F^*"] \\
+\Omega^k(M) \arrow[r, "\dd"'] & \Omega^{k+1}(M)
+\end{tikzcd}
+\end{center}
+
+\begin{keyidea}
+The exterior derivative commutes with every smooth map: with changes of
+coordinates, with parametrizations, with restrictions to submanifolds,
+with maps that are neither injective nor surjective. For functions this
+is the chain rule. The theorem says that the chain rule survives in
+every degree, provided one differentiates forms and keeps only the
+alternating part.
+\end{keyidea}
+
+\begin{remark}[What cannot be differentiated]
+\label{differential-forms:rem:symmetric}
+Let $\alpha$ be a covector field with components $\alpha_i$ in a chart
+$x$ and $\alpha'_a = \sum_i\alpha_i\,\partial x_i/\partial x'_a$ in a
+chart $x'$ (\cref{tangent-bundles:thm:change}). Differentiating,
+\[
+  \frac{\partial\alpha'_a}{\partial x'_b}
+  = \sum_{i,j}\frac{\partial\alpha_i}{\partial x_j}\,
+    \frac{\partial x_j}{\partial x'_b}\,
+    \frac{\partial x_i}{\partial x'_a}
+  + \sum_i\alpha_i\,\frac{\partial^2x_i}{\partial x'_b\,\partial x'_a} .
+\]
+Without the last term, the array $[\partial_j\alpha_i]$ would change
+like the array of a bilinear form. The last term is symmetric in
+$(a, b)$: it disappears from the antisymmetric part, which is therefore
+a tensor, $\dd\alpha$, and it spoils the symmetric part. So the
+``derivative of a covector field'' is not a tensor, but its
+antisymmetric part is. The last term also vanishes at a point where
+$\alpha = 0$: this is why the Hessian of a function is a bilinear form
+at a critical point and only there
+(\cref{tangent-bundles:prop:hessian}, with $\alpha = \dd f$).
+Differentiating the symmetric part, or a vector field, requires an
+additional structure that says how to compare neighbouring tangent
+spaces. An affine space has one, since all its tangent spaces are $V$.
+\end{remark}
+
+\section{In an affine space}\label{differential-forms:sec:affine}
+
+On an open subset $U$ of the affine space $\Aff$, a $k$-form is a map
+$\omega:U\to\Lambda^kV^*$ into a fixed vector space, and it has a
+differential in the sense of \cref{ch:differential}:
+$D\omega(p)v\in\Lambda^kV^*$ is the rate of change of $\omega$ at $p$ in
+the direction $v$. The exterior derivative is the alternating part of
+this differential. To state this we need a formula for the product of a
+covector and a form, which will also be used in
+\cref{differential-forms:sec:closed}.
+
+Below, $(v_0,\dots,\widehat{v_j},\dots,v_k)$ denotes the list
+$(v_0,\dots,v_k)$ with $v_j$ removed.
+
+\begin{lemma}[Wedge product with a covector]
+\label{differential-forms:lem:covector}
+For $\phi\in V^*$, $\eta\in\Lambda^kV^*$ and $v_0,\dots,v_k\in V$,
+\[
+  (\phi\wedge\eta)(v_0,\dots,v_k)
+  = \sum_{j=0}^k(-1)^j\,\phi(v_j)\,
+    \eta(v_0,\dots,\widehat{v_j},\dots,v_k) .
+\]
+\end{lemma}
+
+\begin{proof}
+By \cref{multilinear-algebra:def:wedge},
+$(\phi\wedge\eta)(v_0,\dots,v_k) = \frac1{k!}\sum_\sigma
+\operatorname{sgn}(\sigma)\,\phi(v_{\sigma(0)})\,
+\eta(v_{\sigma(1)},\dots,v_{\sigma(k)})$, the sum being over the
+permutations of $\{0,\dots,k\}$. Group them by the value
+$j = \sigma(0)$. Such a permutation is the cycle that brings $j$ to the
+front, of sign $(-1)^j$, followed by a permutation $\rho$ of the $k$
+other indices, and
+$\eta(v_{\sigma(1)},\dots,v_{\sigma(k)})
+= \operatorname{sgn}(\rho)\,\eta(v_0,\dots,\widehat{v_j},\dots,v_k)$
+because $\eta$ is alternating. So each of the $k!$ permutations with
+$\sigma(0) = j$ contributes
+$(-1)^j\phi(v_j)\,\eta(v_0,\dots,\widehat{v_j},\dots,v_k)$.
+\end{proof}
+
+\begin{theorem}[The exterior derivative in an affine space]
+\label{differential-forms:thm:affine}
+Let $\omega$ be a $k$-form on an open subset $U$ of $\Aff$. For
+$p\in U$ and $v_0,\dots,v_k\in V$,
+\[
+  \dd\omega(p)(v_0,\dots,v_k)
+  = \sum_{j=0}^k(-1)^j\,\bigl(D\omega(p)v_j\bigr)
+    (v_0,\dots,\widehat{v_j},\dots,v_k) .
+\]
+In particular, for a $1$-form,
+\[
+  \dd\omega(p)(u, v)
+  = \bigl(D\omega(p)u\bigr)(v) - \bigl(D\omega(p)v\bigr)(u) .
+\]
+\end{theorem}
+
+\begin{proof}
+Both sides are linear in $\omega$, so in affine coordinates it is enough
+to take $\omega = f\,\dd x_I$, where $\dd x_I$ is a constant element of
+$\Lambda^kV^*$. Then $D\omega(p)v = (\dd f(p)v)\,\dd x_I$, and the
+right-hand side is
+$\sum_j(-1)^j\,\dd f(p)(v_j)\,\dd x_I(v_0,\dots,\widehat{v_j},\dots,v_k)
+= (\dd f(p)\wedge\dd x_I)(v_0,\dots,v_k)$ by
+\cref{differential-forms:lem:covector}. This is $\dd\omega(p)$ applied
+to the same vectors, by \eqref{differential-forms:eq:d}.
+\end{proof}
+
+No basis appears in this formula. For a $1$-form, $D\omega(p)$ is a
+bilinear form $(u, v)\mapsto(D\omega(p)u)(v)$, and $\dd\omega(p)$ is
+twice its antisymmetric part. When $\omega = \dd f$, this bilinear form
+is the second differential of $f$, which is symmetric: again
+$\dd(\dd f) = 0$.
+
+The formula also explains what $\dd\omega$ measures. Define the integral
+of a $1$-form along the segment from $a$ to $a + w$ by
+\[
+  \int_{[a,\,a+w]}\omega = \int_0^1\omega(a + tw)(w)\,\dd t ,
+\]
+the sum of the values of $\omega$ on the small displacements that make
+up the segment. Traversing the segment backwards changes the sign.
+
+\begin{proposition}[Circulation around a small parallelogram]
+\label{differential-forms:prop:circulation}
+Let $\omega$ be a $1$-form on an open subset $U$ of $\Aff$, $p\in U$ and
+$u, v\in V$. Let $C(h)$ be the sum of the integrals of $\omega$ along
+the four sides of the parallelogram with vertices
+\[
+  p ,\quad p + hu ,\quad p + hu + hv ,\quad p + hv ,
+\]
+traversed in this order. Then
+\[
+  C(h) = h^2\,\dd\omega(p)(u, v) + o(h^2)
+  \qquad\text{as }h\to0 .
+\]
+\end{proposition}
+
+\begin{proof}
+Write $I(a, w) = \int_0^1\omega(a + tw)(w)\,\dd t$. The third and fourth
+sides are traversed backwards, so
+\[
+  C(h) = \bigl[I(p + hu, hv) - I(p, hv)\bigr]
+       - \bigl[I(p + hv, hu) - I(p, hu)\bigr] .
+\]
+In the first bracket,
+$\omega(q + hu) - \omega(q) = h\int_0^1D\omega(q + shu)u\,\dd s$ for
+$q = p + thv$, so the bracket equals
+\[
+  h^2\int_0^1\!\!\int_0^1
+  \bigl(D\omega(p + shu + thv)u\bigr)(v)\,\dd s\,\dd t
+  = h^2\bigl(D\omega(p)u\bigr)(v) + o(h^2) ,
+\]
+because $D\omega$ is continuous at $p$. In the same way the second
+bracket is $h^2(D\omega(p)v)(u) + o(h^2)$, and
+\cref{differential-forms:thm:affine} concludes.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \coordinate (p) at (0,0);
+  \coordinate (a) at (4.2,0.6);
+  \coordinate (c) at (1.2,2.6);
+  \coordinate (b) at ($(a)+(c)$);
+  \fill[bookaccent!12] (p) -- (a) -- (b) -- (c) -- cycle;
+  \begin{scope}[very thick, bookaccent,
+      decoration={markings, mark=at position 0.55 with {\arrow{Stealth}}}]
+    \draw[postaction={decorate}] (p) -- (a);
+    \draw[postaction={decorate}] (a) -- (b);
+    \draw[postaction={decorate}] (b) -- (c);
+    \draw[postaction={decorate}] (c) -- (p);
+  \end{scope}
+  \fill (p) circle (1.6pt) node[below left] {$p$};
+  \fill (a) circle (1.6pt) node[below right] {$p + hu$};
+  \fill (b) circle (1.6pt) node[above right] {$p + hu + hv$};
+  \fill (c) circle (1.6pt) node[above left] {$p + hv$};
+  \node[below] at ($(p)!0.5!(a)$) {$+I(p, hu)$};
+  \node[right] at ($(a)!0.5!(b)$) {$+I(p + hu, hv)$};
+  \node[above] at ($(c)!0.5!(b)+(0,0.05)$) {$-I(p + hv, hu)$};
+  \node[left] at ($(p)!0.5!(c)$) {$-I(p, hv)$};
+  \draw[->, bookpitfall, thick]
+    ($(p)!0.5!(b)+(0.55,0)$) arc (0:300:0.55);
+  \node[bookpitfall] at ($(p)!0.5!(b)$) {$C(h)$};
+\end{tikzpicture}
+\caption{The circulation of a $1$-form around a small parallelogram.
+Opposite sides are traversed in opposite directions, so their
+contributions, each of order $h$, cancel to first order. What remains is
+of order $h^2$: the change of $\omega(\cdot)(v)$ in the direction $u$
+minus the change of $\omega(\cdot)(u)$ in the direction $v$, which is
+$h^2\,\dd\omega(p)(u, v)$.}
+\label{differential-forms:fig:circulation}
+\end{figure}
+
+\begin{intuition}
+The value of $\dd\omega$ on a small parallelogram is the integral of
+$\omega$ over its boundary. For a function $f$, this is
+$\dd f(p)(hu)\approx f(p + hu) - f(p)$: the ``integral'' of $f$ over the
+two endpoints of a segment, with signs. For a $1$-form it is the
+proposition. In every degree, the value of $\dd\omega$ on a small
+$(k + 1)$-dimensional parallelepiped is the integral of $\omega$ over
+its $2(k + 1)$ faces, suitably oriented; Hubbard and Hubbard take this
+as the definition of $\dd$. Adding over the small pieces of a large
+domain, the interior faces cancel in pairs and only the boundary
+remains: this is Stokes' theorem (\cref{ch:stokes}). And
+$\dd\circ\dd = 0$ because a boundary has no boundary.
+\end{intuition}
+
+\section{Closed and exact forms}\label{differential-forms:sec:closed}
+
+\begin{definition}[Closed, exact]\label{differential-forms:def:closed}
+A form $\omega$ is \emph{closed} if $\dd\omega = 0$. It is \emph{exact}
+if $\omega = \dd\eta$ for some form $\eta$, called a \emph{potential} of
+$\omega$.
+\end{definition}
+
+Every exact form is closed, since $\dd\circ\dd = 0$. For a $1$-form
+$\alpha$, being exact means being the differential of a function, and
+by \eqref{differential-forms:eq:one-form} being closed means
+\[
+  \partial_i\alpha_j = \partial_j\alpha_i\quad\text{for all }i, j :
+\]
+the Jacobian matrix of the components is symmetric, in one chart around
+each point and then in all. This condition is necessary for $\alpha$ to
+be a differential, and it involves only first derivatives at each
+point. Whether it is sufficient depends on the shape of the domain.
+
+\begin{example}[The angle form]\label{differential-forms:ex:angle}
+On the punctured plane $M = \R^2\setminus\{0\}$, let
+\[
+  \omega = \frac{x\,\dd y - y\,\dd x}{x^2 + y^2} .
+\]
+It is closed: with $r^2 = x^2 + y^2$,
+$\partial_x(x/r^2) = (y^2 - x^2)/r^4 = \partial_y(-y/r^2)$. By
+\cref{differential-forms:ex:polar}, its pull-back by the polar map is
+$\dd\theta$: on any open half-plane bounded by a line through $0$, or on
+the plane without a closed half-line, $\omega$ is the differential of a
+polar angle. But it is not exact on $M$. If $\omega = \dd f$ with $f$
+smooth on $M$, pull back by $c(t) = (\cos t, \sin t)$: by
+\cref{differential-forms:prop:pullback},
+$c^*\omega = \dd(f\circ c) = (f\circ c)'(t)\,\dd t$, whereas the
+substitution gives $c^*\omega = \dd t$. So $(f\circ c)' = 1$ and
+$f(c(2\pi)) - f(c(0)) = 2\pi$, although $c(2\pi) = c(0)$.
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=0.95]
+  \begin{scope}
+    \foreach \r/\s in {0.8/45, 1.25/30, 2.05/30, 2.6/30}
+      \foreach \t in {0,\s,...,330}
+        \draw[-{Stealth[length=3.2pt]}, bookdef!80!black,
+          line width=0.6pt]
+          ({\r*cos(\t)},{\r*sin(\t)}) -- ++({-0.5/\r*sin(\t)},
+          {0.5/\r*cos(\t)});
+    \draw[bookaccent, very thick,
+      decoration={markings, mark=at position 0.13 with {\arrow{Stealth}}},
+      postaction={decorate}] (0,0) circle (1.65);
+    \draw[bookpitfall, very thick,
+      decoration={markings, mark=at position 0.2 with {\arrow{Stealth}}},
+      postaction={decorate}] (2.75,-2.35) circle (0.55);
+    \fill[white] (0,0) circle (3pt);
+    \draw (0,0) circle (3pt);
+    \node[bookaccent, fill=white, inner sep=1.5pt] at (135:1.65)
+      {$2\pi$};
+    \node[bookpitfall] at (2.75,-2.35) {$0$};
+  \end{scope}
+  \begin{scope}[shift={(7.2,0)}]
+    \fill[bookintuition!14] (0,0) circle (2.7);
+    \draw[white, line width=2.2pt] (0,0) -- (-2.7,0);
+    \draw[bookpitfall, very thick, dashed] (0,0) -- (-2.7,0);
+    \foreach \t/\l in {-135/{-\frac{3\pi}4}, -45/{-\frac\pi4},
+        45/{\frac\pi4}, 135/{\frac{3\pi}4}}
+      \draw[bookdef!80!black] (0,0) -- (\t:2.7)
+        node[pos=0.8, fill=bookintuition!14, inner sep=1pt]
+        {\small$\l$};
+    \draw[bookdef!80!black] (0,0) -- (0:2.7)
+      node[pos=0.8, fill=bookintuition!14, inner sep=1pt] {\small$0$};
+    \fill[white] (0,0) circle (3pt);
+    \draw (0,0) circle (3pt);
+    \node[bookpitfall] at (-1.9,0.3) {\small$\theta\to\pi$};
+    \node[bookpitfall] at (-1.9,-0.3) {\small$\theta\to-\pi$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The angle form on the punctured plane. Left: $\omega$ drawn as
+arrows, the vectors on which it is largest for a given Euclidean
+length; they shrink like $1/r$. The circulation around a loop that
+encloses the hole is $2\pi$; around a loop that does not, it is $0$.
+Right: on the plane without a half-line, $\omega = \dd\theta$, with
+level lines of $\theta$ drawn. The potential $\theta$ cannot be
+continued across the cut, where it jumps by $2\pi$.}
+\label{differential-forms:fig:angle}
+\end{figure}
+
+\begin{pitfall}[Closed is local, exact is global]
+Checking $\dd\omega = 0$ is a computation at each point. Finding $\eta$
+with $\dd\eta = \omega$ is a problem on the whole domain, and the
+answer can be no for a reason that no point sees: a hole. The symmetry
+of the Jacobian matrix proves that a $1$-form is \emph{locally} a
+differential, and nothing more.
+\end{pitfall}
+
+The domains without such obstructions include the star-shaped ones.
+Recall that a segment is an affine notion
+(\cref{ch:affine-spaces}).
+
+\begin{definition}[Star-shaped]\label{differential-forms:def:star}
+A subset $U$ of $\Aff$ is \emph{star-shaped with respect to}
+$p_0\in U$ if the segment $[p_0, x]$ lies in $U$ for every $x\in U$.
+\end{definition}
+
+A convex set is star-shaped with respect to each of its points. The
+proof that closed forms on such a set are exact constructs the
+potential, by integrating along the segments $[p_0, x]$ after one
+vector has been inserted into the form.
+
+\begin{definition}[Interior product]\label{differential-forms:def:interior}
+For $v\in V$ and $\omega\in\Lambda^kV^*$ with $k\geq1$, the
+\emph{interior product} $i_v\omega\in\Lambda^{k-1}V^*$ is
+\[
+  (i_v\omega)(v_2,\dots,v_k) = \omega(v, v_2,\dots,v_k) ,
+\]
+and $i_vc = 0$ for a number $c$. For a vector field $X$ and a form
+$\omega$ on a manifold, $(i_X\omega)(p) = i_{X(p)}\,\omega(p)$.
+\end{definition}
+
+\begin{proposition}[Rules for the interior product]
+\label{differential-forms:prop:interior}
+\begin{enumerate}[nosep]
+  \item $i_v$ is linear, and
+        $i_v(\omega\wedge\eta)
+        = i_v\omega\wedge\eta + (-1)^k\,\omega\wedge i_v\eta$ when
+        $\omega$ has degree $k$.
+  \item For covectors $\phi_1,\dots,\phi_k$,
+        \[
+          i_v(\phi_1\wedge\dots\wedge\phi_k)
+          = \sum_{a=1}^k(-1)^{a-1}\,\phi_a(v)\;
+            \phi_1\wedge\dots\wedge\widehat{\phi_a}\wedge\dots
+            \wedge\phi_k .
+        \]
+  \item $i_v\,i_w = -i_w\,i_v$, and in particular $i_v\,i_v = 0$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(3) holds because $\omega(w, v,\dots) = -\omega(v, w,\dots)$. For (1),
+take first a covector $\phi$ and a $k$-form $\eta$. In
+\cref{differential-forms:lem:covector} with $v_0 = v$, the term $j = 0$
+is $\phi(v)\,\eta(v_1,\dots,v_k)$, and the others add up to
+$-(\phi\wedge i_v\eta)(v_1,\dots,v_k)$, by the same lemma applied to
+$\phi$ and $i_v\eta$. So
+\[
+  i_v(\phi\wedge\eta) = \phi(v)\,\eta - \phi\wedge i_v\eta ,
+\]
+which is (1) for $k = 1$. Suppose (1) holds for forms $\omega'$ of
+degree $k - 1$, and let $\omega = \phi\wedge\omega'$. Then
+\begin{align*}
+  i_v(\phi\wedge\omega'\wedge\eta)
+  &= \phi(v)\,\omega'\wedge\eta
+     - \phi\wedge\bigl(i_v\omega'\wedge\eta
+     + (-1)^{k-1}\omega'\wedge i_v\eta\bigr) \\
+  &= \bigl(\phi(v)\,\omega' - \phi\wedge i_v\omega'\bigr)\wedge\eta
+     + (-1)^k\,\phi\wedge\omega'\wedge i_v\eta
+   = i_v\omega\wedge\eta + (-1)^k\,\omega\wedge i_v\eta .
+\end{align*}
+Every $k$-form is a sum of such products
+(\cref{multilinear-algebra:thm:basis}), and both sides are linear in
+$\omega$. (2) follows from (1) by induction on $k$.
+\end{proof}
+
+Let $U\subset\Aff$ be open and star-shaped with respect to $p_0$. For
+$k\geq1$ and $\omega\in\Omega^k(U)$ define the $(k - 1)$-form
+\begin{equation}\label{differential-forms:eq:homotopy}
+  (K\omega)(x)
+  = \int_0^1t^{k-1}\;i_{x - p_0}\,
+    \omega\bigl(p_0 + t(x - p_0)\bigr)\,\dd t ,
+  \qquad x\in U .
+\end{equation}
+The integrand is a function of $t$ with values in the vector space
+$\Lambda^{k-1}V^*$; it is integrated component by component. For
+$k = 1$,
+\[
+  (K\omega)(x) = \int_0^1\omega\bigl(p_0 + t(x - p_0)\bigr)(x - p_0)\,
+  \dd t = \int_{[p_0,\,x]}\omega ,
+\]
+the integral of $\omega$ along the segment from $p_0$ to $x$.
+
+\begin{theorem}[Poincar\'e lemma]\label{differential-forms:thm:poincare}
+Let $U\subset\Aff$ be open and star-shaped with respect to $p_0$. For
+every $k\geq1$ and every $\omega\in\Omega^k(U)$, the form $K\omega$ is
+smooth and
+\[
+  \omega = \dd(K\omega) + K(\dd\omega) .
+\]
+In particular, every closed form of degree $k\geq1$ on $U$ is exact,
+with the potential $K\omega$.
+\end{theorem}
+
+\begin{proof}
+Take affine coordinates with origin $p_0$, so that
+$x - p_0 = \sum_ix_ie_i$; write $E(x) = x - p_0$ and $tx$ for the point
+$p_0 + t(x - p_0)$. Both sides are linear in $\omega$, so let
+$\omega = f\,\dd x_I$ with $I = (i_1 < \dots < i_k)$. Put
+\[
+  g(x) = \int_0^1t^{k-1}f(tx)\,\dd t ,
+  \qquad\text{so that}\qquad
+  K\omega = g\;i_E\,\dd x_I .
+\]
+The function $(t, x)\mapsto t^{k-1}f(tx)$ is smooth on $[0, 1]\times U$,
+and its partial derivatives in $x$ are bounded for $t\in[0, 1]$ and $x$
+in a small ball. By \cref{lebesgue-integral:cor:c1}, applied
+repeatedly, $g$ is smooth and
+\[
+  \partial_jg(x) = \int_0^1t^k\,(\partial_jf)(tx)\,\dd t .
+\]
+By (2) of \cref{differential-forms:prop:interior},
+$i_E\,\dd x_I = \sum_a(-1)^{a-1}x_{i_a}\,
+\dd x_{i_1}\wedge\dots\wedge\widehat{\dd x_{i_a}}\wedge\dots\wedge
+\dd x_{i_k}$, a smooth form; hence $K\omega$ is smooth. Moreover
+\[
+  \dd(i_E\,\dd x_I)
+  = \sum_a(-1)^{a-1}\,\dd x_{i_a}\wedge
+    \dd x_{i_1}\wedge\dots\wedge\widehat{\dd x_{i_a}}\wedge\dots
+  = k\,\dd x_I ,
+\]
+because bringing $\dd x_{i_a}$ back to its place costs $(-1)^{a-1}$.
+So
+\[
+  \dd(K\omega) = \dd g\wedge i_E\,\dd x_I + k\,g\,\dd x_I .
+\]
+On the other hand $\dd\omega = \sum_j\partial_jf\,\dd x_j\wedge\dd x_I$,
+a form of degree $k + 1$, and by (1) of
+\cref{differential-forms:prop:interior},
+$i_E(\dd x_j\wedge\dd x_I) = x_j\,\dd x_I - \dd x_j\wedge i_E\,\dd x_I$.
+With the formula for $\partial_jg$,
+\[
+  K(\dd\omega)
+  = \sum_j\partial_jg\,\bigl(x_j\,\dd x_I
+    - \dd x_j\wedge i_E\,\dd x_I\bigr)
+  = \Bigl(\sum_jx_j\,\partial_jg\Bigr)\dd x_I
+    - \dd g\wedge i_E\,\dd x_I .
+\]
+Adding, the terms $\dd g\wedge i_E\,\dd x_I$ cancel, and the
+coefficient of $\dd x_I$ is
+\[
+  k\,g(x) + \sum_jx_j\,\partial_jg(x)
+  = \int_0^1\Bigl(k\,t^{k-1}f(tx)
+    + t^k\sum_jx_j\,(\partial_jf)(tx)\Bigr)\dd t
+  = \int_0^1\frac{\dd}{\dd t}\bigl(t^kf(tx)\bigr)\,\dd t = f(x) ,
+\]
+since $k\geq1$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \fill[bookintuition!16]
+      (0,0) ++(10:2.6) -- (40:1.0) -- (75:2.4) -- (115:0.9)
+      -- (150:2.5) -- (190:1.1) -- (230:2.3) -- (265:0.9)
+      -- (300:2.4) -- (335:1.0) -- cycle;
+    \draw[bookintuition!70!black, thick]
+      (0,0) ++(10:2.6) -- (40:1.0) -- (75:2.4) -- (115:0.9)
+      -- (150:2.5) -- (190:1.1) -- (230:2.3) -- (265:0.9)
+      -- (300:2.4) -- (335:1.0) -- cycle;
+    \foreach \t/\r in {12/2.2, 150/2.1, 232/1.9, 298/2.0}
+      \draw[bookdef!70] (0,0) -- (\t:\r);
+    \draw[bookaccent, very thick] (0,0) -- (73:2.0);
+    \fill (0,0) circle (1.6pt) node[below left=-1pt] {$p_0$};
+    \fill (73:2.0) circle (1.6pt) node[right=1pt] {$x$};
+    \fill[bookaccent] (73:1.1) circle (1.4pt);
+    \draw[black!45, thin] (73:1.1) -- (-1.15,2.25);
+    \node[bookaccent, above left=-2pt] at (-1.05,2.25)
+      {\small$p_0 + t(x - p_0)$};
+    \node at (0,-2.9) {star-shaped with respect to $p_0$};
+  \end{scope}
+  \begin{scope}[shift={(7.4,0)}]
+    \fill[bookintuition!16] (0,0) circle (2.4);
+    \draw[bookintuition!70!black, thick] (0,0) circle (2.4);
+    \fill[white] (0,0) circle (0.75);
+    \draw[bookintuition!70!black, thick] (0,0) circle (0.75);
+    \draw[bookpitfall, very thick] (200:1.6) -- (20:1.7);
+    \draw[white, line width=2.6pt] (200:0.75) -- (20:0.75);
+    \draw[bookpitfall, very thick, dotted] (200:0.75) -- (20:0.75);
+    \fill (200:1.6) circle (1.6pt) node[below left=-1pt] {$p_0$};
+    \fill (20:1.7) circle (1.6pt) node[above right=-1pt] {$x$};
+    \node at (0,-2.9) {not star-shaped: the segment leaves $U$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Left: in a star-shaped domain every point $x$ is joined to
+$p_0$ by a segment inside the domain, and the potential $K\omega$ at $x$
+is an integral over this segment. Right: in an annulus no point $p_0$
+works, and the angle form of
+\cref{differential-forms:fig:angle} has no potential.}
+\label{differential-forms:fig:star}
+\end{figure}
+
+\begin{corollary}[Potentials]\label{differential-forms:cor:potential}
+\begin{enumerate}[nosep]
+  \item Let $\alpha$ be a $1$-form on an open star-shaped subset $U$ of
+        $\Aff$ whose components satisfy
+        $\partial_i\alpha_j = \partial_j\alpha_i$. Then
+        $\alpha = \dd f$ with
+        \[
+          f(x) = \int_0^1\alpha\bigl(p_0 + t(x - p_0)\bigr)(x - p_0)\,
+          \dd t ,
+        \]
+        and every other potential is $f$ plus a constant.
+  \item On a manifold, every closed form of degree $k\geq1$ is
+        \emph{locally exact}: every point has an open neighbourhood on
+        which the form has a potential.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) The first claim is the theorem for $k = 1$. If $\dd h = 0$ on $U$,
+then $t\mapsto h(p_0 + t(x - p_0))$ has derivative
+$\dd h(\cdot)(x - p_0) = 0$, so $h(x) = h(p_0)$. (2) Take a chart
+around the point whose image contains a ball $B$ centred at the image
+of the point, and let $\psi$ be the inverse of the chart on $B$. Then
+$\psi^*\omega$ is closed on $B$ by
+\cref{differential-forms:thm:natural}, so $\psi^*\omega = \dd\eta$ by
+the theorem, and $\omega = \dd\bigl((\psi^{-1})^*\eta\bigr)$ on
+$\psi(B)$, again by naturality.
+\end{proof}
+
+\begin{remark}[Counting holes]\label{differential-forms:rem:cohomology}
+On a manifold $M$, the closed $k$-forms are a vector space, and the
+exact ones a subspace. The quotient, in which two closed forms are
+identified when they differ by an exact one, is the \emph{de Rham
+cohomology} $H^k(M)$. The Poincar\'e lemma says that $H^k(U) = 0$ for
+$k\geq1$ when $U$ is star-shaped, and
+\cref{differential-forms:ex:angle} that $H^1(\R^2\setminus\{0\})\neq0$.
+These spaces depend only on the shape of $M$: by naturality, a
+diffeomorphism carries closed forms to closed forms and exact ones to
+exact ones. They are the beginning of the use of forms to study the
+shape of spaces, which this book does not pursue.
+\end{remark}
+
+\section{Is this update the differential of a loss?}
+\label{differential-forms:sec:ml}
+
+Gradient descent follows the differential of a function. Many
+algorithms of machine learning follow a field of covectors that is not
+given as a differential: the players of a game each differentiate their
+own loss; a network is trained to output a score. Whether such a field
+is exact decides whether the tools of optimization apply, and the
+exterior derivative is the test.
+
+\begin{mlthread}[Machine learning: games]
+Two players control $x\in\R^m$ and $y\in\R^n$. The first wants to
+decrease $f(x, y)$ by moving $x$, the second to decrease $g(x, y)$ by
+moving $y$. Simultaneous gradient descent follows the covector field
+\[
+  \xi = \sum_i\frac{\partial f}{\partial x_i}\,\dd x_i
+      + \sum_j\frac{\partial g}{\partial y_j}\,\dd y_j ,
+  \qquad
+  \dd\xi = \sum_{i,j}\frac{\partial^2(g - f)}{\partial x_i\,\partial y_j}
+  \,\dd x_i\wedge\dd y_j .
+\]
 \begin{itemize}[nosep]
-  \item When a field of covectors is the differential of a loss: conservative
-        and non-conservative dynamics in score-based models and in games.
+  \item If $g = f$, the players cooperate and $\xi = \dd f$. More
+        generally $\dd\xi = 0$ exactly when $g - f$ is a function of $x$
+        plus a function of $y$; then $\xi$ is the differential of a
+        single function on $\R^{m+n}$
+        (\cref{differential-forms:cor:potential}), and the game is
+        ordinary minimization in disguise.
+  \item In a zero-sum game, $g = -f$, as for a generative adversarial
+        network, $\dd\xi = -2\sum_{i,j}\partial_{x_i}\partial_{y_j}f\,
+        \dd x_i\wedge\dd y_j$. It vanishes only if the players do not
+        interact. No loss is being minimized.
+  \item For $f = xy = -g$ on $\R^2$, $\xi = y\,\dd x - x\,\dd y$ and
+        $\dd\xi = -2\,\dd x\wedge\dd y$. With the dot product, the
+        update is $(x, y)\leftarrow(x - \eta y,\ y + \eta x)$: a
+        rotation followed by a dilation of ratio $\sqrt{1 + \eta^2}$.
+        The iterates spiral away from the equilibrium $(0, 0)$ for
+        every step size (\cref{differential-forms:fig:game}).
+  \item The Jacobian matrix of the components of $\xi$ is the sum of a
+        symmetric and an antisymmetric matrix. The antisymmetric part
+        holds the components of $\dd\xi$, up to a factor
+        $\pm\frac12$: it has a meaning in every chart, and it is the
+        part that rotates. The symmetric part has a meaning at the
+        equilibria, where $\xi = 0$, and only there
+        (\cref{differential-forms:rem:symmetric}). Several methods for
+        games correct the update with a term built from the
+        antisymmetric part.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=0.92]
+  \begin{scope}
+    \foreach \x in {-2,-1,...,2}
+      \foreach \y in {-2,-1,...,2}
+        \draw[->, bookdef!70, line width=0.5pt]
+          (\x,\y) -- ++({-0.22*\x},{-0.22*\y});
+    \draw[bookaccent, thick] (2.2,1.6)
+      \foreach \k in {1,...,9}
+        { -- ({2.2*0.7^\k},{1.6*0.7^\k}) };
+    \foreach \k in {0,...,9}
+      \fill[bookaccent] ({2.2*0.7^\k},{1.6*0.7^\k}) circle (1.3pt);
+    \fill (0,0) circle (1.6pt);
+    \node at (0,-2.9) {$\xi = x\,\dd x + y\,\dd y
+      = \dd\bigl(\tfrac12(x^2 + y^2)\bigr)$};
+    \node at (0,-3.5) {$\dd\xi = 0$};
+  \end{scope}
+  \begin{scope}[shift={(7.4,0)}]
+    \foreach \x in {-2,-1,...,2}
+      \foreach \y in {-2,-1,...,2}
+        \draw[->, bookdef!70, line width=0.5pt]
+          (\x,\y) -- ++({-0.22*\y},{0.22*\x});
+    \draw[bookpitfall, thick] (0:0.6)
+      \foreach \k in {1,...,20}
+        { -- ({\k*21.8}:{0.6*1.077^\k}) };
+    \foreach \k in {0,...,20}
+      \fill[bookpitfall] ({\k*21.8}:{0.6*1.077^\k}) circle (1.3pt);
+    \fill (0,0) circle (1.6pt);
+    \node at (0,-2.9) {$\xi = y\,\dd x - x\,\dd y$};
+    \node at (0,-3.5) {$\dd\xi = -2\,\dd x\wedge\dd y$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Two covector fields on the plane, drawn as the steps
+$-\eta\,\xi$ read through the dot product, with the iterates of the
+update. Left: an exact field; the iterates descend its potential.
+Right: the field of the zero-sum game $f = xy$; with $\eta = 0.4$ each
+step turns by $\arctan\eta\approx21.8^\circ$ and multiplies the
+distance to the equilibrium by $\sqrt{1 + \eta^2}\approx1.077$.}
+\label{differential-forms:fig:game}
+\end{figure}
+
+\begin{mlthread}[Machine learning: is a learned score a gradient?]
+The score of a density $p$ on $\R^n$ is the covector field
+$\dd(\ln p)$, which is exact. Score-based generative models train a
+network $s_\theta:\R^n\to\R^n$ to approximate its components, and then
+use $s_\theta$ in a sampler as if it were a score.
+\begin{itemize}[nosep]
+  \item A network with $n$ free outputs is a general $1$-form
+        $\alpha = \sum_i(s_\theta)_i\,\dd x_i$. Since $\R^n$ is
+        star-shaped, $\alpha$ is the differential of some function, an
+        energy up to sign, if and only if $\dd\alpha = 0$: the Jacobian
+        matrix $J$ of $s_\theta$ is symmetric at every point. Nothing in
+        the architecture enforces this.
+  \item To enforce it, parametrize the potential by a scalar network
+        and differentiate it. The price is one backward pass per
+        evaluation of the score.
+  \item To measure the defect without forming $J$: by
+        \cref{differential-forms:thm:affine},
+        $\dd\alpha(u, v) = v^\top Ju - u^\top Jv$, one Jacobian--vector
+        product and one vector--Jacobian product
+        (\cref{chain-rule-autodiff:tab:modes}). For independent
+        standard Gaussian $u$ and $v$, the mean of
+        $\dd\alpha(u, v)^2$ is $\norm{J - J^\top}_F^2$.
+\end{itemize}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: attributions along a path]
+To explain a prediction $F(x)$ relative to a baseline input $x'$,
+\emph{integrated gradients} attribute to the feature $i$ the number
+\[
+  A_i = (x_i - x'_i)\int_0^1\partial_iF\bigl(x' + t(x - x')\bigr)\,
+  \dd t .
+\]
+\begin{itemize}[nosep]
+  \item The sum $\sum_iA_i$ is $K(\dd F)(x)$ in the notation of
+        \eqref{differential-forms:eq:homotopy}, with $p_0 = x'$: the
+        integral of the exact form $\dd F$ along the segment. By
+        \cref{differential-forms:cor:potential} it equals
+        $F(x) - F(x')$, whatever the path. This is the
+        ``completeness'' property of the method.
+  \item Each $A_i$ is the integral along the segment of the form
+        $\partial_iF\,\dd x_i$, which is not closed in general. So the
+        individual attributions depend on the path chosen between $x'$
+        and $x$, and on the coordinates: they do not pass the basis
+        test of \cref{duality:sec:basis-test}. For $F = x_1x_2$ and
+        $x' = 0$, the segment gives $A = (\frac12x_1x_2, \frac12x_1x_2)$
+        and the path along the first axis, then parallel to the second,
+        gives $(0, x_1x_2)$.
+\end{itemize}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: densities and flows]
+A density $p$ on $\R^n$ can be read as the $n$-form
+$p\,\dd x_1\wedge\dots\wedge\dd x_n$. Its pull-back by a diffeomorphism
+$g$ is $(p\circ g)\,\det Dg\;\dd z_1\wedge\dots\wedge\dd z_n$
+(\cref{differential-forms:thm:top}): the change of variables for
+densities of \cref{change-of-variables:thm:pushforward}, up to the
+sign of $\det Dg$. For the layers of a normalizing flow that sign is
+positive (\cref{multilinear-algebra:sec:orientation}), and forms and
+densities agree. \Cref{ch:stokes} separates the two notions on
+manifolds, where a density can always be integrated and a form only
+after an orientation is chosen.
+\end{mlthread}
+
+\section{Where the chapter leads}\label{differential-forms:sec:outlook}
+
+Forms can now be multiplied, pulled back and differentiated.
+\Cref{ch:stokes} integrates a $k$-form over an oriented manifold of
+dimension $k$, by pulling it back to $\R^k$ with parametrizations, and
+proves Stokes' theorem, $\int_M\dd\omega = \int_{\partial M}\omega$,
+which turns \cref{differential-forms:prop:circulation} into an exact
+statement about domains of any size. \Cref{ch:vector-calculus} adds an
+inner product and an orientation, and translates $\dd$ into gradient,
+curl and divergence with the Riesz map and the Hodge star.
+\Cref{ch:odes-flows} differentiates a form along the flow of a vector
+field; the result is $\dd(i_X\omega) + i_X\,\dd\omega$, built from the
+two operations of this chapter, and for a volume form it defines the
+divergence that governs how densities evolve.
+
+\paragraph{Sources.} Loomis and Sternberg, \emph{Advanced Calculus},
+\S11.1, define exterior differential forms on a manifold, their
+product and their pull-back; their \S11.3 characterizes $\dd$ by the
+rules (a), (b) and $\dd(\dd f) = 0$ (Theorem~3.1), with the local
+formula (3.3), $\dd\circ\dd = 0$ (3.4) and the commutation with
+pull-backs (3.5). They obtain locality from rule (b) with a function
+equal to $1$ near a point; here it is a hypothesis, which avoids such
+functions. Their \S11.6 introduces the interior product. Hubbard and
+Hubbard define form fields on open subsets of $\R^n$
+(Definition~6.1.16) and the exterior derivative as a limit of integrals
+over the boundary of a small parallelogram (Definition~6.7.1), from
+which they derive the formula in coordinates (Theorem~6.7.4),
+$\dd\circ\dd = 0$ (Theorem~6.7.8) and the rule for wedge products
+(Theorem~6.7.9); the pull-back and its rules are their Definition~6.9.4
+and Propositions~6.9.6 and~6.9.7, and naturality is their Theorem~6.9.8.
+Their \S6.13 treats potentials: the magnetic field of a wire as a
+closed form that is not exact (Example~6.13.1), star-shaped domains
+(Definition~6.13.4), the Poincar\'e lemma (Theorem~6.13.5) and the
+identity $\varphi = \dd(c\varphi) + c(\dd\varphi)$ for their cone
+operator $c$ (Theorem~6.13.12), the counterpart of the operator $K$
+here. On
+games: D.~Balduzzi et al., The mechanics of $n$-player differentiable
+games, ICML, 2018; L.~Mescheder, S.~Nowozin and A.~Geiger, The numerics
+of GANs, NeurIPS, 2017. On scores: A.~Hyv\"arinen, Estimation of
+non-normalized statistical models by score matching, \emph{J.\ Mach.\
+Learn.\ Res.}, 2005; Y.~Song and S.~Ermon, Generative modeling by
+estimating gradients of the data distribution, NeurIPS, 2019. On
+attributions: M.~Sundararajan, A.~Taly and Q.~Yan, Axiomatic
+attribution for deep networks, ICML, 2017.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{22-differential-forms.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A differential $k$-form gives an alternating $k$-linear form on
+        each tangent space. In a chart it is
+        $\sum_I\omega_I\,\dd x_I$. On an open set of an affine space it
+        is a map into $\Lambda^kV^*$.
+  \item Forms pull back along any smooth map, by substitution. In top
+        degree the pull-back multiplies by $\det DF$, without absolute
+        value.
+  \item The exterior derivative is the only local operator that
+        extends the differential of functions, obeys the signed product
+        rule and has square zero. In a chart,
+        $\dd(f\,\dd x_I) = \dd f\wedge\dd x_I$. It commutes with every
+        pull-back.
+  \item In an affine space, $\dd\omega$ is the alternating part of the
+        differential $D\omega$. For a $1$-form it is the circulation
+        around a small parallelogram, per unit of the parallelogram.
+  \item Closed means $\dd\omega = 0$, exact means $\omega = \dd\eta$.
+        Exact forms are closed. On a star-shaped domain closed forms
+        are exact, with the explicit potential $K\omega$; on a domain
+        with a hole they need not be.
+  \item A field of updates is the differential of a loss, locally, if
+        and only if the Jacobian matrix of its components is
+        symmetric. Zero-sum games and unconstrained score networks
+        fail this test.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{differential-forms:exr:1}
+On $\R^3$ let $\alpha = yz\,\dd x + x^2\,\dd z$, $\gamma = x\,\dd y$
+and $\beta = x\,\dd y\wedge\dd z + y^2\,\dd x\wedge\dd y$.
+\begin{enumerate}[nosep]
+  \item Compute $\dd\alpha$, $\dd\gamma$, $\dd\beta$ and
+        $\alpha\wedge\gamma$.
+  \item Check that $\dd(\dd\alpha) = 0$, and that
+        $\dd(\alpha\wedge\gamma)
+        = \dd\alpha\wedge\gamma - \alpha\wedge\dd\gamma$.
+\end{enumerate}
+\solutionlink{differential-forms:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{differential-forms:exr:2}
+Let $F(r, \theta) = (r\cos\theta, r\sin\theta)$ and
+$\alpha = x\,\dd y - y\,\dd x$.
+\begin{enumerate}[nosep]
+  \item Compute $\dd\alpha$, then $F^*(\dd\alpha)$ and
+        $\dd(F^*\alpha)$, and compare.
+  \item Let $G(u, v) = (u^2 - v^2, 2uv)$. Compute $G^*(\dd x\wedge\dd y)$
+        in two ways: by substitution, and by
+        \cref{differential-forms:thm:top}.
+\end{enumerate}
+\solutionlink{differential-forms:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{differential-forms:exr:3}
+Let $b$ be a bilinear form on $V$ and $p_0\in\Aff$. Define the $1$-form
+$\omega(x)(v) = b(x - p_0, v)$ on $\Aff$.
+\begin{enumerate}[nosep]
+  \item Show that $\dd\omega(x)(u, v) = b(u, v) - b(v, u)$, without
+        coordinates.
+  \item Deduce that $\omega$ is closed if and only if $b$ is symmetric,
+        and compute the potential $K\omega$ in that case.
+  \item In $\R^n$ with $b(u, v) = u^\top Bv$, what are the components
+        of $\omega$ and of $\dd\omega$?
+\end{enumerate}
+\solutionlink{differential-forms:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{differential-forms:exr:4}
+Let $\alpha = y\,\dd x - x\,\dd y$ on the half-plane $y > 0$.
+\begin{enumerate}[nosep]
+  \item Show that $\alpha$ is not closed, but that $\alpha/y^2$ is, and
+        find a potential of $\alpha/y^2$.
+  \item Show that for a $1$-form $\alpha$ and a function $h$,
+        $\dd(h\alpha) = \dd h\wedge\alpha + h\,\dd\alpha$, and deduce
+        that if $h\alpha$ is closed for some function $h$ without
+        zero, then $\alpha\wedge\dd\alpha = 0$.
+\end{enumerate}
+\solutionlink{differential-forms:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{differential-forms:exr:5}
+On the line with coordinate $x$, let $\alpha = \dd x$, and let
+$x = e^s$ define a second chart $s$ on the half-line $x > 0$.
+\begin{enumerate}[nosep]
+  \item Compute the component of $\alpha$ in each chart, and its
+        derivative with respect to the coordinate of the chart.
+  \item Conclude that ``the derivative of the component is zero'' is
+        not a property of the covector field. Which term of
+        \cref{differential-forms:rem:symmetric} is responsible?
+\end{enumerate}
+\solutionlink{differential-forms:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{differential-forms:exr:6}
+In $\R^3$ let $E = x\,\partial_x + y\,\partial_y + z\,\partial_z$ and
+$\mu = \dd x\wedge\dd y\wedge\dd z$.
+\begin{enumerate}[nosep]
+  \item Compute $\sigma = i_E\,\mu$ and $\dd\sigma$.
+  \item On $\R^3\setminus\{0\}$, with $r^2 = x^2 + y^2 + z^2$, show
+        that $\sigma/r^3$ is closed.
+  \item For a vector field $X = \sum_iX_i\,\partial_i$ on $\R^n$ and
+        $\mu = \dd x_1\wedge\dots\wedge\dd x_n$, show that
+        $\dd(i_X\mu) = \bigl(\sum_i\partial_iX_i\bigr)\mu$.
+\end{enumerate}
+\solutionlink{differential-forms:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{differential-forms:exr:7}
+\begin{enumerate}[nosep]
+  \item Check that
+        $\alpha = (2xy + z)\,\dd x + x^2\,\dd y + x\,\dd z$ is closed
+        on $\R^3$, and compute its potential $K\alpha$ with
+        $p_0 = 0$.
+  \item Compute $K\omega$ for $\omega = \dd x\wedge\dd y$ on $\R^2$
+        and for $\omega = z\,\dd x\wedge\dd y$ on $\R^3$, with
+        $p_0 = 0$, and check
+        \cref{differential-forms:thm:poincare} in both cases.
+\end{enumerate}
+\solutionlink{differential-forms:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{differential-forms:exr:8}
+Let $\omega$ be the angle form of \cref{differential-forms:ex:angle}
+and $c_m(t) = (\cos mt, \sin mt)$ for an integer $m$.
+\begin{enumerate}[nosep]
+  \item Compute $c_m^*\omega$.
+  \item Let $U$ be the plane without the half-line
+        $\{(x, 0) : x\leq0\}$. Show that $U$ is star-shaped with
+        respect to $(1, 0)$, and that the potential $K\omega$ given by
+        \cref{differential-forms:thm:poincare} is the polar angle in
+        $(-\pi, \pi)$.
+  \item Why does the theorem not apply on $\R^2\setminus\{0\}$?
+\end{enumerate}
+\solutionlink{differential-forms:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{differential-forms:exr:9}
+Two players control $x\in\R$ and $y\in\R$ and descend
+$f = xy + \frac\epsilon2x^2$ and $g = -xy + \frac\epsilon2y^2$
+respectively, with $\epsilon\geq0$.
+\begin{enumerate}[nosep]
+  \item Write $\xi$ and compute $\dd\xi$. Is there a function whose
+        differential is $\xi$?
+  \item With the dot product, the update is $z\leftarrow(I - \eta A)z$
+        for a matrix $A$. Show that
+        \[
+          \norm{(I - \eta A)z}^2
+          = \bigl((1 - \eta\epsilon)^2 + \eta^2\bigr)\norm z^2 ,
+        \]
+        and find the step sizes for which the iterates converge to $0$.
+  \item What happens when $\epsilon = 0$?
+\end{enumerate}
+\solutionlink{differential-forms:exr:9}
+\end{exercise}
+
+\begin{exercise}\label{differential-forms:exr:10}
+Let $F:\R^n\to\R$ be smooth, $x'\in\R^n$ a baseline and $A_i$ the
+integrated gradients of \cref{differential-forms:sec:ml}.
+\begin{enumerate}[nosep]
+  \item Prove that $\sum_iA_i = F(x) - F(x')$.
+  \item For $F = x_1x_2$ and $x' = 0$, compute $A$ along the segment,
+        and along the path that goes from $0$ to $(x_1, 0)$ and then to
+        $(x_1, x_2)$.
+  \item Let $u_1 = x_1 + x_2$ and $u_2 = x_1 - x_2$. Compute the
+        attributions of the same $F$ to $u_1$ and $u_2$ along the same
+        segment. At $x = (2, 1)$, are they obtained from the
+        attributions to $x_1$ and $x_2$ by the rule for the components
+        of a vector, or of a covector
+        (\cref{duality:prop:vector-change,duality:prop:covector-change})?
+\end{enumerate}
+\solutionlink{differential-forms:exr:10}
+\end{exercise}
 \end{notechapter}
