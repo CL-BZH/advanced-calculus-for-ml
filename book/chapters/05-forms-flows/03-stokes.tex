@@ -4,17 +4,1159 @@
 \chaptersubtitle{%
   The fundamental theorem of calculus in every dimension}
 
-\begin{chapterplan}
+\begin{chapterintro}
+The integral of \cref{ch:lebesgue-integral} lives on $\R^n$. To
+integrate on a manifold one works in charts, and the result must not
+depend on the charts. The change of variables theorem says which
+objects have this property: those that pick up the factor
+$\abs{\det}$ of the Jacobian matrix, called densities. On an oriented
+manifold the forms of top degree are densities, and for them there is
+one more theorem, due to Stokes in its general form: the integral of
+$\dd\omega$ over a domain is the integral of $\omega$ over its
+boundary. It contains the fundamental theorem of calculus and all the
+integral theorems of vector calculus. You will learn
 \begin{itemize}[nosep]
-  \item Orientation of manifolds; manifolds with boundary; partitions of unity.
-  \item The integral of a form of top degree, well defined by the change of
-        variables theorem.
-  \item Stokes' theorem, with proof.
-  \item Densities versus forms; the Riemannian volume.
+  \item what an orientation of a manifold is, and that it may not exist;
+  \item densities, their integral, and the volume of a Riemannian
+        manifold;
+  \item the integral of a $k$-form over an oriented manifold of
+        dimension $k$;
+  \item domains with boundary, the orientation of the boundary, and how
+        to cut a form into pieces that live in one chart;
+  \item Stokes' theorem, with its proof and first consequences;
+  \item the same theorem on a graph, where the boundary is the dual of
+        the differential;
+  \item integration by parts as the source of the identities behind
+        score matching.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:tangent-bundles} for manifolds;
+\cref{ch:lebesgue-integral,ch:fubini,ch:change-of-variables} for the
+integral, Fubini's theorem and the change of variables;
+\cref{ch:multilinear-algebra,ch:differential-forms} for orientation,
+forms, pull-back and $\dd$. Throughout, $M$ is a manifold of dimension
+$n$. Its charts are written $(U, \varphi)$ or $(U, x)$, with
+$x = (x_1,\dots,x_n)$ the coordinate functions.}
+\end{chapterintro}
+
+\section{Orientation}\label{stokes:sec:orientation}
+
+\begin{definition}[Orientation of a manifold]\label{stokes:def:orientation}
+An \emph{orientation} of $M$ is the choice of an orientation of each
+tangent space $T_pM$ (\cref{multilinear-algebra:def:orientation}) such
+that $M$ is covered by \emph{positive charts}: charts $(U, x)$ whose
+coordinate basis $(\partial_1,\dots,\partial_n)$ is positive at every
+point of $U$. A manifold is \emph{orientable} if it has an orientation,
+and \emph{oriented} when one is chosen.
+\end{definition}
+
+On the overlap of two charts the coordinate bases are related by the
+Jacobian matrix $J$ of the transition map
+(\cref{tangent-bundles:thm:change}). So two positive charts have
+$\det J > 0$ on their overlap. Conversely, an atlas all of whose
+transition maps have $\det J > 0$ defines an orientation: declare the
+coordinate bases of its charts positive.
+
+\begin{proposition}[Orientation by a form]\label{stokes:prop:form}
+If an $n$-form $\mu$ on $M$ vanishes at no point, the bases on which
+$\mu$ is positive define an orientation of $M$.
+\end{proposition}
+
+\begin{proof}
+Let $p\in M$ and $(U, x)$ a chart around $p$, with
+$\mu = f\,\dd x_1\wedge\dots\wedge\dd x_n$. The function $f$ is
+continuous and $f(p)\neq0$, so $f$ keeps its sign on a smaller open set
+around $p$, to which we restrict the chart. If $f < 0$ there, replace
+$x_1$ by $-x_1$. The chart is now positive.
+\end{proof}
+
+\begin{example}\label{stokes:ex:orientations}
+\begin{enumerate}[nosep]
+  \item An open subset of an oriented affine space is oriented by the
+        affine charts of the positive frames; $\R^n$ is oriented by its
+        canonical basis.
+  \item \emph{Hypersurfaces.} Let $\Aff$ be an oriented Euclidean
+        affine space and $M = \{g = 0\}$, where $\dd g\neq0$ at the
+        points of $M$. The gradient $\nabla g$ is not tangent to $M$,
+        since $\dd g(\nabla g) = \norm{\nabla g}^2 > 0$. So for a basis
+        $(v_2,\dots,v_n)$ of $T_pM$ the number
+        $\operatorname{vol}(\nabla g, v_2,\dots,v_n)$ is not $0$: the
+        restriction to $M$ of $i_{\nabla g}\operatorname{vol}$ vanishes
+        nowhere and orients $M$. A basis of $T_pM$ is positive when it
+        is positive after the normal vector $\nabla g(p)$ is put in
+        front. The sphere $\norm x^2 = 1$ is oriented in this way by
+        its outward normal.
+  \item \emph{The M\"obius band} is the quotient of the strip
+        $S = \R\times(-1, 1)$ by $(s, t)\sim(s + 1, -t)$, with the
+        charts given by the pieces $(a, a + 1)\times(-1, 1)$ of the
+        strip. It is not orientable. An orientation would lift to an
+        orientation of $S$ whose sign with respect to the canonical one
+        is locally constant, hence constant along every segment, hence
+        constant on $S$. It would also be preserved by the gluing map
+        $(s, t)\mapsto(s + 1, -t)$, whose determinant is $-1$: a
+        contradiction (\cref{stokes:fig:moebius}).
+\end{enumerate}
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \foreach \sh/\dir/\lab in {0/1/cylinder, 7.4/-1/M\"obius band} {
+    \begin{scope}[shift={(\sh,0)}]
+      \fill[bookintuition!14] (0,0) rectangle (5,1.8);
+      \draw[bookintuition!70!black, dashed] (0,0) -- (5,0);
+      \draw[bookintuition!70!black, dashed] (0,1.8) -- (5,1.8);
+      \draw[very thick, bookaccent, ->] (0,0.2) -- (0,1.6);
+      \ifnum\dir=1
+        \draw[very thick, bookaccent, ->] (5,0.2) -- (5,1.6);
+      \else
+        \draw[very thick, bookaccent, ->] (5,1.6) -- (5,0.2);
+      \fi
+      \foreach \x in {0.9,2.5} {
+        \draw[->, thick] (\x,0.9) -- ++(0.55,0);
+        \draw[->, thick, bookpitfall] (\x,0.9) -- ++(0,0.55);
+      }
+      \draw[->, thick] (4.0,0.9) -- ++(0.55,0);
+      \draw[->, thick, bookpitfall] (4.0,0.9) -- ++(0,0.55);
+      \draw[->, thick] (0.25,0.9) -- ++(0.4,0);
+      \draw[->, thick, bookpitfall] (0.25,0.9) -- ++(0,{\dir*0.45});
+      \node at (2.5,-0.45) {\lab};
+    \end{scope}
+  }
+\end{tikzpicture}
+\caption{A strip whose two ends are glued as the arrows indicate. A
+basis carried once around the cylinder comes back as it was. On the
+M\"obius band it comes back with its second vector reversed, at the far
+left of the picture: no choice of positive bases is continuous.}
+\label{stokes:fig:moebius}
+\end{figure}
+
+\section{Densities}\label{stokes:sec:densities}
+
+A function on $M$ cannot be integrated by integrating its expression in
+a chart: the result changes with the chart, by the change of variables
+theorem. The objects that can be integrated carry the compensating
+factor.
+
+\begin{definition}[Density]\label{stokes:def:density}
+A \emph{density} $\rho$ on $M$ assigns to each chart $(U, \varphi)$ a
+Borel function $\rho_\varphi:\varphi(U)\to\R$, such that for two charts
+with transition map $\tau = \varphi'\circ\varphi^{-1}$,
+\begin{equation}\label{stokes:eq:density}
+  \rho_\varphi = (\rho_{\varphi'}\circ\tau)\,\abs{\det D\tau}
+  \qquad\text{on }\varphi(U\cap U') .
+\end{equation}
+It is continuous, smooth or non-negative if the functions
+$\rho_\varphi$ are.
+\end{definition}
+
+It is enough to give the functions $\rho_\varphi$ for the charts of one
+atlas, with \eqref{stokes:eq:density} on the overlaps: the rule then
+defines $\rho_\varphi$ for every other chart, consistently, because
+determinants multiply under composition. Densities are added and
+multiplied by functions, $(h\rho)_\varphi
+= (h\circ\varphi^{-1})\rho_\varphi$, and $\abs\rho$ is a density.
+
+\begin{example}\label{stokes:ex:densities}
+\begin{enumerate}[nosep]
+  \item \emph{Riemannian volume.} On a Riemannian manifold with Gram
+        matrix $G$ in the chart $\varphi$
+        (\cref{riemannian-optimization:def:metric}), put
+        $\rho_\varphi = \sqrt{\det G}\circ\varphi^{-1}$. In another
+        chart $G = J^\top G'J$, so
+        $\sqrt{\det G} = \sqrt{\det G'}\,\abs{\det J}$: this is a
+        density, the \emph{volume density}. For a submanifold of a
+        Euclidean space with the induced metric it is the density of
+        \cref{change-of-variables:def:volume}.
+  \item \emph{Forms.} For an $n$-form
+        $\omega = f\,\dd x_1\wedge\dots\wedge\dd x_n$, the functions
+        $\abs f\circ\varphi^{-1}$ are a density $\abs\omega$, by
+        \cref{differential-forms:thm:top}. If $M$ is oriented, the
+        functions $f\circ\varphi^{-1}$ themselves, for the positive
+        charts, are a density $\rho^\omega$: between positive charts
+        $\det D\tau = \abs{\det D\tau}$.
+\end{enumerate}
+\end{example}
+
+A subset $B$ of $M$ is \emph{Borel} if $\varphi(B\cap U)$ is a Borel
+subset of $\R^n$ for every chart, and \emph{null} if these sets are
+Lebesgue-null. Both conditions need only be checked on a countable
+atlas, because transition maps are diffeomorphisms
+(\cref{change-of-variables:cor:sets}). Let now $(U_i, \varphi_i)$,
+$i = 1, 2,\dots$, be a countable atlas
+(\cref{tangent-bundles:def:manifold}) and cut $M$ into the disjoint
+Borel pieces
+\[
+  E_1 = U_1 , \qquad E_i = U_i\setminus(U_1\cup\dots\cup U_{i-1}) .
+\]
+
+\begin{theorem}[Integral of a density]\label{stokes:thm:density}
+Let $\rho\geq0$ be a density and $B\subset M$ a Borel set. The number
+\[
+  \int_B\rho = \sum_i\int_{\varphi_i(B\cap E_i)}\rho_{\varphi_i}\,
+  \dd\lambda\ \in[0, \infty]
+\]
+does not depend on the countable atlas or on its ordering. It equals
+$\int_{\varphi(B)}\rho_\varphi\,\dd\lambda$ when $B$ lies in the domain
+of a chart $\varphi$. The map $B\mapsto\int_B\rho$ is a measure on the
+Borel sets of $M$, for which null sets have measure $0$.
+\end{theorem}
+
+\begin{proof}
+Let $(U'_k, \varphi'_k)$ be another countable atlas, with pieces
+$E'_k$. The sets $B\cap E_i\cap E'_k$ are disjoint with union
+$B\cap E_i$, so by \cref{lebesgue-integral:cor:additive}
+\[
+  \int_{\varphi_i(B\cap E_i)}\rho_{\varphi_i}\,\dd\lambda
+  = \sum_k\int_{\varphi_i(B\cap E_i\cap E'_k)}\rho_{\varphi_i}\,
+    \dd\lambda
+  = \sum_k\int_{\varphi'_k(B\cap E_i\cap E'_k)}\rho_{\varphi'_k}\,
+    \dd\lambda .
+\]
+The second equality is the change of variables theorem
+(\cref{change-of-variables:thm:cov}) for the transition map
+$\tau = \varphi'_k\circ\varphi_i^{-1}$ and the function
+$\rho_{\varphi'_k}$ times the indicator of
+$\varphi'_k(B\cap E_i\cap E'_k)$, together with
+\eqref{stokes:eq:density}. Summing over $i$, and exchanging the two
+sums of non-negative terms, gives the number computed with the second
+atlas. If $B\subset U$ for a chart $\varphi$, put this chart first in
+an atlas: then $E_1\supset B$ and the sum has one term. If $B$ is the
+disjoint union of Borel sets $B_j$, each integral over
+$\varphi_i(B\cap E_i)$ is the sum of those over
+$\varphi_i(B_j\cap E_i)$, and the sums can again be exchanged. For a
+null set every term is the integral over a Lebesgue-null set.
+\end{proof}
+
+A density $\rho$ is \emph{integrable} if $\int_M\abs\rho < \infty$, and
+then
+$\int_B\rho = \int_B\rho^+ - \int_B\rho^-$,
+with $\rho^\pm$ the positive and negative parts. The integral is linear
+in $\rho$. A function $h$ is integrated \emph{against} a density:
+$\int_Mh\,\rho$ is the integral of $h$ for the measure defined by
+$\rho$ when $\rho\geq0$. On a Riemannian manifold, the measure of the
+volume density is the \emph{Riemannian volume}
+$\operatorname{vol}_M$, and $\int_Mh\,\dd\!\operatorname{vol}_M$ is the
+integral of the function $h$. No orientation has been used.
+
+\begin{keyidea}
+On $\R^n$ a function and a density look the same, because Lebesgue
+measure is there to turn one into the other. On a manifold there is no
+preferred measure. A probability distribution is a density, or a
+function \emph{times a chosen reference density}; changing the
+reference changes the function. A Riemannian metric provides a
+reference, an inner product on each tangent space being enough to
+measure volumes (\cref{multilinear-algebra:tab:structure}).
+\end{keyidea}
+
+\section{The integral of a form}\label{stokes:sec:forms}
+
+\begin{definition}[Integral of a form of top degree]
+\label{stokes:def:integral}
+Let $M$ be oriented and $\omega$ an $n$-form on $M$ with continuous
+components. It is \emph{integrable} if the density $\rho^\omega$ of
+\cref{stokes:ex:densities} is, and then, for a Borel set $B$,
+\[
+  \int_B\omega = \int_B\rho^\omega .
+\]
+\end{definition}
+
+So if $B$ lies in the domain of a positive chart $(U, x)$ and
+$\omega = f\,\dd x_1\wedge\dots\wedge\dd x_n$, then
+$\int_B\omega = \int_{x(B)}f\,\dd\lambda$, where $f$ is read in the
+chart: erase the wedges. In a negative chart a minus sign appears, and
+reversing the orientation of $M$ changes the sign of every integral.
+
+\begin{proposition}[Computing integrals]\label{stokes:prop:computing}
+Let $M$ be oriented and $\omega$ an integrable $n$-form.
+\begin{enumerate}[nosep]
+  \item If $F:N\to M$ is a diffeomorphism that preserves orientation,
+        then $\int_NF^*\omega = \int_M\omega$.
+  \item Let $\psi:\Omega\to M$ be a diffeomorphism from an open subset
+        of $\R^n$ onto an open subset of $M$ whose complement is a null
+        set, such that $\psi^{-1}$ is a positive chart. If
+        $\psi^*\omega = g\,\dd t_1\wedge\dots\wedge\dd t_n$, then
+        $\int_M\omega = \int_\Omega g\,\dd\lambda$, with
+        \[
+          g(t) = \omega\bigl(\psi(t)\bigr)\bigl(\partial_1\psi(t),\dots,
+          \partial_n\psi(t)\bigr) .
+        \]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) The charts $\varphi\circ F$, for $\varphi$ a positive chart of $M$,
+are positive charts of $N$, in which $F^*\omega$ has the same component
+as $\omega$ in $\varphi$. (2) Put the chart $\psi^{-1}$ first in a
+countable atlas of positive charts. Then $E_1 = \psi(\Omega)$ and the
+other pieces lie in a null set. The component of $\omega$ in the chart
+$\psi^{-1}$ is $g$.
+\end{proof}
+
+A parametrization that misses a null set is thus enough to compute an
+integral: the sphere without a meridian, a torus without two circles.
+
+\paragraph{Forms of any degree.} A $k$-form $\omega$ on a manifold $N$
+is integrated over an oriented manifold $S$ of dimension $k$ that is
+mapped into $N$ by a smooth map $\iota$, for instance the inclusion of
+a submanifold:
+\[
+  \int_S\omega = \int_S\iota^*\omega .
+\]
+With a positive parametrization $\psi$ of $S$ as in
+\cref{stokes:prop:computing}, this is
+\[
+  \int_S\omega = \int_\Omega\omega\bigl(\psi(t)\bigr)
+  \bigl(\partial_1\psi(t),\dots,\partial_k\psi(t)\bigr)\,\dd t .
+\]
+For a curve $c:(a, b)\to N$ it is
+$\int_a^b\omega(c(t))(c'(t))\,\dd t$, the integral used in
+\cref{differential-forms:prop:circulation}. The form eats the small
+parallelepiped spanned by the velocities of the parametrization, and
+the results are added.
+
+\section{Domains with boundary}\label{stokes:sec:boundary}
+
+\begin{definition}[Domain with smooth boundary]\label{stokes:def:domain}
+A subset $D$ of $M$ is a \emph{domain with smooth boundary} if every
+point $p$ of $M$ has a chart $(U, x)$ around it of one of three kinds:
+\begin{enumerate}[nosep,label=(\roman*)]
+  \item $U\subset D$;
+  \item $U\cap D = \emptyset$;
+  \item $x_1(p) = 0$ and $U\cap D = \{q\in U : x_1(q)\leq0\}$.
+\end{enumerate}
+The \emph{boundary} $\partial D$ is the set of points of the third
+kind. Charts of these three kinds are called \emph{adapted} to $D$.
+\end{definition}
+
+A point of the third kind has points of $D$ and points outside $D$
+arbitrarily close to it, so the three kinds exclude one another. The
+set $D$ is closed, and it is Borel, since countably many adapted charts
+cover $M$ (\cref{stokes:lem:cover} below). In an adapted chart of kind
+(iii), $\partial D\cap U = \{x_1 = 0\}$.
+
+\begin{proposition}[Sublevel sets]\label{stokes:prop:sublevel}
+Let $g:M\to\R$ be smooth with $\dd g(p)\neq0$ whenever $g(p) = 0$. Then
+$D = \{g\leq0\}$ is a domain with smooth boundary, and
+$\partial D = \{g = 0\}$.
+\end{proposition}
+
+\begin{proof}
+The sets $\{g < 0\}$ and $\{g > 0\}$ are open, which gives charts of
+kinds (i) and (ii). Let $g(p) = 0$ and $(U, y)$ be a chart around $p$.
+Some $\partial g/\partial y_i(p)$ is not $0$, say for $i = 1$. The map
+$(g, y_2,\dots,y_n)$ has an invertible differential at $p$, so it is a
+chart on a smaller open set
+(\cref{tangent-bundles:thm:inverse}), of kind (iii).
+\end{proof}
+
+For instance the closed ball $\{\norm x^2 - 1\leq0\}$ of a Euclidean
+space, with boundary the sphere.
+
+\begin{proposition}[The boundary]\label{stokes:prop:boundary}
+Let $D$ be a domain with smooth boundary in $M$.
+\begin{enumerate}[nosep]
+  \item $\partial D$ is a manifold of dimension $n - 1$, with the
+        charts $(U\cap\partial D; x_2,\dots,x_n)$ given by the adapted
+        charts of kind \textup{(iii)}. The inclusion
+        $\iota:\partial D\to M$ is smooth, and $D\iota(p)$ identifies
+        $T_p\partial D$ with $\ker\dd x_1(p)\subset T_pM$.
+  \item For $p\in\partial D$, the sign of $\dd x_1(p)v$ is the same in
+        all adapted charts around $p$. A vector $v\in T_pM$ is
+        \emph{outward} if $\dd x_1(p)v > 0$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Let $x$ and $x'$ be two adapted charts of kind (iii) around
+$p\in\partial D$, and $\tau$ the transition map. It maps $\{x_1 = 0\}$
+into $\{x'_1 = 0\}$ and $\{x_1\leq0\}$ into $\{x'_1\leq0\}$. Hence, at
+the points with $x_1 = 0$,
+\[
+  \frac{\partial x'_1}{\partial x_j} = 0\quad(j\geq2) ,
+  \qquad
+  \frac{\partial x'_1}{\partial x_1}\geq0 ,
+\]
+and the second number is not $0$, since the Jacobian matrix $J$ is
+invertible. So $\dd x'_1(p) = c\,\dd x_1(p)$ with $c > 0$, which is (2).
+The first row of $J$ is $(c, 0,\dots,0)$, so
+\begin{equation}\label{stokes:eq:block}
+  \det J = c\,\det\tilde J ,
+\end{equation}
+where $\tilde J$, the Jacobian matrix of
+$(x_2,\dots,x_n)\mapsto(x'_2,\dots,x'_n)$ on $\{x_1 = 0\}$, is
+invertible. These restricted transition maps are smooth, with smooth
+inverses, between open subsets of $\R^{n-1}$: the charts of (1) form an
+atlas. Two points of $\partial D$ are separated by open sets of $M$,
+and countably many of these charts suffice
+(\cref{stokes:lem:cover} below). In the charts $x$ and
+$(x_2,\dots,x_n)$, $\iota$ reads $y\mapsto(0, y)$.
+\end{proof}
+
+\begin{definition}[Boundary orientation]\label{stokes:def:bdry-orientation}
+Let $M$ be oriented and $D$ a domain with smooth boundary. For
+$n\geq2$, a basis $(v_2,\dots,v_n)$ of $T_p\partial D$ is
+\emph{positive} if $(\nu, v_2,\dots,v_n)$ is a positive basis of $T_pM$
+for an outward vector $\nu$. For $n = 1$, a point $p$ of $\partial D$
+has the sign $+1$ if the outward vectors at $p$ are positive, and $-1$
+otherwise.
+\end{definition}
+
+In words: \emph{outward first}. The choice of $\nu$ does not matter:
+two outward vectors differ by a positive factor and a vector tangent to
+$\partial D$, which does not change the sign of
+$\mu(\nu, v_2,\dots,v_n)$ for an $n$-form $\mu$. This is an orientation
+of $\partial D$. Indeed, around $p\in\partial D$ take an adapted chart
+of kind (iii); if it is not positive for $M$, replace $x_2$ by $-x_2$.
+Now $\partial_1$ is outward and $(\partial_1,\dots,\partial_n)$ is
+positive, so $(\partial_2,\dots,\partial_n)$ is positive on
+$\partial D\cap U$: the chart $(x_2,\dots,x_n)$ of $\partial D$ is
+positive. For the ball this is the orientation of the sphere of
+\cref{stokes:ex:orientations}. For a domain of the oriented plane, the
+boundary is traversed with the domain on its left.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \fill[bookintuition!16] plot[smooth cycle, tension=0.8]
+      coordinates {(0,0) (1.6,-0.7) (3.4,-0.2) (3.9,1.4) (2.6,2.6)
+      (0.8,2.3) (-0.3,1.2)};
+    \draw[bookaccent, very thick,
+      decoration={markings,
+        mark=at position 0.12 with {\arrow{Stealth}},
+        mark=at position 0.45 with {\arrow{Stealth}},
+        mark=at position 0.8 with {\arrow{Stealth}}},
+      postaction={decorate}] plot[smooth cycle, tension=0.8]
+      coordinates {(0,0) (1.6,-0.7) (3.4,-0.2) (3.9,1.4) (2.6,2.6)
+      (0.8,2.3) (-0.3,1.2)};
+    \node at (1.7,1.0) {$D$};
+    \node[bookaccent] at (0.2,2.55) {$\partial D$};
+    \fill (3.9,1.4) circle (1.6pt) node[below left=-1pt] {$p$};
+    \draw[->, thick, bookpitfall] (3.9,1.4) -- ++(0.95,0.2)
+      node[right] {$\nu$};
+    \draw[->, thick] (3.9,1.4) -- ++(-0.2,0.95) node[above] {$v_2$};
+    \draw[bookdef, dashed] (3.9,1.4) circle (0.75);
+    \node[bookdef] at (4.55,0.45) {$U$};
+  \end{scope}
+  \draw[->, thick, bookdef] (5.2,1.9) to[bend left=18]
+    node[above] {$x$} (7.0,1.9);
+  \begin{scope}[shift={(9.2,1.2)}]
+    \fill[bookintuition!16] (-1.6,-1.3) rectangle (0,1.3);
+    \draw[bookaccent, very thick, ->] (0,-1.3) -- (0,1.3);
+    \draw[->] (-1.9,0) -- (1.5,0) node[right] {$x_1$};
+    \node[bookaccent, above] at (0,1.3) {$x_2$};
+    \node at (-0.85,-0.75) {$x_1\leq0$};
+    \fill (0,0) circle (1.6pt);
+    \draw[->, thick, bookpitfall] (0,0) -- (0.95,0)
+      node[above] {$\partial_1$};
+    \draw[->, thick] (0,0) -- (0,0.95) node[left=1pt] {$\partial_2$};
+  \end{scope}
+\end{tikzpicture}
+\caption{A domain with smooth boundary in an oriented surface, and an
+adapted chart at a boundary point: the domain becomes the half-plane
+$x_1\leq0$. The vector $\partial_1$ is outward. The boundary is oriented
+so that an outward vector followed by a positive basis of the boundary
+is a positive basis of the surface: outward first.}
+\label{stokes:fig:domain}
+\end{figure}
+
+To prove a statement about a form on a domain, one cuts the form into
+pieces, each of which lives in one adapted chart. Three lemmas prepare
+this. A subset $K$ of $M$ is \emph{compact} if every sequence of points
+of $K$ has a subsequence that converges to a point of $K$. The
+\emph{support} of a form is the smallest closed set outside which it
+vanishes.
+
+\begin{lemma}[Smooth steps]\label{stokes:lem:step}
+\begin{enumerate}[nosep]
+  \item The function $h(t) = e^{-1/t}$ for $t > 0$, $h(t) = 0$ for
+        $t\leq0$, is smooth on $\R$.
+  \item $\theta(t) = h(1 - t)/\bigl(h(1 - t) + h(t - \frac12)\bigr)$ is
+        smooth, with values in $[0, 1]$, equal to $1$ for
+        $t\leq\frac12$ and to $0$ for $t\geq1$.
+  \item $\beta(x) = h\bigl(1 - \sum_ix_i^2\bigr)$ is smooth on $\R^n$,
+        positive on the open unit ball and $0$ outside.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(1) For $t > 0$, by induction, $h^{(k)}(t) = P_k(1/t)\,e^{-1/t}$ with
+$P_k$ a polynomial, since the derivative of $P(1/t)\,e^{-1/t}$ is
+$\bigl(P(1/t) - P'(1/t)\bigr)t^{-2}e^{-1/t}$. As $s^me^{-s}\to0$ when
+$s\to\infty$, both $h^{(k)}(t)$ and $h^{(k)}(t)/t$ tend to $0$ as
+$t\to0^+$. So, by induction on $k$, $h^{(k)}$ exists at $0$, equals
+$0$ there, and is continuous. (2) The denominator is positive: its
+first term is when $t < 1$, its second when $t > \frac12$. (3) is a
+composition of smooth maps.
+\end{proof}
+
+\begin{lemma}[Extracting covers]\label{stokes:lem:cover}
+Let $\mathcal W$ be a family of open subsets of $M$ whose union
+contains a set $A$. Then countably many members of $\mathcal W$ cover
+$A$, and finitely many if $A$ is compact.
+\end{lemma}
+
+\begin{proof}
+Take a countable atlas $(U_i, \varphi_i)$ and let $\mathcal B$ be the
+countable family of the sets $\varphi_i^{-1}(B)$, for $B$ an open ball
+with rational centre and radius contained in $\varphi_i(U_i)$. Every
+open set $W$ is a union of members of $\mathcal B$: if $p\in W\cap U_i$,
+the open set $\varphi_i(W\cap U_i)$ contains such a ball around
+$\varphi_i(p)$. The members of $\mathcal B$ that lie in some member of
+$\mathcal W$ therefore cover $A$; choosing for each of them one member
+of $\mathcal W$ that contains it gives a countable subfamily
+$W_1, W_2,\dots$ covering $A$. Let $A$ be compact and suppose that no
+$W_1\cup\dots\cup W_N$ contains $A$. Choose
+$a_N\in A\setminus(W_1\cup\dots\cup W_N)$. A subsequence converges to
+some $a\in A$, which lies in some $W_m$. Since $W_m$ is open, it
+contains $a_N$ for infinitely many $N\geq m$: a contradiction.
+\end{proof}
+
+\begin{lemma}[Partition of unity on a compact set]
+\label{stokes:lem:pou}
+Let $K\subset M$ be compact and $\mathcal W$ a family of open sets
+covering $K$. There are smooth functions
+$\rho_1,\dots,\rho_N:M\to[0, 1]$, each with compact support contained
+in a member of $\mathcal W$, such that
+$\rho_1 + \dots + \rho_N = 1$ on $K$.
+\end{lemma}
+
+\begin{proof}
+For $p\in K$ choose a member $W$ of $\mathcal W$ and a chart
+$(U, \varphi)$ around $p$, and $r > 0$ such that the closed ball of
+centre $\varphi(p)$ and radius $r$ lies in $\varphi(U\cap W)$. Define
+$b_p = \beta\bigl((\varphi - \varphi(p))/r\bigr)$ on $U$ and $b_p = 0$
+elsewhere. The preimage $C$ of the closed ball is compact, hence
+closed: a limit of points of $C$ is the limit of a subsequence in $C$,
+and limits are unique in $M$ by the Hausdorff property. So $b_p$ is
+smooth on $M$, being smooth on $U$ and zero on the open set
+$M\setminus C$; its support is $C\subset W$, and $b_p > 0$ on an open
+set $W_p\ni p$. By \cref{stokes:lem:cover} finitely many $W_p$ cover
+$K$; let $b_1,\dots,b_N$ be the corresponding functions and
+$\sigma = b_1 + \dots + b_N$. It is positive on $K$, and attains a
+smallest value $c > 0$ there, as in
+\cref{norms-banach:thm:extreme}. With $\theta$ from
+\cref{stokes:lem:step}, put
+\[
+  \rho_j = \frac{b_j}{\sigma + \theta(\sigma/c)} .
+\]
+The denominator is positive everywhere, since
+$\theta(\sigma/c) = 1$ where $\sigma\leq c/2$. On $K$, $\sigma\geq c$,
+so $\theta(\sigma/c) = 0$ and $\sum_j\rho_j = 1$.
+\end{proof}
+
+In particular a continuous $n$-form $\omega$ with compact support on an
+oriented manifold is integrable: with $K$ its support and $\mathcal W$
+the domains of the positive charts, $\omega = \sum_j\rho_j\omega$, and
+each $\rho_j\omega$ has a bounded component that vanishes outside a
+bounded set in one chart.
+
+\section{Stokes' theorem}\label{stokes:sec:stokes}
+
+\begin{theorem}[Stokes]\label{stokes:thm:stokes}
+Let $M$ be an oriented manifold of dimension $n$, $D\subset M$ a domain
+with smooth boundary, and $\omega$ a smooth $(n - 1)$-form on $M$.
+Assume that $\omega$ has compact support, or that $D$ is compact. Then
+\[
+  \int_D\dd\omega = \int_{\partial D}\omega ,
+\]
+where $\partial D$ has the boundary orientation and the right-hand side
+is the integral of the restriction $\iota^*\omega$. For $n = 1$ the
+right-hand side is the sum of the values of the function $\omega$ at
+the points of $\partial D$, with their signs.
+\end{theorem}
+
+\begin{proof}
+\emph{Reduction to one chart.} Let $K$ be the support of $\omega$, or
+$D$ if $D$ is compact, and $\mathcal W$ the family of the domains of
+the adapted charts that are positive or, in dimension $1$, negative.
+They cover $M$: an adapted chart has a constant sign on a smaller open
+set around a given point, and if $n\geq2$ a negative one becomes
+positive when $x_2$ is replaced by $-x_2$. With $\rho_j$ from
+\cref{stokes:lem:pou}, let
+$\omega' = \sum_j\rho_j\omega$. In the first case $\omega' = \omega$.
+In the second, $\omega' = \omega$ on $D$; then
+$\dd\omega' = \dd\omega$ at the points of $D$ that have a chart of kind
+(i), and by continuity at the points of $\partial D$, which are limits
+of such points. Both sides of the formula are thus the same for
+$\omega$ and $\omega'$, and both are linear. So we may assume that
+$\omega$ has compact support in the domain $U$ of an adapted chart
+$x$, positive if $n\geq2$. In this chart
+\[
+  \omega = \sum_{i=1}^nf_i\,
+  \dd x_1\wedge\dots\wedge\widehat{\dd x_i}\wedge\dots\wedge\dd x_n ,
+  \qquad
+  \dd\omega = \sum_{i=1}^n(-1)^{i-1}\,\partial_if_i\;
+  \dd x_1\wedge\dots\wedge\dd x_n ,
+\]
+where the $f_i$, read in the chart, are smooth functions on $\R^n$ that
+vanish outside a bounded set.
+
+\emph{Kind (ii).} Both sides are $0$.
+
+\emph{Kind (i).} The right-hand side is $0$, since
+$U\cap\partial D = \emptyset$. The left-hand side is
+$\sum_i(-1)^{i-1}\int_{\R^n}\partial_if_i\,\dd\lambda$. By Fubini's
+theorem (\cref{fubini:thm:fubini}) integrate first in $x_i$: the inner
+integral $\int_\R\partial_if_i\,\dd x_i$ is $0$ by the fundamental
+theorem of calculus, because $f_i$ vanishes for $\abs{x_i}$ large.
+
+\emph{Kind (iii), $n\geq2$.} The left-hand side is
+$\sum_i(-1)^{i-1}\int_{\{x_1\leq0\}}\partial_if_i\,\dd\lambda$. For
+$i\geq2$ the inner integral in $x_i$ over $\R$ is $0$ as before. For
+$i = 1$,
+\[
+  \int_{-\infty}^0\partial_1f_1(x_1, y)\,\dd x_1 = f_1(0, y) ,
+  \qquad y = (x_2,\dots,x_n) ,
+\]
+so the left-hand side is $\int_{\R^{n-1}}f_1(0, y)\,\dd y$. On the
+other side, $x_1\circ\iota = 0$ gives $\iota^*\dd x_1 = 0$, so
+\[
+  \iota^*\omega = f_1(0, \cdot)\;\dd x_2\wedge\dots\wedge\dd x_n ,
+\]
+and $(x_2,\dots,x_n)$ is a positive chart of $\partial D$. The
+right-hand side is the same integral.
+
+\emph{Kind (iii), $n = 1$.} Here $\omega = f$ is a function and
+$U\cap D = \{x\leq0\}$. If the chart is positive, the left-hand side is
+$\int_{-\infty}^0f'(x)\,\dd x = f(0)$, and the point has the sign $+1$
+because $\partial_x$ is outward and positive. If the chart is negative,
+the left-hand side is $-f(0)$ and the sign of the point is $-1$.
+\end{proof}
+
+\begin{intuition}
+In a chart the theorem is the fundamental theorem of calculus in the
+direction that crosses the boundary, and Fubini's theorem in the
+others. The partition of unity does the bookkeeping that
+\cref{ch:differential-forms} described with small parallelograms: the
+contributions of the pieces of the boundary that lie inside the domain
+cancel, and those on $\partial D$ remain.
+\end{intuition}
+
+\begin{corollary}\label{stokes:cor:consequences}
+Let $M$ be oriented, of dimension $n$.
+\begin{enumerate}[nosep]
+  \item If $\eta$ is a smooth $(n - 1)$-form with compact support, then
+        $\int_M\dd\eta = 0$.
+  \item \emph{Integration by parts.} For a function $f$ and an
+        $(n - 1)$-form $\eta$, under the hypotheses of the theorem,
+        \[
+          \int_D\dd f\wedge\eta
+          = \int_{\partial D}f\,\eta - \int_Df\,\dd\eta .
+        \]
+  \item If $\omega$ is closed on $M$ and $D$ is compact, then
+        $\int_{\partial D}\omega = 0$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) is the theorem for $D = M$, whose boundary is empty. (2) is the
+theorem for $f\eta$, with
+$\dd(f\eta) = \dd f\wedge\eta + f\,\dd\eta$. (3) is the theorem.
+\end{proof}
+
+\begin{example}[The plane]\label{stokes:ex:green}
+Let $D$ be a compact domain with smooth boundary in $\R^2$. For
+$\omega = P\,\dd x + Q\,\dd y$, the theorem reads
+\[
+  \int_{\partial D}P\,\dd x + Q\,\dd y
+  = \int_D\Bigl(\frac{\partial Q}{\partial x}
+    - \frac{\partial P}{\partial y}\Bigr)\,\dd x\,\dd y ,
+\]
+Green's formula. With $\omega = \frac12(x\,\dd y - y\,\dd x)$, whose
+exterior derivative is $\dd x\wedge\dd y$, the area of $D$ is the
+integral of $\omega$ along its boundary.
+\end{example}
+
+\begin{example}[Sphere and ball]\label{stokes:ex:sphere}
+In $\R^3$ let $\mu = \dd x\wedge\dd y\wedge\dd z$ and
+$\sigma = i_E\,\mu = x\,\dd y\wedge\dd z + y\,\dd z\wedge\dd x
++ z\,\dd x\wedge\dd y$, with $E$ the radial field. Then
+$\dd\sigma = 3\mu$, and on the unit ball $B$
+\[
+  \int_{S^2}\sigma = \int_B3\mu = 3\,\lambda(B) = 4\pi .
+\]
+Directly: $\psi(\theta, \phi)
+= (\sin\theta\cos\phi, \sin\theta\sin\phi, \cos\theta)$ on
+$(0, \pi)\times(0, 2\pi)$ misses a null set, and
+$\psi^*\sigma = \mu(\psi, \partial_\theta\psi, \partial_\phi\psi)\,
+\dd\theta\wedge\dd\phi = \sin\theta\,\dd\theta\wedge\dd\phi$. The
+coefficient is positive, so the chart is positive for the outward
+orientation, and $\int_0^{2\pi}\!\int_0^\pi\sin\theta\,\dd\theta\,
+\dd\phi = 4\pi$. On unit vectors tangent to the sphere, $\sigma$ is the
+area: the two computations give the area of the sphere and three times
+the volume of the ball, as in \cref{change-of-variables:cor:ball}.
+\end{example}
+
+\begin{example}[Winding]\label{stokes:ex:winding}
+Let $\omega$ be the angle form of \cref{differential-forms:ex:angle}
+and $D$ a compact domain with smooth boundary in $\R^2$, with
+$0\notin\partial D$. If $0\notin D$, then $D$ is a domain in the
+punctured plane, where $\omega$ is closed, and
+$\int_{\partial D}\omega = 0$. If $0\in D$, remove from $D$ a small
+open disc centred at $0$. The result is a domain in the punctured
+plane whose boundary is $\partial D$ together with a circle, on which
+the outward vectors of the domain point towards $0$: the circle is
+traversed clockwise (\cref{stokes:fig:winding}). Hence
+$\int_{\partial D}\omega - 2\pi = 0$. So
+\[
+  \frac1{2\pi}\int_{\partial D}\omega =
+  \begin{cases}1 & \text{if }0\in D ,\\ 0 & \text{if }0\notin D .
+  \end{cases}
+\]
+The integral of a closed form over a boundary does not see the shape of
+the boundary, only the holes that it encloses.
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.25]
+  \fill[bookintuition!16] plot[smooth cycle, tension=0.8]
+    coordinates {(-2.3,-0.4) (-0.6,-1.5) (1.8,-1.2) (2.6,0.3)
+    (1.2,1.6) (-1.0,1.4)};
+  \draw[bookaccent, very thick,
+    decoration={markings,
+      mark=at position 0.1 with {\arrow{Stealth}},
+      mark=at position 0.4 with {\arrow{Stealth}},
+      mark=at position 0.75 with {\arrow{Stealth}}},
+    postaction={decorate}] plot[smooth cycle, tension=0.8]
+    coordinates {(-2.3,-0.4) (-0.6,-1.5) (1.8,-1.2) (2.6,0.3)
+    (1.2,1.6) (-1.0,1.4)};
+  \fill[white] (0,0) circle (0.55);
+  \draw[bookpitfall, very thick,
+    decoration={markings, mark=at position 0.3 with {\arrow{Stealth}}},
+    postaction={decorate}]
+    (0.55,0) arc (0:-360:0.55);
+  \fill (0,0) circle (1.4pt) node[below=1pt] {\small$0$};
+  \draw[->, thick] (0.39,0.39) -- (0.1,0.1);
+  \node at (0.85,0.75) {\small outward};
+  \node[bookaccent] at (2.75,1.2) {$\partial D$};
+  \node at (1.45,-0.62) {$D$ minus a disc};
+\end{tikzpicture}
+\caption{A domain of the plane from which a small disc around the
+origin has been removed. The boundary of the new domain is the old
+boundary, traversed with the domain on its left, and the small circle,
+also with the domain on its left: clockwise.}
+\label{stokes:fig:winding}
+\end{figure}
+
+\begin{remark}[Corners]\label{stokes:rem:corners}
+A square or a simplex is not a domain with smooth boundary. The theorem
+holds for them as well, the integral over the boundary being taken over
+its smooth part: Loomis and Sternberg prove it for domains with
+``almost regular'' boundary and Hubbard and Hubbard for
+``pieces-with-corners''. For a rectangle it follows from Fubini's
+theorem alone (\cref{stokes:exr:5}).
+\end{remark}
+
+\section{A discrete model: graphs}\label{stokes:sec:graphs}
+
+A graph is a one-dimensional object made of points and segments, and
+the calculus of this chapter exists on it in a finite form, where the
+theorems become statements of linear algebra.
+
+Let a graph have a finite set $N$ of nodes and a finite set $E$ of
+edges, each edge $e$ being directed from a node $e^-$ to a node $e^+$.
+The directions are a bookkeeping device, like an orientation. A
+\emph{$0$-cochain} is a function on $N$ and a \emph{$1$-cochain} a
+function on $E$; they form the spaces $\R^N$ and $\R^E$. The
+\emph{differential} is
+\[
+  \dd:\R^N\to\R^E , \qquad (\dd f)(e) = f(e^+) - f(e^-) .
+\]
+Its matrix, with one row per edge and one column per node, has $-1$ at
+the tail and $+1$ at the head of each edge: the \emph{incidence matrix}
+of the graph. A \emph{path} is a sequence of edges in which each one
+starts, after a possible reversal, where the previous one ends; the
+integral of a $1$-cochain $\alpha$ along it is the sum of its values on
+these edges, with a minus sign for the reversed ones. A path is
+\emph{closed} if it ends where it starts. Two nodes are in the same
+\emph{component} if a path joins them.
+
+\begin{proposition}[Calculus on a graph]\label{stokes:prop:graph}
+Let the graph have $n$ nodes, $m$ edges and $c$ components.
+\begin{enumerate}[nosep]
+  \item The integral of $\dd f$ along a path from $a$ to $b$ is
+        $f(b) - f(a)$.
+  \item $\dd f = 0$ if and only if $f$ is constant on each component.
+        So $\dd$ has rank $n - c$.
+  \item A $1$-cochain is of the form $\dd f$ if and only if its
+        integral along every closed path is $0$.
+  \item The dual operator $\dual\dd$ sends a covector $y$ on $\R^E$, a
+        row of numbers $y_e$, to the covector on $\R^N$ with components
+        \[
+          (\dual\dd y)_a = \sum_{e^+ = a}y_e - \sum_{e^- = a}y_e .
+        \]
+        Its kernel is the annihilator of $\im\dd$ and has dimension
+        $m - n + c$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) The sum telescopes. (2) By (1), $\dd f = 0$ if and only if $f$ takes
+the same value at any two nodes joined by a path; the kernel has
+dimension $c$, and the rank follows from the rank--nullity theorem.
+(3) If $\alpha = \dd f$, use (1). Conversely choose a node $a_0$ in
+each component and let $f(a)$ be the integral of $\alpha$ along a path
+from the chosen node of the component of $a$ to $a$. Two such paths,
+one followed by the other reversed, make a closed path, so $f(a)$ is
+well defined; and for an edge $e$, extending a path to $e^-$ by $e$
+gives $f(e^+) = f(e^-) + \alpha(e)$. (4) By definition
+$(\dual\dd y)(f) = y(\dd f) = \sum_ey_e\bigl(f(e^+) - f(e^-)\bigr)$;
+collect the coefficient of each $f(a)$. The rest is
+\cref{duality:thm:four} and \cref{duality:prop:annihilator}.
+\end{proof}
+
+\begin{keyidea}
+Read a covector $y$ on $\R^E$ as a \emph{chain}: a combination of
+edges with coefficients, over which $1$-cochains are integrated,
+$\int_y\alpha = y(\alpha)$. A path is the chain with coefficients
+$\pm1$ on its edges. Then $\dual\dd y$ is the \emph{boundary} of the
+chain, a combination of nodes: for one edge, its head minus its tail.
+The definition of the dual operator,
+\[
+  \int_y\dd f = (\dual\dd y)(f) = \int_{\partial y}f ,
+\]
+is Stokes' theorem. On a graph the theorem is not proved: the boundary
+is \emph{defined} as the dual of the differential. A chain without
+boundary is a \emph{cycle}; (3) and (4) say that the exact cochains are
+those that integrate to $0$ on the cycles, and that there are
+$m - n + c$ independent cycles.
+\end{keyidea}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0,
+    nd/.style={circle, draw, thick, fill=bookintuition!14,
+      inner sep=2pt, minimum size=17pt}]
+  \node[nd] (1) at (0,0) {$1$};
+  \node[nd] (2) at (2.6,1.5) {$2$};
+  \node[nd] (3) at (2.6,-1.5) {$3$};
+  \node[nd] (4) at (5.2,0) {$4$};
+  \draw[->, thick] (1) -- node[above left=-2pt] {$e_1$} (2);
+  \draw[->, thick] (1) -- node[below left=-2pt] {$e_2$} (3);
+  \draw[->, thick] (2) -- node[right=-1pt] {$e_3$} (3);
+  \draw[->, thick] (2) -- node[above right=-2pt] {$e_4$} (4);
+  \draw[->, thick] (3) -- node[below right=-2pt] {$e_5$} (4);
+  \draw[->, bookpitfall, thick] (1.3,0) ++(50:0.38)
+    arc (50:-260:0.38);
+  \draw[->, bookpitfall, thick] (3.9,0) ++(130:0.38)
+    arc (130:440:0.38);
+  \node at (9.3,0) {$\dd = \begin{bmatrix}
+    -1 & 1 & 0 & 0\\
+    -1 & 0 & 1 & 0\\
+    0 & -1 & 1 & 0\\
+    0 & -1 & 0 & 1\\
+    0 & 0 & -1 & 1
+  \end{bmatrix}$};
+\end{tikzpicture}
+\caption{A graph with $n = 4$ nodes, $m = 5$ edges and $c = 1$
+component, and its incidence matrix. The rank is $n - c = 3$. There are
+$m - n + c = 2$ independent cycles, for instance
+$e_1 + e_3 - e_2$ and $e_3 + e_5 - e_4$, drawn as the two loops.}
+\label{stokes:fig:graph}
+\end{figure}
+
+With the dot products of $\R^N$ and $\R^E$, the adjoint of $\dd$ has
+the matrix $[\dd]^\top$, and
+\[
+  L = \adj\dd\,\dd , \qquad
+  (Lf)(a) = \sum_{e\text{ at }a}\bigl(f(a) - f(\text{other end})\bigr) ,
+  \qquad
+  \inner f{Lf} = \sum_e\bigl(\dd f(e)\bigr)^2 ,
+\]
+is the \emph{Laplacian} of the graph, the degree matrix minus the
+adjacency matrix when no edge is repeated. It does not depend on the
+directions of the edges. Its kernel is the kernel of $\dd$: the number
+of components is the multiplicity of the eigenvalue $0$. Assigning to
+each electrical wire its current, a covector $y$, the equation
+$\dual\dd y = 0$ is Kirchhoff's current law, and (3) is his voltage
+law: the voltage drops come from a potential.
+
+\begin{mlthread}[Machine learning: learning on graphs]
 \begin{itemize}[nosep]
-  \item Integration and probability on constrained or curved spaces.
+  \item The quadratic form $\inner f{Lf}$ measures how much a function
+        on the nodes varies along the edges. Penalizing it spreads
+        labels from the labelled nodes to the others, and one step of
+        gradient descent on it, $f\leftarrow f - \eta Lf$, replaces the
+        value at a node by an average with its neighbours: the
+        propagation step of graph neural networks.
+  \item The eigenvectors of $L$ for its smallest eigenvalues are the
+        slowest varying functions on the graph, minimizers of the
+        Rayleigh quotient (\cref{ch:spectral-svd}); they are used to
+        cut a graph into clusters and as coordinates for its nodes.
+  \item These subjects are developed in Part~XI of the companion
+        \emph{Notes on Machine Learning} (Graph Laplacians and Spectral
+        Methods, and the chapters that follow it). What this section
+        adds is the factorization $L = \adj\dd\,\dd$ and its meaning.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\section{Integration by parts in machine learning}
+\label{stokes:sec:ml}
+
+On $\R^n$, let $\mu = \dd x_1\wedge\dots\wedge\dd x_n$ and, for a
+vector field $X = \sum_iX_i\,\partial_i$, let
+$\operatorname{div}X = \sum_i\partial_iX_i$.
+
+\begin{proposition}[Integration by parts on $\R^n$]
+\label{stokes:prop:parts}
+Let $f$ be a smooth function and $X$ a smooth vector field on $\R^n$
+such that $fX$ has compact support. Then
+\[
+  \int_{\R^n}\bigl(\dd f(X) + f\operatorname{div}X\bigr)\,\dd\lambda
+  = 0 .
+\]
+\end{proposition}
+
+\begin{proof}
+Let $\eta = f\,i_X\mu$, an $(n - 1)$-form with compact support. By (2)
+of \cref{differential-forms:prop:interior},
+$i_X\mu = \sum_i(-1)^{i-1}X_i\,\dd x_1\wedge\dots\wedge
+\widehat{\dd x_i}\wedge\dots\wedge\dd x_n$, so
+$\dd(i_X\mu) = (\operatorname{div}X)\,\mu$. By (1) of the same
+proposition, $0 = i_X(\dd f\wedge\mu)
+= \dd f(X)\,\mu - \dd f\wedge i_X\mu$. Hence
+$\dd\eta = \dd f\wedge i_X\mu + f\,\dd(i_X\mu)
+= \bigl(\dd f(X) + f\operatorname{div}X\bigr)\mu$, and
+$\int\dd\eta = 0$ by \cref{stokes:cor:consequences}.
+\end{proof}
+
+\begin{mlthread}[Machine learning: Stein's identity and score matching]
+Let $p > 0$ be a smooth probability density on $\R^n$, with score
+$s_p = \nabla\ln p$, and $X$ a smooth vector field such that $pX$ has
+compact support, or decreases fast enough for the argument to pass to
+the limit over large balls.
+\begin{itemize}[nosep]
+  \item With $f = p$ the proposition gives \emph{Stein's identity},
+        \[
+          \E_p\bigl[\inner{s_p}X + \operatorname{div}X\bigr] = 0 ,
+        \]
+        since $\dd p(X) = p\,\inner{s_p}X$. Every vector field gives a
+        function whose mean under $p$ is known to be $0$, computed from
+        the score alone: the normalizing constant of $p$ is not needed.
+  \item \emph{Score matching.} To fit a model $s$ to the unknown score
+        one would minimize $\frac12\E_p\norm{s - s_p}^2$, which
+        contains $s_p$. Expanding the square and applying the identity
+        to $X = s$,
+        \[
+          \tfrac12\E_p\norm{s - s_p}^2
+          = \E_p\bigl[\tfrac12\norm s^2 + \operatorname{div}s\bigr]
+          + \tfrac12\E_p\norm{s_p}^2 .
+        \]
+        The last term does not depend on $s$, and the first is a mean
+        over the data of quantities computed from the model.
+  \item The divergence costs $n$ backward passes. It is replaced by
+        the random estimate $u^\top Ju$, with $J$ the Jacobian matrix
+        of $s$ and $u$ a standard Gaussian vector, whose mean is
+        $\tr J$, or avoided by adding noise to the data.
+\end{itemize}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: probability on curved spaces]
+Directions, rotations and other constrained quantities live on
+manifolds.
+\begin{itemize}[nosep]
+  \item A probability distribution on a Riemannian manifold is
+        described by a function $q$ with
+        $\int_Mq\,\dd\!\operatorname{vol}_M = 1$. In a chart its
+        density for Lebesgue measure is
+        $(q\circ\varphi^{-1})\sqrt{\det G}$: the factor
+        $\sqrt{\det G}$ belongs to the volume, not to $q$. Forgetting
+        it gives a different distribution in each chart.
+  \item On the sphere, the uniform distribution is the normalized
+        area, and it is the push-forward of a standard Gaussian by
+        $x\mapsto x/\norm x$, because the Gaussian density depends
+        only on $\norm x$ (\cref{change-of-variables:thm:polar}). The
+        von
+        Mises--Fisher distribution has the function
+        $q(x)\propto e^{\kappa\inner mx}$ with respect to the area.
+  \item A flow $g$ between Riemannian manifolds changes densities by
+        the ratio of the volume densities,
+        $\sqrt{\det(J^\top G'J)}/\sqrt{\det G}$, which replaces
+        $\abs{\det Dg}$ in \cref{change-of-variables:thm:pushforward}.
+  \item None of this needs an orientation: probabilities are
+        densities, not forms. Orientation enters with Stokes' theorem.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{stokes:sec:outlook}
+
+\Cref{ch:vector-calculus} reads Stokes' theorem in a Euclidean space,
+where $1$-forms and $(n - 1)$-forms become vector fields and the
+theorem becomes the divergence theorem and the classical theorem of
+Stokes on circulation and curl. \Cref{ch:odes-flows} lets domains move
+with a flow: the derivative of $\int_{D_t}\omega$ involves the form
+$\dd(i_X\omega) + i_X\dd\omega$ announced in
+\cref{ch:differential-forms}, and for a density it gives the equation
+that governs continuous normalizing flows.
+
+\paragraph{Sources.} Loomis and Sternberg, \emph{Advanced Calculus},
+build partitions of unity in \S10.2 (Theorem~2.1), define densities by
+the transition law \eqref{stokes:eq:density} and integrate them in
+\S10.3 (Definition~3.1, Theorem~3.1), and define the volume density of
+a Riemann metric in \S10.4. Their \S11.2 defines oriented atlases and
+positive charts, identifies $n$-forms with densities on an oriented
+manifold (Proposition~2.1) and integrates them (Theorem~2.1); \S11.4
+orients the boundary of a domain with regular boundary and proves
+Stokes' theorem for it (Theorem~4.1). Here the integral of a density
+is built as a measure, from a countable atlas, instead of a linear
+functional on densities of compact support. Hubbard and Hubbard
+integrate forms over parametrized domains (Definition~6.2.1) and
+oriented manifolds (Definition~6.4.12), define orientation as a
+continuous choice of orientations of the tangent spaces
+(Definition~6.3.3), orient the boundary by an outward vector placed
+first (Definition~6.6.21), and prove the generalized Stokes theorem for
+pieces-with-boundary (Theorem~6.10.2). The reading of Stokes' theorem
+on a graph follows the standard language of chains and cochains. On
+Stein's identity and score matching: C.~Stein, A bound for the error in
+the normal approximation to the distribution of a sum of dependent
+random variables, \emph{Proc.\ Sixth Berkeley Symp.}, 1972;
+A.~Hyv\"arinen, Estimation of non-normalized statistical models by
+score matching, \emph{J.\ Mach.\ Learn.\ Res.}, 2005; Y.~Song et al.,
+Sliced score matching, UAI, 2019. On the sphere:
+T.~Davidson et al., Hyperspherical variational auto-encoders, UAI,
+2018.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{23-stokes.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item An orientation is a continuous choice of positive bases; an
+        atlas with positive Jacobian determinants, or an $n$-form
+        without zero, gives one. The M\"obius band has none.
+  \item A density transforms with $\abs{\det}$ and defines a measure on
+        the manifold, without any orientation. A Riemannian metric
+        gives the volume density $\sqrt{\det G}$.
+  \item On an oriented manifold an $n$-form is a density. In a positive
+        chart, $\int f\,\dd x_1\wedge\dots\wedge\dd x_n
+        = \int f\,\dd\lambda$. A $k$-form is integrated over an
+        oriented $k$-dimensional manifold by pulling it back.
+  \item A domain with smooth boundary looks like a half-space in
+        adapted charts. Its boundary is oriented by the rule ``outward
+        first''.
+  \item Stokes: $\int_D\dd\omega = \int_{\partial D}\omega$. The proof
+        is a partition of unity, Fubini's theorem and the fundamental
+        theorem of calculus.
+  \item On a graph, $\dd$ is the incidence matrix, the boundary is its
+        dual, and the Laplacian is $\adj\dd\,\dd$.
+  \item Integration by parts on $\R^n$ gives Stein's identity and makes
+        the score matching objective computable.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{stokes:exr:1}
+The sphere $S^2\subset\R^3$ without its north pole, and without its
+south pole, has the stereographic charts
+$\varphi_N(x) = (x_1, x_2)/(1 - x_3)$ and
+$\varphi_S(x) = (x_1, x_2)/(1 + x_3)$.
+\begin{enumerate}[nosep]
+  \item Show that the transition map is $u\mapsto u/\norm u^2$ and
+        that its Jacobian determinant is $-1/\norm u^4$.
+  \item Deduce an atlas of two charts that defines an orientation of
+        the sphere.
+\end{enumerate}
+\solutionlink{stokes:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{stokes:exr:2}
+Let $S$ be the graph $z = x^2 + y^2$ over the disc $x^2 + y^2 < 1$,
+oriented so that $(x, y)$ is a positive chart, and
+$\omega = z\,\dd x\wedge\dd y - x\,\dd y\wedge\dd z$. Compute
+$\int_S\omega$. What is the result for the other orientation?
+\solutionlink{stokes:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{stokes:exr:3}
+\begin{enumerate}[nosep]
+  \item Compute the area of the ellipse $x^2/a^2 + y^2/b^2\leq1$ with
+        the formula of \cref{stokes:ex:green}.
+  \item Show that the integral of $\frac12(x\,\dd y - y\,\dd x)$ along
+        the segment from $(x_1, y_1)$ to $(x_2, y_2)$ is
+        $\frac12(x_1y_2 - x_2y_1)$. Deduce a formula for the area of a
+        polygon from its vertices, admitting
+        \cref{stokes:rem:corners}.
+\end{enumerate}
+\solutionlink{stokes:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{stokes:exr:4}
+On the torus obtained by rotating around the $z$-axis the circle of
+radius $r$ centred at distance $R > r$ from the axis, with the
+parametrization
+$\psi(s, t) = \bigl((R + r\cos s)\cos t, (R + r\cos s)\sin t,
+r\sin s\bigr)$:
+\begin{enumerate}[nosep]
+  \item compute the Gram matrix of the induced metric and the area of
+        the torus;
+  \item compute the integral of the function $h = z^2$ for the
+        Riemannian volume.
+\end{enumerate}
+\solutionlink{stokes:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{stokes:exr:5}
+Let $R = [a, b]\times[c, d]$ and $\omega = P\,\dd x + Q\,\dd y$ smooth
+on a neighbourhood of $R$. Prove directly, with Fubini's theorem, that
+$\int_R\dd\omega$ is the sum of the integrals of $\omega$ along the
+four sides, traversed counter-clockwise.
+\solutionlink{stokes:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{stokes:exr:6}
+Let $D$ be a compact domain with smooth boundary in $\R^3$ and
+$\sigma = i_E\,\mu$ as in \cref{stokes:ex:sphere}.
+\begin{enumerate}[nosep]
+  \item Show that $\lambda(D) = \frac13\int_{\partial D}\sigma$.
+  \item Assume $0\notin\partial D$. Using
+        \cref{differential-forms:exr:6}, show that
+        $\int_{\partial D}\sigma/r^3$ is $4\pi$ if $0\in D$ and $0$
+        otherwise.
+\end{enumerate}
+\solutionlink{stokes:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{stokes:exr:7}
+On the circle $S^1\subset\R^2$ let $\alpha$ be the restriction of
+$x\,\dd y - y\,\dd x$.
+\begin{enumerate}[nosep]
+  \item Compute $\int_{S^1}\alpha$ for the two orientations of the
+        circle, and $\int_{S^1}\abs\alpha$.
+  \item Show that there is no function $f$ on the circle with
+        $\dd f = \alpha$, and no $1$-form $\eta$ on the circle with
+        $\int_{S^1}\eta\neq0$ that is exact.
+\end{enumerate}
+\solutionlink{stokes:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{stokes:exr:8}
+Let $p$ be the density of the Gaussian distribution $N(0, \Sigma)$ on
+$\R^n$ and $X(x) = Ax$ for a matrix $A$.
+\begin{enumerate}[nosep]
+  \item Write Stein's identity for this $p$ and $X$, and check it with
+        $\E[xx^\top] = \Sigma$.
+  \item For the model $s(x) = -Bx$ with $B$ symmetric, compute
+        $\E_p\bigl[\frac12\norm s^2 + \operatorname{div}s\bigr]$ and
+        show that it is smallest for $B = \Sigma^{-1}$.
+\end{enumerate}
+\solutionlink{stokes:exr:8}
+\end{exercise}
+
+\begin{exercise}\label{stokes:exr:9}
+For the graph of \cref{stokes:fig:graph}:
+\begin{enumerate}[nosep]
+  \item find a basis of $\ker\dual\dd$ and check the dimension given by
+        \cref{stokes:prop:graph};
+  \item decide whether $\alpha = (1, 2, 1, 3, 2)$ and
+        $\alpha' = (1, 2, 2, 3, 2)$, listed in the order
+        $e_1,\dots,e_5$, are of the form $\dd f$, and find $f$ when
+        they are;
+  \item compute $L$ and check that its rows sum to $0$.
+\end{enumerate}
+\solutionlink{stokes:exr:9}
+\end{exercise}
 \end{notechapter}
