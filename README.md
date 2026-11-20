@@ -19,8 +19,8 @@ book keeps three such pairs apart from beginning to end:
 and it applies two tests to every formula and algorithm: does it change
 when the **origin** moves, and does it change when the **basis** changes?
 
-**Status: work in progress.** Chapters 1 to 25 are drafted. The other
-chapters contain their planned contents.
+**Status: work in progress.** The 25 chapters and Appendix A are
+drafted.
 
 The PDF is rebuilt by GitHub Actions on every push to `main`:
 [PDF of the latest push](https://github.com/CL-BZH/advanced-calculus-for-ml/releases/download/latest/Advanced_Calculus_for_Machine_Learning.pdf).
@@ -70,8 +70,8 @@ Each part adds one layer of structure.
 24. Gradient, Curl and Divergence *(drafted)*
 25. Differential Equations and Flows *(drafted)*
 
-**Appendix** — A. Construction of Lebesgue Measure; B. Solutions to the
-Exercises
+**Appendix** — A. Construction of Lebesgue Measure *(drafted)*;
+B. Solutions to the Exercises
 
 ## Repository layout
 

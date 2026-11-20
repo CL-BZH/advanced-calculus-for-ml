@@ -4,12 +4,987 @@
 \chaptersubtitle{%
   Outer measures and Carath\'eodory's theorem}
 
-\begin{chapterplan}
+\begin{chapterintro}
+\Cref{ch:measures} took one theorem for granted: there is a measure on
+the Borel sets of $\R^n$ that gives every box its volume. Everything
+after it, the integral, Fubini's theorem, densities, the change of
+variables, rests on that statement. This appendix proves it. The method
+is due to Carath\'eodory and has three steps: measure every set from
+outside, by the cheapest covering with boxes; keep the sets that cut
+every other set into two pieces whose sizes add up; check that boxes are
+among them. The same three steps build most measures of analysis. You
+will learn
 \begin{itemize}[nosep]
-  \item The outer measure defined by coverings with boxes.
-  \item Carath\'eodory's measurable sets and the extension theorem.
-  \item Uniqueness by the $\pi$--$\lambda$ theorem; completeness.
-  \item A set that is not measurable.
+  \item what an outer measure is, and why the outer measure of a box is
+        its volume, which is where the completeness of $\R$ enters;
+  \item Carath\'eodory's theorem, and with it the existence of Lebesgue
+        measure;
+  \item that Lebesgue measurable sets are Borel sets up to subsets of
+        null sets, and that they are approximated by open sets from
+        outside and by compact sets from inside;
+  \item why every Riemann integrable function is integrable for the
+        completed measure;
+  \item that some subsets of $\R$ cannot be given a length, and why this
+        book nevertheless works with Borel sets.
 \end{itemize}
-\end{chapterplan}
+\prerequisites{\cref{ch:measures} ($\sigma$-algebras, measures, the
+uniqueness of Lebesgue measure) and \cref{ch:norms-banach} (compact
+sets). \Cref{caratheodory:sec:riemann} uses
+\cref{ch:lebesgue-integral}. A \emph{box} is a half-open box
+$R = \prod_{i=1}^n[a_i, b_i)$ with $a_i\leq b_i$, and
+$\abs R = \prod_i(b_i - a_i)$ is its \emph{volume}; the empty set is a
+box of volume $0$.}
+\end{chapterintro}
+
+\section{Outer measures}\label{caratheodory:sec:outer}
+
+A measure is asked to be additive, and for that it has to give up some
+sets. An outer measure makes the opposite choice: it is defined on
+every set, and is only subadditive.
+
+\begin{definition}[Outer measure]\label{caratheodory:def:outer}
+An \emph{outer measure} on a set $X$ is a map $\mu^*$ from the family of
+all subsets of $X$ to $[0, \infty]$ such that
+\begin{enumerate}[nosep]
+  \item $\mu^*(\emptyset) = 0$;
+  \item if $A\subset B$ then $\mu^*(A)\leq\mu^*(B)$;
+  \item $\mu^*\bigl(\bigcup_kA_k\bigr)\leq\sum_k\mu^*(A_k)$ for every
+        sequence of subsets (\emph{countable subadditivity}).
+\end{enumerate}
+\end{definition}
+
+\begin{proposition}[Outer measure of a family of coverings]
+\label{caratheodory:prop:covering}
+Let $\mathcal C$ be a family of subsets of $X$ containing $\emptyset$,
+and $\rho:\mathcal C\to[0, \infty]$ with $\rho(\emptyset) = 0$. For
+$A\subset X$ let
+\[
+  \mu^*(A) = \inf\Bigl\{\sum_{k=1}^\infty\rho(C_k) :
+    C_k\in\mathcal C,\ A\subset\bigcup_kC_k\Bigr\} ,
+\]
+with $\mu^*(A) = \infty$ if no sequence of $\mathcal C$ covers $A$.
+Then $\mu^*$ is an outer measure, and $\mu^*(C)\leq\rho(C)$ for
+$C\in\mathcal C$.
+\end{proposition}
+
+\begin{proof}
+The sequence $\emptyset, \emptyset, \dots$ covers $\emptyset$, and
+$C, \emptyset, \emptyset, \dots$ covers $C$. A covering of $B$ is a
+covering of every $A\subset B$, which gives (2). For (3), suppose
+$\sum_j\mu^*(A_j) < \infty$ and let $\epsilon > 0$. For each $j$ choose
+a covering $(C_{jk})_k$ of $A_j$ with
+$\sum_k\rho(C_{jk})\leq\mu^*(A_j) + \epsilon2^{-j}$. The countable
+family of all the $C_{jk}$ covers $\bigcup_jA_j$, and the sum of its
+$\rho$ is at most $\sum_j\mu^*(A_j) + \epsilon$.
+\end{proof}
+
+\begin{definition}[Lebesgue outer measure]
+\label{caratheodory:def:lebesgue-outer}
+The \emph{Lebesgue outer measure} of $A\subset\R^n$ is
+\[
+  \lambda^*(A) = \inf\Bigl\{\sum_{k=1}^\infty\abs{R_k} :
+    R_k\text{ boxes},\ A\subset\bigcup_kR_k\Bigr\} .
+\]
+\end{definition}
+
+It is an outer measure by \cref{caratheodory:prop:covering}. Finite
+coverings are allowed, since the empty set is a box. A translate of a
+box is a box of the same volume, so the coverings of $A + v$ are the
+translates of the coverings of $A$:
+\begin{equation}\label{caratheodory:eq:translation}
+  \lambda^*(A + v) = \lambda^*(A)
+  \qquad\text{for all }A\subset\R^n,\ v\in\R^n .
+\end{equation}
+
+\begin{example}[The rational numbers]\label{caratheodory:ex:rationals}
+A point $x$ lies in the box $\prod_i[x_i, x_i + \delta)$ of volume
+$\delta^n$, so $\lambda^*(\{x\}) = 0$, and by subadditivity every
+countable set has outer measure $0$. For the rational numbers of
+$[0, 1]$ the covering can be seen: list them as
+$q_1, q_2, \dots$ and put $q_k$ in the middle of an interval of length
+$\epsilon2^{-k}$ (\cref{caratheodory:fig:rationals}). The total length
+is $\epsilon$. The intervals reach every rational number, hence come
+arbitrarily close to every point of $[0, 1]$, and they cover almost
+none of it.
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \draw[thick] (0,0) -- (12,0);
+  \foreach \x/\l in {0/0, 12/1, 6/\frac12, 4/\frac13, 8/\frac23,
+      3/\frac14, 9/\frac34, 2.4/\frac15, 4.8/\frac25, 7.2/\frac35,
+      9.6/\frac45}
+    \draw (\x,0.09) -- (\x,-0.09) node[below] {\small$\l$};
+  \foreach \x/\w/\h in {0/1.5/0.35, 12/0.75/0.35, 6/0.375/0.35,
+      4/0.19/0.35, 8/0.095/0.35, 3/0.05/0.35, 9/0.03/0.35,
+      2.4/0.02/0.35, 4.8/0.015/0.35, 7.2/0.012/0.35, 9.6/0.01/0.35}
+    \fill[bookaccent] ({max(\x-\w,0)},0.22) rectangle
+      ({min(\x+\w,12)},{0.22+\h});
+  \node[bookaccent] at (0.75,1.0) {$\epsilon/2$};
+  \node[bookaccent] at (11.6,1.0) {$\epsilon/4$};
+  \node[bookaccent] at (6,1.0) {$\epsilon/8$};
+  \node[bookaccent] at (4,1.0) {$\epsilon/16$};
+  \node[bookaccent] at (8,1.0) {$\dots$};
+\end{tikzpicture}
+\caption{A covering of the rational numbers of $[0, 1]$ by intervals of
+total length $\epsilon$, here $\epsilon = \frac12$: the $k$th rational
+of the list $0, 1, \frac12, \frac13, \frac23, \dots$ receives an
+interval of length $\epsilon2^{-k}$. Only the part of each interval
+inside $[0, 1]$ is drawn.}
+\label{caratheodory:fig:rationals}
+\end{figure}
+
+\section{The volume of a box}\label{caratheodory:sec:boxes}
+
+Is the outer measure of a box its volume? The box covers itself, so
+$\lambda^*(R)\leq\abs R$. The other inequality says that a box cannot
+be covered by boxes of smaller total volume, and it is the one place
+in the construction where something has to be proved about real
+numbers. Finite coverings are settled by counting.
+
+\begin{lemma}[Finite families of boxes]\label{caratheodory:lem:finite}
+Let $R, R_1, \dots, R_m$ be boxes.
+\begin{enumerate}[nosep]
+  \item If $R\subset R_1\cup\dots\cup R_m$, then
+        $\abs R\leq\sum_k\abs{R_k}$.
+  \item If the $R_k$ are pairwise disjoint and contained in $R$, then
+        $\sum_k\abs{R_k}\leq\abs R$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+For an integer $N\geq1$ and a bounded set $S$ let $c_N(S)$ be the
+number of points of the grid $\frac1N\Z^n$ that lie in $S$. The
+integers $m$ with $a\leq\frac mN < b$ are those from $\lceil Na\rceil$
+to $\lceil Nb\rceil - 1$; their number
+$\lceil Nb\rceil - \lceil Na\rceil$ differs from $N(b - a)$ by less
+than $1$. For $R = \prod_i[a_i, b_i)$, therefore,
+\[
+  c_N(R) = \prod_{i=1}^n
+    \bigl(\lceil Nb_i\rceil - \lceil Na_i\rceil\bigr) ,
+  \qquad
+  \frac{c_N(R)}{N^n}\longrightarrow\abs R
+  \quad\text{as }N\to\infty .
+\]
+Counting points is exact: in (1),
+$c_N(R)\leq\sum_kc_N(R_k)$, and in (2),
+$\sum_kc_N(R_k)\leq c_N(R)$. Divide by $N^n$ and let $N\to\infty$.
+\end{proof}
+
+\begin{theorem}[Countable coverings of a box]
+\label{caratheodory:thm:box}
+If a box $R$ is contained in the union of a sequence of boxes $R_k$,
+then $\abs R\leq\sum_k\abs{R_k}$. Hence $\lambda^*(R) = \abs R$.
+\end{theorem}
+
+\begin{proof}
+Empty boxes may be removed from both sides, so let
+$R = \prod_i[a_i, b_i)$ and $R_k = \prod_i[a_i^k, b_i^k)$ have sides of
+positive length. Let $\epsilon > 0$.
+
+\emph{Shrink $R$ to a compact set.} For $\delta > 0$ small, the box
+$R^\delta = \prod_i[a_i, b_i - \delta)$ has
+$\lvert R^\delta\rvert\geq\abs R - \epsilon$, because the volume is a
+continuous function of the sides. The set
+$K = \prod_i[a_i, b_i - \delta]$ is closed and bounded, hence compact
+(\cref{norms-banach:thm:bw}), and $R^\delta\subset K\subset R$.
+
+\emph{Enlarge each $R_k$ to an open set.} Choose $\delta_k > 0$ such
+that the box $R_k' = \prod_i[a_i^k - \delta_k, b_i^k)$ has
+$\lvert R_k'\rvert\leq\abs{R_k} + \epsilon2^{-k}$. The set
+$U_k = \prod_i(a_i^k - \delta_k, b_i^k)$ is open and
+$R_k\subset U_k\subset R_k'$.
+
+\emph{Finitely many $U_k$ cover $K$.} If not, choose for each $m$ a
+point $x_m\in K$ outside $U_1\cup\dots\cup U_m$. A subsequence
+converges to some $x\in K$, which lies in some $U_j$. Since $U_j$ is
+open it contains $x_m$ for infinitely many $m\geq j$, which contradicts
+the choice of $x_m$.
+
+So $R^\delta\subset R_1'\cup\dots\cup R_m'$ for some $m$, and by
+\cref{caratheodory:lem:finite}
+\[
+  \abs R - \epsilon\leq\lvert R^\delta\rvert
+  \leq\sum_{k\leq m}\lvert R_k'\rvert
+  \leq\sum_k\abs{R_k} + \epsilon .
+\]
+Since $\epsilon$ is arbitrary, $\abs R\leq\sum_k\abs{R_k}$. Taking the
+infimum over the coverings of $R$ gives $\abs R\leq\lambda^*(R)$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.15]
+  % the box R and the compact K
+  \fill[bookaccent!12] (0,0) rectangle (4.0,2.5);
+  \fill[bookaccent!28] (0,0) rectangle (3.7,2.2);
+  % covering boxes, and the sides moved by the enlargement (dashed)
+  \draw[bookdef, thick] (-0.45,-0.3) rectangle (2.0,2.9);
+  \draw[bookdef, dashed] (-0.7,2.9) -- (-0.7,-0.55) -- (2.0,-0.55);
+  \draw[bookdef, thick] (1.7,1.1) rectangle (4.6,3.1);
+  \draw[bookdef, dashed] (1.45,3.1) -- (1.45,0.85) -- (4.6,0.85);
+  \draw[bookdef, thick] (1.2,-0.5) rectangle (4.45,1.4);
+  \draw[bookdef, dashed] (0.95,1.4) -- (0.95,-0.75) -- (4.45,-0.75);
+  \draw[bookaccent, very thick] (0,0) rectangle (4.0,2.5);
+  \draw[bookaccent, thick, densely dotted] (3.7,0) -- (3.7,2.2)
+    -- (0,2.2);
+  \node[bookaccent] at (0.6,1.7) {$K$};
+  \node[bookaccent, fill=white, inner sep=1.5pt] at (4.25,2.3) {$R$};
+  \node[bookdef] at (-0.2,3.15) {$R_1$};
+  \node[bookdef] at (4.9,2.9) {$R_2$};
+  \node[bookdef] at (4.8,0.2) {$R_3$};
+  \node[align=left] at (8.3,2.1)
+    {$K\subset R$ is closed and bounded,\\
+     and nearly as large as $R$};
+  \node[align=left, bookdef] at (8.3,0.6)
+    {each $R_k$ is enlarged a little,\\
+     to the dashed sides, and\\
+     contains an open set $U_k\supset R_k$};
+\end{tikzpicture}
+\caption{The proof of \cref{caratheodory:thm:box}. A covering of the
+compact set $K$ by open sets has a finite subcovering, and finite
+coverings are settled by counting grid points. The two changes cost
+$2\epsilon$ in volume.}
+\label{caratheodory:fig:box}
+\end{figure}
+
+\begin{pitfall}[The rational line has no length]
+The proof used a convergent subsequence, that is, the completeness of
+$\R$. On the set of rational numbers the theorem is false: by
+\cref{caratheodory:ex:rationals} the rational numbers of $[0, 1)$ are
+covered by intervals of total length $\epsilon$. No countably additive
+length exists on the intervals of the rational line.
+\end{pitfall}
+
+\section{Carath\'eodory's theorem}\label{caratheodory:sec:caratheodory}
+
+An outer measure is in general not additive, even on two disjoint sets
+(\cref{caratheodory:thm:vitali}). Carath\'eodory's idea is to keep the
+sets across which it \emph{is} additive.
+
+\begin{definition}[Measurable set]\label{caratheodory:def:measurable}
+Let $\mu^*$ be an outer measure on $X$. A set $A\subset X$ is
+\emph{$\mu^*$-measurable} if
+\[
+  \mu^*(E) = \mu^*(E\cap A) + \mu^*(E\setminus A)
+  \qquad\text{for every }E\subset X .
+\]
+\end{definition}
+
+By subadditivity the left-hand side is never larger than the right-hand
+side. So only the inequality $\geq$ has to be checked, and only for the
+sets $E$ with $\mu^*(E) < \infty$.
+
+\begin{intuition}
+A set $A$ is measurable if it cuts every set $E$ cleanly
+(\cref{caratheodory:fig:test}): the two pieces $E\cap A$ and
+$E\setminus A$ can be covered separately at no extra cost. The test set
+$E$ is arbitrary, and need not be measurable itself. A set fails the
+test when its boundary is so entangled with some $E$ that every
+covering of the two pieces overlaps.
+\end{intuition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \begin{scope}
+    \clip (-0.2,-1.6) rectangle (2.2,1.8);
+    \fill[bookaccent!30] plot[smooth cycle, tension=0.8] coordinates
+      {(0.3,-0.9) (2.0,-1.3) (4.2,-0.6) (4.6,0.8) (2.9,1.5)
+       (1.0,1.1) (0.1,0.2)};
+  \end{scope}
+  \begin{scope}
+    \clip (2.2,-1.6) rectangle (5.0,1.8);
+    \fill[bookexample!30] plot[smooth cycle, tension=0.8] coordinates
+      {(0.3,-0.9) (2.0,-1.3) (4.2,-0.6) (4.6,0.8) (2.9,1.5)
+       (1.0,1.1) (0.1,0.2)};
+  \end{scope}
+  \draw[thick] plot[smooth cycle, tension=0.8] coordinates
+    {(0.3,-0.9) (2.0,-1.3) (4.2,-0.6) (4.6,0.8) (2.9,1.5)
+     (1.0,1.1) (0.1,0.2)};
+  \draw[bookaccent, very thick] (2.2,-2.0) -- (2.2,2.2);
+  \draw[bookaccent, ->] (2.2,1.95) -- (1.3,1.95) node[left] {$A$};
+  \node at (4.9,1.4) {$E$};
+  \node at (1.1,0.1) {$E\cap A$};
+  \node at (3.4,0.1) {$E\setminus A$};
+  \node[align=left] at (8.9,0.3)
+    {$\mu^*(E) = \mu^*(E\cap A) + \mu^*(E\setminus A)$\\[2pt]
+     for \emph{every} set $E$};
+\end{tikzpicture}
+\caption{Carath\'eodory's test. The set $A$, here a half-plane, is
+measurable if it splits the outer measure of every test set $E$
+additively.}
+\label{caratheodory:fig:test}
+\end{figure}
+
+A measure is \emph{complete} if every subset of a null set is
+measurable; it is then a null set.
+
+\begin{theorem}[Carath\'eodory]\label{caratheodory:thm:caratheodory}
+Let $\mu^*$ be an outer measure on $X$ and $\mathcal M$ the family of
+$\mu^*$-measurable sets.
+\begin{enumerate}[nosep]
+  \item $\mathcal M$ is a $\sigma$-algebra.
+  \item The restriction of $\mu^*$ to $\mathcal M$ is a measure.
+  \item Every set with $\mu^*(A) = 0$ belongs to $\mathcal M$: this
+        measure is complete.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+The definition is symmetric in $A$ and $X\setminus A$, and $X$
+satisfies it. So $\mathcal M$ contains $X$ and is stable by
+complements.
+
+\emph{Finite unions.} Let $A, B\in\mathcal M$ and $E\subset X$. Testing
+$E$ with $A$, then $E\setminus A$ with $B$,
+\[
+  \mu^*(E) = \mu^*(E\cap A) + \mu^*\bigl((E\setminus A)\cap B\bigr)
+  + \mu^*\bigl((E\setminus A)\setminus B\bigr) .
+\]
+The first two sets have union $E\cap(A\cup B)$, and the third is
+$E\setminus(A\cup B)$. By subadditivity
+$\mu^*(E)\geq\mu^*(E\cap(A\cup B)) + \mu^*(E\setminus(A\cup B))$: so
+$A\cup B\in\mathcal M$. With complements, $\mathcal M$ is stable by
+finite unions, finite intersections and differences.
+
+\emph{Disjoint sequences.} Let $A_1, A_2, \dots\in\mathcal M$ be
+pairwise disjoint, $S_m = A_1\cup\dots\cup A_m$ and $S = \bigcup_kA_k$.
+For every $E$, testing $E\cap S_m$ with $A_m$ gives
+$\mu^*(E\cap S_m) = \mu^*(E\cap A_m) + \mu^*(E\cap S_{m-1})$, and by
+induction
+\[
+  \mu^*(E\cap S_m) = \sum_{k\leq m}\mu^*(E\cap A_k) .
+\]
+Since $S_m\in\mathcal M$ and $E\setminus S\subset E\setminus S_m$,
+\[
+  \mu^*(E) = \mu^*(E\cap S_m) + \mu^*(E\setminus S_m)
+  \geq\sum_{k\leq m}\mu^*(E\cap A_k) + \mu^*(E\setminus S) .
+\]
+Let $m\to\infty$ and use subadditivity:
+\begin{equation}\label{caratheodory:eq:chain}
+  \mu^*(E)\geq\sum_k\mu^*(E\cap A_k) + \mu^*(E\setminus S)
+  \geq\mu^*(E\cap S) + \mu^*(E\setminus S) .
+\end{equation}
+So $S\in\mathcal M$. With $E = S$, \eqref{caratheodory:eq:chain} reads
+$\mu^*(S)\geq\sum_k\mu^*(A_k)$, and the other inequality is
+subadditivity: $\mu^*$ is countably additive on $\mathcal M$.
+
+\emph{Arbitrary sequences.} If $A_1, A_2, \dots\in\mathcal M$, the
+sets $A_k\setminus(A_1\cup\dots\cup A_{k-1})$ are in $\mathcal M$,
+pairwise disjoint, with the same union. This proves (1) and (2).
+
+(3) If $\mu^*(A) = 0$ then $\mu^*(E\cap A) = 0$ and
+$\mu^*(E\setminus A)\leq\mu^*(E)$ for every $E$. A subset of a null set
+has outer measure $0$, so it is measurable.
+\end{proof}
+
+The theorem holds for every outer measure, and says nothing about
+which sets are measurable. For some outer measures only $\emptyset$ and
+$X$ are (\cref{caratheodory:exr:2}). The content of the next section is
+that for $\lambda^*$ the boxes are.
+
+\section{Lebesgue measure}\label{caratheodory:sec:lebesgue}
+
+\begin{lemma}[Half-spaces]\label{caratheodory:lem:halfspace}
+For every $i$ and every real number $c$, the half-space
+$H = \{x\in\R^n : x_i < c\}$ is $\lambda^*$-measurable.
+\end{lemma}
+
+\begin{proof}
+A box $R = \prod_j[a_j, b_j)$ is cut by $H$ into two boxes: with
+$c' = \min(\max(c, a_i), b_i)$, the sets $R\cap H$ and $R\setminus H$
+are obtained from $R$ by replacing its $i$th side by $[a_i, c')$ and
+by $[c', b_i)$. The two lengths add up to $b_i - a_i$, so
+$\abs{R\cap H} + \abs{R\setminus H} = \abs R$.
+
+Let $E\subset\R^n$ with $\lambda^*(E) < \infty$ and $\epsilon > 0$.
+Choose boxes $R_k$ covering $E$ with
+$\sum_k\abs{R_k}\leq\lambda^*(E) + \epsilon$. The boxes $R_k\cap H$
+cover $E\cap H$ and the boxes $R_k\setminus H$ cover $E\setminus H$,
+so
+\[
+  \lambda^*(E\cap H) + \lambda^*(E\setminus H)
+  \leq\sum_k\abs{R_k\cap H} + \sum_k\abs{R_k\setminus H}
+  = \sum_k\abs{R_k}\leq\lambda^*(E) + \epsilon . \qedhere
+\]
+\end{proof}
+
+\begin{theorem}[Existence of Lebesgue measure]
+\label{caratheodory:thm:lebesgue}
+The $\lambda^*$-measurable subsets of $\R^n$ form a $\sigma$-algebra
+$\mathcal L(\R^n)$ that contains the Borel sets. The restriction
+$\lambda$ of $\lambda^*$ to $\mathcal L(\R^n)$ is a complete measure,
+and $\lambda(R) = \abs R$ for every box. In particular the restriction
+of $\lambda$ to $\mathcal B(\R^n)$ is the measure of
+\cref{measures:thm:lebesgue}.
+\end{theorem}
+
+\begin{proof}
+By \cref{caratheodory:thm:caratheodory}, $\mathcal L(\R^n)$ is a
+$\sigma$-algebra and $\lambda$ a complete measure on it. It contains
+the half-spaces (\cref{caratheodory:lem:halfspace}), hence every box,
+since
+$\prod_i[a_i, b_i)
+= \bigcap_i\bigl(\{x_i < b_i\}\setminus\{x_i < a_i\}\bigr)$, hence
+the $\sigma$-algebra generated by the boxes, which is
+$\mathcal B(\R^n)$ (\cref{measures:prop:boxes}). Finally
+$\lambda(R) = \lambda^*(R) = \abs R$ by \cref{caratheodory:thm:box}.
+\end{proof}
+
+\begin{definition}\label{caratheodory:def:lebesgue}
+The elements of $\mathcal L(\R^n)$ are the \emph{Lebesgue measurable
+sets}, and $\lambda$ on $\mathcal L(\R^n)$ is again called
+\emph{Lebesgue measure}. A set $N$ with $\lambda^*(N) = 0$ is a
+\emph{null set}: for every $\epsilon > 0$ it is covered by a sequence
+of boxes of total volume at most $\epsilon$.
+\end{definition}
+
+For Borel sets this agrees with the null sets of \cref{ch:measures}.
+The covering form is the one used when a set is shown to be negligible
+by hand, as for the rational numbers above.
+
+\section{Open sets outside, compact sets inside}
+\label{caratheodory:sec:regularity}
+
+The outer measure was defined with boxes. It can be computed with open
+sets, and this describes the measurable sets completely.
+
+\begin{theorem}[Regularity]\label{caratheodory:thm:regularity}
+\begin{enumerate}[nosep]
+  \item For every $A\subset\R^n$,
+        $\lambda^*(A) = \inf\{\lambda(U) : U\supset A\text{ open}\}$,
+        and there is a Borel set $G\supset A$ with
+        $\lambda(G) = \lambda^*(A)$.
+  \item For $A\subset\R^n$ the following are equivalent:
+        \begin{enumerate}[nosep]
+          \item $A$ is Lebesgue measurable;
+          \item for every $\epsilon > 0$ there is an open set
+                $U\supset A$ with $\lambda^*(U\setminus A)\leq\epsilon$;
+          \item there are Borel sets $F\subset A\subset G$ with
+                $\lambda(G\setminus F) = 0$.
+        \end{enumerate}
+  \item For every Lebesgue measurable set $A$,
+        $\lambda(A) = \sup\{\lambda(K) : K\subset A\text{ compact}\}$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) If $U\supset A$ is open, $\lambda(U) = \lambda^*(U)\geq\lambda^*(A)$.
+For the converse suppose $\lambda^*(A) < \infty$, let $\epsilon > 0$,
+and cover $A$ by boxes $R_k$ with
+$\sum_k\abs{R_k}\leq\lambda^*(A) + \epsilon$. Enlarge them as in the
+proof of \cref{caratheodory:thm:box}: $R_k\subset U_k\subset R_k'$
+with $U_k$ open and $\lvert R_k'\rvert\leq\abs{R_k} + \epsilon2^{-k}$. The
+open set $U = \bigcup_kU_k$ contains $A$ and
+$\lambda(U)\leq\sum_k\lvert R_k'\rvert\leq\lambda^*(A) + 2\epsilon$. Now
+choose open sets $U_m\supset A$ with
+$\lambda(U_m)\leq\lambda^*(A) + \frac1m$ and let $G = \bigcap_mU_m$:
+then $\lambda^*(A)\leq\lambda(G)\leq\lambda(U_m)$ for all $m$. If
+$\lambda^*(A) = \infty$, take $U = G = \R^n$.
+
+(2) \emph{(a) implies (b).} If $\lambda(A) < \infty$, take $U$ open
+with $\lambda(U)\leq\lambda(A) + \epsilon$; then
+$\lambda(U\setminus A) = \lambda(U) - \lambda(A)\leq\epsilon$. In
+general let $A_j = A\cap[-j, j)^n$ and choose open sets
+$U_j\supset A_j$ with $\lambda(U_j\setminus A_j)\leq\epsilon2^{-j}$.
+Then $U = \bigcup_jU_j$ is open, contains $A$, and
+$U\setminus A\subset\bigcup_j(U_j\setminus A_j)$.
+
+\emph{(b) implies (a), with a set $G$.} Choose open sets
+$U_m\supset A$ with $\lambda^*(U_m\setminus A)\leq\frac1m$ and let
+$G = \bigcap_mU_m$, a Borel set. Then
+$G\setminus A\subset U_m\setminus A$ for all $m$, so
+$\lambda^*(G\setminus A) = 0$: the set $G\setminus A$ is measurable
+(\cref{caratheodory:thm:caratheodory}), and so is
+$A = G\setminus(G\setminus A)$.
+
+\emph{(a) implies (c).} Let $G$ be as above. The complement of $A$ is
+measurable too, so there is a Borel set $G'\supset\R^n\setminus A$
+with $\lambda(G'\cap A) = 0$. Then $F = \R^n\setminus G'$ is a Borel
+set contained in $A$, $A\setminus F = G'\cap A$, and
+$G\setminus F = (G\setminus A)\cup(A\setminus F)$ is a null set.
+
+\emph{(c) implies (a).} $A = F\cup(A\setminus F)$ and
+$A\setminus F\subset G\setminus F$ has outer measure $0$.
+
+(3) Let $\epsilon > 0$. By (b) for the complement of $A$ there is an
+open set $U\supset\R^n\setminus A$ with $\lambda(U\cap A)\leq\epsilon$.
+Its complement $C$ is closed, $C\subset A$ and
+$\lambda(A\setminus C) = \lambda(U\cap A)\leq\epsilon$. The sets
+$K_j = C\cap[-j, j]^n$ are compact and increase to $C$, so
+$\lambda(K_j)\to\lambda(C)$ (\cref{measures:thm:continuity}), and
+$\lambda(C)\geq\lambda(A) - \epsilon$, both sides being infinite if
+$\lambda(A)$ is.
+\end{proof}
+
+\begin{corollary}[The Lebesgue measurable sets]
+\label{caratheodory:cor:completion}
+\begin{enumerate}[nosep]
+  \item A set is Lebesgue measurable if and only if it is the union
+        $B\cup N$ of a Borel set and a subset $N$ of a Borel null set,
+        and then $\lambda(B\cup N) = \lambda(B)$.
+  \item $\lambda$ is the only measure on $\mathcal L(\R^n)$ that gives
+        every box its volume.
+  \item If $A$ is Lebesgue measurable, so are $A + v$ for
+        $v\in\R^n$ and $T(A)$ for a linear map $T$ of $\R^n$, with
+        $\lambda(A + v) = \lambda(A)$ and
+        $\lambda(T(A)) = \abs{\det T}\,\lambda(A)$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) If $A$ is measurable, take $F\subset A\subset G$ as in (c) above:
+$A = F\cup(A\setminus F)$ and $A\setminus F$ is contained in the Borel
+null set $G\setminus F$. Conversely $N$ has outer measure $0$, so
+$B\cup N$ is measurable, and
+$\lambda(B)\leq\lambda(B\cup N)\leq\lambda(B) + \lambda(N)$.
+
+(2) Another such measure $\mu$ agrees with $\lambda$ on the Borel sets,
+by the uniqueness in \cref{measures:thm:lebesgue}. With
+$F\subset A\subset G$ as in (c),
+$\mu(F)\leq\mu(A)\leq\mu(G)$ and
+$\mu(F) = \lambda(F) = \lambda(G) = \mu(G)$, so
+$\mu(A) = \lambda(A)$.
+
+(3) Write $A = B\cup N$ with $N\subset N'$, a Borel null set. The image
+of $A$ is the union of the image of $B$, a Borel set of the stated
+measure (\cref{measures:thm:translation,measures:thm:linear}), and of
+the image of $N$, contained in the image of $N'$, which is a Borel
+null set by the same theorems. If $T$ is not invertible, $T(A)$ lies
+in the null set $T(\R^n)$.
+\end{proof}
+
+\begin{keyidea}
+Lebesgue measurable means Borel, up to a subset of a null set. The
+completion measures nothing new. What it gives is that every subset of
+a null set is measurable, so a statement that holds almost everywhere
+never raises a question of measurability.
+\end{keyidea}
+
+Null sets are not always countable, and sets that look small to the
+eye are not always null. Two examples on the line show both.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, x=10cm, y=1cm]
+  \fill[bookaccent] (0,0) rectangle (1,0.16);
+  \foreach \a in {0,2}
+    \fill[bookaccent] ({\a/3},-0.5) rectangle ({\a/3+1/3},-0.34);
+  \foreach \a in {0,2} \foreach \b in {0,2}
+    \fill[bookaccent] ({\a/3+\b/9},-1.0) rectangle
+      ({\a/3+\b/9+1/9},-0.84);
+  \foreach \a in {0,2} \foreach \b in {0,2} \foreach \c in {0,2}
+    \fill[bookaccent] ({\a/3+\b/9+\c/27},-1.5) rectangle
+      ({\a/3+\b/9+\c/27+1/27},-1.34);
+  \foreach \a in {0,2} \foreach \b in {0,2} \foreach \c in {0,2}
+    \foreach \d in {0,2}
+    \fill[bookaccent] ({\a/3+\b/9+\c/27+\d/81},-2.0) rectangle
+      ({\a/3+\b/9+\c/27+\d/81+1/81},-1.84);
+  \foreach \k/\y/\m in {0/0.08/1, 1/-0.42/{2/3}, 2/-0.92/{4/9},
+      3/-1.42/{8/27}, 4/-1.92/{16/81}} {
+    \node[left] at (-0.02,\y) {$C_\k$};
+    \node[right] at (1.02,\y) {$\m$};
+  }
+  \node[right] at (1.0,0.6) {length};
+\end{tikzpicture}
+\caption{The first steps of the construction of the Cantor set. At each
+step the middle third of every interval is removed; the total length is
+multiplied by $\frac23$ and the number of intervals by $2$.}
+\label{caratheodory:fig:cantor}
+\end{figure}
+
+\begin{example}[The Cantor set]\label{caratheodory:ex:cantor}
+Let $C_0 = [0, 1]$, and let $C_{k+1}$ be obtained by removing from each
+interval of $C_k$ its open middle third
+(\cref{caratheodory:fig:cantor}). Then $C_k$ is the union of $2^k$
+disjoint closed intervals of length $3^{-k}$, and the \emph{Cantor set}
+$C = \bigcap_kC_k$ is compact with
+$\lambda(C)\leq\lambda(C_k) = (\frac23)^k$ for all $k$: it is a null
+set. It is not countable. To a sequence
+$\varepsilon = (\varepsilon_1, \varepsilon_2, \dots)$ of $0$ and $1$
+associate $x_\varepsilon = \sum_k2\varepsilon_k3^{-k}$. The first $k$
+terms give the left end of one of the intervals of $C_k$, and the
+remaining terms add at most $3^{-k}$: so $x_\varepsilon\in C$. If two
+sequences first differ at the index $k$, the corresponding points
+differ by at least
+$2\cdot3^{-k} - \sum_{j>k}2\cdot3^{-j} = 3^{-k}$. So the sequences of
+$0$ and $1$, which are not countable by Cantor's diagonal argument,
+are mapped injectively into $C$.
+\end{example}
+
+\begin{example}[A dense open set of small measure]
+\label{caratheodory:ex:dense}
+Let $U$ be the union of the intervals of
+\cref{caratheodory:ex:rationals}. It is open, it contains every
+rational number of $[0, 1]$, and $\lambda(U)\leq\epsilon$. Its
+complement $K = [0, 1]\setminus U$ is compact, contains no interval,
+since every interval contains a rational number, and
+$\lambda(K)\geq1 - \epsilon$. So $U$ is large for topology (open and
+dense in $[0, 1]$) and small for measure, and $K$ is the opposite.
+
+The function $1_U$ on $[0, 1]$ shows again what the Riemann integral
+lacks. A step function $t\geq1_U$ is at least $1$ at a rational point
+of each interval of its subdivision, hence on each of these intervals:
+its integral is at least $1$. A step function $s\leq1_U$ has integral
+at most $\lambda(U)\leq\epsilon$. For $\epsilon < 1$ the two cannot be
+brought together: the indicator of this open set is not Riemann
+integrable, while its Lebesgue integral is simply
+$\lambda(U\cap[0, 1])$.
+\end{example}
+
+\section{Riemann integrable functions}\label{caratheodory:sec:riemann}
+
+A \emph{step function} on $[a, b]$ is a function that is constant on
+each open interval $(x_{j-1}, x_j)$ of a subdivision
+$a = x_0 < \dots < x_m = b$. It is a simple Borel function, and since
+points are null sets its integral for $\lambda$ is
+$\sum_jc_j(x_j - x_{j-1})$, where $c_j$ is its value on the $j$th
+interval. A bounded function $f$ on $[a, b]$ is \emph{Riemann
+integrable} if for every $\epsilon > 0$ there are step functions
+$s\leq f\leq t$ with $\int(t - s)\leq\epsilon$; its Riemann integral
+is the only number $I$ with $\int s\leq I\leq\int t$ for all step
+functions $s\leq f\leq t$. This is Darboux's form of the definition
+recalled in \cref{measures:sec:why}; we take the equivalence of the
+two from a first course.
+
+\begin{proposition}\label{caratheodory:prop:riemann}
+A Riemann integrable function $f$ on $[a, b]$ is measurable for the
+$\sigma$-algebra of Lebesgue measurable sets and integrable for
+$\lambda$, and $\int_{[a, b]}f\,\dd\lambda$ is its Riemann integral.
+\end{proposition}
+
+\begin{proof}
+Choose step functions $s_k\leq f\leq t_k$ with
+$\int(t_k - s_k)\leq\frac1k$, and let $s = \sup_ks_k$ and
+$t = \inf_kt_k$. These are bounded Borel functions
+(\cref{measures:thm:limits}) with $s\leq f\leq t$, and
+$0\leq\int(t - s)\,\dd\lambda\leq\int(t_k - s_k)\,\dd\lambda
+\leq\frac1k$ for all $k$. So $\int(t - s)\,\dd\lambda = 0$, and
+$N = \{s < t\}$ is a Borel null set
+(\cref{lebesgue-integral:prop:markov}). Outside $N$, $f = s$. For a
+Borel set $B$ of $\R$,
+\[
+  f^{-1}(B) = \bigl(s^{-1}(B)\setminus N\bigr)
+  \cup\bigl(f^{-1}(B)\cap N\bigr) ,
+\]
+the union of a Borel set and a subset of a null set: $f$ is measurable.
+It is equal almost everywhere to the integrable function $s$, so it is
+integrable with the same integral
+(\cref{lebesgue-integral:prop:ae}). Finally both
+$\int s\,\dd\lambda$ and the Riemann integral lie between
+$\int s_k$ and $\int t_k$ for every $k$.
+\end{proof}
+
+The completion is needed here: the set $f^{-1}(B)\cap N$ is only known
+to be a subset of a null set. Every subset $S$ of the Cantor set has a
+Riemann integrable indicator, with integral $0$
+(\cref{caratheodory:exr:7}), and nothing forces $S$ to be a Borel set.
+
+\begin{remark}[Lebesgue's criterion]\label{caratheodory:rem:criterion}
+A bounded function on $[a, b]$ is Riemann integrable if and only if
+the set of its points of discontinuity is a null set. We do not prove
+this theorem and do not use it; it explains
+\cref{caratheodory:ex:dense}, where the function is discontinuous at
+every point of $K$.
+\end{remark}
+
+\section{A set that is not measurable}\label{caratheodory:sec:vitali}
+
+Could the construction have been avoided by measuring all subsets? Not
+if the length is to be invariant under translations.
+
+\begin{theorem}[Vitali]\label{caratheodory:thm:vitali}
+\begin{enumerate}[nosep]
+  \item There is no measure defined on all subsets of $\R$ that is
+        invariant under translations and gives $[0, 1)$ a finite and
+        positive measure.
+  \item There is a subset $V$ of $[0, 1)$ that is not Lebesgue
+        measurable.
+  \item There are disjoint sets $A, B\subset\R$ with
+        $\lambda^*(A\cup B) < \lambda^*(A) + \lambda^*(B)$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Call two points of $[0, 1)$ equivalent if their difference is a
+rational number. This is an equivalence relation, and $[0, 1)$ is the
+disjoint union of its classes. Let $V$ be a set that contains exactly
+one point of each class; choosing these points all at once uses the
+axiom of choice. Let $Q$ be the set of rational numbers of $(-1, 1)$,
+which is countable.
+
+\emph{The sets $V + q$, $q\in Q$, are pairwise disjoint.} If
+$v + q = v' + q'$ with $v, v'\in V$, then $v - v'$ is rational, so
+$v$ and $v'$ are in the same class, $v = v'$ and $q = q'$.
+
+\emph{They cover $[0, 1)$ and lie in $[-1, 2)$.} For $x\in[0, 1)$ let
+$v$ be the point of $V$ in the class of $x$; then $q = x - v$ is
+rational, $\abs q < 1$ and $x\in V + q$. The second claim is clear
+(\cref{caratheodory:fig:vitali}).
+
+(1) Let $\mu$ be such a measure and $c = \mu([0, 1))$. By invariance
+$\mu(V + q) = \mu(V)$ for all $q$, and $\mu([-1, 2)) = 3c$. By
+countable additivity and monotonicity
+\[
+  c\leq\sum_{q\in Q}\mu(V)\leq3c .
+\]
+If $\mu(V) = 0$ the left inequality gives $c = 0$; if $\mu(V) > 0$ the
+sum is infinite and the right inequality fails.
+
+(2) If $V$ were Lebesgue measurable, so would be the sets $V + q$,
+with $\lambda(V + q) = \lambda(V)$
+(\cref{caratheodory:cor:completion}), and the same computation would
+give $1\leq\sum_{q\in Q}\lambda(V)\leq3$.
+
+(3) Since $V$ is not measurable, there is a set $E$ with
+$\lambda^*(E) < \lambda^*(E\cap V) + \lambda^*(E\setminus V)$. Take
+$A = E\cap V$ and $B = E\setminus V$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, x=3.6cm, y=1cm]
+  \draw[->] (-1.15,0) -- (2.2,0);
+  \foreach \x in {-1,0,1,2}
+    \draw (\x,0.1) -- (\x,-0.1) node[below] {$\x$};
+  \draw[very thick] (0,0) -- (1,0);
+  \foreach \p in {0.07,0.19,0.31,0.38,0.52,0.66,0.71,0.88,0.95}
+    \fill (\p,0.45) circle (1.6pt);
+  \node[left] at (-0.03,0.45) {$V$};
+  \foreach \p in {0.07,0.19,0.31,0.38,0.52,0.66,0.71,0.88,0.95}
+    \fill[bookaccent] ({\p+0.6},0.95) circle (1.6pt);
+  \node[left, bookaccent] at (0.57,0.95) {$V + \frac35$};
+  \foreach \p in {0.07,0.19,0.31,0.38,0.52,0.66,0.71,0.88,0.95}
+    \fill[bookpitfall] ({\p-0.75},1.45) circle (1.6pt);
+  \node[left, bookpitfall] at (-0.78,1.45) {$V - \frac34$};
+  \foreach \p in {0.07,0.19,0.31,0.38,0.52,0.66,0.71,0.88,0.95}
+    \fill[bookdef] ({\p+0.9},1.95) circle (1.6pt);
+  \node[left, bookdef] at (0.87,1.95) {$V + \frac9{10}$};
+  \draw[dashed, black!50] (0,-0.1) -- (0,2.3);
+  \draw[dashed, black!50] (1,-0.1) -- (1,2.3);
+\end{tikzpicture}
+\caption{Vitali's argument. The translates of $V$ by the rational
+numbers of $(-1, 1)$ are disjoint, cover $[0, 1)$ and stay in
+$[-1, 2)$. Countably many copies of the same size cannot have a total
+between $1$ and $3$. The dots only suggest $V$, which cannot be drawn.}
+\label{caratheodory:fig:vitali}
+\end{figure}
+
+\begin{remark}[The axiom of choice]\label{caratheodory:rem:choice}
+No formula describes $V$. A theorem of Solovay shows, under a
+hypothesis of set theory that we do not state, that the axiom of
+choice cannot be removed from the proof: without it, one cannot prove
+that a set which is not Lebesgue measurable exists. We quote this
+without proof. Every set defined in this book from open sets, closed
+sets and limits of sequences of functions is a Borel set.
+\end{remark}
+
+\begin{pitfall}[Why the book works with Borel sets]
+The larger $\sigma$-algebra $\mathcal L(\R^n)$ is not better in every
+respect.
+\begin{itemize}[nosep]
+  \item \emph{Products.} The set $V\times\{0\}$ is contained in the
+        null set $\R\times\{0\}$ of $\R^2$, so it belongs to
+        $\mathcal L(\R^2)$. It does not belong to
+        $\mathcal L(\R)\otimes\mathcal L(\R)$, whose elements have
+        measurable sections (\cref{fubini:lem:sections}). So
+        $\mathcal L(\R^2)$ is not the product of two copies of
+        $\mathcal L(\R)$, whereas
+        $\mathcal B(\R^2) = \mathcal B(\R)\otimes\mathcal B(\R)$
+        (\cref{fubini:prop:components}).
+  \item \emph{Preimages.} The preimage of a Borel set by a continuous
+        map is a Borel set. The preimage of a Lebesgue measurable set
+        by a continuous map need not be Lebesgue measurable (we do not
+        prove this), so composition is delicate.
+\end{itemize}
+With Borel sets, measurability is preserved by everything one does;
+the completion is brought in when a subset of a null set has to be
+measured, as in \cref{caratheodory:prop:riemann}.
+\end{pitfall}
+
+\section{Where the construction leads}\label{caratheodory:sec:outlook}
+
+\begin{example}[Coin flips]\label{caratheodory:ex:coins}
+For $x\in[0, 1)$ let $d_k(x)\in\{0, 1\}$ be the $k$th binary digit of
+$x$, that is, the integer part of $2^kx$ modulo $2$. The points whose
+first $k$ digits are $\varepsilon_1, \dots, \varepsilon_k$ form the
+interval $[m2^{-k}, (m + 1)2^{-k})$ with
+$m = \sum_j\varepsilon_j2^{k-j}$, of measure $2^{-k}$. So on the
+probability space $[0, 1)$ with Lebesgue measure, $(d_1, \dots, d_k)$
+is uniform on the $2^k$ sequences for every $k$: the digits are
+independent, and each is $0$ or $1$ with probability $\frac12$
+(\cref{fubini:def:independent}). Lebesgue measure on $[0, 1)$ is the
+law of an infinite sequence of fair coin flips. This gives the space
+that \cref{measures:sec:why} asked for, and it is how random bits are
+turned into a uniform random number.
+\end{example}
+
+\begin{mlthread}[Machine learning: null sets in practice]
+\begin{itemize}[nosep]
+  \item \emph{What ``almost everywhere'' promises.} A network with
+        ReLU activations is locally Lipschitz, and such a function is
+        differentiable outside a null set (Rademacher's theorem, which
+        we do not prove). If the law of a random point has a density,
+        the point avoids any given null set with probability $1$,
+        since the integral of the density over a null set is $0$.
+  \item \emph{What it does not promise.} Not every law has a density
+        (\cref{measures:sec:ml}). After a ReLU layer the activations
+        are exactly $0$ with positive probability, and so can be a
+        pre-activation of the next layer: a set that is null for
+        Lebesgue measure need not be null for the law of the data.
+        And the numbers of a computer form a finite set, hence a null
+        set, in which every computation takes place. A framework has
+        to choose a value for the derivative of ReLU at $0$.
+  \item \emph{Counting boxes.} Covering a set by boxes of the same
+        side $\delta$ and counting them, instead of adding volumes,
+        measures null sets more finely: the Cantor set is covered by
+        $2^k$ intervals of length $\delta = 3^{-k}$ and by no fewer
+        than half as many, a number that grows like $\delta^{-d}$
+        with $d = \ln2/\ln3$. Counts of this kind are
+        the covering numbers used to estimate the dimension of a data
+        set and to bound the capacity of a class of functions. They
+        are not developed in this book.
+\end{itemize}
+\end{mlthread}
+
+Carath\'eodory's theorem was applied here to one outer measure. Applied
+to coverings of the line by intervals $[a, b)$ with the price
+$F(b) - F(a)$, for a non-decreasing function $F$ that is continuous
+from the left, it gives a measure with
+$\mu([a, b)) = F(b) - F(a)$: this is how the law of a real random
+variable $Z$ is recovered from the function $F(x) = P(Z < x)$. Applied
+to coverings by sets of diameter at most $\delta$ with the price
+$(\text{diameter})^k$, in the limit $\delta\to0$, it gives the
+Hausdorff measures, which measure $k$-dimensional sets of $\R^n$
+without charts. Neither is proved in this book.
+
+\paragraph{Sources.} Loomis and Sternberg stay with the content in
+their Chapter~8, where the inner and outer content of a bounded set
+are defined (Definition~6.2), and do not construct Lebesgue measure
+there. Hubbard and
+Hubbard define sets of measure $0$ by coverings with boxes
+(Definition~4.4.1), give the covering of the rational numbers used
+above (Example~4.4.3) and prove Lebesgue's criterion
+(Theorem~4.4.8); their Appendix~A21 defines Lebesgue measurable sets
+through the integral (Definition~A21.5, Theorem~A21.6) and gives the
+set of \cref{caratheodory:thm:vitali} with the translates in
+$[-1, 2]$ that we used (Example~A21.7). The proof of
+\cref{caratheodory:lem:finite} by counting grid points is in the
+spirit of their dyadic pavings. The construction through outer
+measures is the standard one; see M.~Capi\'nski and E.~Kopp,
+\emph{Measure, Integral and Probability}, Springer, 2004, Chapter~2.
+The theorem is due to C.~Carath\'eodory (1914) and the set to
+G.~Vitali (1905); the result quoted in \cref{caratheodory:rem:choice}
+is R.~M.~Solovay, A model of set-theory in which every set of reals is
+Lebesgue measurable, \emph{Annals of Mathematics}, 1970.
+
+\paragraph{Notebook.} The numerical claims of this appendix are checked
+with PyTorch in \notebook{A-caratheodory.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item The outer measure $\lambda^*(A)$ is the infimum of the total
+        volume of the sequences of boxes that cover $A$. It is defined
+        for every set, monotone and countably subadditive.
+  \item $\lambda^*(R) = \abs R$ for a box: finite coverings by
+        counting grid points, countable ones by compactness.
+  \item For any outer measure, the sets that split every set
+        additively form a $\sigma$-algebra on which the outer measure
+        is a complete measure.
+  \item Half-spaces, hence boxes, hence Borel sets are measurable for
+        $\lambda^*$: Lebesgue measure exists.
+  \item A set is Lebesgue measurable exactly when it differs from a
+        Borel set by a subset of a null set; it is approximated by
+        open sets from outside and compact sets from inside.
+  \item Riemann integrable functions are integrable for the completed
+        measure, with the same integral.
+  \item With the axiom of choice, some subsets of $\R$ are not
+        measurable, and no translation-invariant length is defined on
+        all subsets.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{caratheodory:exr:1}
+Show that $\lambda^*$ does not change if the coverings are made of
+closed boxes $\prod_i[a_i, b_i]$, with the same volumes.
+\solutionlink{caratheodory:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{caratheodory:exr:2}
+On $X = \{1, 2, 3\}$ let $\mu^*(\emptyset) = 0$, $\mu^*(X) = 2$ and
+$\mu^*(A) = 1$ for every other subset.
+\begin{enumerate}[nosep]
+  \item Show that $\mu^*$ is an outer measure, and that it is not
+        additive.
+  \item Find the $\mu^*$-measurable sets.
+\end{enumerate}
+\solutionlink{caratheodory:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{caratheodory:exr:3}
+Let $\mu$ be a finite measure on $(X, \mathcal M)$, and for every
+$A\subset X$ let
+$\mu^*(A) = \inf\{\mu(B) : B\in\mathcal M,\ B\supset A\}$.
+\begin{enumerate}[nosep]
+  \item Show that the infimum is attained and that $\mu^*$ is an outer
+        measure, equal to $\mu$ on $\mathcal M$.
+  \item Show that every element of $\mathcal M$ is $\mu^*$-measurable.
+\end{enumerate}
+\solutionlink{caratheodory:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{caratheodory:exr:4}
+Start from $[0, 1]$ and, at step $k = 1, 2, \dots$, remove from the
+middle of each of the $2^{k-1}$ remaining intervals an open interval
+of length $4^{-k}$. Let $F$ be what remains after all the steps.
+\begin{enumerate}[nosep]
+  \item Compute the total length that remains after $k$ steps, and
+        check that the construction is possible.
+  \item Show that $F$ is compact, contains no interval, and has
+        measure $\frac12$.
+\end{enumerate}
+\solutionlink{caratheodory:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{caratheodory:exr:5}
+Let $f:[0, 1)\to\R$ be $L$-Lipschitz. Show by a covering with boxes
+that its graph is a null set of $\R^2$.
+\solutionlink{caratheodory:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{caratheodory:exr:6}
+Let $A$ be a Lebesgue measurable set with $\lambda(A) < \infty$ and
+$\epsilon > 0$. Show that there is a finite union $B$ of boxes such
+that
+$\lambda(A\setminus B) + \lambda(B\setminus A)\leq\epsilon$.
+\solutionlink{caratheodory:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{caratheodory:exr:7}
+\begin{enumerate}[nosep]
+  \item Show that the numbers of $[0, 1)$ whose decimal expansion
+        contains no digit $7$ form a null set.
+  \item With the binary digits of \cref{caratheodory:ex:coins},
+        compute $\lambda\{d_1 = 1,\ d_3 = 1\}$ by listing intervals.
+  \item Show that the indicator of any subset of the Cantor set is
+        Riemann integrable on $[0, 1]$, with integral $0$.
+\end{enumerate}
+\solutionlink{caratheodory:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{caratheodory:exr:8}
+Let $V$ and $Q$ be as in the proof of \cref{caratheodory:thm:vitali}.
+\begin{enumerate}[nosep]
+  \item Show that a Lebesgue measurable subset of $V$ is a null set.
+  \item Deduce that every Lebesgue measurable set $A\subset\R$ with
+        $\lambda(A) > 0$ contains a subset that is not Lebesgue
+        measurable.
+\end{enumerate}
+\solutionlink{caratheodory:exr:8}
+\end{exercise}
 \end{notechapter}

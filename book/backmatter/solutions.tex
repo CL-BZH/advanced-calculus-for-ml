@@ -3426,3 +3426,106 @@ preserves distances; its operator is antisymmetric.
         = cTe^{\theta T}a$, the derivative of $c\,e^{\theta T}a$ with
         respect to $\theta$.
 \end{enumerate}
+
+\section{\nameref*{ch:caratheodory}}
+
+\solution{caratheodory:exr:1}
+Let $\lambda^*_c$ be defined with closed boxes. The closures of the
+boxes of a covering cover as well, with the same volumes, so
+$\lambda^*_c\leq\lambda^*$. Conversely let closed boxes
+$\prod_i[a_i^k, b_i^k]$ cover $A$. Each is contained in a half-open
+box $\prod_i[a_i^k, b_i^k + \delta_k)$, and $\delta_k$ can be chosen
+so that its volume exceeds that of the closed box by at most
+$\epsilon2^{-k}$. So $\lambda^*\leq\lambda^*_c + \epsilon$ for every
+$\epsilon$.
+
+\solution{caratheodory:exr:2}
+\begin{enumerate}[nosep]
+  \item $\mu^*$ is monotone. For subadditivity, if the union of a
+        sequence is $X$, either one term is $X$ or two terms are not
+        empty, and the sum is at least $2$; if the union is another
+        non-empty set, one term is not empty and the sum is at least
+        $1$. It is not additive:
+        $\mu^*(\{1, 2\}) = 1 < \mu^*(\{1\}) + \mu^*(\{2\})$.
+  \item Only $\emptyset$ and $X$. For $A = \{1\}$, the test set
+        $E = \{1, 2\}$ gives
+        $\mu^*(E) = 1 < \mu^*(\{1\}) + \mu^*(\{2\})$. For
+        $A = \{1, 2\}$, the test set $E = \{1, 3\}$ gives
+        $1 < \mu^*(\{1\}) + \mu^*(\{3\})$. The other cases are the
+        same after renaming the points.
+\end{enumerate}
+
+\solution{caratheodory:exr:3}
+\begin{enumerate}[nosep]
+  \item Choose $B_m\supset A$ in $\mathcal M$ with
+        $\mu(B_m)\leq\mu^*(A) + \frac1m$; then $B = \bigcap_mB_m$
+        contains $A$ and $\mu(B) = \mu^*(A)$. Monotonicity is clear,
+        and $\mu^*(B) = \mu(B)$ for $B\in\mathcal M$ because $\mu$ is
+        monotone. If $B_j\supset A_j$ attain the infima, then
+        $\bigcup_jB_j\supset\bigcup_jA_j$ and
+        $\mu(\bigcup_jB_j)\leq\sum_j\mu(B_j)$.
+  \item Let $B\in\mathcal M$, $E\subset X$, and $C\in\mathcal M$ with
+        $C\supset E$ and $\mu(C) = \mu^*(E)$. Then
+        $\mu^*(E\cap B) + \mu^*(E\setminus B)
+        \leq\mu(C\cap B) + \mu(C\setminus B) = \mu(C) = \mu^*(E)$.
+\end{enumerate}
+
+\solution{caratheodory:exr:4}
+\begin{enumerate}[nosep]
+  \item Step $j$ removes $2^{j-1}4^{-j} = 2^{-j-1}$. After $k$ steps
+        there remains
+        $1 - \sum_{j\leq k}2^{-j-1} = \frac12 + 2^{-k-1}$, in $2^k$
+        intervals of equal length $2^{-k-1} + 2^{-2k-1}$. This is more
+        than $4^{-k-1}$, so the next step is possible.
+  \item $F$ is the intersection of the compact sets $F_k$ that remain
+        after $k$ steps, so it is compact and
+        $\lambda(F) = \lim_k\lambda(F_k) = \frac12$
+        (\cref{measures:thm:continuity}). An interval contained in $F$
+        would be contained in one interval of $F_k$ for every $k$, and
+        their lengths tend to $0$.
+\end{enumerate}
+
+\solution{caratheodory:exr:5}
+For an integer $N\geq1$ and $0\leq k < N$, the points $(x, f(x))$ with
+$\frac kN\leq x < \frac{k+1}N$ satisfy
+$\abs{f(x) - f(\frac kN)}\leq\frac LN$, so they lie in the box
+$[\frac kN, \frac{k+1}N)\times
+[f(\frac kN) - \frac{L+1}N, f(\frac kN) + \frac{L+1}N)$, of area
+$2(L + 1)/N^2$. These $N$ boxes cover the graph, with total area
+$2(L + 1)/N$, which tends to $0$.
+
+\solution{caratheodory:exr:6}
+Cover $A$ by boxes $R_k$ with
+$\sum_k\abs{R_k}\leq\lambda(A) + \frac\epsilon2$, and choose $m$ with
+$\sum_{k>m}\abs{R_k}\leq\frac\epsilon2$. Let
+$B = R_1\cup\dots\cup R_m$ and $U = \bigcup_kR_k$. Then
+$A\setminus B\subset\bigcup_{k>m}R_k$ has measure at most
+$\frac\epsilon2$, and $B\setminus A\subset U\setminus A$ has measure
+$\lambda(U) - \lambda(A)\leq\frac\epsilon2$.
+
+\solution{caratheodory:exr:7}
+\begin{enumerate}[nosep]
+  \item The numbers whose first $k$ decimal digits are not $7$ form
+        $9^k$ intervals of length $10^{-k}$, of total length
+        $(\frac9{10})^k$. The set is contained in all of them.
+  \item The first three digits are $101$ or $111$: the intervals
+        $[\frac58, \frac68)$ and $[\frac78, 1)$, of total length
+        $\frac14 = \frac12\cdot\frac12$.
+  \item For $S\subset C$, $0\leq1_S\leq1_{C_k}$, and $1_{C_k}$ is a
+        step function of integral $(\frac23)^k$.
+\end{enumerate}
+
+\solution{caratheodory:exr:8}
+\begin{enumerate}[nosep]
+  \item Let $W\subset V$ be measurable. The sets $W + q$, $q\in Q$,
+        are measurable, pairwise disjoint, of measure $\lambda(W)$,
+        and contained in $[-1, 2)$. So
+        $\sum_{q\in Q}\lambda(W)\leq3$, which forces
+        $\lambda(W) = 0$.
+  \item Some $A\cap[j, j + 1)$ has positive measure; translating, we
+        may assume $A\subset[0, 1)$. Then $A$ is the union of the
+        countably many sets $A_q = A\cap(V + q)$, $q\in Q$. If they
+        were all measurable, each $A_q - q$ would be a measurable
+        subset of $V$, hence a null set by (1), and $\lambda(A)$ would
+        be $0$. So one of the $A_q$ is not measurable.
+\end{enumerate}
