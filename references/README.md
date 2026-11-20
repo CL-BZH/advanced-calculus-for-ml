@@ -41,6 +41,9 @@ ignored by git.
 | P. Billingsley, *Probability and Measure*, 3rd ed., Wiley, 1995, ISBN 0471007102 | Ch. 16, 18, App. A | No publisher page found for this edition | Commercial |
 | E. Kreyszig, *Introductory Functional Analysis with Applications*, Wiley, 1978, ISBN 0471507318 | Ch. 2 | No publisher page found for this edition | Commercial |
 | J. van Neerven, *Functional Analysis*, Cambridge Studies in Advanced Mathematics 201, Cambridge University Press, 2022, ISBN 9781009232470 | Ch. 2 | [arXiv:2112.11166](https://arxiv.org/abs/2112.11166), the corrected version the author posts | Commercial in print; the posted version is free to view and download for personal use only, not for redistribution |
+| J.-P. Escofier, *Toute l'algèbre de la Licence: cours et exercices corrigés*, 5e éd., Sciences Sup, Dunod, 2020, ISBN 9782100812486 | Ch. 2 | [Dunod](https://www.dunod.com/sciences-techniques/toute-algebre-licence-cours-et-exercices-corriges-1), which now carries the 6th edition (2023, ISBN 9782100855254) | Commercial |
+| B. Le Stum, *Algèbre linéaire et bilinéaire*, lecture notes, version of 21 February 2020 | Ch. 2 | [the author's site](https://www.bernardlestum.com) | Free PDF from the author's site, marked "Copyright © 2016 Bernard Le Stum"; no licence stated |
+| L. S. Pontryagin, V. G. Boltyanskii, R. V. Gamkrelidze and E. F. Mishchenko, *The Mathematical Theory of Optimal Processes*, translated from the Russian by K. N. Trirogoff, edited by L. W. Neustadt, Interscience Publishers (John Wiley), 1962 | Ch. 25 | No publisher page found for this edition; the bibliographic data were read in H. Kaufman's review of the book in the *Canadian Mathematical Bulletin*, hosted by Cambridge University Press | Commercial |
 
 ## Papers
 
@@ -77,7 +80,7 @@ ignored by git.
 | C. Cortes and V. Vapnik, Support-vector networks, *Machine Learning* 20(3), 273–297, 1995 | Ch. 11 | DOI 10.1007/BF00994018 | Commercial |
 | E. T. Jaynes, Information theory and statistical mechanics, *Physical Review* 106(4), 620–630, 1957 | Ch. 11 | DOI 10.1103/PhysRev.106.620 | Commercial |
 | H. W. Kuhn and A. W. Tucker, Nonlinear programming, *Proc. Second Berkeley Symp. on Mathematical Statistics and Probability*, 481–492, 1951 | Ch. 11 | [Project Euclid](https://projecteuclid.org/ebooks/berkeley-symposium-on-mathematical-statistics-and-probability/Proceedings-of-the-Second-Berkeley-Symposium-on-Mathematical-Statistics-and/chapter/Nonlinear-Programming/bsmsp/1200500249) | Free to read on Project Euclid |
-| T. Salimans and D. P. Kingma, Weight normalization, NeurIPS, 2016 | Ch. 12 | [papers.nips.cc](https://papers.nips.cc) | Open access |
+| T. Salimans and D. P. Kingma, Weight normalization: a simple reparameterization to accelerate training of deep neural networks, NeurIPS, 2016; *Advances in Neural Information Processing Systems* 29, 901–909 | Ch. 12 | [the conference page](https://neurips.cc/virtual/2016/poster/7412) | Open access |
 | Y. Bengio, A. Courville and P. Vincent, Representation learning: a review and new perspectives, *IEEE Trans. Pattern Anal. Mach. Intell.* 35(8), 1798–1828, 2013 | Ch. 12 | DOI 10.1109/TPAMI.2013.50 | Commercial |
 | S. S. Du, W. Hu and J. D. Lee, Algorithmic regularization in learning deep homogeneous models, NeurIPS, 2018 | Ch. 13 | [papers.nips.cc](https://papers.nips.cc) | Open access |
 | E. Oja, A simplified neuron model as a principal component analyzer, *J. Math. Biol.* 15, 267–273, 1982 | Ch. 14 | DOI 10.1007/BF00275687 ([Springer](https://link.springer.com/content/pdf/10.1007/BF00275687.pdf)) | Commercial |
