@@ -3324,3 +3324,105 @@ $3\cdot\frac{4\pi}5$ by symmetry.
         $c = \partial_x(-x) - \partial_yy = -2$: the field preserves
         area and rotates.
 \end{enumerate}
+
+\section{\nameref*{ch:odes-flows}}
+
+\solution{odes-flows:exr:1}
+\begin{enumerate}[nosep]
+  \item For $t\geq0$, $(t^2/4)' = t/2 = \sqrt{t^2/4}$, and
+        $(1/(1 - t))' = 1/(1 - t)^2$. For every $c\geq0$ the curve
+        equal to $0$ for $t\leq c$ and to $(t - c)^2/4$ for $t\geq c$
+        is a solution of $x' = \sqrt{\abs x}$ with $x(0) = 0$: it is
+        differentiable at $c$, with derivative $0$.
+  \item $x_0 = 1$, $x_1 = 1 + t$, and by induction
+        $x_k(t) = \sum_{j\leq k}t^j/j!$, the partial sums of $e^t$.
+\end{enumerate}
+
+\solution{odes-flows:exr:2}
+In the first case $A^2 = 0$, so
+$e^{tA} = I + tA
+= \begin{bsmallmatrix}1 & t\\ 0 & 1\end{bsmallmatrix}$, a shear. In
+the second $A = [e_3]_\times$ restricted to the plane, $A^2 = -I$, and
+$e^{tA} = \begin{bsmallmatrix}\cos t & -\sin t\\ \sin t & \cos t
+\end{bsmallmatrix}$. In the third
+$e^{tA} = \diag(e^t, e^{-t})$. The three traces are $0$ and the three
+determinants are $1$: all three flows preserve areas. Only the second
+preserves distances; its operator is antisymmetric.
+
+\solution{odes-flows:exr:3}
+\begin{enumerate}[nosep]
+  \item $N^2x = u\times(u\times x) = \inner ux\,u - \inner uu\,x$, and
+        $N^3 = N(uu^\top - I) = (Nu)u^\top - N = -N$ since
+        $Nu = u\times u = 0$. So $N^{2m+1} = (-1)^mN$ and
+        $N^{2m} = (-1)^{m-1}N^2$ for $m\geq1$, and the series is
+        $I + \bigl(\sum_m\frac{(-1)^mt^{2m+1}}{(2m+1)!}\bigr)N
+        + \bigl(\sum_{m\geq1}\frac{(-1)^{m-1}t^{2m}}{(2m)!}\bigr)N^2
+        = I + \sin t\,N + (1 - \cos t)N^2$.
+  \item $Nu = 0$ gives $e^{tN}u = u$. For $u = e_3$:
+        $Ne_1 = e_2$ and $N^2e_1 = -e_1$, so
+        $e^{tN}e_1 = \cos t\,e_1 + \sin t\,e_2$.
+\end{enumerate}
+
+\solution{odes-flows:exr:4}
+\begin{enumerate}[nosep]
+  \item $\varphi_t(x, y) = (e^tx, e^{-t}y)$,
+        $\operatorname{div}X = 1 - 1 = 0$, and
+        $\varphi_t^*(\dd x\wedge\dd y)
+        = e^t\,\dd x\wedge e^{-t}\,\dd y = \dd x\wedge\dd y$: the flow
+        preserves areas.
+  \item $\varphi_t^*\omega = e^tx\cdot e^{-t}\,\dd y = \omega$, so
+        $\mathcal L_X\omega = 0$. On the other side
+        $i_X\omega = -xy$, $\dd(i_X\omega) = -y\,\dd x - x\,\dd y$,
+        $\dd\omega = \dd x\wedge\dd y$ and
+        $i_X\,\dd\omega = x\,\dd y + y\,\dd x$: the sum is $0$.
+\end{enumerate}
+
+\solution{odes-flows:exr:5}
+\begin{enumerate}[nosep]
+  \item $\varphi_t(a) = e^{-t}a$ and $D\varphi_t = e^{-t}$, so
+        $p_t(x) = e^t\,p_0(e^tx)$, the Gaussian density of variance
+        $e^{-2t}$. Then
+        $\ln p_t(\varphi_t(a)) = \ln p_0(a) + t$, and
+        $-\int_0^t\operatorname{div}X = t$ since
+        $\operatorname{div}X = -1$.
+  \item $\ln p_t = t - \frac12e^{2t}x^2 + \text{constant}$, so
+        $\partial_tp_t = (1 - e^{2t}x^2)\,p_t$, and
+        $\operatorname{div}(p_tX) = -\partial_x(xp_t)
+        = -p_t + e^{2t}x^2p_t$.
+\end{enumerate}
+
+\solution{odes-flows:exr:6}
+\begin{enumerate}[nosep]
+  \item $\varphi_t(x) = o + e^t(x - o)$, a homothety of ratio $e^t$:
+        $\lambda(\varphi_t(B)) = e^{nt}\lambda(B)$. By
+        \cref{odes-flows:thm:liouville}: $DE = I$,
+        $\operatorname{div}E = n$ and
+        $\det D\varphi_t = e^{nt}$.
+  \item $D\omega = 0$ and $DE = I$, so (1) of
+        \cref{odes-flows:thm:cartan} gives $k$ times $\omega$.
+        Directly, $\varphi_t^*\omega = e^{kt}\omega$.
+\end{enumerate}
+
+\solution{odes-flows:exr:7}
+\begin{enumerate}[nosep]
+  \item The flow gives $x(T) = e^{-\lambda T}x(0)$, gradient descent
+        $(1 - \eta\lambda)^kx(0) = (1 - \lambda T/k)^kx(0)$, which
+        tends to $e^{-\lambda T}x(0)$ as $k\to\infty$.
+  \item $X = -\lambda x$: $L = \lambda$, and
+        $DX\cdot X = \lambda^2x(t)\leq\lambda^2 = M$. The bound is
+        $\frac{\lambda\eta}2(e^{\lambda T} - 1) = 0.05\times1.718
+        = 0.086$. The actual error is
+        $\abs{0.9^{10} - e^{-1}} = \abs{0.3487 - 0.3679} = 0.019$.
+\end{enumerate}
+
+\solution{odes-flows:exr:8}
+\begin{enumerate}[nosep]
+  \item $\alpha' = -\theta\alpha$ with $\alpha(T) = c$:
+        $\alpha(t) = c\,e^{\theta(T - t)}$, and
+        $\alpha(0) = c\,e^{\theta T}$ is the derivative of
+        $\ell(x(T)) = c\,e^{\theta T}a$ with respect to $a$.
+  \item $D_\theta X = x(t) = e^{\theta t}a$, and
+        $\int_0^Tc\,e^{\theta(T - t)}e^{\theta t}a\,\dd t
+        = cTe^{\theta T}a$, the derivative of $c\,e^{\theta T}a$ with
+        respect to $\theta$.
+\end{enumerate}

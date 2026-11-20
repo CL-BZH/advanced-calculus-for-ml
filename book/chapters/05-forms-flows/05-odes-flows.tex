@@ -4,21 +4,1023 @@
 \chaptersubtitle{%
   Vector fields as infinitesimal motions}
 
-\begin{chapterplan}
+\begin{chapterintro}
+A vector field gives a velocity at each point. Following these
+velocities moves every point along a curve, and moving all points at
+once for a time $t$ is a map $\varphi_t$ of the space into itself: the
+flow. This last chapter proves that the curves exist and are unique,
+that the flow is a family of diffeomorphisms, and that it carries
+volumes, densities and forms in a way governed by the divergence and
+by the two operations $\dd$ and $i_X$ of the previous chapters.
+Gradient descent, residual networks, normalizing flows and diffusion
+models are discretizations or uses of flows. You will learn
 \begin{itemize}[nosep]
-  \item Existence and uniqueness by the contraction principle.
-  \item Dependence on initial conditions and on parameters.
-  \item Flows as one-parameter groups of diffeomorphisms; the Lie derivative.
-  \item Transport of densities: Liouville's formula and the continuity equation.
-  \item Gradient flows and Lyapunov functions; linear equations and the matrix
-        exponential.
+  \item existence and uniqueness of solutions, by the contraction
+        principle, and how solutions depend on their starting point;
+  \item linear equations and the exponential of an operator, with
+        rotations as the flows of antisymmetric operators;
+  \item the flow of a vector field and its differential;
+  \item how a flow changes volumes and densities: Liouville's formula
+        and the continuity equation;
+  \item the derivative of a form along a flow, and Cartan's formula;
+  \item gradient flows, and gradient descent as Euler's method;
+  \item the adjoint equation of neural differential equations, an
+        equation on covectors.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:norms-banach} for the contraction principle
+and complete spaces; \cref{ch:contractions-newton} for the mean value
+inequality; \cref{ch:change-of-variables} for densities;
+\cref{ch:differential-forms,ch:stokes,ch:vector-calculus} for the last
+sections. Throughout, $\Aff$ is an affine space with direction $V$ of
+dimension $n$, with a norm on $V$; integrals of curves in $V$ are
+taken component by component.}
+\end{chapterintro}
+
+\section{Existence and uniqueness}\label{odes-flows:sec:existence}
+
+\begin{definition}[Solution]\label{odes-flows:def:solution}
+Let $X:J\times U\to V$ be continuous, with $J$ an interval and $U$ an
+open subset of $\Aff$: a \emph{time-dependent vector field}. A
+\emph{solution} of the differential equation $x' = X(t, x)$ is a
+differentiable curve $x:I\to U$ on an interval $I\subset J$ with
+\[
+  x'(t) = X\bigl(t, x(t)\bigr)\qquad\text{for all }t\in I .
+\]
+If $X$ does not depend on $t$ the equation is \emph{autonomous}, and
+its solutions are the \emph{integral curves} of the vector field $X$.
+\end{definition}
+
+By the fundamental theorem of calculus, a continuous curve $x$ is a
+solution with $x(t_0) = a$ if and only if
+\begin{equation}\label{odes-flows:eq:integral}
+  x(t) = a + \int_{t_0}^tX\bigl(s, x(s)\bigr)\,\dd s
+  \qquad\text{for all }t\in I .
+\end{equation}
+The right-hand side defines a map on curves, and a solution is a fixed
+point of it.
+
+\begin{theorem}[Picard--Lindel\"of]\label{odes-flows:thm:picard}
+Let $I_0 = [t_0 - \tau_0, t_0 + \tau_0]$ and let $B$ be either the
+closed ball of centre $a$ and radius $r$, or the whole space $\Aff$.
+Let $X:I_0\times B\to V$ be continuous, with
+\[
+  \norm{X(t, x) - X(t, y)}\leq L\norm{x - y}
+  \qquad\text{for all }t\in I_0,\ x, y\in B .
+\]
+If $B$ is a ball, assume also $\norm X\leq K$ and let
+$\tau = \min(\tau_0, r/K)$; if $B = \Aff$, let $\tau = \tau_0$. Then
+there is exactly one solution $x:[t_0 - \tau, t_0 + \tau]\to B$ with
+$x(t_0) = a$. It is the uniform limit of the \emph{Picard iterates}
+\[
+  x_0(t) = a , \qquad
+  x_{k+1}(t) = a + \int_{t_0}^tX\bigl(s, x_k(s)\bigr)\,\dd s .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $I = [t_0 - \tau, t_0 + \tau]$ and let $\mathcal C$ be the set of
+continuous curves $x:I\to B$. In coordinates it is a closed subset of
+the space of continuous maps from $I$ to $\R^n$, complete for the sup
+norm (\cref{norms-banach:thm:c0}, applied to each component), hence
+also for the equivalent norm that measures the difference of two
+curves by
+\[
+  \norm{x - y}_w
+  = \max_{t\in I}e^{-2L\abs{t - t_0}}\norm{x(t) - y(t)} .
+\]
+For $x\in\mathcal C$ let $Tx$ be the right-hand side of
+\eqref{odes-flows:eq:integral}. If $B$ is a ball,
+$\norm{Tx(t) - a}\leq K\abs{t - t_0}\leq r$, so $T$ maps $\mathcal C$
+into itself. For $x, y\in\mathcal C$ and $t\geq t_0$,
+\[
+  \norm{Tx(t) - Ty(t)}
+  \leq\int_{t_0}^tL\norm{x(s) - y(s)}\,\dd s
+  \leq L\norm{x - y}_w\int_{t_0}^te^{2L(s - t_0)}\,\dd s
+  \leq\tfrac12e^{2L(t - t_0)}\norm{x - y}_w ,
+\]
+and the same holds for $t\leq t_0$. So
+$\norm{Tx - Ty}_w\leq\frac12\norm{x - y}_w$, and the contraction
+principle (\cref{norms-banach:thm:contraction}) gives a unique fixed
+point, the limit of the iterates $T^kx_0$.
+\end{proof}
+
+\begin{lemma}[Gr\"onwall]\label{odes-flows:lem:gronwall}
+Let $u:[0, T]\to[0, \infty)$ be continuous and $c, L\geq0$. If
+$u(t)\leq c + L\int_0^tu(s)\,\dd s$ for all $t$, then
+$u(t)\leq c\,e^{Lt}$ for all $t$.
+\end{lemma}
+
+\begin{proof}
+Let $w(t) = c + L\int_0^tu$. Then $w' = Lu\leq Lw$, so
+$(w\,e^{-Lt})'\leq0$ and $u(t)\leq w(t)\leq w(0)\,e^{Lt}$.
+\end{proof}
+
+\begin{theorem}[Dependence on the initial point]
+\label{odes-flows:thm:dependence}
+Let $X$ be continuous on $J\times U$ and $L$-Lipschitz in $x$. Two
+solutions $x, y$ on the same interval satisfy, for $t$ and $t_0$ in
+it,
+\[
+  \norm{x(t) - y(t)}\leq e^{L\abs{t - t_0}}\norm{x(t_0) - y(t_0)} .
+\]
+\end{theorem}
+
+\begin{proof}
+For $t\geq t_0$, subtracting the two equations
+\eqref{odes-flows:eq:integral}, the function
+$u(t) = \norm{x(t) - y(t)}$ satisfies
+$u(t)\leq u(t_0) + L\int_{t_0}^tu$, and \cref{odes-flows:lem:gronwall}
+applies after a shift of time. For $t\leq t_0$, reverse time: the
+curves $s\mapsto x(t_0 - s)$ and $s\mapsto y(t_0 - s)$ solve the
+equation of the field $(s, z)\mapsto-X(t_0 - s, z)$, which is
+$L$-Lipschitz as well.
+\end{proof}
+
+A field is \emph{locally Lipschitz} in $x$ if every point of
+$J\times U$ has a neighbourhood $I_0\times B$ on which the hypothesis
+of \cref{odes-flows:thm:picard} holds. A field of class $C^1$ in $x$,
+with $D_xX$ continuous on $J\times U$, is locally Lipschitz, by the
+mean value inequality (\cref{contractions-newton:thm:mvi}).
+
+\begin{corollary}[Maximal solutions]\label{odes-flows:cor:maximal}
+Let $X$ be continuous and locally Lipschitz in $x$ on $J\times U$, with
+$J$ open.
+\begin{enumerate}[nosep]
+  \item Two solutions on the same interval that agree at one time are
+        equal.
+  \item For every $(t_0, a)$ there is a unique solution with
+        $x(t_0) = a$ defined on a largest interval, which is open: the
+        \emph{maximal solution}.
+  \item If the interval of a maximal solution has an end $b$ that
+        lies in $J$, the solution leaves every compact subset of $U$
+        as $t\to b$.
+  \item If $U = \Aff$ and $X$ is $L$-Lipschitz in $x$ on $J\times\Aff$,
+        every maximal solution is defined on all of $J$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) Let $x$ and $y$ agree at $t_0$ and suppose they differ at some
+$t_1 > t_0$. Let $t^*$ be the supremum of the $t\in[t_0, t_1]$ such
+that $x = y$ on $[t_0, t]$. By continuity $x(t^*) = y(t^*) = p$. Near
+$(t^*, p)$ the theorem applies, and both curves, which stay in a small
+ball around $p$ for a short time, are solutions through $(t^*, p)$:
+they agree a little beyond $t^*$, a contradiction. The case
+$t_1 < t_0$ is the same.
+
+(2) By (1) the solutions through $(t_0, a)$ agree where they are both
+defined, so their union is a solution. If its interval contained an
+end $b$, the theorem at $(b, x(b))$ would extend it.
+
+(3) Suppose that $x(t)$ stays in a compact $K\subset U$ on
+$[t_0, b)$. The set $[t_0, b]\times K$ is compact, so
+$\norm X\leq M$ on it, and $x$ is $M$-Lipschitz on $[t_0, b)$: it has
+a limit $p\in K$ as $t\to b$. The solution through $(b, p)$ given by
+the theorem, glued to $x$, satisfies \eqref{odes-flows:eq:integral} on
+a larger interval, which contradicts maximality.
+
+(4) is \cref{odes-flows:thm:picard} with $B = \Aff$, on every compact
+interval of $J$ around $t_0$.
+\end{proof}
+
+\begin{pitfall}[Two ways to fail]
+Without the Lipschitz condition uniqueness is lost: $x' = \sqrt{\abs x}$
+has the solutions $x = 0$ and $x = t^2/4$ through $(0, 0)$. With a
+condition that is only local, solutions may not live for all times:
+$x' = x^2$ with $x(0) = 1$ has the solution $1/(1 - t)$, which leaves
+every compact set as $t\to1$. A layer $x\mapsto x + X(x)$ with a
+network $X$ whose activation has bounded derivatives is globally
+Lipschitz, and neither accident happens.
+\end{pitfall}
+
+\section{Linear equations}\label{odes-flows:sec:linear}
+
+\begin{theorem}[Exponential of an operator]\label{odes-flows:thm:exp}
+Let $A$ be an operator on $V$. The series
+\[
+  e^{tA} = \sum_{k=0}^\infty\frac{t^k}{k!}A^k
+\]
+converges in $L(V, V)$ for every $t$, and
+\begin{enumerate}[nosep]
+  \item $\Phi(t) = e^{tA}$ is the solution of $\Phi' = A\Phi$,
+        $\Phi(0) = I$, and $x(t) = e^{tA}a$ is the solution of
+        $x' = Ax$, $x(0) = a$;
+  \item $e^{(s+t)A} = e^{sA}e^{tA}$; in particular $e^{tA}$ is
+        invertible, with inverse $e^{-tA}$;
+  \item $\det e^{tA} = e^{t\tr A}$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+The equation $\Phi' = A\Phi$ on the space $L(V, V)$ has a Lipschitz
+right-hand side, so it has a unique solution $\Phi$ on $\R$ with
+$\Phi(0) = I$ (\cref{odes-flows:cor:maximal}). Its Picard iterates are
+$\Phi_k(t) = \sum_{j\leq k}t^jA^j/j!$, by induction, and they converge
+to $\Phi(t)$ by \cref{odes-flows:thm:picard}: this is (1), the claim
+about $x$ following by applying $\Phi(t)$ to $a$. (2) For fixed $s$,
+both $t\mapsto\Phi(s + t)$ and $t\mapsto\Phi(t)\Phi(s)$ solve
+$\Psi' = A\Psi$ with $\Psi(0) = \Phi(s)$. (3) Let
+$w(t) = \det\Phi(t)$. By \cref{differential:prop:det} and the chain
+rule, $w' = w\tr(\Phi^{-1}A\Phi) = (\tr A)\,w$, and $w(0) = 1$.
+\end{proof}
+
+\begin{example}[Rotations]\label{odes-flows:ex:rotations}
+Let $V$ have an inner product and let $A$ be antisymmetric,
+$\adj A = -A$. Then
+$\frac{\dd}{\dd t}\inner{e^{tA}x}{e^{tA}y}
+= \inner{Ae^{tA}x}{e^{tA}y} + \inner{e^{tA}x}{Ae^{tA}y} = 0$: each
+$e^{tA}$ is an isometry, of determinant $e^{t\tr A} = 1$. The flow of
+an antisymmetric operator is a family of rotations, and $A$ is their
+common velocity at $t = 0$: the tangent space of the orthogonal group
+at the identity is the space of antisymmetric operators
+(\cref{submanifolds:tab:examples}).
+
+In $\R^3$, let $u$ be a unit vector and $N = [u]_\times$, so that
+$Nx = u\times x$ (\cref{multilinear-algebra:rem:hat}). Then
+$N^2 = uu^\top - I$ and $N^3 = -N$, and the series becomes
+\[
+  e^{tN} = I + \sin t\;N + (1 - \cos t)\,N^2 ,
+\]
+the rotation of angle $t$ about the axis $u$
+(\cref{odes-flows:fig:rotation}). The equation $x' = u\times x$ is the
+motion of a point of a solid turning about $u$ at unit angular speed.
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \draw[->, very thick, bookpitfall] (0,-0.4) -- (0,3.3)
+    node[above] {$u$};
+  \draw[bookintuition!70!black, thick] (0,1.9) ellipse (2.0 and 0.6);
+  \fill (0,1.9) circle (1.2pt);
+  \draw[dashed, black!50] (0,1.9) -- (1.63,1.55);
+  \draw[->, thick] (0,0) -- (1.63,1.55) node[below right=-2pt] {$x$};
+  \draw[->, very thick, bookaccent] (1.63,1.55) -- (2.35,1.95)
+    node[right] {$u\times x$};
+  \draw[->, bookdef, thick] (-0.9,2.44) arc (117:150:2.0 and 0.6);
+  \fill (0,0) circle (1.4pt) node[left] {$0$};
+  \fill (1.63,1.55) circle (1.4pt);
+  \fill (-1.2,2.38) circle (1.4pt) node[above left=-2pt]
+    {$e^{tN}x$};
+  \node[align=left] at (6.4,1.7)
+    {the velocity $u\times x$ is orthogonal\\
+     to $u$ and to $x$: the point stays\\
+     at the same height and at the\\
+     same distance from the axis};
+\end{tikzpicture}
+\caption{The flow of the antisymmetric operator $x\mapsto u\times x$.
+Every point moves on a circle around the axis $u$, all with the same
+angular speed.}
+\label{odes-flows:fig:rotation}
+\end{figure}
+
+\begin{example}[A quadratic loss]\label{odes-flows:ex:quadratic}
+Let $H$ be self-adjoint and positive definite, with eigenvalues
+$\lambda_i$ and orthonormal eigenvectors $v_i$. The equation
+$x' = -Hx$ has the solution
+$e^{-tH}a = \sum_ie^{-\lambda_it}\inner{v_i}a\,v_i$: each component
+decays at its own rate. Gradient descent with step $\eta$ gives
+$(I - \eta H)^ka$ after $k$ steps, with the factors
+$(1 - \eta\lambda_i)^k$ in place of $e^{-k\eta\lambda_i}$. They agree
+to first order in $\eta\lambda_i$, and differ completely when
+$\eta\lambda_i > 2$, where the iteration diverges and the equation
+does not.
+\end{example}
+
+\section{The flow of a vector field}\label{odes-flows:sec:flow}
+
+From now on $X:\Aff\to V$ is an autonomous field of class $C^1$ such
+that
+\begin{equation}\label{odes-flows:eq:standing}
+  \norm{DX(x)}\leq L , \qquad
+  \norm{DX(x) - DX(y)}\leq L'\norm{x - y}
+  \qquad\text{for all }x, y .
+\end{equation}
+So $X$ is $L$-Lipschitz, and its solutions exist for all times
+(\cref{odes-flows:cor:maximal}).
+
+\begin{definition}[Flow]\label{odes-flows:def:flow}
+The \emph{flow} of $X$ is the family of maps
+$\varphi_t:\Aff\to\Aff$, $t\in\R$, where $\varphi_t(a)$ is the value at
+time $t$ of the solution of $x' = X(x)$ with $x(0) = a$.
+\end{definition}
+
+\begin{theorem}[The flow is a group of diffeomorphisms]
+\label{odes-flows:thm:flow}
+\begin{enumerate}[nosep]
+  \item $\varphi_0 = \id$ and
+        $\varphi_{s+t} = \varphi_s\circ\varphi_t$ for all $s, t$. Each
+        $\varphi_t$ is a bijection, with inverse $\varphi_{-t}$.
+  \item $\norm{\varphi_t(a) - \varphi_t(b)}
+        \leq e^{L\abs t}\norm{a - b}$.
+  \item Each $\varphi_t$ is of class $C^1$, and
+        $\Phi(t) = D\varphi_t(a)$ is the solution of the linear
+        equation
+        \[
+          \Phi'(t) = DX\bigl(\varphi_t(a)\bigr)\,\Phi(t) ,
+          \qquad \Phi(0) = I .
+        \]
+\end{enumerate}
+So each $\varphi_t$ is a diffeomorphism of $\Aff$.
+\end{theorem}
+
+\begin{proof}
+(1) Since the equation is autonomous, $s\mapsto\varphi_{s+t}(a)$ is a
+solution, with value $\varphi_t(a)$ at $s = 0$; so is
+$s\mapsto\varphi_s(\varphi_t(a))$, and they are equal by uniqueness.
+With $s = -t$, $\varphi_{-t}\circ\varphi_t = \id$. (2) is
+\cref{odes-flows:thm:dependence}.
+
+(3) Fix $a$, write $p(t) = \varphi_t(a)$, and let $\Phi$ be the
+solution of the linear equation, which exists on $\R$ since its
+right-hand side is $L$-Lipschitz in $\Phi$. For $h\in V$ let
+$q(t) = \varphi_t(a + h)$ and $y(t) = q(t) - p(t) - \Phi(t)h$. Then
+$y(0) = 0$ and
+\[
+  y' = X(q) - X(p) - DX(p)\Phi h
+     = DX(p)\,y + \bigl(X(q) - X(p) - DX(p)(q - p)\bigr) .
+\]
+The last bracket has norm at most
+$\frac{L'}2\norm{q - p}^2\leq\frac{L'}2e^{2L\abs t}\norm h^2$, by
+\cref{contractions-newton:cor:mvi} and (2). For $0\leq t\leq T$,
+therefore,
+$\norm{y(t)}\leq c\norm h^2 + L\int_0^t\norm{y}$ with
+$c = \frac{L'}2Te^{2LT}$, and \cref{odes-flows:lem:gronwall} gives
+$\norm{y(t)}\leq c\,e^{LT}\norm h^2$; the same holds for negative
+times. So $\varphi_t$ is differentiable at $a$, with differential
+$\Phi(t)$. Finally let $\Phi_a$ and $\Phi_b$ be these solutions for two
+points. The coefficients $DX(\varphi_t(a))$ and $DX(\varphi_t(b))$
+differ by at most $L'e^{L\abs t}\norm{a - b}$, and
+$\norm{\Phi_b(t)}\leq e^{L\abs t}$ by \cref{odes-flows:lem:gronwall}.
+Subtracting the two equations and applying the lemma once more,
+$\norm{\Phi_a(t) - \Phi_b(t)}\leq C_T\norm{a - b}$ for
+$\abs t\leq T$: the differential is continuous in $a$. The inverse
+$\varphi_{-t}$ is of class $C^1$ for the same reason.
+\end{proof}
+
+The equation for $\Phi$ is the \emph{variational equation}: the
+differential of the flow is obtained by solving the equation
+linearized along the trajectory. For a linear field $X(x) = Ax$ the
+flow is $e^{tA}$ and the variational equation is the equation itself.
+
+\begin{remark}[Fields that depend on time, and manifolds]
+\label{odes-flows:rem:time}
+For a field $X(t, x)$ the solution map depends on the initial time as
+well. Adding the time as a coordinate, the autonomous field
+$(t, x)\mapsto(1, X(t, x))$ on $\R\times\Aff$ has the solutions
+$t\mapsto(t, x(t))$, and the results of this chapter apply to it; in
+the formulas below $X(\varphi_s(a))$ is then read as the velocity of
+the trajectory at time $s$, and the divergence is taken in $x$. On an
+open set, or on a manifold, with a smooth field, the flow exists near
+each point for short times, with the same properties there. We do not
+prove these extensions.
+\end{remark}
+
+\section{Volumes and densities}\label{odes-flows:sec:transport}
+
+Let $\lambda$ be Lebesgue measure in affine coordinates. It depends on
+the frame only by a constant factor, and the divergence for this
+volume does not (\cref{vector-calculus:prop:div-mu}): it is the trace
+of the operator $DX(x)$,
+\[
+  \operatorname{div}X = \tr DX .
+\]
+
+\begin{theorem}[Liouville]\label{odes-flows:thm:liouville}
+\begin{enumerate}[nosep]
+  \item $\det D\varphi_t(a)
+        = \exp\int_0^t\operatorname{div}X\bigl(\varphi_s(a)\bigr)\,
+        \dd s$. In particular $\det D\varphi_t > 0$: a flow preserves
+        orientation.
+  \item For a bounded Borel set $B$,
+        \[
+          \frac{\dd}{\dd t}\lambda\bigl(\varphi_t(B)\bigr)
+          = \int_{\varphi_t(B)}\operatorname{div}X\,\dd\lambda .
+        \]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) $\Phi(t) = D\varphi_t(a)$ is invertible, since
+$D\varphi_{-t}(\varphi_t(a))\,\Phi(t) = I$ by the chain rule. Let
+$w(t) = \det\Phi(t)$. By \cref{differential:prop:det} and the
+variational equation,
+$w' = w\tr\bigl(\Phi^{-1}DX(\varphi_t(a))\Phi\bigr)
+= \operatorname{div}X(\varphi_t(a))\,w$, with $w(0) = 1$. (2) By
+\cref{change-of-variables:cor:sets},
+$\lambda(\varphi_t(B)) = \int_B\det D\varphi_t(a)\,\dd a$. The
+derivative in $t$ of the integrand is
+$\operatorname{div}X(\varphi_t(a))\det D\varphi_t(a)$, which is
+bounded for $a\in B$ and $t$ in a bounded interval, so one may
+differentiate under the integral sign
+(\cref{lebesgue-integral:thm:differentiation}); the change of
+variables $x = \varphi_t(a)$ gives the result.
+\end{proof}
+
+\begin{keyidea}
+The divergence is the rate at which the flow creates volume, per unit
+of volume. A field without divergence has a flow that preserves
+volumes; rotations are an example, since antisymmetric operators have
+trace $0$. And every map of a flow can be joined to the identity
+through diffeomorphisms, which is why its determinant cannot change
+sign.
+\end{keyidea}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \foreach \y/\s in {-1.2/0.55, -0.6/0.3, 0/0, 0.6/-0.3, 1.2/-0.55}
+    \draw[bookdef!70, thick, ->] (-0.3,\y) .. controls (2.5,\y)
+      and (4.5,{\y+\s}) .. (7.3,{\y+2*\s});
+  \fill[bookaccent!25] (1.1,0) ellipse (0.55 and 1.0);
+  \draw[bookaccent, thick] (1.1,0) ellipse (0.55 and 1.0);
+  \fill[bookaccent!25] (5.6,0) ellipse (1.0 and 0.42);
+  \draw[bookaccent, thick] (5.6,0) ellipse (1.0 and 0.42);
+  \node at (1.1,-1.45) {$B$};
+  \node at (5.6,-0.95) {$\varphi_t(B)$};
+  \draw[->, thick] (2.0,1.75) -- node[above] {$\varphi_t$} (4.6,1.75);
+\end{tikzpicture}
+\caption{A set carried by a flow. Where the trajectories come
+together the divergence is negative, the volume of the set decreases
+and the density of the matter it carries increases; the total mass is
+the same.}
+\label{odes-flows:fig:flow}
+\end{figure}
+
+\begin{theorem}[Transport of a probability measure]
+\label{odes-flows:thm:transport}
+Let $P_0$ be a probability measure on $\Aff$ and
+$P_t = (\varphi_t)_\#P_0$ its push-forward: the law at time $t$ of a
+point that starts with law $P_0$ and follows the flow.
+\begin{enumerate}[nosep]
+  \item For every function $f$ of class $C^1$ with compact support,
+        \[
+          \frac{\dd}{\dd t}\int f\,\dd P_t = \int\dd f(X)\,\dd P_t .
+        \]
+  \item If $P_0$ has a density $p_0$ with respect to $\lambda$, then
+        $P_t$ has the density $p_t$ given by
+        $p_t(\varphi_t(a))\det D\varphi_t(a) = p_0(a)$, and where
+        $p_0(a) > 0$,
+        \[
+          \ln p_t\bigl(\varphi_t(a)\bigr)
+          = \ln p_0(a)
+          - \int_0^t\operatorname{div}X\bigl(\varphi_s(a)\bigr)\,
+          \dd s .
+        \]
+  \item If moreover $(t, x)\mapsto p_t(x)$ is of class $C^1$, it
+        satisfies the \emph{continuity equation}
+        \[
+          \frac{\partial p_t}{\partial t}
+          + \operatorname{div}(p_tX) = 0 .
+        \]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) $\int f\,\dd P_t = \int f(\varphi_t(a))\,\dd P_0(a)$
+(\cref{lebesgue-integral:thm:transfer}). The derivative in $t$ of the
+integrand is $\dd f(X)$ at the point $\varphi_t(a)$, a continuous
+function with compact support, hence bounded: differentiate under the
+integral sign. (2) is \cref{change-of-variables:thm:pushforward} for
+the diffeomorphism $\varphi_t$, and then
+\cref{odes-flows:thm:liouville}. (3) By (1),
+$\int f\,\partial_tp_t\,\dd\lambda
+= \int\dd f(X)\,p_t\,\dd\lambda
+= -\int f\operatorname{div}(p_tX)\,\dd\lambda$, the last equality by
+\cref{stokes:prop:parts} applied to $f$ and the field $p_tX$; its
+proof needs only fields of class $C^1$. So the
+continuous function $g = \partial_tp_t + \operatorname{div}(p_tX)$
+satisfies $\int fg\,\dd\lambda = 0$ for all such $f$. If $g$ were
+positive at a point, it would be positive on a ball around it, and
+the function $\beta$ of \cref{stokes:lem:step}, moved to that ball,
+would give $\int fg > 0$; likewise if $g$ were negative at a point.
+\end{proof}
+
+\begin{intuition}
+The three statements describe the same motion. (1) follows the
+particles: it holds for any cloud of points, with or without a
+density. (2) follows one particle and keeps track of how crowded its
+neighbourhood is: the logarithm of the density decreases at the rate
+$\operatorname{div}X$. (3) stands at a fixed place and counts what
+flows in and out: the density changes by minus the divergence of the
+flux $p_tX$. Integrated over a domain, (3) is the divergence theorem:
+the mass inside changes by what crosses the boundary.
+\end{intuition}
+
+\section{The derivative of a form along a flow}
+\label{odes-flows:sec:lie}
+
+\begin{definition}[Lie derivative]\label{odes-flows:def:lie}
+The \emph{Lie derivative} of a differential form $\omega$ on $\Aff$
+along $X$ is
+\[
+  \mathcal L_X\omega
+  = \frac{\dd}{\dd t}\Big|_{t=0}\varphi_t^*\omega .
+\]
+\end{definition}
+
+\begin{theorem}[Cartan's formula]\label{odes-flows:thm:cartan}
+Let $\omega$ be a $k$-form of class $C^1$ on $\Aff$.
+\begin{enumerate}[nosep]
+  \item The Lie derivative exists, and for $v_1,\dots,v_k\in V$,
+        \[
+          (\mathcal L_X\omega)(v_1,\dots,v_k)
+          = (D\omega\,X)(v_1,\dots,v_k)
+          + \sum_{j=1}^k\omega(v_1,\dots,DX\,v_j,\dots,v_k) ,
+        \]
+        everything being evaluated at the same point.
+  \item $\mathcal L_X\omega = \dd(i_X\omega) + i_X\,\dd\omega$.
+  \item $\frac{\dd}{\dd t}\varphi_t^*\omega
+        = \varphi_t^*(\mathcal L_X\omega)$ for every $t$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) By definition of the pull-back,
+$(\varphi_t^*\omega)(a)(v_1,\dots,v_k)
+= \omega(\varphi_t(a))(\Phi(t)v_1,\dots,\Phi(t)v_k)$, a multilinear
+expression in $\omega(\varphi_t(a))$ and the vectors $\Phi(t)v_j$.
+At $t = 0$ the derivative of $\varphi_t(a)$ is $X(a)$ and that of
+$\Phi(t)$ is $DX(a)$, by \cref{odes-flows:thm:flow}; the product rule
+gives the formula.
+
+(2) Evaluate the right-hand side on $(v_1,\dots,v_k)$ with
+\cref{differential-forms:thm:affine}. First
+\[
+  (i_X\,\dd\omega)(v_1,\dots,v_k)
+  = (D\omega\,X)(v_1,\dots,v_k)
+  + \sum_{j=1}^k(-1)^j(D\omega\,v_j)
+    (X, v_1,\dots,\widehat{v_j},\dots,v_k) .
+\]
+Next $D(i_X\omega)v = i_{DX\,v}\,\omega + i_X(D\omega\,v)$, so
+\[
+  \dd(i_X\omega)(v_1,\dots,v_k)
+  = \sum_{j=1}^k(-1)^{j-1}\Bigl[
+    \omega(DX\,v_j, v_1,\dots,\widehat{v_j},\dots,v_k)
+    + (D\omega\,v_j)(X, v_1,\dots,\widehat{v_j},\dots,v_k)\Bigr] .
+\]
+In the sum of the two, the terms with $D\omega\,v_j$ cancel. In the
+remaining sum, moving $DX\,v_j$ from the first place to the $j$th
+costs $(-1)^{j-1}$, and the result is the formula of (1).
+
+(3) $\varphi_{t+s}^*\omega = \varphi_t^*(\varphi_s^*\omega)$, and at
+each point $\varphi_t^*$ acts on the values of the form by a linear
+map that does not depend on $s$; differentiate at $s = 0$.
+\end{proof}
+
+\begin{corollary}\label{odes-flows:cor:lie}
+\begin{enumerate}[nosep]
+  \item $\mathcal L_Xf = \dd f(X)$ for a function, and
+        $\mathcal L_X\mu = (\operatorname{div}X)\,\mu$ for a constant
+        form $\mu$ of degree $n$: the divergence is the derivative of
+        the volume along the flow.
+  \item $\mathcal L_X$ commutes with $\dd$.
+  \item \emph{Moving domains.} Let $\Aff$ be oriented, $X$ smooth,
+        $D$ a compact domain with smooth boundary and $\omega$ a
+        smooth $n$-form. Then
+        \[
+          \frac{\dd}{\dd t}\int_{\varphi_t(D)}\omega
+          = \int_{\partial\varphi_t(D)}i_X\omega .
+        \]
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) For a function $i_Xf = 0$. For $\mu$, $\dd\mu = 0$ and
+$\dd(i_X\mu) = (\operatorname{div}X)\mu$ by definition. (2) By
+Cartan's formula both $\mathcal L_X\dd\omega$ and
+$\dd\mathcal L_X\omega$ equal $\dd(i_X\dd\omega)$. (3) Since
+$\varphi_t$ preserves orientation,
+$\int_{\varphi_t(D)}\omega = \int_D\varphi_t^*\omega$
+(\cref{stokes:prop:computing}). Differentiating under the integral
+sign with (3) of the theorem, the derivative is
+$\int_D\varphi_t^*(\mathcal L_X\omega)
+= \int_{\varphi_t(D)}\mathcal L_X\omega$. As $\dd\omega = 0$,
+$\mathcal L_X\omega = \dd(i_X\omega)$, and Stokes' theorem
+(\cref{stokes:thm:stokes}) on the domain $\varphi_t(D)$ concludes.
+This last step uses that the flow of a smooth field is smooth, so that
+$\varphi_t(D)$ is again a domain with smooth boundary;
+\cref{odes-flows:thm:flow} proves one derivative only, and we admit
+the others.
+\end{proof}
+
+Cartan's formula was obtained here on an affine space, where
+\cref{differential-forms:thm:affine} is available. Since both sides
+commute with diffeomorphisms, it holds in every chart of a manifold.
+With $\omega = \rho\,\mu$ for a density $\rho$, statement (3) says
+that the mass contained in a domain that moves with the flow changes
+by the flux of $\rho X$ through its boundary.
+
+\section{Gradient flows and Euler's method}
+\label{odes-flows:sec:gradient}
+
+Let $V$ have an inner product, and let $f:\Aff\to\R$ be of class
+$C^2$ with $X = -\operatorname{grad}f$ satisfying
+\eqref{odes-flows:eq:standing}. The flow of $X$ is the \emph{gradient
+flow} of $f$.
+
+\begin{proposition}[Gradient flow]\label{odes-flows:prop:gradient-flow}
+Let $x$ be a solution of $x' = -\operatorname{grad}f(x)$.
+\begin{enumerate}[nosep]
+  \item $\frac{\dd}{\dd t}f(x(t))
+        = -\norm{\operatorname{grad}f(x(t))}^2\leq0$.
+  \item If $f$ is $\mu$-strongly convex
+        (\cref{gradient-hessian:def:smooth}) and has a minimizer
+        $x^*$, then
+        $\norm{x(t) - x^*}\leq e^{-\mu t}\norm{x(0) - x^*}$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) $\frac{\dd}{\dd t}f(x) = \dd f(x)\,x'
+= -\inner{\operatorname{grad}f}{\operatorname{grad}f}$. (2) Let
+$h = x - x^*$. Since $\operatorname{grad}f(x^*) = 0$,
+\[
+  \inner{\operatorname{grad}f(x)}h
+  = \int_0^1D^2f(x^* + sh)(h, h)\,\dd s\geq\mu\norm h^2 ,
+\]
+so $\frac{\dd}{\dd t}\norm h^2 = -2\inner{\operatorname{grad}f(x)}h
+\leq-2\mu\norm h^2$, and $\norm{h(t)}^2e^{2\mu t}$ decreases.
+\end{proof}
+
+A function that decreases along the solutions, like $f$ here, is a
+\emph{Lyapunov function} of the equation. One step of gradient
+descent, $x_{k+1} = x_k - \eta\operatorname{grad}f(x_k)$, is one step
+of the simplest method for solving the equation numerically.
+
+\begin{proposition}[Euler's method]\label{odes-flows:prop:euler}
+Let $x$ be the solution of $x' = X(x)$ with $x(0) = a$, and
+$x_{k+1} = x_k + \eta X(x_k)$, $x_0 = a$. If
+$\norm{DX(x(t))X(x(t))}\leq M$ for $0\leq t\leq T$, then for
+$k\eta\leq T$
+\[
+  \norm{x_k - x(k\eta)}\leq\frac{M\eta}{2L}\bigl(e^{Lk\eta} - 1\bigr) .
+\]
+\end{proposition}
+
+\begin{proof}
+The velocity $x' = X(x)$ has the derivative $DX(x)X(x)$, of norm at
+most $M$, so by \cref{contractions-newton:cor:mvi}
+\[
+  \norm{x(t + \eta) - x(t) - \eta X(x(t))}\leq\tfrac M2\eta^2 .
+\]
+With $e_k = \norm{x_k - x(k\eta)}$,
+\[
+  e_{k+1}\leq e_k + \eta\norm{X(x_k) - X(x(k\eta))} + \tfrac M2\eta^2
+  \leq(1 + \eta L)\,e_k + \tfrac M2\eta^2 .
+\]
+By induction
+$e_k\leq\frac M2\eta^2\,\frac{(1 + \eta L)^k - 1}{\eta L}$, and
+$(1 + \eta L)^k\leq e^{Lk\eta}$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \foreach \r in {0.5,1.0,1.5,2.0}
+    \draw[black!25] (0,0) ellipse ({2.2*\r} and {0.9*\r});
+  \draw[bookaccent, very thick, domain=0:4, samples=60, smooth,
+    variable=\t] plot ({3.9*exp(-0.45*\t)},{1.35*exp(-2.6*\t)});
+  \draw[bookpitfall, thick] (3.9,1.35) -- (3.37,0.30) -- (2.92,0.07)
+    -- (2.52,0.015) -- (2.18,0.003) -- (1.89,0.001);
+  \foreach \p in {(3.9,1.35),(3.37,0.30),(2.92,0.07),(2.52,0.015),
+      (2.18,0.003),(1.89,0.001)}
+    \fill[bookpitfall] \p circle (1.5pt);
+  \draw[bookdef, thick, dashed] (3.9,-1.35) -- (2.54,1.37)
+    -- (1.65,-1.39) -- (1.08,1.41);
+  \foreach \p in {(3.9,-1.35),(2.54,1.37),(1.65,-1.39),(1.08,1.41)}
+    \fill[bookdef] \p circle (1.5pt);
+  \fill (0,0) circle (1.5pt);
+  \node[bookaccent] at (3.2,2.0) {gradient flow};
+  \node[bookpitfall] at (5.3,0.55) {Euler, $\eta\lambda_2 = 0.78$};
+  \node[bookdef] at (5.35,-1.0) {Euler, $\eta\lambda_2 = 2.01$};
+\end{tikzpicture}
+\caption{The gradient flow of a quadratic loss with eigenvalues
+$\lambda_1 < \lambda_2$, and gradient descent started from the same
+point, mirrored below for the second step size. For a small step the
+iterates stay near the curve. When $\eta\lambda_2$ exceeds $2$ the
+iterates oscillate across the valley with growing amplitude, which no
+solution of the differential equation does.}
+\label{odes-flows:fig:euler}
+\end{figure}
+
+\begin{mlthread}[Machine learning: gradient descent and its flow]
 \begin{itemize}[nosep]
-  \item Gradient flow as the limit of gradient descent.
-  \item Neural differential equations and the adjoint method, an equation on
-        covectors.
-  \item Continuous normalizing flows and flow matching.
+  \item On a fixed interval of time $T = k\eta$, gradient descent
+        converges to the gradient flow as $\eta\to0$, with an error of
+        order $\eta$ (\cref{odes-flows:prop:euler}). Statements proved
+        for the flow, such as
+        \cref{odes-flows:prop:gradient-flow}, are guides for the
+        iteration; \cref{ch:gradient-hessian} proved the discrete
+        versions.
+  \item The bound grows like $e^{LT}$, and says nothing about steps of
+        order $2/L$, which is where networks are trained in practice:
+        the largest eigenvalue of the Hessian settles near $2/\eta$,
+        and the iteration is not close to the flow in the sharpest
+        direction (\cref{odes-flows:fig:euler}).
+  \item A flow depends on the inner product through the gradient, and
+        on nothing else: the natural gradient flow is the same curve
+        in every parametrization (\cref{ch:natural-gradient}). Its
+        Euler steps are not, because a step moves along a straight
+        line of the chart.
+  \item A residual network $x_{k+1} = x_k + X_k(x_k)$ is Euler's
+        method with step $1$ for a field that depends on time.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+\section{The adjoint equation}\label{odes-flows:sec:ml}
+
+A \emph{neural differential equation} takes for $X$ a network with
+parameters $\theta$, maps an input $a$ to $x(T) = \varphi_T(a)$, and
+is trained through a loss $\ell(x(T))$. The gradient is needed with
+respect to $a$ and to $\theta$. It is carried backwards in time by a
+covector.
+
+\begin{proposition}[Adjoint equation]\label{odes-flows:prop:adjoint}
+Let $x(t) = \varphi_t(a)$ and let $\ell$ be a function of class $C^1$.
+For $0\leq t\leq T$ let
+\[
+  \alpha(t) = \dd(\ell\circ\varphi_{T-t})\bigl(x(t)\bigr)\in V^* ,
+\]
+the differential of the loss with respect to the state at time $t$.
+\begin{enumerate}[nosep]
+  \item $\alpha$ is the solution of
+        \[
+          \alpha'(t) = -\dual{DX\bigl(x(t)\bigr)}\,\alpha(t) ,
+          \qquad \alpha(T) = \dd\ell\bigl(x(T)\bigr) ,
+        \]
+        that is, $\alpha' = -\alpha\circ DX(x(t))$, and
+        $\alpha(0) = \dd(\ell\circ\varphi_T)(a)$.
+  \item If the field depends on parameters, $X(x, \theta)$ with
+        $\theta$ in a vector space, and satisfies
+        \eqref{odes-flows:eq:standing} as a field on the pairs
+        $(x, \theta)$, then the differential of
+        $\theta\mapsto\ell(x(T))$ is the covector
+        \[
+          \int_0^T\alpha(t)\circ D_\theta X\bigl(x(t), \theta\bigr)\,
+          \dd t .
+        \]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) By the group law,
+$\varphi_{T-t}\circ\varphi_t = \varphi_T$, so
+$D\varphi_{T-t}(x(t))\,\Phi(t) = \Phi(T)$ with
+$\Phi(t) = D\varphi_t(a)$. Hence
+$\alpha(t)\circ\Phi(t) = \dd\ell(x(T))\circ\Phi(T)$ does not depend
+on $t$. Differentiating and using the variational equation,
+$\alpha'\circ\Phi + \alpha\circ DX(x(t))\circ\Phi = 0$, and $\Phi(t)$
+is invertible.
+
+(2) The field $(x, \theta)\mapsto(X(x, \theta), 0)$ on the pairs has
+the solutions $(x(t), \theta)$, and its differential is
+$(v, \vartheta)\mapsto(D_xX\,v + D_\theta X\,\vartheta, 0)$. Its
+adjoint equation, for a covector $(\alpha, \beta)$, reads
+$\alpha' = -\alpha\circ D_xX$ and $\beta' = -\alpha\circ D_\theta X$,
+with $\alpha(T) = \dd\ell(x(T))$ and $\beta(T) = 0$ since $\ell$ does
+not depend on $\theta$ directly. By (1), $\beta(0)$ is the
+differential of the loss with respect to the initial value of
+$\theta$, and $\beta(0) = \int_0^T\alpha\circ D_\theta X\,\dd t$.
+\end{proof}
+
+A network $X(x, \theta)$ contains products of parameters, so it is not
+Lipschitz in $(x, \theta)$ on the whole space: statement (2) applies
+to it only through the local extensions of
+\cref{odes-flows:rem:time}.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \draw[->] (0,0) -- (9.0,0) node[above] {$t$};
+  \foreach \x/\l in {0.6/0, 8.4/T}
+    \draw (\x,0.08) -- (\x,-0.08) node[below] {$\l$};
+  \draw[bookaccent, very thick, ->] (0.6,1.0) .. controls (3,2.2)
+    and (5.5,0.6) .. (8.4,1.7);
+  \fill (0.6,1.0) circle (1.6pt) node[left] {$a$};
+  \fill (8.4,1.7) circle (1.6pt) node[right] {$x(T)$};
+  \node[bookaccent] at (4.3,1.95) {$x' = X(x, \theta)$, forwards};
+  \draw[bookpitfall, very thick, <-] (0.6,-1.4) .. controls (3,-0.8)
+    and (5.5,-2.0) .. (8.4,-1.2);
+  \node[right] at (8.4,-1.2) {$\dd\ell(x(T))$};
+  \node[left] at (0.6,-1.4) {$\alpha(0)$};
+  \node[bookpitfall] at (4.4,-1.95)
+    {$\alpha' = -\alpha\circ DX$, backwards};
+  \draw[->, thick, black!60] (9.3,1.4) -- node[right] {$\dd\ell$}
+    (9.3,-0.85);
+\end{tikzpicture}
+\caption{The state is a point and moves forwards with the field. The
+sensitivity of the loss is a covector and moves backwards with the
+dual of the linearized field. Along the way it is paired with
+$D_\theta X$ to accumulate the differential with respect to the
+parameters.}
+\label{odes-flows:fig:adjoint}
+\end{figure}
+
+\begin{mlthread}[Machine learning: backpropagation in continuous time]
+\begin{itemize}[nosep]
+  \item The adjoint equation is the limit of the backward recursion
+        of \cref{chain-rule-autodiff:thm:backprop}: through a layer
+        $x\mapsto x + \eta X(x)$ the covector becomes
+        $\alpha\circ(I + \eta DX)$, an Euler step of
+        $\alpha' = -\alpha\circ DX$ taken backwards. No inner product
+        appears: the operator is the dual $\dual{DX}$, not an adjoint
+        in the sense of \cref{ch:inner-products}, although the method
+        is called the adjoint method.
+  \item One evaluation of $\alpha\circ DX$ and of
+        $\alpha\circ D_\theta X$ is one vector--Jacobian product. The
+        equation can be solved backwards together with $x$, without
+        storing the forward trajectory; the price is that the state
+        recomputed backwards drifts from the forward one when the
+        flow contracts strongly.
+\end{itemize}
+\end{mlthread}
+
+\begin{mlthread}[Machine learning: densities that flow]
+\begin{itemize}[nosep]
+  \item \emph{Continuous normalizing flows.} A model sends a simple
+        density $p_0$ to $p_T$ by the flow of a network $X(t, x)$. By
+        \cref{odes-flows:thm:transport} the logarithm of the density
+        of a sample is obtained by solving, along with the
+        trajectory, the equation
+        $\frac{\dd}{\dd t}\ln p = -\operatorname{div}X$, and the
+        divergence is estimated with
+        \cref{vector-calculus:prop:hutchinson}. No determinant is
+        computed, and the architecture of $X$ is free.
+  \item \emph{Flow matching.} Conversely, the continuity equation
+        tells which fields carry a given family of densities $p_t$
+        from $p_0$ to $p_1$. Such a field can be written as an average
+        of simple fields, each of which moves a noise sample straight
+        to a data point, and a network is fitted to it by least
+        squares: the flow is never solved during training.
+  \item \emph{Diffusion models.} A density that evolves by transport
+        and diffusion satisfies
+        $\partial_tp = -\operatorname{div}(pX)
+        + \frac{\sigma^2}2\Delta p$. Since
+        $\Delta p = \operatorname{div}(p\operatorname{grad}\ln p)$,
+        this is the continuity equation of the field
+        $X - \frac{\sigma^2}2\operatorname{grad}\ln p_t$: the same
+        densities are produced by a flow without noise, whose field
+        contains the score. This is why learning the score of the
+        noised data is enough to generate samples with a differential
+        equation.
+\end{itemize}
+The statements of the last two items about equations in $p$ are quoted
+without proof.
+\end{mlthread}
+
+\section{Where the book ends}\label{odes-flows:sec:outlook}
+
+The book started with points that cannot be added and displacements
+that can. It ends with the flow, which turns a field of displacements
+into a motion of points. In between, each structure was added when a
+question required it: a dual space to hold differentials, an inner
+product to turn them into directions, a norm to measure
+approximation, charts to leave flat space, a measure to integrate,
+alternating forms to integrate without a metric. The two tests of the
+first chapters, changing the origin and changing the basis, were the
+means of telling what each object needs. The appendix that follows
+constructs Lebesgue measure, which \cref{ch:measures} took for
+granted.
+
+\paragraph{Sources.} Loomis and Sternberg treat differential equations
+in their Chapter~6, with the fundamental theorem of existence and
+uniqueness, the dependence on parameters and the linear equation, and
+flows, vector fields and Lie derivatives on manifolds in \S9.5 and
+\S9.6; the formula
+$\mathcal L_X = i_X\circ\dd + \dd\circ i_X$ is their equation (6.13)
+of \S11.6, proved there by an algebraic argument on derivations, and
+the Lie derivative of a density, with the divergence, is in \S10.5.
+Hubbard and Hubbard leave differential equations to a sequel volume
+(their Preface). The adjoint method goes back to L.~S.~Pontryagin's
+school of optimal control; for networks: R.~T.~Q.~Chen, Y.~Rubanova,
+J.~Bettencourt and D.~Duvenaud, Neural ordinary differential
+equations, NeurIPS, 2018.
+On densities: W.~Grathwohl et al., FFJORD, ICLR, 2019; Y.~Lipman et
+al., Flow matching for generative modeling, ICLR, 2023; Y.~Song et
+al., Score-based generative modeling through stochastic differential
+equations, ICLR, 2021. On the largest eigenvalue of the Hessian during
+training: J.~Cohen et al., Gradient descent on neural networks
+typically occurs at the edge of stability, ICLR, 2021.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{25-odes-flows.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A Lipschitz field has exactly one solution through each point,
+        the limit of the Picard iterates; two solutions separate at
+        most like $e^{Lt}$.
+  \item $x' = Ax$ is solved by $e^{tA}$, with
+        $\det e^{tA} = e^{t\tr A}$. Antisymmetric operators generate
+        rotations.
+  \item The flow is a group of diffeomorphisms, and its differential
+        solves the equation linearized along the trajectory.
+  \item $\det D\varphi_t = \exp\int\operatorname{div}X$: the
+        divergence is the rate of change of volume, and of minus the
+        logarithm of a transported density. Densities satisfy
+        $\partial_tp + \operatorname{div}(pX) = 0$.
+  \item $\mathcal L_X\omega = \dd(i_X\omega) + i_X\,\dd\omega$.
+  \item Gradient descent is Euler's method for the gradient flow,
+        within $O(\eta)$ of it on a fixed interval of time.
+  \item The sensitivity of a loss is a covector that solves
+        $\alpha' = -\dual{DX}\alpha$ backwards in time.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{odes-flows:exr:1}
+\begin{enumerate}[nosep]
+  \item Check the two examples of the pitfall of
+        \cref{odes-flows:sec:existence}, and find infinitely many
+        solutions of $x' = \sqrt{\abs x}$ with $x(0) = 0$.
+  \item Compute the Picard iterates of $x' = x$, $x(0) = 1$.
+\end{enumerate}
+\solutionlink{odes-flows:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{odes-flows:exr:2}
+Compute $e^{tA}$ for
+$A = \begin{bsmallmatrix}0 & 1\\ 0 & 0\end{bsmallmatrix}$,
+$\begin{bsmallmatrix}0 & -1\\ 1 & 0\end{bsmallmatrix}$ and
+$\begin{bsmallmatrix}1 & 0\\ 0 & -1\end{bsmallmatrix}$, and check
+$\det e^{tA} = e^{t\tr A}$ in each case. Which of these flows preserve
+areas? Which preserve distances?
+\solutionlink{odes-flows:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{odes-flows:exr:3}
+Let $u$ be a unit vector of $\R^3$ and $N = [u]_\times$.
+\begin{enumerate}[nosep]
+  \item Show that $N^2 = uu^\top - I$ and $N^3 = -N$, and deduce the
+        formula for $e^{tN}$ of \cref{odes-flows:ex:rotations}.
+  \item Check that $e^{tN}u = u$, and compute $e^{tN}x$ for
+        $u = e_3$ and $x = e_1$.
+\end{enumerate}
+\solutionlink{odes-flows:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{odes-flows:exr:4}
+In the plane let $X(x, y) = (x, -y)$.
+\begin{enumerate}[nosep]
+  \item Compute the flow, $\operatorname{div}X$, and
+        $\varphi_t^*(\dd x\wedge\dd y)$.
+  \item For $\omega = x\,\dd y$, compute $\mathcal L_X\omega$ from the
+        definition, then $\dd(i_X\omega) + i_X\,\dd\omega$.
+\end{enumerate}
+\solutionlink{odes-flows:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{odes-flows:exr:5}
+On the line let $X(x) = -x$ and let $p_0$ be the standard Gaussian
+density.
+\begin{enumerate}[nosep]
+  \item Compute $\varphi_t$ and $p_t$, and check the formula for
+        $\ln p_t(\varphi_t(a))$ of
+        \cref{odes-flows:thm:transport}.
+  \item Check the continuity equation.
+\end{enumerate}
+\solutionlink{odes-flows:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{odes-flows:exr:6}
+Let $E(x) = x - o$ be the radial field of an affine space of
+dimension $n$, for a point $o$.
+\begin{enumerate}[nosep]
+  \item Compute its flow, and the volume of $\varphi_t(B)$ in terms of
+        that of $B$, in two ways.
+  \item Show that $\mathcal L_E\omega = k\,\omega$ for a $k$-form with
+        constant coefficients in affine coordinates.
+\end{enumerate}
+\solutionlink{odes-flows:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{odes-flows:exr:7}
+For $f(x) = \frac\lambda2x^2$ on the line, with $\lambda > 0$:
+\begin{enumerate}[nosep]
+  \item compare the gradient flow and gradient descent after the time
+        $T = k\eta$, and find the limit of the iterate as
+        $\eta\to0$ with $T$ fixed;
+  \item compute the constants $L$ and $M$ of
+        \cref{odes-flows:prop:euler} for the solution from $x(0) = 1$,
+        and compare the bound with the actual error for
+        $\lambda = 1$, $T = 1$, $\eta = 0.1$.
+\end{enumerate}
+\solutionlink{odes-flows:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{odes-flows:exr:8}
+Let $x' = \theta x$ on the line, with a parameter $\theta$,
+$x(0) = a$, and $\ell(x) = cx$.
+\begin{enumerate}[nosep]
+  \item Solve the adjoint equation and check that
+        $\alpha(0)$ is the derivative of $\ell(x(T))$ with respect to
+        $a$.
+  \item Compute the derivative with respect to $\theta$ by (2) of
+        \cref{odes-flows:prop:adjoint} and directly.
+\end{enumerate}
+\solutionlink{odes-flows:exr:8}
+\end{exercise}
 \end{notechapter}
