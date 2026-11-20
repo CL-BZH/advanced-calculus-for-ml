@@ -36,9 +36,71 @@ ignored by git.
 
 | Reference | Cited in | Official copy | Access |
 | --- | --- | --- | --- |
+| B. T. Polyak and A. B. Juditsky, Acceleration of stochastic approximation by averaging, *SIAM J. Control Optim.* 30(4), 838–855, 1992 | Ch. 1 | DOI 10.1137/0330046 | Commercial |
+| P. Izmailov, D. Podoprikhin, T. Garipov, D. Vetrov and A. G. Wilson, Averaging weights leads to wider optima and better generalization, UAI, 2018; PMLR R16, 876–885 | Ch. 1 | [proceedings.mlr.press](https://proceedings.mlr.press/r16/izmailov18a.html) | Open access |
+| M. Wortsman et al., Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time, ICML, 2022; PMLR 162, 23965–23998 | Ch. 1 | [proceedings.mlr.press](https://proceedings.mlr.press/v162/wortsman22a.html) | Open access |
+| G. Ilharco, M. T. Ribeiro, M. Wortsman, S. Gururangan, L. Schmidt, H. Hajishirzi and A. Farhadi, Editing models with task arithmetic, ICLR, 2023 | Ch. 1 | [arXiv:2212.04089](https://arxiv.org/abs/2212.04089) | Free to read on arXiv |
+| H. Zhang, M. Cissé, Y. N. Dauphin and D. Lopez-Paz, mixup: beyond empirical risk minimization, ICLR, 2018 | Ch. 1 | [arXiv:1710.09412](https://arxiv.org/abs/1710.09412) | Free to read on arXiv |
+| X. Li, Y. Grandvalet and F. Davoine, Explicit inductive bias for transfer learning with convolutional networks, ICML, 2018; PMLR 80, 2825–2834 | Ch. 1 | [proceedings.mlr.press](https://proceedings.mlr.press/v80/li18a.html) | Open access |
+| I. Loshchilov and F. Hutter, Decoupled weight decay regularization, ICLR, 2019 | Ch. 1 | [arXiv:1711.05101](https://arxiv.org/abs/1711.05101) | Free to read on arXiv |
+| L. Dinh, R. Pascanu, S. Bengio and Y. Bengio, Sharp minima can generalize for deep nets, ICML, 2017; PMLR 70, 1019–1028 | Ch. 2, 8, 13, 21 | [proceedings.mlr.press](https://proceedings.mlr.press/v70/dinh17b.html) | Open access |
+| T. Miyato, T. Kataoka, M. Koyama and Y. Yoshida, Spectral normalization for generative adversarial networks, ICLR, 2018 | Ch. 4, 10 | [arXiv:1802.05957](https://arxiv.org/abs/1802.05957) | Free to read on arXiv |
+| C. Eckart and G. Young, The approximation of one matrix by another of lower rank, *Psychometrika* 1(3), 211–218, 1936 | Ch. 5 | DOI 10.1007/BF02288367 | Commercial |
+| L. Mirsky, Symmetric gauge functions and unitarily invariant norms, *Quart. J. Math.* 11(1), 50–59, 1960 | Ch. 5 | DOI 10.1093/qmath/11.1.50 | Commercial |
+| I. J. Schoenberg, Remarks to Maurice Fréchet's article, *Annals of Mathematics* 36(3), 724–732, 1935 | Ch. 5 | DOI 10.2307/1968654 | Commercial |
+| W. S. Torgerson, Multidimensional scaling: I. Theory and method, *Psychometrika* 17(4), 401–419, 1952 | Ch. 5 | DOI 10.1007/BF02288916 | Commercial |
+| E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang and W. Chen, LoRA: low-rank adaptation of large language models, ICLR, 2022 | Ch. 5, 12 | [arXiv:2106.09685](https://arxiv.org/abs/2106.09685) | Free to read on arXiv |
+| A. Jacot, F. Gabriel and C. Hongler, Neural tangent kernel: convergence and generalization in neural networks, NeurIPS, 2018 | Ch. 6 | [papers.nips.cc](https://papers.nips.cc) | Open access |
+| J. Lee, L. Xiao, S. S. Schoenholz, Y. Bahri, R. Novak, J. Sohl-Dickstein and J. Pennington, Wide neural networks of any depth evolve as linear models under gradient descent, NeurIPS, 2019 | Ch. 6 | [papers.nips.cc](https://papers.nips.cc/paper/2019/hash/0d1a9651497a38d8b1c3871c84528bd4-Abstract.html) | Open access |
+| D. E. Rumelhart, G. E. Hinton and R. J. Williams, Learning representations by back-propagating errors, *Nature* 323(6088), 533–536, 1986 | Ch. 7 | DOI 10.1038/323533a0 | Commercial |
+| K. He, X. Zhang, S. Ren and J. Sun, Deep residual learning for image recognition, CVPR, 2016, 770–778 | Ch. 7 | [openaccess.thecvf.com](https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html) | Open access |
 | A. G. Baydin, B. A. Pearlmutter, A. A. Radul and J. M. Siskind, Automatic differentiation in machine learning: a survey, *J. Mach. Learn. Res.* 18(153), 2018 | Ch. 7 | [jmlr.org](https://www.jmlr.org/papers/v18/17-468.html) | Open access, CC BY 4.0 |
+| B. A. Pearlmutter, Fast exact multiplication by the Hessian, *Neural Computation* 6(1), 147–160, 1994 | Ch. 8 | DOI 10.1162/neco.1994.6.1.147 | Commercial |
+| D. J. Rezende and S. Mohamed, Variational inference with normalizing flows, ICML, 2015; PMLR 37, 1530–1538 | Ch. 9 | [proceedings.mlr.press](https://proceedings.mlr.press/v37/rezende15.html) | Open access |
+| S. Bai, J. Z. Kolter and V. Koltun, Deep equilibrium models, NeurIPS, 2019 | Ch. 9, 10 | [papers.nips.cc](https://papers.nips.cc/paper/8358) | Open access |
+| J. Sherman and W. J. Morrison, Adjustment of an inverse matrix corresponding to a change in one element of a given matrix, *Ann. Math. Statist.* 21(1), 124–127, 1950 | Ch. 9 | DOI 10.1214/aoms/1177729893 ([Project Euclid](https://projecteuclid.org/journals/annals-of-mathematical-statistics/volume-21/issue-1/Adjustment-of-an-Inverse-Matrix-Corresponding-to-a-Change-in/10.1214/aoms/1177729893.full)) | Free to read on Project Euclid |
+| W. Grathwohl, R. T. Q. Chen, J. Bettencourt, I. Sutskever and D. Duvenaud, FFJORD: free-form continuous dynamics for scalable reversible generative models, ICLR, 2019 | Ch. 10, 24, 25 | [arXiv:1810.01367](https://arxiv.org/abs/1810.01367) | Free to read on arXiv |
+| L. Dinh, J. Sohl-Dickstein and S. Bengio, Density estimation using Real NVP, ICLR, 2017 | Ch. 10, 20 | [arXiv:1605.08803](https://arxiv.org/abs/1605.08803) | Free to read on arXiv |
+| J. Behrmann, W. Grathwohl, R. T. Q. Chen, D. Duvenaud and J.-H. Jacobsen, Invertible residual networks, ICML, 2019; PMLR 97, 573–582 | Ch. 10 | [proceedings.mlr.press](https://proceedings.mlr.press/v97/behrmann19a.html) | Open access |
+| C. Cortes and V. Vapnik, Support-vector networks, *Machine Learning* 20(3), 273–297, 1995 | Ch. 11 | DOI 10.1007/BF00994018 | Commercial |
+| E. T. Jaynes, Information theory and statistical mechanics, *Physical Review* 106(4), 620–630, 1957 | Ch. 11 | DOI 10.1103/PhysRev.106.620 | Commercial |
+| H. W. Kuhn and A. W. Tucker, Nonlinear programming, *Proc. Second Berkeley Symp. on Mathematical Statistics and Probability*, 481–492, 1951 | Ch. 11 | [Project Euclid](https://projecteuclid.org/ebooks/berkeley-symposium-on-mathematical-statistics-and-probability/Proceedings-of-the-Second-Berkeley-Symposium-on-Mathematical-Statistics-and/chapter/Nonlinear-Programming/bsmsp/1200500249) | Free to read on Project Euclid |
+| T. Salimans and D. P. Kingma, Weight normalization, NeurIPS, 2016 | Ch. 12 | [papers.nips.cc](https://papers.nips.cc) | Open access |
+| Y. Bengio, A. Courville and P. Vincent, Representation learning: a review and new perspectives, *IEEE Trans. Pattern Anal. Mach. Intell.* 35(8), 1798–1828, 2013 | Ch. 12 | DOI 10.1109/TPAMI.2013.50 | Commercial |
+| S. S. Du, W. Hu and J. D. Lee, Algorithmic regularization in learning deep homogeneous models, NeurIPS, 2018 | Ch. 13 | [papers.nips.cc](https://papers.nips.cc) | Open access |
 | E. Oja, A simplified neuron model as a principal component analyzer, *J. Math. Biol.* 15, 267–273, 1982 | Ch. 14 | DOI 10.1007/BF00275687 ([Springer](https://link.springer.com/content/pdf/10.1007/BF00275687.pdf)) | Commercial |
 | M. Nickel and D. Kiela, Poincaré embeddings for learning hierarchical representations, arXiv:1705.08039, 2017 | Ch. 14 | [arXiv](https://arxiv.org/pdf/1705.08039) | Free to read on arXiv |
+| S. Amari, Natural gradient works efficiently in learning, *Neural Computation* 10(2), 251–276, 1998 | Ch. 15 | DOI 10.1162/089976698300017746 | Commercial |
+| J. Martens, New insights and perspectives on the natural gradient method, *J. Mach. Learn. Res.* 21(146), 1–76, 2020 | Ch. 15 | [jmlr.org](https://www.jmlr.org/papers/v21/17-678.html) | Open access |
+| G. Raskutti and S. Mukherjee, The information geometry of mirror descent, *IEEE Trans. Inform. Theory* 61(3), 1451–1457, 2015 | Ch. 15 | DOI 10.1109/TIT.2015.2388583 | Commercial |
+| J. Martens and R. Grosse, Optimizing neural networks with Kronecker-factored approximate curvature, ICML, 2015; PMLR 37, 2408–2417 | Ch. 15 | [proceedings.mlr.press](https://proceedings.mlr.press/v37/martens15.html) | Open access |
+| J. Schulman, S. Levine, P. Abbeel, M. Jordan and P. Moritz, Trust region policy optimization, ICML, 2015; PMLR 37, 1889–1897 | Ch. 15 | [proceedings.mlr.press](https://proceedings.mlr.press/v37/schulman15.html) | Open access |
+| S. Kakade, A natural policy gradient, NeurIPS, 2001 | Ch. 15 | [papers.nips.cc](https://papers.nips.cc/paper/2073) | Open access |
+| D. P. Kingma and J. Ba, Adam: a method for stochastic optimization, ICLR, 2015 | Ch. 15 | [arXiv:1412.6980](https://arxiv.org/abs/1412.6980) | Free to read on arXiv |
+| R. J. Williams, Simple statistical gradient-following algorithms for connectionist reinforcement learning, *Machine Learning* 8(3–4), 229–256, 1992 | Ch. 17 | DOI 10.1007/BF00992696 | Commercial |
+| S. Mohamed, M. Rosca, M. Figurnov and A. Mnih, Monte Carlo gradient estimation in machine learning, *J. Mach. Learn. Res.* 21(132), 1–62, 2020 | Ch. 17 | [jmlr.org](https://www.jmlr.org/papers/v21/19-346.html) | Open access |
+| D. P. Kingma and M. Welling, Auto-encoding variational Bayes, ICLR, 2014 | Ch. 17 | [arXiv:1312.6114](https://arxiv.org/abs/1312.6114) | Free to read on arXiv |
+| D. J. Rezende, S. Mohamed and D. Wierstra, Stochastic backpropagation and approximate inference in deep generative models, ICML, 2014; PMLR 32(2), 1278–1286 | Ch. 17 | [proceedings.mlr.press](https://proceedings.mlr.press/v32/rezende14.html) | Open access |
+| A. Hyvärinen, Estimation of non-normalized statistical models by score matching, *J. Mach. Learn. Res.* 6(24), 695–709, 2005 | Ch. 18, 22, 23 | [jmlr.org](https://www.jmlr.org/papers/v6/hyvarinen05a.html) | Open access |
+| S. Kullback and R. A. Leibler, On information and sufficiency, *Ann. Math. Statist.* 22(1), 79–86, 1951 | Ch. 19 | DOI 10.1214/aoms/1177729694 ([Project Euclid](https://projecteuclid.org/journals/annals-of-mathematical-statistics/volume-22/issue-1/On-Information-and-Sufficiency/10.1214/aoms/1177729694.full)) | Free to read on Project Euclid |
+| I. Goodfellow, J. Pouget-Abadie, M. Mirza, B. Xu, D. Warde-Farley, S. Ozair, A. Courville and Y. Bengio, Generative adversarial nets, NeurIPS, 2014 | Ch. 19 | [papers.nips.cc](https://papers.nips.cc); [arXiv:1406.2661](https://arxiv.org/abs/1406.2661) | Open access |
+| L. Dinh, D. Krueger and Y. Bengio, NICE: non-linear independent components estimation, ICLR workshop, 2015 | Ch. 20 | [arXiv:1410.8516](https://arxiv.org/abs/1410.8516) | Free to read on arXiv |
+| G. Papamakarios, E. Nalisnick, D. J. Rezende, S. Mohamed and B. Lakshminarayanan, Normalizing flows for probabilistic modeling and inference, *J. Mach. Learn. Res.* 22(57), 1–64, 2021 | Ch. 20 | [jmlr.org](https://www.jmlr.org/papers/v22/19-1028.html) | Open access |
+| H. Jeffreys, An invariant form for the prior probability in estimation problems, *Proc. R. Soc. Lond. A* 186(1007), 453–461, 1946 | Ch. 20 | DOI 10.1098/rspa.1946.0056 | Commercial |
+| A. Kulesza and B. Taskar, Determinantal point processes for machine learning, *Foundations and Trends in Machine Learning* 5(2–3), 123–286, 2012 | Ch. 21 | DOI 10.1561/2200000044 | Commercial |
+| D. Balduzzi, S. Racanière, J. Martens, J. Foerster, K. Tuyls and T. Graepel, The mechanics of n-player differentiable games, ICML, 2018; PMLR 80, 354–363 | Ch. 22 | [proceedings.mlr.press](https://proceedings.mlr.press/v80/balduzzi18a.html) | Open access |
+| L. Mescheder, S. Nowozin and A. Geiger, The numerics of GANs, NeurIPS, 2017 | Ch. 22 | [papers.nips.cc](https://papers.nips.cc) | Open access |
+| Y. Song and S. Ermon, Generative modeling by estimating gradients of the data distribution, NeurIPS, 2019 | Ch. 22 | [papers.nips.cc](https://papers.nips.cc) | Open access |
+| M. Sundararajan, A. Taly and Q. Yan, Axiomatic attribution for deep networks, ICML, 2017; PMLR 70, 3319–3328 | Ch. 22 | [proceedings.mlr.press](https://proceedings.mlr.press/v70/sundararajan17a.html) | Open access |
+| Y. Song, S. Garg, J. Shi and S. Ermon, Sliced score matching, UAI, 2019; PMLR 115, 574–584 | Ch. 23 | [proceedings.mlr.press](https://proceedings.mlr.press/v115/song20a.html) | Open access |
+| T. R. Davidson, L. Falorsi, N. De Cao, T. Kipf and J. M. Tomczak, Hyperspherical variational auto-encoders, UAI, 2018; PMLR R16, 855–864 | Ch. 23 | [proceedings.mlr.press](https://proceedings.mlr.press/r16/davidson18a.html) | Open access |
+| C. Stein, A bound for the error in the normal approximation to the distribution of a sum of dependent random variables, *Proc. Sixth Berkeley Symp. on Mathematical Statistics and Probability* 2, 583–602, 1972 | Ch. 23 | [Project Euclid](https://projecteuclid.org/euclid.bsmsp/1200514239) | Free to read on Project Euclid |
+| M. F. Hutchinson, A stochastic estimator of the trace of the influence matrix for Laplacian smoothing splines, *Comm. Statist. Simulation Comput.* 19(2), 433–450, 1990 | Ch. 24 | DOI 10.1080/03610919008812866 | Commercial |
+| R. T. Q. Chen, Y. Rubanova, J. Bettencourt and D. Duvenaud, Neural ordinary differential equations, NeurIPS, 2018 | Ch. 25 | [papers.nips.cc](https://papers.nips.cc/paper/7892); [arXiv:1806.07366](https://arxiv.org/abs/1806.07366) | Open access |
+| Y. Lipman, R. T. Q. Chen, H. Ben-Hamu, M. Nickel and M. Le, Flow matching for generative modeling, ICLR, 2023 | Ch. 25 | [arXiv:2210.02747](https://arxiv.org/abs/2210.02747) | Free to read on arXiv |
+| Y. Song, J. Sohl-Dickstein, D. P. Kingma, A. Kumar, S. Ermon and B. Poole, Score-based generative modeling through stochastic differential equations, ICLR, 2021 | Ch. 25 | [arXiv:2011.13456](https://arxiv.org/abs/2011.13456) | Free to read on arXiv |
+| J. M. Cohen, S. Kaur, Y. Li, J. Z. Kolter and A. Talwalkar, Gradient descent on neural networks typically occurs at the edge of stability, ICLR, 2021 | Ch. 25 | [arXiv:2103.00065](https://arxiv.org/abs/2103.00065) | Free to read on arXiv |
+| R. M. Solovay, A model of set-theory in which every set of reals is Lebesgue measurable, *Annals of Mathematics* (2) 92(1), 1–56, 1970 | Ch. App. A | DOI 10.2307/1970696 | Commercial |
 
 ## Companion
 
