@@ -3210,3 +3210,117 @@ left and the left side downwards.
         degrees on the diagonal and $-1$ for each edge. The rows sum to
         $0$ because the constants are in the kernel of $\dd$.
 \end{enumerate}
+
+\section{\nameref*{ch:vector-calculus}}
+
+\solution{vector-calculus:exr:1}
+\begin{enumerate}[nosep]
+  \item $X = \operatorname{grad}(xyz)$, so
+        $\operatorname{curl}X = 0$, and
+        $\operatorname{div}X = 0$ since no component depends on its
+        own variable. For $Y$:
+        $\operatorname{curl}Y = (0, 0, 2)$ and
+        $\operatorname{div}Y = 1$; $Y$ is not a gradient.
+  \item The components of $\operatorname{curl}Z$ are
+        $\partial_y(zx^2) - \partial_z(yz^2) = -2yz$,
+        $\partial_z(xy^2) - \partial_x(zx^2) = -2xz$ and
+        $\partial_x(yz^2) - \partial_y(xy^2) = -2xy$. The divergence
+        of $(-2yz, -2xz, -2xy)$ is $0$, each component being
+        independent of its own variable.
+\end{enumerate}
+
+\solution{vector-calculus:exr:2}
+\begin{enumerate}[nosep]
+  \item With $X = \operatorname{grad}f$, $X_r = \partial_rf$ and
+        $X_\theta = r^{-2}\partial_\theta f$, so
+        $\Delta f = \frac1r\partial_r(r\,\partial_rf)
+        + \frac1{r^2}\partial_\theta^2f$. For $f = r^k\cos k\theta$:
+        $\frac1r\partial_r(kr^k)\cos k\theta
+        = k^2r^{k-2}\cos k\theta$ and
+        $\frac1{r^2}\partial_\theta^2f = -k^2r^{k-2}\cos k\theta$.
+  \item Here $\rho = r^2\sin\theta$, and
+        $\operatorname{div}(X_r\,\partial_r)
+        = \frac1{r^2\sin\theta}\partial_r(r^2\sin\theta\,X_r)
+        = \frac1{r^2}\partial_r(r^2X_r)$. Since $E = r\,\partial_r$,
+        the field $r^{-3}E$ has $X_r = r^{-2}$ and $r^2X_r = 1$.
+\end{enumerate}
+
+\solution{vector-calculus:exr:3}
+$\operatorname{div}X = 3(x^2 + y^2 + z^2) = 3r^2$, and
+$\int_B3r^2 = \int_0^13r^2\cdot4\pi r^2\,\dd r = \frac{12\pi}5$
+(\cref{change-of-variables:thm:polar}). On the sphere $\nu = (x, y, z)$
+and $\inner X\nu = x^4 + y^4 + z^4$, whose integral is
+$3\cdot\frac{4\pi}5$ by symmetry.
+
+\solution{vector-calculus:exr:4}
+\begin{enumerate}[nosep]
+  \item $\operatorname{curl}X = (0, 0, 2)$ and $\nu = (x, y, z)$, so
+        the left-hand side is $\int_D2z\,\dd\sigma$. With
+        $z = \cos\theta$ and $\dd\sigma = \sin\theta\,\dd\theta\,\dd\phi$
+        this is
+        $2\cdot2\pi\int_0^{\pi/2}\cos\theta\sin\theta\,\dd\theta
+        = 2\pi$. The boundary is the unit circle of the plane $z = 0$,
+        traversed counter-clockwise seen from above, where $X = \tau$:
+        the right-hand side is its length, $2\pi$.
+  \item The flat unit disc of the plane $z = 0$, with $\nu = (0, 0, 1)$:
+        $\inner{\operatorname{curl}X}\nu = 2$ and the area is $\pi$.
+\end{enumerate}
+
+\solution{vector-calculus:exr:5}
+\begin{enumerate}[nosep]
+  \item $\Delta_px_i = -x_i$;
+        $\Delta_p(x_i^2 - 1) = 2 - 2x_i^2 = -2(x_i^2 - 1)$;
+        $\Delta_p(x_ix_j) = -2x_ix_j$. These functions are
+        eigenvectors of $\Delta_p$, for the eigenvalues $-1$, $-2$,
+        $-2$.
+  \item By \eqref{vector-calculus:eq:weighted} with
+        $X = \operatorname{grad}g$, $\E[f\,\Delta_pg]$ is symmetric in
+        $f$ and $g$. For $f = x_i$ and $g = x_j^2 - 1$ this reads
+        $-2\,\E[fg] = -\E[fg]$, so $\E[fg] = 0$: eigenvectors of a
+        symmetric operator for different eigenvalues are orthogonal.
+\end{enumerate}
+
+\solution{vector-calculus:exr:6}
+\begin{enumerate}[nosep]
+  \item The first identity of \cref{vector-calculus:cor:green} with
+        the functions $1$ and $f$:
+        $\int_D\Delta f = \int_{\partial D}\partial_\nu f$.
+  \item The same identity with $f$ twice:
+        $\int_D\norm{\operatorname{grad}f}^2
+        = \int_{\partial D}f\,\partial_\nu f - \int_Df\,\Delta f = 0$.
+        The integrand is continuous and non-negative, so
+        $\operatorname{grad}f = 0$ on $D$, and $f$ is constant along
+        every segment of the ball: it equals its value on the
+        boundary, $0$. For two functions, apply this to their
+        difference.
+\end{enumerate}
+
+\solution{vector-calculus:exr:7}
+\begin{enumerate}[nosep]
+  \item For signs the variance is $0$: $u^\top Ju = \sum_iJ_{ii}u_i^2
+        = \tr J$ for every $u$. For Gaussians it is
+        $2\sum_iJ_{ii}^2$.
+  \item $u^\top Ju = 0$ for every $u$, which is the trace.
+  \item $u^\top Ju = u_1^2 + 2u_1u_2 + 3u_2^2 = 4 + 2u_1u_2$: the
+        values are $6, 2, 2, 6$, with mean $4 = \tr J$ and variance
+        $4$. The formula gives $2(S_{12}^2 + S_{21}^2) = 4$ with
+        $S_{12} = 1$.
+\end{enumerate}
+
+\solution{vector-calculus:exr:8}
+\begin{enumerate}[nosep]
+  \item $i_X(\dd x\wedge\dd y) = P\,\dd y - Q\,\dd x$, the work form of
+        $(-Q, P) = \mathcal JX$. Its exterior derivative is
+        $c(\mathcal JX)\operatorname{vol}$ on one side and
+        $(\operatorname{div}X)\operatorname{vol}$ on the other.
+  \item $(\nu, \tau)$ must be a positive orthonormal basis, and
+        $(\nu, \mathcal J\nu)$ is one. Then
+        $\inner{\mathcal JX}\tau
+        = \inner{\mathcal JX}{\mathcal J\nu} = \inner X\nu$, because
+        $\mathcal J$ is an isometry: the circulation of $\mathcal JX$
+        is the flux of $X$, and by (1) the two integrals over the
+        domain are the same.
+  \item $\operatorname{div} = \partial_xy + \partial_y(-x) = 0$ and
+        $c = \partial_x(-x) - \partial_yy = -2$: the field preserves
+        area and rotates.
+\end{enumerate}

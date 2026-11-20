@@ -4,19 +4,839 @@
 \chaptersubtitle{%
   Classical vector calculus and the metric it hides}
 
-\begin{chapterplan}
+\begin{chapterintro}
+Classical vector calculus knows two kinds of objects, functions and
+vector fields, three differential operators and three integral
+theorems. The last two chapters had forms of every degree, one
+operator and one theorem. This chapter is the dictionary between the
+two languages. The translation uses an inner product, which turns
+covectors into vectors, and an orientation, which with the inner
+product turns forms of degree $n - 1$ into vectors as well. Reading it
+carefully shows what each classical notion really depends on: the
+gradient on the inner product, the divergence on a notion of volume
+and nothing else, the curl on everything and on the dimension being
+three. You will learn
 \begin{itemize}[nosep]
-  \item Gradient, curl and divergence as the exterior derivative read through a
-        metric.
-  \item Green's, Kelvin--Stokes' and the divergence theorems as cases of Stokes'
-        theorem.
-  \item The divergence needs only a volume form, not a metric.
-  \item Integration by parts in $\R^n$; the Laplacian.
+  \item the work form and the flux form of a vector field, and what
+        their integrals are;
+  \item gradient, curl and divergence as the exterior derivative, with
+        the identities and the potentials that follow;
+  \item the divergence with respect to any volume, and its formula in
+        arbitrary coordinates;
+  \item the divergence theorem, the classical theorem of Stokes and
+        Green's identities, as cases of \cref{stokes:thm:stokes};
+  \item the Laplacian, as $-\adj{\operatorname{grad}}\operatorname{grad}$;
+  \item how the divergence of a network is estimated with one
+        derivative instead of $n$.
 \end{itemize}
-\smallskip\noindent\textbf{Machine learning threads.}
+\prerequisites{\cref{ch:differential-forms,ch:stokes};
+\cref{multilinear-algebra:sec:metric} for the volume form and the Hodge
+star; \cref{ch:inner-products} for the Riesz map $R$. Throughout, $M$
+is an oriented Riemannian manifold of dimension $n$, with volume form
+$\operatorname{vol}$; the main case is an open subset of an oriented
+Euclidean affine space, where
+$\operatorname{vol} = \dd x_1\wedge\dots\wedge\dd x_n$ in the affine
+coordinates of a positive orthonormal frame, called \emph{Cartesian
+coordinates} below.}
+\end{chapterintro}
+
+\section{Two forms for one vector field}\label{vector-calculus:sec:forms}
+
+On an oriented Riemannian manifold, each tangent space is an oriented
+inner product space. The volume forms of the tangent spaces
+(\cref{multilinear-algebra:thm:volume}) make up the $n$-form
+$\operatorname{vol}$, equal to
+$\sqrt{\det G}\,\dd x_1\wedge\dots\wedge\dd x_n$ in a positive chart;
+its density is the volume density of \cref{stokes:ex:densities}, so
+that $\int_Mh\operatorname{vol} = \int_Mh\,\dd\!\operatorname{vol}_M$
+for a function $h$.
+
+\begin{definition}[Work form, flux form]\label{vector-calculus:def:forms}
+Let $X$ be a vector field on $M$.
+\begin{enumerate}[nosep]
+  \item Its \emph{work form} is the $1$-form $RX = \inner X\cdot$.
+  \item Its \emph{flux form} is the $(n - 1)$-form
+        $i_X\operatorname{vol}$.
+\end{enumerate}
+The \emph{mass form} of a function $f$ is the $n$-form
+$f\operatorname{vol}$.
+\end{definition}
+
+\begin{proposition}\label{vector-calculus:prop:star}
+The flux form is the Hodge star of the work form:
+$i_X\operatorname{vol} = \star(RX)$.
+\end{proposition}
+
+\begin{proof}
+At a point, let $v = X(p)$ and let $\beta$ be a covector. Since
+$\beta\wedge\operatorname{vol}$ has degree $n + 1$, it is $0$, and (1)
+of \cref{differential-forms:prop:interior} gives
+$0 = i_v(\beta\wedge\operatorname{vol})
+= \beta(v)\operatorname{vol} - \beta\wedge i_v\operatorname{vol}$. As
+the Riesz map preserves inner products,
+$\beta(v) = \inner\beta{Rv}$. So
+$\beta\wedge i_v\operatorname{vol} = \inner\beta{Rv}\operatorname{vol}$
+for all $\beta$, which characterizes $\star(Rv)$
+(\cref{multilinear-algebra:thm:hodge}).
+\end{proof}
+
+A \emph{hypersurface} $S$ of $M$ is a submanifold of dimension
+$n - 1$. A \emph{unit normal} of $S$ is a field $\nu$ of unit vectors
+along $S$, orthogonal to its tangent spaces. It orients $S$ by the rule
+of \cref{stokes:ex:orientations}: a basis $(v_2,\dots,v_n)$ of $T_pS$
+is positive when $(\nu, v_2,\dots,v_n)$ is a positive basis of $T_pM$.
+For the boundary of a domain and its outward unit normal this is the
+boundary orientation (\cref{stokes:def:bdry-orientation}).
+
+\begin{proposition}[What the two forms integrate]
+\label{vector-calculus:prop:integrals}
+\begin{enumerate}[nosep]
+  \item Along a curve $c$,
+        $\int_cRX = \int\inner{X(c(t))}{c'(t)}\,\dd t$. If the curve is
+        parametrized with unit speed and $\tau = c'$ is its unit
+        tangent, this is $\int\inner X\tau\,\dd s$: the \emph{work},
+        or \emph{circulation}, of $X$ along $c$.
+  \item Let $S$ be a hypersurface with unit normal $\nu$ and inclusion
+        $\iota$. Then $\operatorname{vol}_S
+        = \iota^*(i_\nu\operatorname{vol})$ is the volume form of $S$
+        for the induced inner products and the orientation given by
+        $\nu$, and
+        \[
+          \iota^*(i_X\operatorname{vol})
+          = \inner X\nu\operatorname{vol}_S ,
+          \qquad
+          \int_Si_X\operatorname{vol}
+          = \int_S\inner X\nu\,\dd\sigma ,
+        \]
+        with $\sigma$ the Riemannian volume of $S$, its area when
+        $n = 3$. This is the \emph{flux} of $X$ through $S$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) is the definition of the integral of a $1$-form
+(\cref{stokes:sec:forms}). (2) Let $(v_2,\dots,v_n)$ be a positive
+orthonormal basis of $T_pS$. Then $(\nu, v_2,\dots,v_n)$ is a positive
+orthonormal basis of $T_pM$, on which $\operatorname{vol}$ is $1$: so
+$i_\nu\operatorname{vol}$ is $1$ on $(v_2,\dots,v_n)$, which
+characterizes the volume form of $T_pS$. Write
+$X = \inner X\nu\nu + X'$ with $X'$ tangent to $S$. Then
+$\operatorname{vol}(X', v_2,\dots,v_n) = 0$, because these $n$ vectors
+lie in the space $T_pS$ of dimension $n - 1$. Hence
+$i_X\operatorname{vol} = \inner X\nu\,i_\nu\operatorname{vol}$ on
+$T_pS$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \coordinate (A) at (0,0);
+  \coordinate (B) at (3.0,0.35);
+  \coordinate (C) at (4.1,1.45);
+  \coordinate (D) at (1.1,1.1);
+  \coordinate (X) at (1.3,2.3);
+  \fill[bookintuition!20] (A) -- (B) -- (C) -- (D) -- cycle;
+  \draw[bookintuition!70!black, thick] (A) -- (B) -- (C) -- (D) -- cycle;
+  \draw[black!45] ($(A)+(X)$) -- ($(B)+(X)$) -- ($(C)+(X)$)
+    -- ($(D)+(X)$) -- cycle;
+  \draw[black!45] (B) -- ($(B)+(X)$) (C) -- ($(C)+(X)$);
+  \draw[black!45, dashed] (D) -- ($(D)+(X)$);
+  \draw[->, very thick, bookaccent] (A) -- ($(A)+(X)$)
+    node[above left=-1pt] {$X$};
+  \draw[->, thick] (A) -- (B) node[below] {$v_2$};
+  \draw[->, thick] (A) -- (D) node[left] {$v_3$};
+  \draw[->, very thick, bookpitfall] (A) -- (-0.25,2.1)
+    node[left] {$\inner X\nu\,\nu$};
+  \draw[bookpitfall, dashed] (-0.25,2.1) -- ($(A)+(X)$);
+  \node at (2.3,0.75) {$S$};
+  \node[align=left] at (8.3,1.5)
+    {$\operatorname{vol}(X, v_2, v_3)$\\[2pt]
+     $=$ volume of the slanted box\\[2pt]
+     $= \inner X\nu\,\times$ area of its base};
+\end{tikzpicture}
+\caption{The flux form of $X$, evaluated on two small vectors tangent
+to a surface, is the volume of the box that they span with $X$: what
+flows through the small parallelogram in a unit of time if $X$ is a
+velocity. Only the component of $X$ along the normal counts; sliding
+along the surface carries nothing through it.}
+\label{vector-calculus:fig:flux}
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+classical object & form & degree & integrated over \\
+\midrule
+function $f$ & $f$ & $0$ & points \\
+vector field $X$ & work form $RX$ & $1$ & oriented curves \\
+vector field $X$ & flux form $i_X\operatorname{vol} = \star RX$
+  & $n - 1$ & oriented hypersurfaces \\
+function $f$ & mass form $f\operatorname{vol} = \star f$ & $n$
+  & oriented domains \\
+\bottomrule
+\end{tabular}
+\caption{The dictionary. The first two lines use the inner product,
+the last two the volume form. In dimension $3$ the degrees are
+$0, 1, 2, 3$ and every form is on the list
+(\cref{differential-forms:tab:degrees}).}
+\label{vector-calculus:tab:dictionary}
+\end{table}
+
+\section{The three operators}\label{vector-calculus:sec:operators}
+
+\begin{definition}[Gradient, divergence, curl]
+\label{vector-calculus:def:operators}
+Let $f$ be a function and $X$ a vector field on $M$.
+\begin{enumerate}[nosep]
+  \item The \emph{gradient} of $f$ is the vector field whose work form
+        is $\dd f$: $\operatorname{grad}f = R^{-1}\dd f$.
+  \item The \emph{divergence} of $X$ is the function whose mass form is
+        the exterior derivative of the flux form:
+        $\dd(i_X\operatorname{vol})
+        = (\operatorname{div}X)\operatorname{vol}$.
+  \item If $n = 3$, the \emph{curl} of $X$ is the vector field whose
+        flux form is the exterior derivative of the work form:
+        $i_{\operatorname{curl}X}\operatorname{vol} = \dd(RX)$.
+\end{enumerate}
+\end{definition}
+
+The gradient is that of \cref{gradient-hessian:def:gradient} and
+\cref{riemannian-optimization:def:gradient}. For $n = 3$ the
+definitions say that the following diagram commutes, the vertical
+arrows being the bijections of \cref{vector-calculus:tab:dictionary}:
+\begin{center}
+\begin{tikzcd}[column sep=large]
+\text{functions} \arrow[r, "\operatorname{grad}"] \arrow[d, "\id"']
+  & \text{vector fields} \arrow[r, "\operatorname{curl}"]
+    \arrow[d, "R"']
+  & \text{vector fields} \arrow[r, "\operatorname{div}"]
+    \arrow[d, "i_\bullet\operatorname{vol}"]
+  & \text{functions} \arrow[d, "\cdot\operatorname{vol}"] \\
+\Omega^0 \arrow[r, "\dd"'] & \Omega^1 \arrow[r, "\dd"']
+  & \Omega^2 \arrow[r, "\dd"'] & \Omega^3
+\end{tikzcd}
+\end{center}
+
+\begin{theorem}[In Cartesian coordinates]\label{vector-calculus:thm:cartesian}
+On an open subset of an oriented Euclidean affine space, in Cartesian
+coordinates, with $X = \sum_iX_i\,\partial_i$:
+\[
+  \operatorname{grad}f = \sum_i\partial_if\;\partial_i ,
+  \qquad
+  \operatorname{div}X = \sum_i\partial_iX_i ,
+\]
+and, for $n = 3$,
+\[
+  \operatorname{curl}X
+  = (\partial_2X_3 - \partial_3X_2)\,\partial_1
+  + (\partial_3X_1 - \partial_1X_3)\,\partial_2
+  + (\partial_1X_2 - \partial_2X_1)\,\partial_3 .
+\]
+\end{theorem}
+
+\begin{proof}
+The basis $(\partial_i)$ is orthonormal and positive, so
+$RX = \sum_iX_i\,\dd x_i$ and, by
+\cref{differential-forms:prop:interior},
+\[
+  i_X\operatorname{vol} = \sum_i(-1)^{i-1}X_i\,
+  \dd x_1\wedge\dots\wedge\widehat{\dd x_i}\wedge\dots\wedge\dd x_n .
+\]
+The gradient follows from
+$\dd f = \sum_i\partial_if\,\dd x_i$. For the divergence, only the term
+$\partial_iX_i\,\dd x_i$ of $\dd X_i$ survives in the $i$th term, and
+bringing $\dd x_i$ to its place costs $(-1)^{i-1}$. For $n = 3$ the
+flux form of a field $Y$ is
+$Y_1\,\dd x_2\wedge\dd x_3 + Y_2\,\dd x_3\wedge\dd x_1
++ Y_3\,\dd x_1\wedge\dd x_2$, and the components of
+$\dd(X_1\,\dd x_1 + X_2\,\dd x_2 + X_3\,\dd x_3)$ on these three forms
+were computed in \cref{differential-forms:ex:r3}.
+\end{proof}
+
+\begin{proposition}[Identities and potentials]
+\label{vector-calculus:prop:identities}
+\begin{enumerate}[nosep]
+  \item $\operatorname{div}(fX)
+        = f\operatorname{div}X + \dd f(X)$.
+  \item For $n = 3$: $\operatorname{curl}\operatorname{grad}f = 0$ and
+        $\operatorname{div}\operatorname{curl}X = 0$.
+  \item On an open star-shaped subset of a Euclidean affine space of
+        dimension $3$: a field with $\operatorname{curl}X = 0$ is a
+        gradient, and a field with $\operatorname{div}Y = 0$ is a
+        curl.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) $\dd(f\,i_X\operatorname{vol})
+= \dd f\wedge i_X\operatorname{vol} + f\,\dd(i_X\operatorname{vol})$,
+and $\dd f\wedge i_X\operatorname{vol} = \dd f(X)\operatorname{vol}$
+as in the proof of \cref{vector-calculus:prop:star}. (2) The work form
+of $\operatorname{grad}f$ is $\dd f$, so the flux form of its curl is
+$\dd(\dd f) = 0$; the flux form of $\operatorname{curl}X$ is
+$\dd(RX)$, so the mass form of its divergence is $\dd(\dd(RX)) = 0$.
+(3) By \cref{differential-forms:thm:poincare}: if
+$\dd(RX) = 0$ then $RX = \dd f$; if
+$\dd(i_Y\operatorname{vol}) = 0$ then
+$i_Y\operatorname{vol} = \dd\alpha$ for a $1$-form $\alpha$, and
+$Y = \operatorname{curl}(R^{-1}\alpha)$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=0.85]
+  \foreach \sh/\fx/\fy/\lab/\vals in {
+      0/{0.3*\x}/{0.3*\y}/{$X = (x, y)$}/{div $2$, curl $0$},
+      5.6/{-0.3*\y}/{0.3*\x}/{$X = (-y, x)$}/{div $0$, curl $2$},
+      11.2/{0.3*\y}/{0}/{$X = (y, 0)$}/{div $0$, curl $-1$}} {
+    \begin{scope}[shift={(\sh,0)}]
+      \draw[bookaccent, thick] (0,0) circle (1.25);
+      \foreach \x in {-1.6,-0.8,0,0.8,1.6}
+        \foreach \y in {-1.6,-0.8,0,0.8,1.6}
+          \draw[-{Stealth[length=3pt]}, bookdef!80!black,
+            line width=0.6pt] (\x,\y) -- ++({\fx},{\fy});
+      \node at (0,-2.5) {\lab};
+      \node at (0,-3.1) {\small\vals};
+    \end{scope}
+  }
+\end{tikzpicture}
+\caption{Three fields of the plane and a circle. Left: the field
+leaves the disc through its whole boundary; the flux is the divergence
+times the area. Centre: nothing leaves, but the field runs along the
+circle; the circulation is the curl, here the function
+$\partial_1X_2 - \partial_2X_1$, times the area. Right: a shear has no
+divergence, and a circulation that is easy to miss: the field is
+faster along the top of the circle than along the bottom.}
+\label{vector-calculus:fig:fields}
+\end{figure}
+
+\section{What each operator needs}\label{vector-calculus:sec:needs}
+
+The gradient needs an inner product and no orientation. The curl needs
+an inner product, an orientation, and $n = 3$: in other dimensions
+$\dd(RX)$ is a $2$-form, with $\binom n2$ components, which is not the
+flux form of a vector field. In the plane it is a function times
+$\operatorname{vol}$, the function
+$\partial_1X_2 - \partial_2X_1$ of \cref{stokes:ex:green}. The
+divergence needs much less than its definition suggests.
+
+\begin{definition}[Divergence for a volume]\label{vector-calculus:def:div-mu}
+Let $\mu$ be an $n$-form without zero on a manifold $M$. The
+\emph{divergence} of a vector field $X$ with respect to $\mu$ is the
+function $\operatorname{div}_\mu X$ such that
+\[
+  \dd(i_X\mu) = (\operatorname{div}_\mu X)\,\mu .
+\]
+\end{definition}
+
+\begin{proposition}\label{vector-calculus:prop:div-mu}
+\begin{enumerate}[nosep]
+  \item In a chart in which $\mu = \rho\,\dd x_1\wedge\dots\wedge
+        \dd x_n$,
+        \[
+          \operatorname{div}_\mu X
+          = \frac1\rho\sum_i\frac{\partial(\rho X_i)}{\partial x_i} .
+        \]
+        On a Riemannian manifold, $\rho = \sqrt{\det G}$.
+  \item $\operatorname{div}_{c\mu} = \operatorname{div}_\mu$ for a
+        constant $c\neq0$; in particular the divergence does not depend
+        on the orientation.
+  \item For a function $h$ without zero,
+        $\operatorname{div}_{h\mu}X
+        = \operatorname{div}_\mu X + \dd h(X)/h$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) As in the proof of \cref{vector-calculus:thm:cartesian},
+\[
+  i_X\mu = \sum_i(-1)^{i-1}\rho X_i\,
+  \dd x_1\wedge\dots\wedge\widehat{\dd x_i}\wedge\dots\wedge\dd x_n ,
+  \qquad
+  \dd(i_X\mu) = \sum_i\partial_i(\rho X_i)\;
+  \dd x_1\wedge\dots\wedge\dd x_n .
+\]
+(3)
+$\dd(h\,i_X\mu) = \dd h\wedge i_X\mu + h\,\dd(i_X\mu)
+= \bigl(\dd h(X) + h\operatorname{div}_\mu X\bigr)\mu$, and (2) is the
+case of a constant $h$.
+\end{proof}
+
+\begin{keyidea}
+The divergence of a vector field is defined as soon as volumes are:
+by a volume form up to a constant factor, or by a positive density
+(\cref{stokes:def:density}), since a density is locally a volume form
+up to sign. No inner product is involved. With a different notion of
+volume the same field has a different divergence, by (3). The gradient
+goes the other way: it needs angles and lengths, and ignores volume.
+\end{keyidea}
+
+\begin{example}[Polar coordinates]\label{vector-calculus:ex:polar}
+In the plane, $\operatorname{vol} = r\,\dd r\wedge\dd\theta$
+(\cref{differential-forms:ex:polar}) and
+$G = \diag(1, r^2)$. For $X = X_r\,\partial_r + X_\theta\,\partial_\theta$
+and a function $f$,
+\[
+  \operatorname{div}X
+  = \frac1r\frac{\partial(rX_r)}{\partial r}
+  + \frac{\partial X_\theta}{\partial\theta} ,
+  \qquad
+  \operatorname{grad}f
+  = \frac{\partial f}{\partial r}\,\partial_r
+  + \frac1{r^2}\frac{\partial f}{\partial\theta}\,\partial_\theta ,
+\]
+the second because the components of the gradient are
+$G^{-1}[\dd f]^\top$.
+\end{example}
+
+\begin{pitfall}[Components in curvilinear coordinates]
+The formula $\sum_i\partial_iX_i$ is the divergence only when the
+coordinates preserve volume, and the row of partial derivatives is
+the gradient only when they are orthonormal. In the example the two
+fail in different ways: the divergence picks up $\rho = r$, the
+gradient $G^{-1}$. Physics textbooks write these formulas with the
+components of $X$ along the unit vectors $\partial_r$ and
+$\frac1r\partial_\theta$, which changes them once more.
+\end{pitfall}
+
+\section{The integral theorems}\label{vector-calculus:sec:theorems}
+
+\begin{theorem}[Divergence theorem]\label{vector-calculus:thm:divergence}
+Let $D$ be a compact domain with smooth boundary in $M$, $\nu$ its
+outward unit normal and $X$ a smooth vector field. Then
+\[
+  \int_D\operatorname{div}X\,\dd\!\operatorname{vol}_M
+  = \int_{\partial D}\inner X\nu\,\dd\sigma .
+\]
+\end{theorem}
+
+\begin{proof}
+\Cref{stokes:thm:stokes} for $\omega = i_X\operatorname{vol}$ gives
+$\int_D(\operatorname{div}X)\operatorname{vol}
+= \int_{\partial D}i_X\operatorname{vol}$, and the right-hand side is
+the flux by \cref{vector-calculus:prop:integrals}, the boundary
+orientation being that of the outward normal.
+\end{proof}
+
+\begin{corollary}[Meaning of the divergence]\label{vector-calculus:cor:meaning}
+In a Euclidean affine space, let $B_r$ be the ball of centre $p$ and
+radius $r$. Then
+\[
+  \operatorname{div}X(p)
+  = \lim_{r\to0}\frac1{\lambda(B_r)}
+    \int_{\partial B_r}\inner X\nu\,\dd\sigma .
+\]
+\end{corollary}
+
+\begin{proof}
+By the theorem the quotient is the mean of $\operatorname{div}X$ over
+$B_r$, which differs from $\operatorname{div}X(p)$ by at most
+$\sup_{B_r}\abs{\operatorname{div}X - \operatorname{div}X(p)}$, and
+this tends to $0$ by continuity.
+\end{proof}
+
+The divergence is the flux out of a small ball per unit of volume: the
+rate at which the field creates volume. \Cref{ch:odes-flows} makes
+this exact, as the rate of change of the volume of a set carried by
+the flow of $X$.
+
+\begin{theorem}[Kelvin--Stokes]\label{vector-calculus:thm:kelvin-stokes}
+Let $n = 3$. Let $S$ be a surface in $M$ with unit normal $\nu$, $D$ a
+compact domain with smooth boundary in $S$, and $\tau$ the unit tangent
+of the curve $\partial D$ that is positive for the boundary
+orientation. For a smooth vector field $X$,
+\[
+  \int_D\inner{\operatorname{curl}X}\nu\,\dd\sigma
+  = \int_{\partial D}\inner X\tau\,\dd s .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\iota$ be the inclusion of $S$. \Cref{stokes:thm:stokes} on the
+oriented surface $S$, for the $1$-form $\iota^*(RX)$, gives
+$\int_D\iota^*\dd(RX) = \int_{\partial D}RX$. By the definition of the
+curl and \cref{vector-calculus:prop:integrals},
+$\iota^*\dd(RX) = \iota^*(i_{\operatorname{curl}X}\operatorname{vol})
+= \inner{\operatorname{curl}X}\nu\operatorname{vol}_S$, and the
+integral of $RX$ along $\partial D$ is that of $\inner X\tau$.
+\end{proof}
+
+The orientations are tied together: seen from the side to which $\nu$
+points, the boundary is traversed counter-clockwise
+(\cref{vector-calculus:fig:kelvin}). Changing $\nu$ into $-\nu$ changes
+the sign of both sides. In the plane, with $S$ the plane itself, the
+theorem is Green's formula (\cref{stokes:ex:green}).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  \fill[bookintuition!18] (-2.4,0) arc (180:0:2.4 and 2.0)
+    arc (0:-180:2.4 and 0.7);
+  \draw[bookintuition!70!black, thick] (-2.4,0) arc (180:0:2.4 and 2.0);
+  \draw[bookintuition!70!black, dashed] (2.4,0) arc (0:180:2.4 and 0.7);
+  \draw[bookaccent, very thick,
+    decoration={markings,
+      mark=at position 0.3 with {\arrow{Stealth}},
+      mark=at position 0.75 with {\arrow{Stealth}}},
+    postaction={decorate}] (-2.4,0) arc (180:360:2.4 and 0.7);
+  \draw[->, very thick, bookpitfall] (0.7,1.55) -- (1.15,2.75)
+    node[right] {$\nu$};
+  \fill (0.7,1.55) circle (1.4pt);
+  \draw[->, thick] (0,-0.7) -- (1.0,-0.66) node[below] {$\tau$};
+  \node at (-0.7,0.95) {$D$};
+  \node[bookaccent] at (-2.3,-0.75) {$\partial D$};
+  \draw[->, bookdef, thick] (4.2,1.6) arc (-60:240:0.45 and 0.2);
+  \draw[->, bookdef, thick] (3.98,1.75) -- (3.98,2.55);
+  \node[bookdef, align=left] at (5.9,1.9)
+    {\small circulation and\\\small normal: right hand};
+\end{tikzpicture}
+\caption{A surface with boundary in space. With the normal chosen on
+the upper side, the boundary is traversed counter-clockwise when seen
+from above. The flux of the curl through the surface is the
+circulation along the boundary; it is the same for every surface with
+this boundary.}
+\label{vector-calculus:fig:kelvin}
+\end{figure}
+
+\begin{corollary}[Green's identities]\label{vector-calculus:cor:green}
+Let $D$ be a compact domain with smooth boundary in $M$, with outward
+unit normal $\nu$, and $f, g$ smooth functions. Write
+$\Delta g = \operatorname{div}\operatorname{grad}g$ and
+$\partial_\nu g = \dd g(\nu)$. Then
+\begin{align*}
+  \int_D\bigl(f\,\Delta g + \inner{\operatorname{grad}f}
+    {\operatorname{grad}g}\bigr)\,\dd\!\operatorname{vol}_M
+  &= \int_{\partial D}f\,\partial_\nu g\,\dd\sigma , \\
+  \int_D\bigl(f\,\Delta g - g\,\Delta f\bigr)\,
+    \dd\!\operatorname{vol}_M
+  &= \int_{\partial D}\bigl(f\,\partial_\nu g - g\,\partial_\nu f\bigr)
+    \,\dd\sigma .
+\end{align*}
+\end{corollary}
+
+\begin{proof}
+Apply \cref{vector-calculus:thm:divergence} to
+$X = f\operatorname{grad}g$, whose divergence is
+$f\,\Delta g + \dd f(\operatorname{grad}g)$ by
+\cref{vector-calculus:prop:identities}, with
+$\dd f(\operatorname{grad}g)
+= \inner{\operatorname{grad}f}{\operatorname{grad}g}$ and
+$\inner{\operatorname{grad}g}\nu = \partial_\nu g$. The second
+identity is the first minus the same with $f$ and $g$ exchanged.
+\end{proof}
+
+\section{The Laplacian}\label{vector-calculus:sec:laplacian}
+
+\begin{definition}[Laplacian]\label{vector-calculus:def:laplacian}
+The \emph{Laplacian} of a function $f$ on a Riemannian manifold is
+$\Delta f = \operatorname{div}\operatorname{grad}f$.
+\end{definition}
+
+In Cartesian coordinates $\Delta f = \sum_i\partial_i^2f$, the trace of
+the Hessian operator (\cref{gradient-hessian:def:hessian}). In polar
+coordinates, by \cref{vector-calculus:ex:polar},
+$\Delta f = \frac1r\partial_r(r\,\partial_rf)
++ \frac1{r^2}\partial_\theta^2f$. The Laplacian uses the inner product
+twice, in the gradient and in the volume, and no orientation.
+
+\begin{proposition}[Gradient and divergence are adjoint]
+\label{vector-calculus:prop:adjoint}
+Let $f$ be a smooth function and $X$ a smooth vector field on $M$ such
+that $fX$ has compact support. Then
+\[
+  \int_M\inner{\operatorname{grad}f}X\,\dd\!\operatorname{vol}_M
+  = -\int_Mf\operatorname{div}X\,\dd\!\operatorname{vol}_M .
+\]
+In particular, for functions with compact support,
+\[
+  \int_Mf\,(-\Delta g)\,\dd\!\operatorname{vol}_M
+  = \int_M\inner{\operatorname{grad}f}{\operatorname{grad}g}\,
+    \dd\!\operatorname{vol}_M
+  = \int_M(-\Delta f)\,g\,\dd\!\operatorname{vol}_M .
+\]
+\end{proposition}
+
+\begin{proof}
+$\dd(f\,i_X\operatorname{vol})
+= \bigl(\dd f(X) + f\operatorname{div}X\bigr)\operatorname{vol}$ has
+integral $0$ (\cref{stokes:cor:consequences}), and
+$\dd f(X) = \inner{\operatorname{grad}f}X$. Take
+$X = \operatorname{grad}g$ for the second statement.
+\end{proof}
+
+\begin{intuition}
+For the inner products $\int fg$ on functions and $\int\inner XY$ on
+vector fields, the adjoint of the gradient is minus the divergence,
+and $-\Delta = \adj{\operatorname{grad}}\operatorname{grad}$ is a
+symmetric, non-negative operator:
+$\int f(-\Delta f) = \int\norm{\operatorname{grad}f}^2\geq0$. This is
+the Laplacian $\adj\dd\,\dd$ of a graph (\cref{stokes:sec:graphs}),
+with integrals in place of sums. The minus sign of the classical
+Laplacian is a convention; the positive operator is $-\Delta$.
+\end{intuition}
+
+\paragraph{Another volume.} Let $p > 0$ be a smooth function on $M$,
+for instance a probability density with respect to the Riemannian
+volume, and measure volumes with $p\operatorname{vol}$. By
+\cref{vector-calculus:prop:div-mu},
+\[
+  \operatorname{div}_pX
+  = \operatorname{div}X + \inner{\operatorname{grad}\ln p}X ,
+  \qquad
+  \Delta_pf = \operatorname{div}_p\operatorname{grad}f
+  = \Delta f + \inner{\operatorname{grad}\ln p}{\operatorname{grad}f} ,
+\]
+and the proof of \cref{vector-calculus:prop:adjoint}, with
+$p\operatorname{vol}$ in place of $\operatorname{vol}$, gives
+\begin{equation}\label{vector-calculus:eq:weighted}
+  \int_M\inner{\operatorname{grad}f}X\,p\,\dd\!\operatorname{vol}_M
+  = -\int_Mf\,\operatorname{div}_pX\;p\,\dd\!\operatorname{vol}_M
+\end{equation}
+when $fX$ has compact support.
+
+\section{Divergence in machine learning}\label{vector-calculus:sec:ml}
+
+\begin{mlthread}[Machine learning: the score is a change of volume]
+On $\R^n$ let $p$ be a probability density with score
+$s_p = \operatorname{grad}\ln p$.
 \begin{itemize}[nosep]
-  \item Stein's identity and score matching.
-  \item Hutchinson's trace estimator for the divergence.
+  \item The expression $\inner{s_p}X + \operatorname{div}X$ of Stein's
+        identity (\cref{stokes:sec:ml}) is
+        $\operatorname{div}_pX$, the divergence of $X$ when volume is
+        measured by $p$. The identity $\E_p[\operatorname{div}_pX] = 0$
+        is \eqref{vector-calculus:eq:weighted} for $f = 1$: a field
+        cannot create probability.
+  \item $\Delta_pf = \Delta f + \inner{s_p}{\operatorname{grad}f}$ is
+        the generator of the Langevin dynamics that samples from $p$.
+        By \eqref{vector-calculus:eq:weighted},
+        $\E_p[f\,\Delta_pg]
+        = -\E_p\inner{\operatorname{grad}f}{\operatorname{grad}g}$: it
+        is symmetric and non-positive for the inner product of
+        $L^2(p)$, and it vanishes on the constants. For the standard
+        Gaussian it is
+        $\Delta f - \inner x{\operatorname{grad}f}$.
+  \item A continuous normalizing flow moves points with a velocity
+        field $X$; the logarithm of the density of a moving point
+        decreases at the rate $\operatorname{div}X$
+        (\cref{ch:odes-flows}). Training such a model needs the
+        divergence of a network at every step.
 \end{itemize}
-\end{chapterplan}
+\end{mlthread}
+
+In Cartesian coordinates the divergence is the trace of the Jacobian
+matrix $J$ of the components of $X$. Computing the $n$ diagonal entries
+of $J$ exactly takes $n$ passes of automatic differentiation. One pass
+gives a product $Ju$ or $u^\top J$
+(\cref{chain-rule-autodiff:tab:modes}), and this is enough for an
+unbiased estimate.
+
+\begin{proposition}[Hutchinson's estimator]
+\label{vector-calculus:prop:hutchinson}
+Let $J$ be an $n\times n$ matrix, $S = \frac12(J + J^\top)$, and $u$ a
+random vector with $\E[uu^\top] = I$. Then
+$\E[u^\top Ju] = \tr J$. Moreover
+\begin{enumerate}[nosep]
+  \item if the entries of $u$ are independent signs $\pm1$ with equal
+        probabilities, $\Var(u^\top Ju) = 2\sum_{i\neq j}S_{ij}^2$;
+  \item if $u$ is a standard Gaussian vector,
+        $\Var(u^\top Ju) = 2\sum_{i,j}S_{ij}^2 = 2\norm S_{\mathrm{HS}}^2$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+$\E[u^\top Ju] = \sum_{i,j}J_{ij}\E[u_iu_j] = \sum_iJ_{ii}$. Since
+$u^\top Ju = u^\top Su$, we may replace $J$ by $S$. (1) Here
+$u_i^2 = 1$, so $u^\top Su - \tr S = \sum_{i\neq j}S_{ij}u_iu_j$. For
+$i\neq j$ and $k\neq l$, $\E[u_iu_ju_ku_l]$ is $1$ if
+$\{i, j\} = \{k, l\}$ and $0$ otherwise, so the mean of the square is
+$\sum_{i\neq j}(S_{ij}^2 + S_{ij}S_{ji}) = 2\sum_{i\neq j}S_{ij}^2$.
+(2) Let $S = Q\diag(\lambda)Q^\top$ with $Q$ orthogonal
+(\cref{spectral-svd:thm:spectral}). The vector $g = Q^\top u$ is again
+standard Gaussian, and $u^\top Su = \sum_i\lambda_ig_i^2$. The $g_i^2$
+are independent with variance $\E[g^4] - 1 = 2$, so the variance is
+$2\sum_i\lambda_i^2 = 2\norm S_{\mathrm{HS}}^2$.
+\end{proof}
+
+\begin{mlthread}[Machine learning: one derivative instead of $n$]
+\begin{itemize}[nosep]
+  \item $u^\top Ju$ is the pairing of $u$ with one Jacobian--vector
+        product: the cost of one evaluation of the network, whatever
+        $n$. Averaging over a few probes $u$ reduces the variance, and
+        signs never do worse than Gaussians, by the diagonal terms.
+  \item The estimator is used for the divergence in continuous
+        normalizing flows, for the term $\operatorname{div}s$ of score
+        matching (\cref{stokes:sec:ml}), and for the Laplacian
+        $\Delta f = \tr\operatorname{Hess}f$ of a network, with
+        Hessian--vector products
+        (\cref{gradient-hessian:def:hessian}), when a differential
+        equation is imposed on it as a loss.
+  \item Only the symmetric part $S$ of $J$ appears. The Jacobian
+        matrix of a field holds two different objects: its
+        antisymmetric part is the array of $\dd(RX)$, the rotation of
+        \cref{differential-forms:sec:ml}, and the trace of its
+        symmetric part is the divergence. A gradient field has no
+        antisymmetric part; the field $(-y, x)$ of a zero-sum game has
+        no symmetric part, and preserves volume.
+\end{itemize}
+\end{mlthread}
+
+\section{Where the chapter leads}\label{vector-calculus:sec:outlook}
+
+The operators of this chapter are static: they are computed at one
+time from one field. \Cref{ch:odes-flows} lets a vector field move
+points, by solving a differential equation. The divergence then
+becomes the rate of change of volume along the flow, and the two
+operations $\dd$ and $i_X$ combine into the derivative of a form along
+the flow. The transport of a density by a flow, which is the
+mathematics of continuous normalizing flows and of diffusion models,
+is the divergence theorem read in time.
+
+\paragraph{Sources.} Hubbard and Hubbard define the work form, the
+flux form and the mass form (Definitions~6.5.1, 6.5.2 and~6.5.4, and
+6.5.10, 6.5.11 on $\R^n$), then gradient, curl and divergence by the
+exterior derivatives of these forms (Definition~6.8.1,
+Theorem~6.8.3), and derive the theorems of vector calculus from the
+generalized Stokes theorem: Green's theorem (6.11.2), Stokes's theorem
+for surfaces (6.11.4) and the divergence theorem (6.11.6). Loomis and
+Sternberg define the divergence of a vector field with respect to a
+density, without a metric, and prove the divergence theorem in that
+form (\S10.5 and \S10.6, Theorem~6.1); the correspondence with
+classical vector analysis is their Appendix~I to Chapter~11. The trace
+estimator is from M.~F.~Hutchinson, A stochastic estimator of the
+trace of the influence matrix for Laplacian smoothing splines,
+\emph{Comm.\ Statist.\ Simulation Comput.}, 1989; its use for
+continuous flows from W.~Grathwohl et al., FFJORD: Free-form
+continuous dynamics for scalable reversible generative models, ICLR,
+2019.
+
+\paragraph{Notebook.} The numerical claims of this chapter are checked
+with PyTorch in \notebook{24-vector-calculus.ipynb}.
+
+\begin{chaptersummary}
+\begin{itemize}[nosep]
+  \item A vector field has a work form $RX$, integrated along curves,
+        and a flux form $i_X\operatorname{vol} = \star RX$, integrated
+        over hypersurfaces, where it gives $\int\inner X\nu\,\dd\sigma$.
+  \item Gradient, curl and divergence are the exterior derivative
+        between forms of degrees $0, 1, 2, 3$, read through this
+        dictionary. $\operatorname{curl}\operatorname{grad} = 0$ and
+        $\operatorname{div}\operatorname{curl} = 0$ are
+        $\dd\circ\dd = 0$.
+  \item The gradient needs an inner product. The divergence needs only
+        a volume: $\operatorname{div}_\mu X
+        = \frac1\rho\sum_i\partial_i(\rho X_i)$. The curl needs an
+        inner product, an orientation and dimension three.
+  \item The divergence theorem and the Kelvin--Stokes theorem are
+        Stokes' theorem for the flux form and for the work form.
+  \item $-\Delta = \adj{\operatorname{grad}}\operatorname{grad}$ is
+        symmetric and non-negative. With the volume $p\operatorname{vol}$
+        the divergence becomes $\operatorname{div}X
+        + \inner{\operatorname{grad}\ln p}X$, the operator of Stein's
+        identity.
+  \item $\E[u^\top Ju] = \tr J$: the divergence of a network is
+        estimated with one Jacobian--vector product.
+\end{itemize}
+\end{chaptersummary}
+
+\section*{Exercises}
+\addcontentsline{toc}{section}{Exercises}
+
+\begin{exercise}\label{vector-calculus:exr:1}
+In $\R^3$ with Cartesian coordinates $(x, y, z)$:
+\begin{enumerate}[nosep]
+  \item compute the curl and the divergence of $X = (yz, xz, xy)$ and
+        of $Y = (-y, x, z)$, and find a potential when there is one;
+  \item compute the curl of $Z = (xy^2, yz^2, zx^2)$ and check that
+        its divergence is $0$.
+\end{enumerate}
+\solutionlink{vector-calculus:exr:1}
+\end{exercise}
+
+\begin{exercise}\label{vector-calculus:exr:2}
+\begin{enumerate}[nosep]
+  \item From \cref{vector-calculus:ex:polar}, derive the Laplacian in
+        polar coordinates, and check that $r^k\cos k\theta$ has
+        Laplacian $0$ for every integer $k\geq1$.
+  \item In spherical coordinates
+        $(r, \theta, \phi)$ of $\R^3$, with
+        $\operatorname{vol} = r^2\sin\theta\,
+        \dd r\wedge\dd\theta\wedge\dd\phi$, write the divergence of
+        $X = X_r\,\partial_r$ and deduce that $X = r^{-3}E$, with $E$
+        the radial field, has divergence $0$ outside the origin.
+\end{enumerate}
+\solutionlink{vector-calculus:exr:2}
+\end{exercise}
+
+\begin{exercise}\label{vector-calculus:exr:3}
+Check the divergence theorem for $X = (x^3, y^3, z^3)$ on the unit
+ball of $\R^3$, computing both sides.
+\hint{$\int_{S^2}x^4\,\dd\sigma = \frac{4\pi}5$.}
+\solutionlink{vector-calculus:exr:3}
+\end{exercise}
+
+\begin{exercise}\label{vector-calculus:exr:4}
+Let $X = (-y, x, 0)$ in $\R^3$ and let $D$ be the upper half of the
+unit sphere, with the normal pointing away from the origin.
+\begin{enumerate}[nosep]
+  \item Compute both sides of
+        \cref{vector-calculus:thm:kelvin-stokes}.
+  \item Find another surface with the same boundary on which the
+        left-hand side is immediate.
+\end{enumerate}
+\solutionlink{vector-calculus:exr:4}
+\end{exercise}
+
+\begin{exercise}\label{vector-calculus:exr:5}
+Let $p$ be the density of the standard Gaussian on $\R^n$ and
+$\Delta_pf = \Delta f - \inner x{\operatorname{grad}f}$.
+\begin{enumerate}[nosep]
+  \item Compute $\Delta_pf$ for $f = x_i$, $f = x_i^2 - 1$ and
+        $f = x_ix_j$ with $i\neq j$.
+  \item Admitting \eqref{vector-calculus:eq:weighted} for polynomials,
+        deduce that $\E[x_i(x_j^2 - 1)] = 0$ without computing any
+        integral.
+\end{enumerate}
+\solutionlink{vector-calculus:exr:5}
+\end{exercise}
+
+\begin{exercise}\label{vector-calculus:exr:6}
+Let $D$ be a closed ball of a Euclidean affine space and $f$ a smooth
+function on a neighbourhood of $D$ with $\Delta f = 0$ in $D$.
+\begin{enumerate}[nosep]
+  \item Show that $\int_{\partial D}\partial_\nu f\,\dd\sigma = 0$.
+  \item Show that if $f = 0$ on $\partial D$, then $f = 0$ on $D$.
+        Deduce that two functions with the same Laplacian in $D$ and
+        the same values on $\partial D$ are equal.
+\end{enumerate}
+\solutionlink{vector-calculus:exr:6}
+\end{exercise}
+
+\begin{exercise}\label{vector-calculus:exr:7}
+\begin{enumerate}[nosep]
+  \item For a diagonal matrix $J$, compare the variances of the two
+        estimators of \cref{vector-calculus:prop:hutchinson}.
+  \item What does the estimator give for an antisymmetric $J$?
+  \item For $J = \begin{bsmallmatrix}1 & 2\\ 0 & 3\end{bsmallmatrix}$,
+        list the values of $u^\top Ju$ for the four vectors of signs
+        and check the mean and the variance.
+\end{enumerate}
+\solutionlink{vector-calculus:exr:7}
+\end{exercise}
+
+\begin{exercise}\label{vector-calculus:exr:8}
+In the oriented Euclidean plane, let $\mathcal J$ be the rotation by a
+quarter turn, $\mathcal J(a, b) = (-b, a)$, and for $X = (P, Q)$ let
+$c(X) = \partial_xQ - \partial_yP$.
+\begin{enumerate}[nosep]
+  \item Show that $i_X\operatorname{vol} = R(\mathcal JX)$, and deduce
+        that $\operatorname{div}X = c(\mathcal JX)$.
+  \item Show that, on the boundary of a domain, the unit tangent is
+        $\tau = \mathcal J\nu$, and that the divergence theorem for $X$
+        is Green's formula for $\mathcal JX$.
+  \item Compute the divergence and $c$ for the field $(y, -x)$ of the
+        game of \cref{differential-forms:sec:ml}.
+\end{enumerate}
+\solutionlink{vector-calculus:exr:8}
+\end{exercise}
 \end{notechapter}
