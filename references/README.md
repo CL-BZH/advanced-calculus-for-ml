@@ -28,6 +28,8 @@ ignored by git.
 | N. Boumal, *An Introduction to Optimization on Smooth Manifolds*, Cambridge University Press, 2023 | Ch. 12, 13, 14 | [the author's page](https://www.nicolasboumal.net/book/), with the recorded lectures of his course; DOI 10.1017/9781009166164 | Free pre-publication PDF from the author's page; each page of it is marked "free for personal use only" |
 | J. Gallier and J. Quaintance, *Algebra, Topology, Differential Calculus, and Optimization Theory for Computer Science and Machine Learning*, online manuscript, version of 16 November 2026 | Ch. 1, 2, 6 | [the first author's copy at the University of Pennsylvania](https://www.cis.upenn.edu/~jean/math-deep.pdf) | Free PDF from the author's site, marked "© Jean Gallier"; no licence stated on the first pages. The file is revised from time to time, so chapter numbers may change. |
 | A. Griewank and A. Walther, *Evaluating Derivatives*, 2nd ed., SIAM, 2008 | Ch. 7 | DOI 10.1137/1.9780898717761 | Commercial |
+| M. Capiński and E. Kopp, *Measure, Integral and Probability*, 2nd ed., Springer Undergraduate Mathematics Series, Springer, 2004, ISBN 9781852337810 | Ch. 16, 17, 18, 19, App. A | [Springer](https://www.springer.com/978-1-85233-781-0); DOI 10.1007/978-1-4471-0645-6 | Commercial |
+| W. Rudin, *Real and Complex Analysis*, 3rd ed., McGraw-Hill, 1987, ISBN 9780070542341 | Ch. 19 | [McGraw-Hill](https://www.mheducation.com/highered/product.M0070542341.html) | Commercial |
 
 ## Papers
 
