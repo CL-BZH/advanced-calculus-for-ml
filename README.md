@@ -108,7 +108,7 @@ checks the conventions and identities the proofs rest on — the action of a
 permutation on a multilinear form, the normalization of the wedge product,
 the change of basis of components, the Hodge star, the signs in Theorem 22.12
 and in Cartan's formula, and a few identities used in passing. It is the only
-notebook that uses SymPy. `statements.ipynb` takes forty-five theorems,
+notebook that uses SymPy. `statements.ipynb` takes sixty-three theorems,
 re-implements each one from its statement alone, and looks for a
 counterexample on random instances: a wrong constant, a reversed inequality
 or a rate that is too strong would fail there, even though a proof cannot be
