@@ -856,7 +856,8 @@ of storing a covector as a vector, here as everywhere else
   \item \emph{Activation} applied to each coordinate,
         $\sigma(x)_i = s(x_i)$ with $s$ of class $C^1$:
         $D\sigma(x) = \diag\bigl(s'(x_1),\dots,s'(x_n)\bigr)$ by
-        \cref{differential:cor:c1}. For the ReLU, $s(t) = \max(t, 0)$ is
+        \cref{differential:cor:c1,differential:thm:jacobian}. For the
+        ReLU, $s(t) = \max(t, 0)$ is
         not differentiable at $0$, so $\sigma$ is not differentiable at
         the points having a zero coordinate. Libraries return $0$ there:
         a convention, not a derivative.
@@ -926,13 +927,19 @@ tangent affine map''.
 after a section on the classes $O$ and $o$ of ``infinitesimals'' (\S3.5).
 Their \S3.7 treats tangent vectors of arcs and directional derivatives
 (Theorem~7.2 is \cref{differential:thm:velocity}), \S3.8 product spaces,
-and \S3.9 partial derivatives in $\R^n$ (Theorems~9.2 and~9.3 correspond
-to \cref{differential:thm:jacobian,differential:thm:c1}); the tangent
+and \S3.9 partial derivatives in $\R^n$: their Theorem~9.2 gives the
+partial derivatives as the skeleton of the differential and their
+Theorem~9.4 the Jacobian matrix
+(\cref{differential:thm:jacobian}), while their Theorem~9.3 asks for
+partial derivatives continuous on the whole open set, so it is
+\cref{differential:cor:c1} and not the sharper pointwise criterion
+\cref{differential:thm:c1}; the tangent
 plane to a graph is their Theorem~10.2. Hubbard and Hubbard define the
 derivative as a linear transformation in \S1.7 (Definition~1.7.9; the
 Jacobian matrix is Theorem~1.7.10), where the examples $A\mapsto A^2$ and
 $A\mapsto A^{-1}$ are Example~1.7.17 and Proposition~1.7.18. Their
-Theorem~1.9.8 is \cref{differential:thm:c1}, and the derivative of the
+Theorem~1.9.8 is the global statement again,
+\cref{differential:cor:c1}, and the derivative of the
 determinant is their Theorem~4.8.15. Neither book works in affine
 spaces: both differentiate maps between vector spaces. Gallier and
 Quaintance do (\emph{Algebra, Topology, Differential Calculus, and

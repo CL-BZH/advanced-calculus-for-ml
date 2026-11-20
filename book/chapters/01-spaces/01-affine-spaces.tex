@@ -97,8 +97,8 @@ $a, b\in\Aff$ and $u, v\in V$:
 \begin{enumerate}[nosep]
   \item $a + 0 = a$;
   \item $(a + u) + v = a + (u + v)$;
-  \item there is exactly one $v\in V$ such that $a + v = b$; it is written
-        $b - a$.
+  \item there is exactly one $w\in V$ such that $a + w = b$; it is
+        written $b - a$.
 \end{enumerate}
 The space $V$ is the \emph{direction} of $\Aff$, and the \emph{dimension} of
 $\Aff$ is the dimension of $V$.
@@ -286,7 +286,7 @@ Let $a_1,\dots,a_k\in\Aff$, $\lambda_1,\dots,\lambda_k\in\R$ and $o\in\Aff$.
         \emph{affine combination}, or \emph{barycentre}, of the $a_i$.
   \item If $\sum_i\lambda_i = 0$, the vector $\sum_i\lambda_i(a_i - o)$ does
         not depend on $o$. It is also written $\sum_i\lambda_ia_i$.
-  \item In all other cases, both depend on $o$.
+  \item In all other cases, and if $V\neq\{0\}$, both depend on $o$.
 \end{enumerate}
 \end{proposition}
 
@@ -526,8 +526,10 @@ convex, because the weights produced by
 \cref{affine-spaces:prop:associativity} are non-negative when the
 $\lambda_{ji}$ and the $\mu_j$ are. It is the smallest convex set containing
 $S$: a convex set $C$ contains every convex combination
-$\sum_{i=1}^k\lambda_ia_i$ of its points, by induction on $k$. For $k = 2$
-this is the definition. For $k > 2$ with $\lambda_k\neq1$, the point
+$\sum_{i=1}^k\lambda_ia_i$ of its points, by induction on $k$. For
+$k = 1$ the combination is $a_1$, and for $k = 2$ it is the definition;
+if $\lambda_k = 1$ the other weights vanish and the combination is
+$a_k$. For $k > 2$ with $\lambda_k\neq1$, the point
 $b = \sum_{i<k}\frac{\lambda_i}{1 - \lambda_k}a_i$ is a convex combination of
 $k - 1$ points, hence in $C$, and
 $\sum_{i\leq k}\lambda_ia_i = (1 - \lambda_k)b + \lambda_ka_k$ by
@@ -726,8 +728,9 @@ follow from this section.
         changes the bias and not the weight matrix: $Wx + b
         = W(x - \mu) + (b + W\mu)$. A layer with a bias can absorb any
         choice of origin of its input space. A layer without bias cannot:
-        the family of maps $x\mapsto Wx$ singles out the input that is
-        sent to zero (\cref{affine-spaces:exr:6}).
+        the family of maps $x\mapsto Wx$ singles out one input, the
+        origin, which every member of the family sends to zero
+        (\cref{affine-spaces:exr:6}).
   \item If $g$ is affine and $f$ is convex, then $f\circ g$ is convex
         (\cref{affine-spaces:exr:9}). This is why least squares and
         logistic regression are convex problems in their parameters: the
@@ -1023,10 +1026,11 @@ appear in their \S1.4 as translates of linear subspaces of a vector space.
 Systematic treatments of affine spaces are in Berger
 (\emph{Geometry~I}, Springer, 1987), whose Chapter~2 defines an affine
 space as a faithful and transitive action of the additive group of a
-vector space (2.1.1), observes that such an action is simply transitive
-(2.1.3), and gives the equivalent definition by the difference map with
-Chasles' relation (2.1.5 and~2.1.6), which is
-\cref{affine-spaces:def:affine} here; and in Gallier
+vector space (2.1.1) and observes that such an action is simply
+transitive (2.1.3), which together give
+\cref{affine-spaces:def:affine} here, his alternative definition by the
+difference map with Chasles' relation (2.1.5 and~2.1.6) being the one
+of the remark above; and in Gallier
 (\emph{Geometric Methods and Applications}, 2nd ed., Springer, 2011),
 whose Chapter~2, ``Basics of Affine Geometry'', opens with the same
 distinction between points and vectors. Gallier and

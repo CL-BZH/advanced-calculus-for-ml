@@ -35,7 +35,8 @@ available to blur them with vectors. You will learn
 \end{itemize}
 \prerequisites{\cref{ch:affine-spaces}; bases, dimension, the
 rank--nullity theorem and matrix products (Loomis and Sternberg,
-\emph{Advanced Calculus}, \S2.1--2.2; Hubbard and Hubbard, \emph{Vector
+\emph{Advanced Calculus}, \S2.1--2.2 and~\S2.4; Hubbard and Hubbard,
+\emph{Vector
 Calculus, Linear Algebra, and Differential Forms}, \S2.4--2.5). All vector
 spaces are real and finite-dimensional. Nothing in this chapter uses an
 inner product.}
@@ -536,9 +537,11 @@ The word \emph{transpose} hides a second trap.
         ``not as innocent as it looks'' and is defined geometrically only
         when an inner product is given (\S1.7, p.~126).
 \end{itemize}
-In this chapter, transposes of matrices are everywhere and transposes of
-rows are nowhere, except in \cref{duality:sec:basis-test}, whose subject is
-what goes wrong with them.
+In this chapter, transposes of matrices are everywhere and transposes
+of rows are rare: one appears only where a row of components has to be
+turned into a column to be fed to an array, and in
+\cref{duality:sec:basis-test}, whose subject is what goes wrong with
+them.
 \end{pitfall}
 
 \begin{mlthread}[Machine learning: the backward pass of a linear layer]
@@ -619,7 +622,9 @@ $\bigl(\dual{(\dual A)}\iota_V(v)\bigr)(\psi)
 \subsection{$V$ and $V^*$: three kinds of square arrays}
 
 There is no counterpart of $\iota$ between $V$ and $V^*$. Every basis
-gives an isomorphism, and different bases give different ones.
+gives an isomorphism, and two bases give the same one exactly when the
+matrix $P$ between them satisfies $P^\top P = I$
+(\cref{duality:prop:identification}).
 
 \begin{definition}[Bilinear form, Gram matrix]\label{duality:def:bilinear}
 A \emph{bilinear form} on $V$ is a map $b:V\times V\to\R$ that is linear
@@ -896,8 +901,8 @@ Take $\gamma = (2, 1)$. In the basis $e$, the step is $-\eta(1, 1)$.
         $P = \frac1{\sqrt2}\begin{bsmallmatrix}1 & -1\\1 & 1
         \end{bsmallmatrix}$. Then
         $P^\top\gamma = \frac1{\sqrt2}(3, -1)$, its sign is $(1, -1)$, and
-        the step is $-\eta P(1, -1) = -\eta(\sqrt2, 0)$: another length
-        and another direction, although $P^\top P = I$.
+        the step is $-\eta P(1, -1) = -\eta(\sqrt2, 0)$: another
+        direction, although $P^\top P = I$.
   \item \emph{Change of unit}: $P = \begin{bsmallmatrix}2 & 0\\0 & 1
         \end{bsmallmatrix}$. Then $P^\top\gamma = (4, 1)$, its sign is
         $(1, 1)$, and the step is $-\eta P(1, 1) = -\eta(2, 1)$.
@@ -960,8 +965,9 @@ $PP^\top = I$ for a signed permutation matrix.
 
 \Cref{duality:ex:sign} shows that the proposition does not extend to
 rotations or to changes of unit. The step of sign descent is
-$-\eta\sum_i\mathrm{sign}\bigl(\phi(e_i)\bigr)e_i$: one unit along each
-basis vector, in the direction that decreases the loss. It is built from
+$-\eta\sum_i\mathrm{sign}\bigl(\phi(e_i)\bigr)e_i$: a step of size
+$\eta$ along each basis vector on which $\phi$ does not vanish, in the
+direction that decreases the loss. It is built from
 the basis vectors themselves, and it is neither the component array of a
 vector nor that of a covector. The same is true of Adam, RMSProp and the
 other methods that divide or rescale coordinate by coordinate. These
