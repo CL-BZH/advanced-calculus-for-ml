@@ -805,11 +805,20 @@ partial derivatives (Theorem~3.3.8) and Taylor's theorem in several
 variables (Theorem~3.3.16) in \S3.3, and classify critical points by the
 signature of the quadratic form in \S3.6 (Theorem~3.6.8); their gradient
 is the transpose of the row of partial derivatives (\S1.7), that is, the
-gradient for the dot product. For convexity, the descent lemma and the
-rates of gradient descent, see Y.~Nesterov, \emph{Lectures on Convex
-Optimization}, 2nd ed., Springer, 2018, and S.~Boyd and
-L.~Vandenberghe, \emph{Convex Optimization}, Cambridge University Press,
-2004, where the affine invariance of Newton's method is emphasized.
+gradient for the dot product.
+Y.~Nesterov, \emph{Lectures on Convex Optimization}, 2nd ed.,
+Springer, 2018, proves the descent lemma (his Lemma~1.2.3, as a
+two-sided bound on $f(y) - f(x) - \inner{\nabla f(x)}{y - x}$), lists
+equivalent forms of convexity for $L$-smooth functions
+(Theorem~2.1.5), and estimates the gradient method: the bound
+(1.2.22) on $\min_k\norm{\nabla f(x_k)}$ in \S1.2.3 is (1) of
+\cref{gradient-hessian:thm:rates}; his Theorem~2.1.15 is the linear
+rate for strongly convex functions, with the step $2/(\mu + L)$ and on
+the distance to the minimizer rather than on the values. S.~Boyd and
+L.~Vandenberghe, \emph{Convex Optimization}, Cambridge University
+Press, 2004, state the first-order characterization of convexity in
+\S3.1.3 and emphasize the affine invariance of Newton's method in
+\S9.5, as we do in \cref{gradient-hessian:prop:newton}.
 Hessian--vector products: B.~A.~Pearlmutter, Fast exact multiplication
 by the Hessian, \emph{Neural Computation}, 1994. Sharp minima and
 reparametrization: L.~Dinh, R.~Pascanu, S.~Bengio and Y.~Bengio, Sharp
