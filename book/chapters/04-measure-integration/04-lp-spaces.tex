@@ -46,8 +46,10 @@ Let $Z$ be an integrable random variable with values in an open interval
 $I$, and $\phi:I\to\R$ a convex differentiable function. Then
 $\E[Z]\in I$, the negative part of $\phi(Z)$ is integrable, and
 \[
-  \phi\bigl(\E[Z]\bigr)\leq\E\bigl[\phi(Z)\bigr]\in(-\infty, \infty] .
+  \phi\bigl(\E[Z]\bigr)\leq\E\bigl[\phi(Z)\bigr]\in(-\infty, \infty] ,
 \]
+the expectation being read in the extended sense of
+\cref{lebesgue-integral:rem:extended}.
 If $\phi$ is strictly convex, equality holds only if $Z = \E[Z]$ almost
 surely.
 \end{theorem}
@@ -58,7 +60,10 @@ then $Z - a > 0$, so $\E[Z - a] > 0$
 (\cref{lebesgue-integral:prop:markov}): $m\in I$. A convex function lies
 above its tangents (\cref{gradient-hessian:thm:convex}):
 $\phi(z)\geq L(z)$ with $L(z) = \phi(m) + \phi'(m)(z - m)$. So
-$\phi(Z)\geq L(Z)$, which is integrable, and
+$\phi(Z)\geq L(Z)$, which is integrable; hence the negative part of
+$\phi(Z)$ is integrable, its expectation is defined in the extended
+sense and, by the monotonicity recorded in
+\cref{lebesgue-integral:rem:extended},
 $\E[\phi(Z)]\geq\E[L(Z)] = \phi(m)$. If $\phi$ is strictly convex, then
 $\phi(z) > L(z)$ for $z\neq m$: otherwise at the midpoint $c$ of $m$ and
 $z$ we would have $\phi(c) < \frac12(L(m) + L(z)) = L(c)$. In case of
@@ -553,7 +558,9 @@ rest does not matter.
 \end{intuition}
 
 By \cref{fubini:lem:density}, $\int g\,\dd\nu = \int g\,
-\frac{\dd\nu}{\dd\mu}\,\dd\mu$. If $\nu\ll\mu\ll\rho$, applying this twice
+\frac{\dd\nu}{\dd\mu}\,\dd\mu$. If $\nu\ll\mu\ll\rho$, all three
+measures being $\sigma$-finite so that \cref{lp-spaces:thm:rn}
+provides the densities, applying this twice
 and using uniqueness gives the chain rule
 $\frac{\dd\nu}{\dd\rho} = \frac{\dd\nu}{\dd\mu}\frac{\dd\mu}{\dd\rho}$,
 $\rho$-almost everywhere.
@@ -573,9 +580,14 @@ density is $W$.
 \end{proof}
 
 For an integrable $Z$ one sets
-$\E[Z\mid\mathcal G] = \E[Z^+\mid\mathcal G] - \E[Z^-\mid\mathcal G]$;
-for $Z\in L^2$ it is the projection of \cref{lp-spaces:thm:condexp}, by
-(1) of that theorem and uniqueness.
+$\E[Z\mid\mathcal G] = \E[Z^+\mid\mathcal G] - \E[Z^-\mid\mathcal G]$.
+Uniqueness extends to signed functions: if $W_1$ and $W_2$ are
+$\mathcal G$-measurable and integrable with
+$\E[W_11_G] = \E[W_21_G]$ for every $G\in\mathcal G$, then
+$G = \{W_1 > W_2\}$ gives $\E[(W_1 - W_2)1_G] = 0$ with a non-negative
+integrand, so $W_1\leq W_2$ almost surely, and symmetrically. For
+$Z\in L^2$ the conditional expectation is therefore the projection of
+\cref{lp-spaces:thm:condexp}, by (1) of that theorem.
 
 \section{Likelihood ratios and the Kullback--Leibler divergence}
 \label{lp-spaces:sec:kl}
@@ -618,8 +630,10 @@ with the convention $0\ln0 = 0$.
 (1) Let $f = \frac{\dd Q}{\dd P}$ and $\phi(t) = t\ln t$, a strictly
 convex function on $[0, \infty)$ with tangent $t - 1$ at $t = 1$. So
 $\phi(f)\geq f - 1$, which is integrable with
-$\int(f - 1)\,\dd P = Q(X) - P(X) = 0$: the integral of $\phi(f)$ is
-defined and non-negative. If it is $0$, then $\phi(f) - (f - 1)\geq0$
+$\int(f - 1)\,\dd P = Q(X) - P(X) = 0$: the negative part of $\phi(f)$
+is integrable, so the integral of $\phi(f)$ is defined in the extended
+sense of \cref{lebesgue-integral:rem:extended} and is non-negative.
+If it is $0$, then $\phi(f) - (f - 1)\geq0$
 has integral $0$, so $f = 1$ almost everywhere, that is, $Q = P$.
 
 (2) $\int\phi(f)\,\dd P = \int_{\{p > 0\}}\frac qp\ln\frac qp\,p\,\dd\mu$
@@ -630,7 +644,8 @@ $T_\#Q\ll T_\#P$ if and only if $Q\ll P$. The density of $T_\#Q$ with
 respect to $T_\#P$ is then $f\circ T^{-1}$, as
 $\int_Bf\circ T^{-1}\,\dd(T_\#P) = \int_{T^{-1}(B)}f\,\dd P
 = Q(T^{-1}(B))$ by \cref{lebesgue-integral:thm:transfer}; and the same
-theorem gives
+theorem, applied to the positive and the negative part of $\phi(f)$
+separately (\cref{lebesgue-integral:rem:extended}), gives
 $\int\phi(f\circ T^{-1})\,\dd(T_\#P) = \int\phi(f)\,\dd P$.
 \end{proof}
 

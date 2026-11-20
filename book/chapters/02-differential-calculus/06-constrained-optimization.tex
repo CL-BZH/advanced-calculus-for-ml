@@ -496,7 +496,14 @@ Among the probability vectors $p$ on $n$ outcomes with a prescribed mean
 $\sum_ip_iE_i = e$ of a quantity $E$, which one is the least committal?
 Maximize the entropy $H(p) = -\sum_ip_i\log p_i$ on the open set
 $p_i > 0$, under the two constraints $\sum_ip_i = 1$ and
-$\sum_ip_iE_i = e$. \Cref{constrained-optimization:thm:lagrange} gives
+$\sum_ip_iE_i = e$. Assume the $E_i$ are not all equal, so that the
+differentials of the two constraints are independent and every feasible
+point is regular, and that $\min_iE_i < e < \max_iE_i$, so that the
+maximum is attained in the open set: $H$ is continuous on the compact
+feasible set of the closed simplex, and at a feasible point with some
+$p_i = 0$ a feasible increase of $p_i$ raises $H$, because
+$\partial_iH = -\log p_i - 1$ tends to $+\infty$ as $p_i\to0^+$.
+\Cref{constrained-optimization:thm:lagrange} then gives
 multipliers $\lambda_0$, $\beta$ with
 \[
   -\log p_i - 1 + \lambda_0 + \beta E_i = 0 ,

@@ -177,8 +177,9 @@ function $f$ & mass form $f\operatorname{vol} = \star f$ & $n$
   & oriented domains \\
 \bottomrule
 \end{tabular}
-\caption{The dictionary. The first two lines use the inner product,
-the last two the volume form. In dimension $3$ the degrees are
+\caption{The dictionary. The first line uses no structure, the second
+the inner product, the last two the volume form. In dimension $3$
+the degrees are
 $0, 1, 2, 3$ and every form is on the list
 (\cref{differential-forms:tab:degrees}).}
 \label{vector-calculus:tab:dictionary}
@@ -405,8 +406,8 @@ $\frac1r\partial_\theta$, which changes them once more.
 \section{The integral theorems}\label{vector-calculus:sec:theorems}
 
 \begin{theorem}[Divergence theorem]\label{vector-calculus:thm:divergence}
-Let $D$ be a compact domain with smooth boundary in $M$, $\nu$ its
-outward unit normal and $X$ a smooth vector field. Then
+Let $n\geq2$, let $D$ be a compact domain with smooth boundary in $M$,
+$\nu$ its outward unit normal and $X$ a smooth vector field. Then
 \[
   \int_D\operatorname{div}X\,\dd\!\operatorname{vol}_M
   = \int_{\partial D}\inner X\nu\,\dd\sigma .
@@ -418,7 +419,10 @@ outward unit normal and $X$ a smooth vector field. Then
 $\int_D(\operatorname{div}X)\operatorname{vol}
 = \int_{\partial D}i_X\operatorname{vol}$, and the right-hand side is
 the flux by \cref{vector-calculus:prop:integrals}, the boundary
-orientation being that of the outward normal.
+orientation being that of the outward normal. For $n = 1$ the boundary
+is a finite set of points and no flux integral is available, but
+\cref{stokes:thm:stokes} still applies and gives the signed sum of the
+values of $X$ there: the fundamental theorem of calculus.
 \end{proof}
 
 \begin{corollary}[Meaning of the divergence]\label{vector-calculus:cor:meaning}
@@ -563,7 +567,12 @@ In particular, for functions with compact support,
 $\dd(f\,i_X\operatorname{vol})
 = \bigl(\dd f(X) + f\operatorname{div}X\bigr)\operatorname{vol}$ has
 integral $0$ (\cref{stokes:cor:consequences}), and
-$\dd f(X) = \inner{\operatorname{grad}f}X$. Take
+$\dd f(X) = \inner{\operatorname{grad}f}X$. The sum may be split
+because both terms vanish off $K = \operatorname{supp}(fX)$: a point
+outside $K$ has a neighbourhood on which $fX\equiv0$, so if $X\neq0$
+at the point then $f\equiv0$ near it and $\dd f = 0$ there, while if
+$X = 0$ at the point then $\dd f(X) = 0$ anyway; exchanging the roles
+of $f$ and $X$ gives $f\operatorname{div}X = 0$ off $K$ as well. Take
 $X = \operatorname{grad}g$ for the second statement.
 \end{proof}
 
@@ -601,7 +610,11 @@ when $fX$ has compact support.
 
 \begin{mlthread}[Machine learning: the score is a change of volume]
 On $\R^n$ let $p$ be a probability density with score
-$s_p = \operatorname{grad}\ln p$.
+$s_p = \operatorname{grad}\ln p$, and let the fields and functions
+below be such that the products to which
+\eqref{vector-calculus:eq:weighted} is applied have compact support,
+or decrease fast enough for the argument to pass to the limit over
+large balls, as in \cref{stokes:sec:ml}.
 \begin{itemize}[nosep]
   \item The expression $\inner{s_p}X + \operatorname{div}X$ of Stein's
         identity (\cref{stokes:sec:ml}) is
@@ -675,7 +688,8 @@ $2\sum_i\lambda_i^2 = 2\norm S_{\mathrm{HS}}^2$.
         equation is imposed on it as a loss.
   \item Only the symmetric part $S$ of $J$ appears. The Jacobian
         matrix of a field holds two different objects: its
-        antisymmetric part is the array of $\dd(RX)$, the rotation of
+        antisymmetric part is $-\frac12$ times the array $J^\top - J$
+        of $\dd(RX)$, the rotation of
         \cref{differential-forms:sec:ml}, and the trace of its
         symmetric part is the divergence. A gradient field has no
         antisymmetric part; the field $(-y, x)$ of a zero-sum game has

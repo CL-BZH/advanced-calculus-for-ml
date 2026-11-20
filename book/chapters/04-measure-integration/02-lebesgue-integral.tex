@@ -230,6 +230,25 @@ $\int g - \int f = \int(g - f)\geq0$. Finally
 $\pm f\leq\abs f$.
 \end{proof}
 
+\begin{remark}[The integral in the extended sense]
+\label{lebesgue-integral:rem:extended}
+When only one of $\int f^+\,\dd\mu$ and $\int f^-\,\dd\mu$ is
+infinite, their difference still makes sense, and
+$\int f\,\dd\mu$ is given that value in $[-\infty, \infty]$; $f$ is
+integrable exactly when the value is finite, so this extends
+\cref{lebesgue-integral:def:integrable} and agrees with
+\cref{lebesgue-integral:def:positive} for $f\geq0$. Only
+$\infty - \infty$ is excluded, and only linearity is lost: if
+$f\leq g$ and both integrals are defined in this sense, then
+$f^+\leq g^+$ and $f^-\geq g^-$ give
+$\int f\,\dd\mu\leq\int g\,\dd\mu$, so the monotonicity of
+\cref{lebesgue-integral:thm:linear} survives. Every later statement
+about integrals that is proved for the positive and the negative part
+separately holds in this sense as well. This is the sense in
+which $\E[\phi(Z)]$ is read in \cref{lp-spaces:thm:jensen} and
+$\int\phi(f)\,\dd P$ in \cref{lp-spaces:def:kl}.
+\end{remark}
+
 \begin{definition}[Almost everywhere]\label{lebesgue-integral:def:ae}
 A property of the points of $X$ holds \emph{almost everywhere} if it
 holds outside a null set.
@@ -470,9 +489,14 @@ $\theta\mapsto f(x, \theta)$ is Lipschitz on $U$ with constant $g(x)$.
 \begin{proof}
 Let $x$ be outside the null set where (1) or (2) fails. Dividing (1) by
 $\norm{\theta - \theta_0}$ and letting $\theta\to\theta_0$ along a line
-gives $\abs{\dd_\theta f(x, \theta_0)h}\leq g(x)\norm h$. The function
-$x\mapsto\dd_\theta f(x, \theta_0)h$ is a limit of difference quotients,
-hence measurable (\cref{measures:thm:limits}), and it is integrable. So
+gives $\abs{\dd_\theta f(x, \theta_0)h}\leq g(x)\norm h$. The
+quotients $x\mapsto n\bigl(f(x, \theta_0 + h/n) - f(x, \theta_0)\bigr)$,
+defined for $n$ large enough that $\theta_0 + h/n\in U$, are
+measurable, so their upper limit $D$ is measurable
+(\cref{measures:thm:limits}); $D$ equals $\dd_\theta f(x, \theta_0)h$
+outside that null set, it is integrable by the bound just obtained,
+and replacing one by the other changes no integral
+(\cref{lebesgue-integral:prop:ae}). So
 $\Lambda h = \int\dd_\theta f(x, \theta_0)h\,\dd\mu(x)$ is defined and
 linear in $h$. Now let $h_n\to0$ with $h_n\neq0$ and
 \[

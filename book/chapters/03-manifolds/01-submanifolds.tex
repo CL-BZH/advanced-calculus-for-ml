@@ -575,8 +575,11 @@ by the covector $\inner x\cdot$.
 The probability vectors with positive entries,
 $\Delta^\circ = \{p\in\R^n : p_i > 0,\ \sum_ip_i = 1\}$, form an open
 subset of the affine hyperplane $H$ of \cref{affine-spaces:ex:simplex}.
-So $\Delta^\circ$ is a submanifold of dimension $n - 1$ whose tangent
-space is the same at every point: $T_p\Delta^\circ = H_0$, the vectors
+It is the zero set of $g(p) = \sum_ip_i - 1$ on the open set
+$\{p_i > 0\}$, and $\dd g = \sum_i\dd p_i$ is non-zero, so
+\cref{submanifolds:cor:produce}(1) makes $\Delta^\circ$ a submanifold
+of dimension $n - 1$, with the same tangent
+space at every point: $T_p\Delta^\circ = H_0$, the vectors
 whose components sum to zero. It is flat, but it is not an affine space:
 $p + v$ leaves it when $v$ is too large. The softmax map
 $\R^n\to\Delta^\circ$ is not a parametrization, since it is not injective;
@@ -896,9 +899,12 @@ differential at every point.
         degrees of freedom out of $n^2$. One can parametrize: for
         $\Omega$ antisymmetric, the Cayley transform
         $Q = (I - \Omega)(I + \Omega)^{-1}$ is orthogonal, and
-        $\Omega\mapsto Q$ is a parametrization of the orthogonal matrices
-        without the eigenvalue $-1$, with inverse
-        $\Omega = (I - Q)(I + Q)^{-1}$.
+        $\Omega\mapsto Q$ is a bijection onto the orthogonal matrices
+        without the eigenvalue $-1$, with the smooth inverse
+        $\Omega = (I - Q)(I + Q)^{-1}$; being smooth with a smooth
+        inverse, it is a parametrization in the sense of
+        \cref{submanifolds:thm:four}(d). Such a $Q$ has determinant
+        $1$, since $\det Q = -1$ forces the eigenvalue $-1$.
   \item \emph{Leaving the set.} After a step $W - \eta\nabla L$ the
         constraint no longer holds, whatever the direction of the step:
         $\theta + v$ leaves a curved set. The two remedies are to move
@@ -956,11 +962,16 @@ lying near a submanifold of much smaller dimension $d$.
         to the neighbours within a distance $\rho$: the computation of
         \cref{spectral-svd:prop:pca}, without centring. By
         \cref{submanifolds:prop:contact} these displacements are within
-        $o(\rho)$ of $T_pM$, so, if they spread in all tangent
-        directions, $d$ singular values are of order $\rho$, the others
-        are much smaller, and the first $d$ principal directions tend to
-        $T_pM$ as $\rho\to0$. The number of large singular values is an
-        estimate of the dimension.
+        $o(\rho)$ of $T_pM$, so projecting them on $T_pM$ changes the
+        matrix by $o(\rho)$ and leaves a matrix of rank at most $d$:
+        the singular values after the $d$th are $o(\rho)$. If in
+        addition the samples spread in all tangent directions, in the
+        sense that the $d$th singular value stays of order $\rho$, the
+        two groups separate as $\rho\to0$ and the first $d$ principal
+        directions tend to $T_pM$; turning that separation into a
+        bound on the angle needs a subspace perturbation theorem,
+        which this book does not prove. The number of large singular
+        values is an estimate of the dimension.
 \end{itemize}
 \end{mlthread}
 

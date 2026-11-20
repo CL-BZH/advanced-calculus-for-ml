@@ -461,8 +461,15 @@ $\hat g_N = \frac1N\sum_{i=1}^Ng(Z_i)$. Then
 \end{theorem}
 
 \begin{proof}
-The mean is linearity. The variables $g(Z_i)$ are independent, so the
-variance of their sum is $N\sigma^2$, and dividing by $N$ divides the
+The mean is linearity. Expanding the square,
+\[
+  \Var\Bigl(\sum_ig(Z_i)\Bigr) = \sum_i\Var\bigl(g(Z_i)\bigr)
+  + \sum_{i\neq j}\E\bigl[(g(Z_i) - m)(g(Z_j) - m)\bigr] ,
+\]
+and each
+cross term vanishes by \cref{fubini:prop:product}, since $Z_i$ and
+$Z_j$ are independent for $i\neq j$; so the
+variance of the sum is $N\sigma^2$, and dividing by $N$ divides the
 variance by $N^2$. The last statement is Markov's inequality
 (\cref{lebesgue-integral:prop:markov}) for $(\hat g_N - m)^2$ and
 $c = \epsilon^2$.
@@ -505,8 +512,9 @@ If $Z_1$ and $Z_2$ are independent with laws $\mu$ and $\nu$, then
 $\mu*\nu$ is the law of $Z_1 + Z_2$.
 
 \begin{theorem}\label{fubini:thm:convolution}
-Let $\mu$ be a finite measure on $\mathcal B(\R^n)$ and let $\nu$ have a
-density $g$ with respect to Lebesgue measure. Then $\mu*\nu$ has the
+Let $\mu$ be a finite measure on $\mathcal B(\R^n)$ and let $\nu$ be a
+finite measure with a density $g$ with respect to Lebesgue measure.
+Then $\mu*\nu$ has the
 density
 \[
   (\mu*g)(z) = \int g(z - x)\,\dd\mu(x) .
@@ -662,7 +670,10 @@ $h:X\to\R$ with $\int h(x)^2\,\dd P < \infty$,
 
 \begin{proof}
 By \cref{fubini:prop:marginal}, $v(x) = \int y^2p(y\mid x)\,\dd\nu(y)$ is
-finite for almost every $x$, and then
+finite for $P_X$-almost every $x$. For such an $x$ the measure
+$p(y\mid x)\,\dd\nu(y)$ is a probability under which $y$ is square
+integrable, so $m(x)$ is defined and finite with $m(x)^2\leq v(x)$ by
+Cauchy--Schwarz, and
 $0\leq\int(y - m(x))^2p(y\mid x)\,\dd\nu(y) = v(x) - m(x)^2$. So
 $\int m^2\,\dd P_X\leq\int v\,\dd P_X = \int y^2\,\dd P$ is finite. Write
 $y - h = (y - m) + (m - h)$ and expand the square. The cross term

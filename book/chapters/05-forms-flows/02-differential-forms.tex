@@ -366,9 +366,11 @@ $\dd\alpha = \sum_{i,j}\partial_i\alpha_j\,\dd x_i\wedge\dd x_j$, that is,
   \dd\alpha = \sum_{i<j}\bigl(\partial_i\alpha_j - \partial_j\alpha_i
   \bigr)\,\dd x_i\wedge\dd x_j .
 \end{equation}
-The components of $\dd\alpha$ are the entries of the antisymmetric part
-of the Jacobian matrix $[\partial_i\alpha_j]$ of the components, up to
-the factor $2$.
+Write $J = [\partial_j\alpha_i]$ for the Jacobian matrix of the
+components, the one automatic differentiation computes; the matrix
+$[\partial_i\alpha_j]$ above is its transpose. The components of
+$\dd\alpha$ are the entries of $J^\top - J$, that is, the entries of
+the antisymmetric part of $J$ up to the factor $-2$.
 
 \begin{example}[Forms on $\R^3$]\label{differential-forms:ex:r3}
 With the notation of \cref{differential-forms:tab:degrees},
@@ -834,7 +836,12 @@ $\omega = f\,\dd x_I$ with $I = (i_1 < \dots < i_k)$. Put
 \]
 The function $(t, x)\mapsto t^{k-1}f(tx)$ is smooth on $[0, 1]\times U$,
 and its partial derivatives in $x$ are bounded for $t\in[0, 1]$ and $x$
-in a small ball. By \cref{lebesgue-integral:cor:c1}, applied
+in a small ball: around a point of $U$ choose a closed ball
+$\bar B\subset U$; the cone $\{ty : t\in[0, 1],\ y\in\bar B\}$ is the
+image of the compact set $[0, 1]\times\bar B$, hence compact, and it
+lies in $U$ because $U$ is star-shaped about $0$, so the derivatives
+of $f$ are bounded on it, uniformly in $t$.
+By \cref{lebesgue-integral:cor:c1}, applied
 repeatedly, $g$ is smooth and
 \[
   \partial_jg(x) = \int_0^1t^k\,(\partial_jf)(tx)\,\dd t .
@@ -986,8 +993,12 @@ moving $y$. Simultaneous gradient descent follows the covector field
 \]
 \begin{itemize}[nosep]
   \item If $g = f$, the players cooperate and $\xi = \dd f$. More
-        generally $\dd\xi = 0$ exactly when $g - f$ is a function of $x$
-        plus a function of $y$; then $\xi$ is the differential of a
+        generally $\dd\xi = 0$ exactly when $h = g - f$ is a function
+        of $x$ plus a function of $y$: integrating the vanishing mixed
+        derivatives over a rectangle gives
+        $h(x, y) - h(x, 0) - h(0, y) + h(0, 0) = 0$, so
+        $h(x, y) = h(x, 0) + \bigl(h(0, y) - h(0, 0)\bigr)$; then
+        $\xi$ is the differential of a
         single function on $\R^{m+n}$
         (\cref{differential-forms:cor:potential}), and the game is
         ordinary minimization in disguise.
@@ -1003,8 +1014,8 @@ moving $y$. Simultaneous gradient descent follows the covector field
         every step size (\cref{differential-forms:fig:game}).
   \item The Jacobian matrix of the components of $\xi$ is the sum of a
         symmetric and an antisymmetric matrix. The antisymmetric part
-        holds the components of $\dd\xi$, up to a factor
-        $\pm\frac12$: it has a meaning in every chart, and it is the
+        holds the components of $\dd\xi$, up to the factor
+        $-\frac12$: it has a meaning in every chart, and it is the
         part that rotates. The symmetric part has a meaning at the
         equilibria, where $\xi = 0$, and only there
         (\cref{differential-forms:rem:symmetric}). Several methods for
@@ -1096,9 +1107,11 @@ To explain a prediction $F(x)$ relative to a baseline input $x'$,
   \item The sum $\sum_iA_i$ is $K(\dd F)(x)$ in the notation of
         \eqref{differential-forms:eq:homotopy}, with $p_0 = x'$: the
         integral of the exact form $\dd F$ along the segment. By
-        \cref{differential-forms:cor:potential} it equals
-        $F(x) - F(x')$, whatever the path. This is the
-        ``completeness'' property of the method.
+        \cref{differential-forms:cor:potential}, $K(\dd F)$ differs
+        from $F$ by a constant and vanishes at $x'$, so the sum equals
+        $F(x) - F(x')$. The same value comes out along any path from
+        $x'$ to $x$, by \cref{stokes:thm:stokes} in dimension $1$.
+        This is the ``completeness'' property of the method.
   \item Each $A_i$ is the integral along the segment of the form
         $\partial_iF\,\dd x_i$, which is not closed in general. So the
         individual attributions depend on the path chosen between $x'$
@@ -1117,8 +1130,11 @@ $g$ is $(p\circ g)\,\det Dg\;\dd z_1\wedge\dots\wedge\dd z_n$
 (\cref{differential-forms:thm:top}): the change of variables for
 densities of \cref{change-of-variables:thm:pushforward}, up to the
 sign of $\det Dg$. For the layers of a normalizing flow that sign is
-positive (\cref{multilinear-algebra:sec:orientation}), and forms and
-densities agree. \Cref{ch:stokes} separates the two notions on
+positive, by the way they are built: a coupling layer has a triangular
+Jacobian matrix with positive diagonal, and the time-$t$ map of a flow
+is joined to the identity by diffeomorphisms
+(\cref{ch:odes-flows}), along which the determinant never vanishes. So
+forms and densities agree. \Cref{ch:stokes} separates the two notions on
 manifolds, where a density can always be integrated and a form only
 after an orientation is chosen.
 \end{mlthread}
