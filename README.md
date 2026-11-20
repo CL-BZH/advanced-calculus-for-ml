@@ -83,7 +83,7 @@ book/
   chapters/           one directory per part, one file per chapter
   backmatter/         solutions to the exercises
   STYLE.md            environments, notation and writing conventions
-notebooks/            one PyTorch notebook per chapter (CPU only)
+notebooks/            one notebook per chapter, and one on the conventions
 references/           the sources cited, with links and licences (no PDFs)
 ```
 
@@ -101,7 +101,14 @@ make clean
 ## Notebooks
 
 Each chapter has a companion notebook that checks its numerical claims
-with assertions. They need only PyTorch and run on a CPU in a few seconds.
+with assertions. They run on a CPU in a few seconds.
+
+One further notebook, `conventions-and-identities.ipynb`, belongs to no
+chapter: it checks the conventions and identities the proofs rest on — the
+action of a permutation on a multilinear form, the normalization of the
+wedge product, the change of basis of components, the Hodge star, the signs
+in Theorem 22.12 and in Cartan's formula, and a few identities used in
+passing. It is the only notebook that uses SymPy.
 
 ```sh
 pip install -r notebooks/requirements.txt
