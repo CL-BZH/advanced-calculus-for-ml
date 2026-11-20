@@ -680,7 +680,8 @@ $\int s_k$ and $\int t_k$ for every $k$.
 The completion is needed here: the set $f^{-1}(B)\cap N$ is only known
 to be a subset of a null set. Every subset $S$ of the Cantor set has a
 Riemann integrable indicator, with integral $0$
-(\cref{caratheodory:exr:7}), and nothing forces $S$ to be a Borel set.
+(\cref{caratheodory:exr:7}), and not all of them are Borel sets
+(\cref{caratheodory:prop:nonborel}).
 
 \begin{remark}[Lebesgue's criterion]\label{caratheodory:rem:criterion}
 A bounded function on $[a, b]$ is Riemann integrable if and only if
@@ -794,10 +795,11 @@ respect.
         $\mathcal L(\R)$, whereas
         $\mathcal B(\R^2) = \mathcal B(\R)\otimes\mathcal B(\R)$
         (\cref{fubini:prop:components}).
-  \item \emph{Preimages.} The preimage of a Borel set by a continuous
-        map is a Borel set. The preimage of a Lebesgue measurable set
-        by a continuous map need not be Lebesgue measurable (we do not
-        prove this), so composition is delicate.
+  \item \emph{Preimages.} The preimage of a Borel set by a Borel
+        function is a Borel set. The preimage of a Lebesgue measurable
+        set need not be Lebesgue measurable, even by a Borel function
+        (\cref{caratheodory:prop:nonborel}): the composition of two
+        measurable functions is then not always measurable.
 \end{itemize}
 With Borel sets, measurability is preserved by everything one does;
 the completion is brought in when a subset of a null set has to be
@@ -820,6 +822,40 @@ law of an infinite sequence of fair coin flips. This gives the space
 that \cref{measures:sec:why} asked for, and it is how random bits are
 turned into a uniform random number.
 \end{example}
+
+The digits also settle a question left open above: the Lebesgue
+measurable sets are strictly more than the Borel sets.
+
+\begin{proposition}[A measurable set that is not a Borel set]
+\label{caratheodory:prop:nonborel}
+For $x\in[0, 1)$ let $f(x) = \sum_k2d_k(x)3^{-k}$, with the digits
+$d_k$ of \cref{caratheodory:ex:coins}, and let $V$ be the set of
+\cref{caratheodory:thm:vitali}.
+\begin{enumerate}[nosep]
+  \item $f$ is a Borel function, injective, with values in the Cantor
+        set $C$.
+  \item $B = f(V)$ is Lebesgue measurable and is not a Borel set.
+  \item $f^{-1}(B) = V$: the preimage of a Lebesgue measurable set by
+        a Borel function need not be Lebesgue measurable.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(1) Each $d_k$ is constant on the intervals
+$[m2^{-k}, (m + 1)2^{-k})$, so it is a Borel function, and $f$ is the
+limit of the Borel functions $\sum_{k\leq K}2d_k3^{-k}$
+(\cref{measures:thm:limits}). In the notation of
+\cref{caratheodory:ex:cantor}, $f(x)$ is the point $x_\varepsilon$ of
+$C$ for the sequence $\varepsilon_k = d_k(x)$, and different sequences
+give different points. A point is determined by its digits, because
+$\lvert x - \sum_{j\leq k}d_j(x)2^{-j}\rvert < 2^{-k}$ for all $k$. So $f$ is
+injective.
+
+(2) and (3) $B$ is a subset of the null set $C$, so it is Lebesgue
+measurable (\cref{caratheodory:thm:lebesgue}). Since $f$ is injective,
+$f^{-1}(B) = V$. If $B$ were a Borel set, $f^{-1}(B)$ would be a Borel
+set, and $V$ is not even Lebesgue measurable.
+\end{proof}
 
 \begin{mlthread}[Machine learning: null sets in practice]
 \begin{itemize}[nosep]
@@ -885,7 +921,8 @@ outside (Theorem~2.12) and the completion of the Borel sets
 (Theorem~2.18). Their Theorem~4.23 contains both
 \cref{caratheodory:prop:riemann} and Lebesgue's criterion, and their
 Appendix gives the set of \cref{caratheodory:thm:vitali}, again with
-translates in $[-1, 2]$. They construct the measures
+translates in $[-1, 2]$, and the argument of
+\cref{caratheodory:prop:nonborel}. They construct the measures
 $\mu((a, b]) = F(b) - F(a)$, for $F$ continuous from the right, in
 \S7.3.1.
 The theorem is due to C.~Carath\'eodory (1914) and the set to
@@ -915,7 +952,7 @@ with PyTorch in \notebook{A-caratheodory.ipynb}.
         measure, with the same integral.
   \item With the axiom of choice, some subsets of $\R$ are not
         measurable, and no translation-invariant length is defined on
-        all subsets.
+        all subsets. Some Lebesgue measurable sets are not Borel sets.
 \end{itemize}
 \end{chaptersummary}
 
