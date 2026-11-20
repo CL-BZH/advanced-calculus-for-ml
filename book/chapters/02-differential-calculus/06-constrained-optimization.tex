@@ -255,7 +255,7 @@ Consider now the problem
   \quad\text{subject to}\quad g(x) = 0,\quad
   h_j(x)\leq0\ \ (j = 1,\dots,p) ,
 \end{equation}
-with $f$, $g:U\to X$ and $h_j:U\to\R$ of class $C^1$. A point satisfying
+with $f:U\to\R$, $g:U\to X$ and $h_j:U\to\R$ of class $C^1$. A point satisfying
 the constraints is \emph{feasible}. At a feasible point $a$ the
 constraint $h_j$ is \emph{active} if $h_j(a) = 0$ and \emph{inactive} if
 $h_j(a) < 0$; let $J(a)$ be the set of active indices. An inactive
@@ -368,8 +368,8 @@ The argument of the last proof shows that
 $q(\lambda, \mu)\leq f(x)$ for every feasible $x$: each value of the dual
 function is a lower bound for the problem (\emph{weak duality}). The
 \emph{dual problem} is to find the best lower bound, that is, to maximize
-$q$ over $\mu\geq0$. In the convex case, at a point satisfying the
-conditions of \cref{constrained-optimization:thm:kkt},
+$q$ over $\lambda\in X^*$ and $\mu\geq0$. In the convex case, at a point
+satisfying the conditions of \cref{constrained-optimization:thm:kkt},
 $q(\lambda, \mu) = \mathcal L(a, \lambda, \mu) = f(a)$: the best lower
 bound is attained and equals the minimum (\emph{strong duality}). The
 multipliers are called \emph{dual variables}; they live in the dual space
@@ -413,7 +413,8 @@ $\norm{p - q}^2\leq\inner{a - b}{p - q}\leq\norm{a - b}\norm{p - q}$.
 
 The projection on a subspace of \cref{ch:inner-products} is the case
 where the inequality in (2) is an equality. Other projections with a
-formula: on a ball (rescale the vector from the centre), on a box (clip
+formula: on a ball (rescale the vector from the centre, if the point is
+outside), on a box (clip
 each coordinate, for the dot product), on a half-space
 (\cref{inner-products:prop:margin}).
 
@@ -503,7 +504,9 @@ multipliers $\lambda_0$, $\beta$ with
   p_i = \frac{e^{\beta E_i}}{\sum_ke^{\beta E_k}} .
 \]
 The solution is the softmax of the scores $\beta E_i$; the multiplier
-$\beta$ of the mean constraint is the inverse temperature, and
+$\beta$ of the mean constraint is \emph{minus} the inverse temperature,
+since $p_i\propto e^{\beta E_i}$ is the Gibbs weight $e^{-E_i/kT}$ for
+$\beta = -1/kT$, and
 $\lambda_0$ is fixed by normalization. Since $-H$ is convex and the
 constraints are affine, this critical point is the maximum
 (\cref{constrained-optimization:thm:convex}). With several constrained
@@ -521,7 +524,11 @@ margin is $1/\norm\phi_*$. Write $\phi = \inner w\cdot$, so that
 $\norm\phi_* = \norm w$, and minimize $\frac12\norm w^2$ under the
 constraints $h_i = 1 - y_i(\inner w{x_i} + b)\leq0$. The problem is
 convex, so the conditions of \cref{constrained-optimization:thm:kkt} are
-necessary and sufficient:
+sufficient by \cref{constrained-optimization:thm:convex}; they are
+necessary here as well, because the constraints are affine, a weaker
+qualification than the regularity of
+\cref{constrained-optimization:thm:kkt} and one this book does not
+prove (Boyd and Vandenberghe, \S5.2.3):
 \[
   w = \sum_i\alpha_iy_ix_i, \qquad \sum_i\alpha_iy_i = 0, \qquad
   \alpha_i\geq0, \qquad \alpha_i\bigl(1 - y_i\ell(x_i)\bigr) = 0 .
@@ -555,9 +562,9 @@ $\frac\rho2\norm{g(x)}^2$ to the loss.
         growing with $\rho$ (\cref{ch:gradient-hessian}).
   \item Weight decay is the penalty $\frac\lambda2\norm w^2$. For a
         convex loss it is equivalent to the constraint
-        $\norm w\leq r$, the coefficient $\lambda$ being the multiplier
-        of that constraint: each radius corresponds to a coefficient, and
-        the correspondence is not known in advance.
+        $\frac12\norm w^2\leq\frac12r^2$, the coefficient $\lambda$ being
+        the multiplier of that constraint: each radius corresponds to a
+        coefficient, and the correspondence is not known in advance.
   \item When the multiplier itself is wanted (fairness or safety
         constraints with a prescribed level, constrained reinforcement
         learning), one descends in $x$ and ascends in the multipliers on
