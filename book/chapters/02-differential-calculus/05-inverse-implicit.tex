@@ -604,6 +604,20 @@ exactly $p$ of the signs are $+1$ and $m$ are $-1$. Permuting the
 coordinates puts the positive ones first.
 \end{proof}
 
+\begin{corollary}[Non-degenerate critical points are isolated]
+\label{inverse-implicit:cor:isolated}
+A non-degenerate critical point $a$ of a function $f$ of class $C^3$ is
+the only critical point of $f$ in some neighbourhood of $a$.
+\end{corollary}
+
+\begin{proof}
+In the coordinates of \cref{inverse-implicit:thm:morse}, $f - f(a)$ is
+$q(u) = \sum_i\epsilon_iu_i^2$, whose differential at $u$ sends $w$ to
+$2\sum_i\epsilon_iu_iw_i$ and vanishes only at $u = 0$. Since
+$\dd f(x) = \dd q(\Psi(x))\circ D\Psi(x)$ with $D\Psi(x)$ invertible,
+$\dd f$ vanishes on $U_0$ only at $x = a$.
+\end{proof}
+
 \begin{example}[A saddle in normal form]
 \label{inverse-implicit:ex:morse}
 Take $f(x, y) = x^3 - 3x + y^2$ of \cref{gradient-hessian:ex:critical}
@@ -654,8 +668,7 @@ a sum of $p$ positive and $m$ negative squares in suitable coordinates.
         stay near the saddle (the computation that follows
         \cref{contractions-newton:thm:gd}).
   \item Non-degeneracy is the hypothesis that fails most often in
-        practice, and \cref{inverse-implicit:thm:morse} says why: the
-        normal form has $0$ as its only critical point, so a
+        practice, and \cref{inverse-implicit:cor:isolated} says why: a
         non-degenerate critical point is isolated. A parametrization
         with a continuous symmetry --- the rescaling
         $(W_1, W_2)\mapsto(cW_1, c^{-1}W_2)$ across a homogeneous
@@ -928,7 +941,21 @@ two-variable cases as Theorems~7.1 and~7.5 and a proof in three parts
 His Theorem~7.17 is the comparison with Taylor's formula that explains
 \cref{inverse-implicit:lem:morse}: the remainder disappears and the
 coefficients of the quadratic form become variable. The induction used
-here, which completes one square at a time, is the classical proof.
+here, which completes one square at a time, is J.~Milnor's, in
+\emph{Morse Theory}, Annals of Mathematics Studies 51, Princeton
+University Press, 1963: his Lemma~2.2, with the same substitution
+$v_r = \sqrt{\abs{H_{rr}}}\,\bigl(u_r
++ \sum_{i>r}u_iH_{ir}/H_{rr}\bigr)$ and the same appeal to the inverse
+function theorem, and \cref{inverse-implicit:cor:isolated} is his
+Corollary~2.3. He works with $C^\infty$ functions; he reaches the
+expansion by applying his Lemma~2.1, $f = \sum_ix_ig_i$ with
+$g_i(0) = \partial_if(0)$, twice, first to $f$ and then to each $g_i$,
+where \cref{inverse-implicit:lem:morse} uses Taylor's formula with
+integral remainder once; and he settles the index before constructing
+the coordinates, by the subspace argument that proves Sylvester's law
+of inertia, which is available here
+(\cref{spectral-svd:thm:sylvester}), so that the signs are counted at
+the end instead. His normal form puts the negative squares first.
 Coupling layers: L.~Dinh, J.~Sohl-Dickstein
 and S.~Bengio, Density estimation using Real NVP, ICLR, 2017. Invertible
 residual layers: J.~Behrmann, W.~Grathwohl, R.~T.~Q.~Chen, D.~Duvenaud

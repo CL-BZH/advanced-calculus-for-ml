@@ -48,6 +48,7 @@ ignored by git.
 | B. Le Stum, *Algèbre linéaire et bilinéaire*, lecture notes, version of 21 February 2020 | Ch. 2 | [the author's site](https://www.bernardlestum.com) | Free PDF from the author's site, marked "Copyright © 2016 Bernard Le Stum"; no licence stated |
 | L. S. Pontryagin, V. G. Boltyanskii, R. V. Gamkrelidze and E. F. Mishchenko, *The Mathematical Theory of Optimal Processes*, translated from the Russian by K. N. Trirogoff, edited by L. W. Neustadt, Interscience Publishers (John Wiley), 1962 | Ch. 25 | No publisher page found for this edition; the bibliographic data were read in H. Kaufman's review of the book in the *Canadian Mathematical Bulletin*, hosted by Cambridge University Press | Commercial |
 | J. J. Callahan, *Advanced Calculus: A Geometric View*, Undergraduate Texts in Mathematics, Springer, 2010, ISBN 9781441973313 (e-ISBN 9781441973320) | Ch. 8, 10, 21, 22, 24 | DOI 10.1007/978-1-4419-7332-0 | Commercial |
+| J. Milnor, *Morse Theory*, based on lecture notes by M. Spivak and R. Wells, Annals of Mathematics Studies 51, Princeton University Press, 1963 (copy printed 1969), ISBN 0691080089 | Ch. 10 | [Princeton University Press](https://press.princeton.edu/isbn/9780691080086) | Commercial. The publisher's page gives the series but not its number; the number is on the book's own title page |
 
 ## Papers
 
