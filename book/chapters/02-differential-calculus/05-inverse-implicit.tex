@@ -438,6 +438,241 @@ $f$ reads $(x_1,\dots,x_n)\mapsto(x_1,\dots,x_r, 0,\dots,0)$. We shall
 only use the two cases proved above.
 \end{remark}
 
+\section{Morse's lemma}\label{inverse-implicit:sec:morse}
+
+The two normal forms above describe a map near a point where its
+derivative has the largest rank it can have. Where the differential of a
+function vanishes they say nothing, and the second differential takes
+over. \Cref{gradient-hessian:thm:second-order} reads its signature to
+decide whether such a point is a minimum, a maximum or a saddle. Morse's
+lemma says that when that form is non-degenerate the signature decides
+everything: in suitable curvilinear coordinates the function \emph{is}
+the quadratic form.
+
+\begin{definition}[Non-degenerate critical point]
+\label{inverse-implicit:def:nondegenerate}
+A critical point $a$ of a function $f$ of class $C^2$ is
+\emph{non-degenerate} if the symmetric bilinear form $D^2f(a)$ is
+non-degenerate (\cref{spectral-svd:def:signature}), that is, if its
+Hessian matrix in one frame, hence in every frame
+(\cref{gradient-hessian:prop:affine}), is invertible. The \emph{index}
+of such a point is the number $m$ of its signature $(p, m)$, which now
+satisfies $p + m = n$.
+\end{definition}
+
+\begin{lemma}[Morse's expansion]\label{inverse-implicit:lem:morse}
+Let $f$ be of class $C^3$ on an open set $U$ of $\Aff$, let $a\in U$ be
+a critical point of $f$ and let $H$ be the Hessian matrix of $f$ at $a$
+in the coordinates of a frame at $a$. On a ball $B$ around $0$ with
+$a + B\subset U$ there are functions $g_{ij} = g_{ji}$ of class $C^1$
+with
+\begin{equation}\label{inverse-implicit:eq:morse}
+  f(a + h) - f(a) = \sum_{i,j}h_ih_j\,g_{ij}(h) \quad(h\in B) ,
+  \qquad g_{ij}(0) = \tfrac12H_{ij} .
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For $h\in B$ let $\varphi(t) = f(a + th)$ on $[0, 1]$. By
+\cref{differential:thm:velocity} and
+\eqref{gradient-hessian:eq:iterated},
+$\varphi'(t) = \dd f(a + th)(h)$ and
+$\varphi''(t) = D^2f(a + th)(h, h)$, a continuous function of $t$. Since
+$\dd f(a) = 0$, Taylor's formula with integral remainder in one variable
+gives
+\[
+  f(a + h) - f(a) = \int_0^1(1 - t)\,D^2f(a + th)(h, h)\,\dd t
+  = \sum_{i,j}h_ih_j\,g_{ij}(h) ,
+\]
+with
+$g_{ij}(h) = \int_0^1(1 - t)\,\partial_i\partial_jf(a + th)\,\dd t$ by
+\cref{gradient-hessian:prop:matrix}. These functions are symmetric in
+$i$ and $j$ by \cref{gradient-hessian:thm:schwarz}, and
+$g_{ij}(0) = \frac12H_{ij}$ because $\int_0^1(1 - t)\,\dd t = \frac12$.
+
+They are of class $C^1$. Write
+$\psi(t, h) = (1 - t)\,\partial_i\partial_jf(a + th)$, whose partial
+derivatives
+$\partial_{h_k}\psi(t, h)
+= t(1 - t)\,\partial_k\partial_i\partial_jf(a + th)$
+exist and are continuous on $[0, 1]\times B$ because $f$ is of class
+$C^3$. Fix a closed ball $\bar B'\subset B$ and let $\omega$ be a
+modulus of uniform continuity of $\partial_{h_k}\psi$ on the compact set
+$[0, 1]\times\bar B'$. For $h$ and $h + se_k$ in $\bar B'$ the mean
+value theorem gives, at each $t$,
+\[
+  \abs{\frac{\psi(t, h + se_k) - \psi(t, h)}s
+  - \partial_{h_k}\psi(t, h)}\leq\omega(\abs s) ,
+\]
+so the difference quotients of $g_{ij}$ in the direction $e_k$ converge,
+uniformly on $\bar B'$, to $\int_0^1\partial_{h_k}\psi(t, h)\,\dd t$,
+which is continuous in $h$ for the same reason. By
+\cref{differential:thm:c1}, $g_{ij}$ is of class $C^1$.
+\end{proof}
+
+\begin{theorem}[Morse's lemma]\label{inverse-implicit:thm:morse}
+Let $f$ be of class $C^3$ on an open set of $\Aff$ and let $a$ be a
+non-degenerate critical point of $f$, of signature $(p, m)$. There is a
+diffeomorphism $\Psi$ from an open set $U_0\ni a$ onto an open subset of
+$\R^n$ containing $0$, with $\Psi(a) = 0$, such that
+\[
+  f(x) = f(a) + u_1^2 + \dots + u_p^2 - u_{p+1}^2 - \dots - u_n^2 ,
+  \qquad (u_1,\dots,u_n) = \Psi(x) ,
+\]
+for every $x\in U_0$.
+\end{theorem}
+
+\begin{proof}
+In the coordinates of a frame at $a$, write
+$f(a + h) - f(a) = h^\top G(h)h$ with $G = [g_{ij}]$ symmetric and of
+class $C^1$ (\cref{inverse-implicit:lem:morse}); the matrix
+$G(0) = \frac12H$ is invertible.
+
+We show by induction on $s$, from $s = 1$ to $s = n + 1$, that there are
+signs $\epsilon_1,\dots,\epsilon_{s-1}$, an open set $U_s\ni a$ and a
+diffeomorphism $\Psi_s$ from $U_s$ onto an open subset of $\R^n$
+containing $0$, with $\Psi_s(a) = 0$, such that
+\begin{equation}\label{inverse-implicit:eq:step}
+  f(x) - f(a) = \sum_{i<s}\epsilon_iv_i^2
+  + \sum_{i,j\geq s}v_iv_j\,g_{ij}^{(s)}(v) ,
+  \qquad v = \Psi_s(x) ,
+\end{equation}
+where $g^{(s)} = [g^{(s)}_{ij}]$ is symmetric, of class $C^1$, and the
+block $[g^{(s)}_{ij}(0)]_{i,j\geq s}$ is invertible. For $s = 1$ take
+$\Psi_1(x) = x - a$ and $g^{(1)} = G$; for $s = n + 1$ the second sum is
+empty and the statement is the theorem, up to the order of the signs.
+
+\emph{Why the block stays invertible.} Let $F$ be the right-hand side of
+\eqref{inverse-implicit:eq:step}, so that $f = f(a) + F\circ\Psi_s$ and
+$F = (f - f(a))\circ\Psi_s^{-1}$. The point $0$ is a critical point of
+$F$, and $D^2F(0)(w, w') = D^2f(a)(Qw, Qw')$ with
+$Q = D(\Psi_s^{-1})(0)$ invertible, because at a critical point the
+second differential transforms as a bilinear form under any change of
+variable (\cref{gradient-hessian:rem:nonlinear}). So $D^2F(0)$ is
+non-degenerate. Differentiating \eqref{inverse-implicit:eq:step} twice
+at $v = 0$ gives the block diagonal matrix
+$2\diag(\epsilon_1,\dots,\epsilon_{s-1})$ and
+$2[g^{(s)}_{ij}(0)]_{i,j\geq s}$, so the second block is invertible: the
+induction hypothesis is a consequence of non-degeneracy, not an extra
+assumption.
+
+\emph{The step.} Let $s\leq n$ and abbreviate $g = g^{(s)}$. The
+symmetric matrix $[g_{ij}(0)]_{i,j\geq s}$ is invertible, hence
+non-zero, so the quadratic form it defines is not identically zero
+(a symmetric form is determined by its values on the diagonal, by
+\eqref{inner-products:eq:polarization}) and there is a vector $w$ with
+$w^\top[g_{ij}(0)]w\neq0$. A linear change of the coordinates
+$v_s,\dots,v_n$ alone, carrying the $s$th basis vector to $w$, leaves
+the terms with $i < s$ untouched and replaces that block by
+$L^\top[g_{ij}(0)]L$ for an invertible $L$ whose first column is $w$; so
+we may assume $g_{ss}(0)\neq0$. Let $\epsilon_s$ be its sign and work on
+a neighbourhood of $0$ where $g_{ss}$ does not vanish. Put
+\[
+  \Phi(v)_i = v_i \quad(i\neq s) ,
+  \qquad
+  \Phi(v)_s = \sqrt{\abs{g_{ss}(v)}}
+  \Bigl(v_s + \sum_{i>s}v_i\frac{g_{is}(v)}{g_{ss}(v)}\Bigr) .
+\]
+Then $\Phi$ is of class $C^1$, $\Phi(0) = 0$, and $D\Phi(0)$ has
+$e_i^\top$ as its $i$th row for $i\neq s$, so its determinant is the
+$(s, s)$ entry $\sqrt{\abs{g_{ss}(0)}}\neq0$: the terms coming from
+differentiating the square root carry the factor
+$v_s + \sum_{i>s}v_ig_{is}/g_{ss}$, which vanishes at $0$. By
+\cref{inverse-implicit:thm:inverse}, $\Phi$ is a diffeomorphism from an
+open set containing $0$ onto an open set containing $0$. Completing the
+square,
+\[
+  \sum_{i,j\geq s}v_iv_jg_{ij}
+  = g_{ss}\Bigl(v_s + \sum_{i>s}v_i\frac{g_{is}}{g_{ss}}\Bigr)^2
+  + \sum_{i,j>s}v_iv_j
+    \Bigl(g_{ij} - \frac{g_{is}g_{js}}{g_{ss}}\Bigr) ,
+\]
+and $g_{ss}(\cdots)^2 = \epsilon_s\abs{g_{ss}}(\cdots)^2
+= \epsilon_s\Phi(v)_s^2$, while $v_i = \Phi(v)_i$ for $i > s$. Setting
+$\Psi_{s+1} = \Phi\circ\Psi_s$ on a small enough $U_{s+1}$ and
+$g^{(s+1)}_{ij} = (g_{ij} - g_{is}g_{js}/g_{ss})\circ\Phi^{-1}$, which
+is symmetric and of class $C^1$, gives
+\eqref{inverse-implicit:eq:step} for $s + 1$.
+
+\emph{The signs.} At $s = n + 1$ we have
+$f(x) - f(a) = \sum_i\epsilon_iu_i^2$ with $u = \Psi_{n+1}(x)$, so the
+second differential of
+$(f - f(a))\circ\Psi_{n+1}^{-1}$ at $0$ is $2\diag(\epsilon)$. By the
+transformation rule recalled above and Sylvester's law of inertia
+(\cref{spectral-svd:thm:sylvester}), its signature is that of $D^2f(a)$:
+exactly $p$ of the signs are $+1$ and $m$ are $-1$. Permuting the
+coordinates puts the positive ones first.
+\end{proof}
+
+\begin{example}[A saddle in normal form]
+\label{inverse-implicit:ex:morse}
+Take $f(x, y) = x^3 - 3x + y^2$ of \cref{gradient-hessian:ex:critical}
+at its saddle point $a = (-1, 0)$, where the Hessian matrix is
+$\diag(-6, 2)$ and the signature is $(1, 1)$. Here the change of
+coordinates can be written down: $f(-1 + h, k) - f(a) = -h^2(3 - h)
++ k^2$, so with
+\[
+  u = k , \qquad v = h\sqrt{3 - h} \qquad (h < 3)
+\]
+one gets $f = f(a) + u^2 - v^2$, and $h\mapsto h\sqrt{3 - h}$ is a
+diffeomorphism near $0$ because its derivative there is $\sqrt3$. The
+cubic term has not been thrown away; it has been absorbed into the
+coordinate.
+\end{example}
+
+\begin{intuition}
+A non-degenerate critical point has no shape of its own. Up to a
+curvilinear change of coordinates there are exactly $n + 1$ of them, one
+for each index, and the index is read off the Hessian matrix in any
+frame. Everything that is not determined by the signature --- how steep,
+how curved, how skewed --- can be absorbed into the coordinates. This is
+why the second-order conditions of
+\cref{gradient-hessian:thm:second-order} leave nothing out in the
+non-degenerate case, and why they decide nothing in the degenerate one:
+there the normal forms are many, and they involve derivatives of higher
+order.
+\end{intuition}
+
+\begin{mlthread}[Machine learning: how many ways down]
+A critical point of a loss is non-degenerate when its Hessian matrix is
+invertible, and then \cref{inverse-implicit:thm:morse} says the loss is
+a sum of $p$ positive and $m$ negative squares in suitable coordinates.
+\begin{itemize}[nosep]
+  \item The index $m$ is the number of independent directions in which
+        the loss goes down. Index $0$ is a local minimum, index $n$ a
+        local maximum, and anything between is a saddle; the normal form
+        says there is no fourth possibility. A point of index $m\geq1$
+        has a direction of descent, so it is not a trap for a method
+        that finds one --- though it is still a fixed point of gradient
+        descent itself.
+  \item How fast a method leaves is a separate question, and the normal
+        form does not answer it: the coordinates hide the size of the
+        negative curvature, which is what sets the rate. Along an
+        eigendirection of the Hessian operator with $\lambda < 0$ one
+        gradient step multiplies the displacement by
+        $1 - \eta\lambda > 1$, so a small $\abs\lambda$ means a long
+        stay near the saddle (the computation that follows
+        \cref{contractions-newton:thm:gd}).
+  \item Non-degeneracy is the hypothesis that fails most often in
+        practice, and \cref{inverse-implicit:thm:morse} says why: the
+        normal form has $0$ as its only critical point, so a
+        non-degenerate critical point is isolated. A parametrization
+        with a continuous symmetry --- the rescaling
+        $(W_1, W_2)\mapsto(cW_1, c^{-1}W_2)$ across a homogeneous
+        layer, say --- carries critical points to critical points along
+        a curve, so none of them is isolated and all of them are
+        degenerate. The flat directions of a trained network are of
+        this kind, and the normal form of such a point needs more than
+        the second differential.
+  \item Newton's method (\cref{gradient-hessian:sec:newton}) solves
+        $\dd f = 0$ and is indifferent to the index: the step lands on
+        the critical point of the quadratic model, which at a saddle is
+        the saddle. Second-order methods therefore need indefiniteness
+        handled on purpose, by trust regions or by a modified
+        factorization, not by inverting the Hessian matrix as it comes.
+\end{itemize}
+\end{mlthread}
+
 \section{Differentiating through a solution}
 \label{inverse-implicit:sec:ml}
 
@@ -679,7 +914,22 @@ with Kantorovich's theorem, which gives explicit sizes for the
 neighbourhoods (Theorem~2.10.7), and deduce the implicit function
 theorem (Theorem~2.10.14). The order followed here, and the proof by the
 contraction principle with the differential frozen at one point, are the
-most common in textbooks. Coupling layers: L.~Dinh, J.~Sohl-Dickstein
+most common in textbooks.
+J.~J.~Callahan, \emph{Advanced Calculus: A Geometric View}, Springer,
+2010, reads every hypothesis geometrically in two and three dimensions:
+the linear normal forms that
+\cref{inverse-implicit:thm:submersion,inverse-implicit:thm:immersion}
+imitate are his \S2.3 (Theorems~2.19, 2.23 and~2.27), the inverse
+function theorem is his \S5.3, and the implicit function theorem his
+\S6.1 to \S6.3, one equation and then a pair at a time. Morse's lemma
+is his \S7.3: Theorem~7.16 in $n$ variables, with the one- and
+two-variable cases as Theorems~7.1 and~7.5 and a proof in three parts
+(Theorems~7.18, 7.19 and~7.25, the last the invariance of the index).
+His Theorem~7.17 is the comparison with Taylor's formula that explains
+\cref{inverse-implicit:lem:morse}: the remainder disappears and the
+coefficients of the quadratic form become variable. The induction used
+here, which completes one square at a time, is the classical proof.
+Coupling layers: L.~Dinh, J.~Sohl-Dickstein
 and S.~Bengio, Density estimation using Real NVP, ICLR, 2017. Invertible
 residual layers: J.~Behrmann, W.~Grathwohl, R.~T.~Q.~Chen, D.~Duvenaud
 and J.-H.~Jacobsen, Invertible residual networks, ICML, 2019. Fixed-point

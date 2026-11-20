@@ -373,7 +373,11 @@ local minimum at $0$ and $t\mapsto f(a + th')$ a strict local maximum, by
 The three cases are read off the signature $(p, m)$ of $D^2f(a)$
 (\cref{spectral-svd:def:signature}): $p = n$ in (2), $p > 0$ and $m > 0$
 in (3). When the form is degenerate and semidefinite, the second
-differential does not decide. The signature is invariant under
+differential does not decide. When it is non-degenerate it decides
+everything: by Morse's lemma (\cref{inverse-implicit:thm:morse}) the
+function is, in suitable curvilinear coordinates near $a$, the
+quadratic form of its signature and nothing else. The signature is
+invariant under
 $H\mapsto P^\top HP$ (\cref{spectral-svd:thm:sylvester}): \emph{the nature
 of a critical point does not depend on coordinates, and no inner product
 is needed to determine it}.
@@ -821,6 +825,11 @@ L.~Vandenberghe, \emph{Convex Optimization}, Cambridge University
 Press, 2004, state the first-order characterization of convexity in
 \S3.1.3 and emphasize the affine invariance of Newton's method in
 \S9.5, as we do in \cref{gradient-hessian:prop:newton}.
+J.~J.~Callahan, \emph{Advanced Calculus: A Geometric View}, Springer,
+2010, devotes his Chapter~7 to critical points, one variable in \S7.1
+and two in \S7.2, with the figures that go with them; his \S7.3 is
+Morse's lemma (\cref{inverse-implicit:thm:morse}), which says that at a
+non-degenerate critical point the signature settles everything.
 Hessian--vector products: B.~A.~Pearlmutter, Fast exact multiplication
 by the Hessian, \emph{Neural Computation}, 1994. Sharp minima and
 reparametrization: L.~Dinh, R.~Pascanu, S.~Bengio and Y.~Bengio, Sharp

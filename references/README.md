@@ -47,6 +47,7 @@ ignored by git.
 | J.-P. Escofier, *Toute l'algèbre de la Licence: cours et exercices corrigés*, 5e éd., Sciences Sup, Dunod, 2020, ISBN 9782100812486 | Ch. 2 | [Dunod](https://www.dunod.com/sciences-techniques/toute-algebre-licence-cours-et-exercices-corriges-1), which now carries the 6th edition (2023, ISBN 9782100855254) | Commercial |
 | B. Le Stum, *Algèbre linéaire et bilinéaire*, lecture notes, version of 21 February 2020 | Ch. 2 | [the author's site](https://www.bernardlestum.com) | Free PDF from the author's site, marked "Copyright © 2016 Bernard Le Stum"; no licence stated |
 | L. S. Pontryagin, V. G. Boltyanskii, R. V. Gamkrelidze and E. F. Mishchenko, *The Mathematical Theory of Optimal Processes*, translated from the Russian by K. N. Trirogoff, edited by L. W. Neustadt, Interscience Publishers (John Wiley), 1962 | Ch. 25 | No publisher page found for this edition; the bibliographic data were read in H. Kaufman's review of the book in the *Canadian Mathematical Bulletin*, hosted by Cambridge University Press | Commercial |
+| J. J. Callahan, *Advanced Calculus: A Geometric View*, Undergraduate Texts in Mathematics, Springer, 2010, ISBN 9781441973313 (e-ISBN 9781441973320) | Ch. 8, 10, 21, 22, 24 | DOI 10.1007/978-1-4419-7332-0 | Commercial |
 
 ## Papers
 
