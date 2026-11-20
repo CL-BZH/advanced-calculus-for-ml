@@ -651,11 +651,12 @@ of the simplest method for solving the equation numerically.
 \begin{proposition}[Euler's method]\label{odes-flows:prop:euler}
 Let $x$ be the solution of $x' = X(x)$ with $x(0) = a$, and
 $x_{k+1} = x_k + \eta X(x_k)$, $x_0 = a$. If
-$\norm{DX(x(t))X(x(t))}\leq M$ for $0\leq t\leq T$, then for
-$k\eta\leq T$
+$\norm{DX(x(t))X(x(t))}\leq M$ for $0\leq t\leq T$ and $L > 0$ in
+\eqref{odes-flows:eq:standing}, then for $k\eta\leq T$
 \[
   \norm{x_k - x(k\eta)}\leq\frac{M\eta}{2L}\bigl(e^{Lk\eta} - 1\bigr) .
 \]
+For $L = 0$ the right-hand side is read as its limit $Mk\eta^2/2$.
 \end{proposition}
 
 \begin{proof}

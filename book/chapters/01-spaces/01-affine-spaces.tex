@@ -342,7 +342,7 @@ the point of old coordinates $(2, 1.5)$ in both computations
   % parallelogram built from the origin o
   \draw[dashed, bookaccent] (0,0) -- (1,2) -- (4,3) -- (3,1) -- cycle;
   % parallelogram built from the origin o'
-  \draw[dashed, bookpitfall] (1,1) -- (1,2) -- (3,2) -- (3,1) -- cycle;
+  \draw[dotted, thick, bookpitfall] (1,1) -- (1,2) -- (3,2) -- (3,1) -- cycle;
   \draw[thin, gray] (1,2) -- (3,1);
   \fill[bookaccent] (0,0) circle (1.6pt) node[below left] {$o$};
   \fill[bookpitfall] (1,1) circle (1.6pt) node[below left] {$o'$};
@@ -353,8 +353,8 @@ the point of old coordinates $(2, 1.5)$ in both computations
   \fill[bookdef] (2,1.5) circle (2pt) node[above right] {$m$};
 \end{tikzpicture}
 \caption{The ``sum'' of two points depends on the origin used to compute it:
-$s$ is ``$a + b$'' computed from $o$ (blue parallelogram) and $s'$ is
-``$a + b$'' computed from $o'$ (red parallelogram). The midpoint
+$s$ is ``$a + b$'' computed from $o$ (blue, dashed) and $s'$ is
+``$a + b$'' computed from $o'$ (red, dotted). The midpoint
 $m = \frac12a + \frac12b$ (green) does not depend on the origin: it is the
 centre of both parallelograms.}
 \label{affine-spaces:fig:sum-midpoint}

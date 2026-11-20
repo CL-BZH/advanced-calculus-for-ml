@@ -130,10 +130,10 @@ signature $(1, 1)$, although all the entries of its matrix are positive.
         plot ({sqrt(\c + \t*\t)}, \t);
       \draw[bookaccent, thick, domain=-1.3:1.3, samples=40, variable=\t]
         plot ({-sqrt(\c + \t*\t)}, \t);
-      \draw[bookpitfall, thick, domain=-1.6:1.6, samples=40, variable=\t]
-        plot (\t, {sqrt(\c + \t*\t)});
-      \draw[bookpitfall, thick, domain=-1.6:1.6, samples=40, variable=\t]
-        plot (\t, {-sqrt(\c + \t*\t)});
+      \draw[bookpitfall, thick, dashed, domain=-1.6:1.6, samples=40,
+        variable=\t] plot (\t, {sqrt(\c + \t*\t)});
+      \draw[bookpitfall, thick, dashed, domain=-1.6:1.6, samples=40,
+        variable=\t] plot (\t, {-sqrt(\c + \t*\t)});
     }
     \draw[gray, thin] (-1.6,-1.6) -- (1.6,1.6);
     \draw[gray, thin] (-1.6,1.6) -- (1.6,-1.6);
@@ -150,9 +150,10 @@ signature $(1, 1)$, although all the entries of its matrix are positive.
   \end{scope}
 \end{tikzpicture}
 \caption{Level sets of quadratic forms on $\R^2$ with signatures $(2, 0)$,
-$(1, 1)$ and $(1, 0)$. In the middle picture, blue curves are positive
-levels and red curves negative ones. A change of basis deforms these
-pictures by a linear map; it cannot turn one into another.}
+$(1, 1)$ and $(1, 0)$. In the middle picture, the solid blue curves are
+positive levels and the dashed red ones negative levels. A change of
+basis deforms these pictures by a linear map; it cannot turn one into
+another.}
 \label{spectral-svd:fig:signatures}
 \end{figure}
 
