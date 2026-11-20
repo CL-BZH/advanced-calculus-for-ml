@@ -561,7 +561,8 @@ functions (\cref{ch:contractions-newton}).
 For all $a, b\in U$:
 \begin{enumerate}[nosep]
   \item \emph{(Descent lemma.)} If $f$ is $L$-smooth,
-        $f(b)\leq f(a) + \dd f(a)(b - a) + \frac L2\norm{b - a}^2$.
+        $f(b)\leq f(a) + \dd f(a)(b - a) + \frac L2\norm{b - a}^2$
+        (\cref{gradient-hessian:fig:convex}).
   \item If $f$ is $\mu$-strongly convex,
         $f(b)\geq f(a) + \dd f(a)(b - a) + \frac\mu2\norm{b - a}^2$.
 \end{enumerate}
@@ -739,7 +740,8 @@ which one is chosen. Newton's method needs none: the function supplies
 the map from covectors to vectors. It therefore passes the origin test
 and the basis test, and its behaviour does not depend on how the
 parameters are scaled, rotated or mixed. On a quadratic function with
-positive definite second differential it reaches the minimum in one step.
+positive definite second differential it reaches the minimum in one
+step (\cref{gradient-hessian:tab:updates}).
 \end{keyidea}
 
 \begin{table}[ht]

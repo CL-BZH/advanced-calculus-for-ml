@@ -252,7 +252,8 @@ differential.
   \item Let $M$ be a submanifold of an affine space $\Aff$ and let
         $\rho:W\to M$ be a smooth map on an open set $W\supset M$ with
         $\rho(x) = x$ for $x\in M$. Then $R_p(v) = \rho(p + v)$ is a
-        retraction, defined where $p + v\in W$.
+        retraction, defined where $p + v\in W$
+        (\cref{riemannian-optimization:fig:retraction}).
 \end{enumerate}
 \end{proposition}
 
@@ -330,6 +331,8 @@ descent} with step $\eta > 0$ is the iteration
 \begin{equation}\label{riemannian-optimization:eq:rgd}
   p_{k+1} = R_{p_k}\bigl(-\eta\operatorname{grad}f(p_k)\bigr) .
 \end{equation}
+The dictionary between the two settings is
+\cref{riemannian-optimization:tab:dictionary}.
 On a Euclidean affine space with $R_p(v) = p + v$ it is
 \eqref{gradient-hessian:eq:gd}. The convergence proof of
 \cref{gradient-hessian:thm:rates} used one inequality, the descent lemma.

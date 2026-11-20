@@ -99,7 +99,8 @@ covector on the space $X$ of constraint values, and the condition is an
 equality in $V^*$ between the differential of $f$ and a pull-back. No
 inner product is involved. With an inner product it reads
 $\nabla f(a) = -\sum_i\lambda_i\nabla g_i(a)$: the gradient of $f$ is
-orthogonal to the tangent space.
+orthogonal to the tangent space
+(\cref{constrained-optimization:fig:lagrange}).
 \end{keyidea}
 
 A convenient way to remember the conditions is the \emph{Lagrangian}
@@ -448,7 +449,8 @@ convex, and $0 < \eta < 2/L$. The iteration
 \]
 converges, from every starting point, to the unique minimizer $a^*$ of
 $f$ on $C$, with $\norm{a_k - a^*}\leq\kappa(\eta)^k\norm{a_0 - a^*}$ and
-$\kappa(\eta) = \max(\abs{1 - \eta\mu}, \abs{1 - \eta L})$.
+$\kappa(\eta) = \max(\abs{1 - \eta\mu}, \abs{1 - \eta L})$
+(\cref{constrained-optimization:fig:pgd}).
 \end{theorem}
 
 \begin{proof}

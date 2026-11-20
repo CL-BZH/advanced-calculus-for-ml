@@ -586,7 +586,8 @@ differential, the \emph{potential}. Its \emph{Bregman divergence} is
 \[
   D_\psi(a, b) = \psi(a) - \psi(b) - \dd\psi(b)(a - b)\geq0 .
 \]
-A step of \emph{mirror descent} from $a_k$ is a minimizer of
+A step of \emph{mirror descent} from $a_k$
+(\cref{natural-gradient:fig:mirror}) is a minimizer of
 \[
   a\mapsto\dd L(a_k)(a - a_k) + \frac1\eta D_\psi(a, a_k) .
 \]
