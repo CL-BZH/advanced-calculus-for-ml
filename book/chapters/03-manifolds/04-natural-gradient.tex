@@ -268,7 +268,8 @@ chart enters its definition. Neither does it change when the outcomes
 are relabelled by a bijection of $\mathcal Y$, which only permutes the
 terms of the sum. A theorem of Chentsov, which we do not prove, says that
 on the simplex it is, up to a constant factor, the only Riemannian metric
-invariant under a natural class of transformations of the outcomes.
+invariant under a natural class of transformations of the outcomes, the
+ones he calls congruent embeddings of one simplex in another.
 \end{remark}
 
 \section{The Kullback--Leibler divergence}\label{natural-gradient:sec:kl}
@@ -811,10 +812,14 @@ the standard reference for the geometry is S.~Amari and H.~Nagaoka,
 Gauss--Newton matrix and the empirical Fisher matrix follows
 J.~Martens, New insights and perspectives on the natural gradient
 method, \emph{Journal of Machine Learning Research}, 2020; the
-uniqueness theorem is in N.~N.~Chentsov, \emph{Statistical Decision
-Rules and Optimal Inference}, American Mathematical Society, 1982.
-Mirror descent goes back to A.~Nemirovski and D.~Yudin, \emph{Problem
-Complexity and Method Efficiency in Optimization}, Wiley, 1983; its
+uniqueness theorem is Theorem~11.1 of N.~N.~Chentsov, \emph{Statistical
+Decision Rules and Optimal Inference}, American Mathematical Society,
+1982: up to a constant factor, the Fisher field is the only continuous
+tensor field of type $(0,2)$ invariant under the congruent embeddings
+of the simplexes (his \S11, where (11.9) identifies it with the Fisher
+information matrix). Mirror descent goes back to Chapter~3 of
+A.~S.~Nemirovsky and D.~B.~Yudin, \emph{Problem Complexity and Method
+Efficiency in Optimization}, Wiley, 1983; its
 identification with a natural gradient step is in G.~Raskutti and
 S.~Mukherjee, The information geometry of mirror descent, \emph{IEEE
 Transactions on Information Theory}, 2015. K-FAC: J.~Martens and
