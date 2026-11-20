@@ -30,6 +30,7 @@ ignored by git.
 | A. Griewank and A. Walther, *Evaluating Derivatives*, 2nd ed., SIAM, 2008 | Ch. 7 | DOI 10.1137/1.9780898717761 | Commercial |
 | M. Capiński and E. Kopp, *Measure, Integral and Probability*, 2nd ed., Springer Undergraduate Mathematics Series, Springer, 2004, ISBN 9781852337810 | Ch. 16, 17, 18, 19, App. A | [Springer](https://www.springer.com/978-1-85233-781-0); DOI 10.1007/978-1-4471-0645-6 | Commercial |
 | W. Rudin, *Real and Complex Analysis*, 3rd ed., McGraw-Hill, 1987, ISBN 9780070542341 | Ch. 19 | [McGraw-Hill](https://www.mheducation.com/highered/product.M0070542341.html) | Commercial |
+| P. Billingsley, *Probability and Measure*, 3rd ed., Wiley, 1995, ISBN 0471007102 | Ch. 16, 18, App. A | No publisher page found for this edition | Commercial |
 
 ## Papers
 
