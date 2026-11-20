@@ -835,10 +835,14 @@ M.~Capi\'nski and E.~Kopp, \emph{Measure, Integral and Probability},
 2nd ed., Springer, 2004, Chapters~2 and~3. They go in the other
 direction: Lebesgue measure on the line is built first, as in
 \cref{ch:caratheodory}, and general measure spaces come afterwards.
-For the $\pi$--$\lambda$ theorem see P.~Billingsley,
-\emph{Probability and Measure}, Wiley, 1995. The proof of
-\cref{measures:thm:linear} by the singular value decomposition replaces
-the usual reduction to elementary matrices.
+The $\pi$--$\lambda$ theorem is Theorem~3.2 of P.~Billingsley,
+\emph{Probability and Measure}, 3rd ed., Wiley, 1995, who names it
+after Dynkin; \cref{measures:cor:uniqueness} is a case of his
+Theorem~10.3, and the effect of translations and of linear maps on
+Lebesgue measure his Theorems~12.1 and~12.2. He proves the second by
+elementary row and column operations; the proof of
+\cref{measures:thm:linear} by the singular value decomposition
+replaces that reduction.
 
 \paragraph{Notebook.} The numerical claims of this chapter are checked
 with PyTorch in \notebook{16-measures.ipynb}.
