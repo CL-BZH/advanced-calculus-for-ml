@@ -507,7 +507,7 @@ value theorem gives, at each $t$,
 so the difference quotients of $g_{ij}$ in the direction $e_k$ converge,
 uniformly on $\bar B'$, to $\int_0^1\partial_{h_k}\psi(t, h)\,\dd t$,
 which is continuous in $h$ for the same reason. By
-\cref{differential:thm:c1}, $g_{ij}$ is of class $C^1$.
+\cref{differential:cor:c1}, $g_{ij}$ is of class $C^1$.
 \end{proof}
 
 \begin{theorem}[Morse's lemma]\label{inverse-implicit:thm:morse}
@@ -542,25 +542,35 @@ block $[g^{(s)}_{ij}(0)]_{i,j\geq s}$ is invertible. For $s = 1$ take
 $\Psi_1(x) = x - a$ and $g^{(1)} = G$; for $s = n + 1$ the second sum is
 empty and the statement is the theorem, up to the order of the signs.
 
-\emph{Why the block stays invertible.} Let $F$ be the right-hand side of
-\eqref{inverse-implicit:eq:step}, so that $f = f(a) + F\circ\Psi_s$ and
-$F = (f - f(a))\circ\Psi_s^{-1}$. The point $0$ is a critical point of
-$F$, and $D^2F(0)(w, w') = D^2f(a)(Qw, Qw')$ with
-$Q = D(\Psi_s^{-1})(0)$ invertible, because at a critical point the
-second differential transforms as a bilinear form under any change of
-variable (\cref{gradient-hessian:rem:nonlinear}). So $D^2F(0)$ is
-non-degenerate. Differentiating \eqref{inverse-implicit:eq:step} twice
-at $v = 0$ gives the block diagonal matrix
-$2\diag(\epsilon_1,\dots,\epsilon_{s-1})$ and
-$2[g^{(s)}_{ij}(0)]_{i,j\geq s}$, so the second block is invertible: the
-induction hypothesis is a consequence of non-degeneracy, not an extra
-assumption.
+\emph{What the induction preserves.} Put
+\[
+  A_s = \diag(\epsilon_1,\dots,\epsilon_{s-1})
+  \oplus\bigl[g^{(s)}_{ij}(0)\bigr]_{i,j\geq s} .
+\]
+Every step replaces $A_s$ by a congruent matrix, so no appeal to the
+second differential of a change of variable is needed. The linear
+change of the last coordinates replaces the block by $L^\top(\cdot)L$.
+Completing the square is a congruence as well: for a symmetric
+$M = \begin{bsmallmatrix}a & b^\top\\ b & C\end{bsmallmatrix}$ with
+$a\neq0$ and
+$T = \begin{bsmallmatrix}1 & -b^\top/a\\ 0 & I\end{bsmallmatrix}$,
+\[
+  T^\top MT = \diag(a)\oplus\Bigl(C - \frac{bb^\top}a\Bigr) ,
+\]
+and dividing the first coordinate by $\sqrt{\abs a}$ turns $a$ into its
+sign. With $a = g^{(s)}_{ss}(0)$ and
+$C - bb^\top/a = [g^{(s+1)}_{ij}(0)]_{i,j>s}$ this is the passage from
+$A_s$ to $A_{s+1}$. Hence every $A_s$ is congruent to
+$A_1 = G(0) = \frac12H$, which is invertible, so the block
+$[g^{(s)}_{ij}(0)]_{i,j\geq s}$ is invertible and the induction can go
+on: the induction hypothesis is a consequence of non-degeneracy, not an
+extra assumption.
 
 \emph{The step.} Let $s\leq n$ and abbreviate $g = g^{(s)}$. The
 symmetric matrix $[g_{ij}(0)]_{i,j\geq s}$ is invertible, hence
 non-zero, so the quadratic form it defines is not identically zero
-(a symmetric form is determined by its values on the diagonal, by
-\eqref{inner-products:eq:polarization}) and there is a vector $w$ with
+(a symmetric form is determined by its quadratic form,
+\cref{spectral-svd:def:quadratic}) and there is a vector $w$ with
 $w^\top[g_{ij}(0)]w\neq0$. A linear change of the coordinates
 $v_s,\dots,v_n$ alone, carrying the $s$th basis vector to $w$, leaves
 the terms with $i < s$ untouched and replaces that block by
@@ -594,12 +604,9 @@ $g^{(s+1)}_{ij} = (g_{ij} - g_{is}g_{js}/g_{ss})\circ\Phi^{-1}$, which
 is symmetric and of class $C^1$, gives
 \eqref{inverse-implicit:eq:step} for $s + 1$.
 
-\emph{The signs.} At $s = n + 1$ we have
-$f(x) - f(a) = \sum_i\epsilon_iu_i^2$ with $u = \Psi_{n+1}(x)$, so the
-second differential of
-$(f - f(a))\circ\Psi_{n+1}^{-1}$ at $0$ is $2\diag(\epsilon)$. By the
-transformation rule recalled above and Sylvester's law of inertia
-(\cref{spectral-svd:thm:sylvester}), its signature is that of $D^2f(a)$:
+\emph{The signs.} At $s = n + 1$ the matrix $A_{n+1} = \diag(\epsilon)$
+is congruent to $\frac12H$, so by Sylvester's law of inertia
+(\cref{spectral-svd:thm:sylvester}) it has the signature of $H$:
 exactly $p$ of the signs are $+1$ and $m$ are $-1$. Permuting the
 coordinates puts the positive ones first.
 \end{proof}
@@ -672,11 +679,14 @@ a sum of $p$ positive and $m$ negative squares in suitable coordinates.
         non-degenerate critical point is isolated. A parametrization
         with a continuous symmetry --- the rescaling
         $(W_1, W_2)\mapsto(cW_1, c^{-1}W_2)$ across a homogeneous
-        layer, say --- carries critical points to critical points along
-        a curve, so none of them is isolated and all of them are
-        degenerate. The flat directions of a trained network are of
-        this kind, and the normal form of such a point needs more than
-        the second differential.
+        layer, say --- carries a critical point it does not fix to a
+        whole curve of critical points, so that point is not isolated
+        and is therefore degenerate. The points it fixes escape the
+        argument: for $L = (w_1w_2 - Y)^2$ with $Y\neq0$ the origin is
+        a non-degenerate critical point of index $1$. The flat
+        directions of a trained network are of the first kind, and the
+        normal form of such a point needs more than the second
+        differential.
   \item Newton's method (\cref{gradient-hessian:sec:newton}) solves
         $\dd f = 0$ and is indifferent to the index: the step lands on
         the critical point of the quadratic model, which at a saddle is
@@ -938,9 +948,10 @@ function theorem is his \S5.3, and the implicit function theorem his
 is his \S7.3: Theorem~7.16 in $n$ variables, with the one- and
 two-variable cases as Theorems~7.1 and~7.5 and a proof in three parts
 (Theorems~7.18, 7.19 and~7.25, the last the invariance of the index).
-His Theorem~7.17 is the comparison with Taylor's formula that explains
-\cref{inverse-implicit:lem:morse}: the remainder disappears and the
-coefficients of the quadratic form become variable. The induction used
+His Theorem~7.18 is \cref{inverse-implicit:lem:morse}, printed beside
+his Theorem~7.17, Taylor's formula, for comparison: the remainder
+disappears and the coefficients of the quadratic form become variable.
+The induction used
 here, which completes one square at a time, is J.~Milnor's, in
 \emph{Morse Theory}, Annals of Mathematics Studies 51, Princeton
 University Press, 1963: his Lemma~2.2, with the same substitution

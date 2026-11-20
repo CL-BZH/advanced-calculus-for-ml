@@ -606,7 +606,8 @@ depends on the origin as well (\cref{ch:affine-spaces}).
 
 \begin{proposition}[Gradient descent for least squares]
 \label{spectral-svd:prop:ls-gd}
-The iteration $x_{k+1} = x_k - \eta\,\adj A(Ax_k - b)$ converges for every
+The iteration $x_{k+1} = x_k - \eta\,\adj A(Ax_k - b)$ converges to a
+least-squares solution for every
 $x_0$ if and only if $0 < \eta < 2/\sigma_1^2$. Its limit is the
 least-squares solution $x^\infty$ closest to $x_0$, and
 \[
@@ -855,7 +856,8 @@ basis to an orthonormal basis, and it is the only one with this
 property when $r = n$.
 \end{proof}
 
-In matrices, with the $x_i^\top$ and $y_i^\top$ as the rows of $X$ and
+In matrices, for the dot product, with the $x_i^\top$ and $y_i^\top$ as
+the rows of $X$ and
 $Y$: if $Y^\top X = W\Sigma\,V^\top$ is a singular value decomposition,
 then $Q = WV^\top$, and the largest value of
 $\sum_i\inner{Qx_i}{y_i}$ is the sum of the singular values. When a

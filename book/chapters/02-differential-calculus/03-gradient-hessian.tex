@@ -768,9 +768,9 @@ product; the third involves no choice.}
 
 Newton's method has a price. The Hessian matrix has $n^2$ entries and
 solving $Hn = -\gamma$ costs of the order of $n^3$ operations, out of
-reach when $n$ is the number of parameters of a network. The step is a
-descent direction only where the second differential is positive
-definite, and near a saddle point it is attracted to the saddle. Its
+reach when $n$ is the number of parameters of a network. The step is
+guaranteed to be a descent direction only where the second differential
+is positive definite, and near a saddle point it is attracted to the saddle. Its
 convergence, extremely fast near a non-degenerate minimum, is proved in
 \cref{ch:contractions-newton}.
 
