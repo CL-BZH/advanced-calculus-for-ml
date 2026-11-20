@@ -750,11 +750,30 @@ $P_\theta = (g_\theta)_\#\pi$.
         $1$ to a Lebesgue null set has no density: the likelihood of a
         data point is not defined
         (\cref{measures:fig:generative}).
-  \item \emph{Consequence.} Such models cannot be trained by maximum
-        likelihood; they are trained by comparing samples of
-        $P_\theta$ with data. When $g_\theta$ is a diffeomorphism the
-        density exists and is given by the change of variables formula
-        of \cref{ch:change-of-variables}.
+  \item \emph{Consequences.} For such a model the likelihood, as a
+        density for Lebesgue measure on the space of data, does not
+        exist, and maximum likelihood cannot be applied to $P_\theta$
+        as it stands. There are three ways out.
+        \begin{itemize}[nosep]
+          \item Compare samples of $P_\theta$ with data, without ever
+                evaluating a density.
+          \item Add noise that has a density: the law of
+                $g_\theta(z) + \varepsilon$ is a convolution, and it
+                has one (\cref{fubini:thm:convolution}). A state-space
+                model whose motion has fewer sources of noise than the
+                state has coordinates is in the same situation: its
+                transition has no density, but the likelihood is asked
+                of the noisy measurements, and the transition is only
+                sampled.
+          \item Use the density of the latent variable. If $g_\theta$
+                is injective, a point of its image comes from one $z$,
+                and the density of $\pi$ at that $z$ compares the
+                points of the image with one another. It says nothing
+                about a point outside the image.
+        \end{itemize}
+        When $g_\theta$ is a diffeomorphism the density exists and is
+        given by the change of variables formula of
+        \cref{ch:change-of-variables}.
 \end{itemize}
 \end{mlthread}
 
