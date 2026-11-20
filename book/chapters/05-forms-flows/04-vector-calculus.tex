@@ -710,7 +710,12 @@ trace of the influence matrix for Laplacian smoothing splines,
 \emph{Comm.\ Statist.\ Simulation Comput.}\ 19(2), 1990; its use for
 continuous flows from W.~Grathwohl et al., FFJORD: Free-form
 continuous dynamics for scalable reversible generative models, ICLR,
-2019.
+2019. That $\Delta_p$ is the generator of the dynamics sampling from
+$p$ is the Smoluchowski equation of G.~A.~Pavliotis, \emph{Stochastic
+Processes and Applications}, Springer, 2014, \S4.5, with the generator
+of a Markov process in his \S2.3; the rate at which the log-density of
+a moving point changes is proved here as
+\cref{odes-flows:thm:liouville}.
 
 \paragraph{Notebook.} The numerical claims of this chapter are checked
 with PyTorch in \notebook{24-vector-calculus.ipynb}.
