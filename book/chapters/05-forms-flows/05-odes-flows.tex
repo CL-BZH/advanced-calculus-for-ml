@@ -628,7 +628,10 @@ Let $x$ be a solution of $x' = -\operatorname{grad}f(x)$.
   \item If $f$ is $\mu$-strongly convex
         (\cref{gradient-hessian:def:smooth}) and has a minimizer
         $x^*$, then
-        $\norm{x(t) - x^*}\leq e^{-\mu t}\norm{x(0) - x^*}$.
+        $\norm{x(t) - x^*}\leq e^{-\mu t}\norm{x(0) - x^*}$
+        for $t\geq0$. For $t < 0$ the same monotonicity gives the
+        reverse inequality: the flow run backwards leaves $x^*$ at
+        least as fast.
 \end{enumerate}
 \end{proposition}
 
