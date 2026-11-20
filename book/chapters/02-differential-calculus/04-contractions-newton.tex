@@ -669,7 +669,12 @@ $\beta_0\eta_0$. Fixed-point layers: S.~Bai, J.~Z.~Kolter and V.~Koltun,
 Deep equilibrium models, NeurIPS, 2019.
 
 The formulas for the inverse after a change of low rank are due to
-J.~Sherman and W.~J.~Morrison (1950) and M.~A.~Woodbury (1950); planar
+J.~Sherman and W.~J.~Morrison (1950) and M.~A.~Woodbury (1950). For
+quasi-Newton methods: Chapter~6 of J.~Nocedal and S.~J.~Wright,
+\emph{Numerical Optimization}, 2nd ed., Springer, 2006, where the BFGS
+update of the inverse Hessian is the rank-two correction built from the
+last displacement and the last change of the gradient, with the
+limited-memory variant in their Chapter~7. Planar
 flows are from D.~J.~Rezende and S.~Mohamed, Variational inference with
 normalizing flows, ICML, 2015.
 
