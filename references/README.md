@@ -31,6 +31,8 @@ ignored by git.
 | M. Capiński and E. Kopp, *Measure, Integral and Probability*, 2nd ed., Springer Undergraduate Mathematics Series, Springer, 2004, ISBN 9781852337810 | Ch. 16, 17, 18, 19, App. A | [Springer](https://www.springer.com/978-1-85233-781-0); DOI 10.1007/978-1-4471-0645-6 | Commercial |
 | W. Rudin, *Real and Complex Analysis*, 3rd ed., McGraw-Hill, 1987, ISBN 9780070542341 | Ch. 19 | [McGraw-Hill](https://www.mheducation.com/highered/product.M0070542341.html) | Commercial |
 | P. Billingsley, *Probability and Measure*, 3rd ed., Wiley, 1995, ISBN 0471007102 | Ch. 16, 18, App. A | No publisher page found for this edition | Commercial |
+| E. Kreyszig, *Introductory Functional Analysis with Applications*, Wiley, 1978, ISBN 0471507318 | Ch. 2 | No publisher page found for this edition | Commercial |
+| J. van Neerven, *Functional Analysis*, Cambridge Studies in Advanced Mathematics 201, Cambridge University Press, 2022, ISBN 9781009232470 | Ch. 2 | [arXiv:2112.11166](https://arxiv.org/abs/2112.11166), the corrected version the author posts | Commercial in print; the posted version is free to view and download for personal use only, not for redistribution |
 
 ## Papers
 

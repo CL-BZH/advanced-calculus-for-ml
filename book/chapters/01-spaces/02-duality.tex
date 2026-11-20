@@ -484,7 +484,10 @@ the same symbol with two meanings.
 into the one used here. This book writes $\dual A$ for the dual operator,
 after the transpose of its matrix, and keeps $\adj A$ for the adjoint.
 When a result is taken from another source, it is restated in this
-notation.
+notation. Kreyszig separates the two symbols for the same reason, and
+says so: one should not write $T^*$ for the operator $Y'\to X'$, because
+the star would then mean one thing on a Hilbert space and another on a
+normed space.
 
 \begin{table}[ht]
 \centering
@@ -506,14 +509,16 @@ Axler, \emph{Linear Algebra Done Right} & $V'$ & $T'$, ``dual map''
 Kreyszig, \emph{Introductory Functional Analysis} & $X'$
   & $T^\times$, ``adjoint operator'' (\S4.5)
   & $T^*$, ``Hilbert-adjoint'' (\S3.9) \\
-van Neerven, \emph{Functional Analysis} & $X^*$ & $T^*$, ``adjoint''
-  & $T^*$ \\
+van Neerven, \emph{Functional Analysis} & $X^*$
+  & $T^*$, ``adjoint'' (\S4.3)
+  & $T^\star$, ``Hilbert space adjoint'' (\S4.3.b) \\
 French textbooks & $E^*$ & ${}^t\!u$, ``transpos\'ee'' & $u^*$ \\
 \bottomrule
 \end{tabular}
 \caption{Notation for the dual operator and for the adjoint in some
 references. A star in the third column and a star in the fourth are
-different operators.}
+different operators. Kreyszig keeps $X^*$ for the \emph{algebraic} dual
+(\S2.8) and writes $X'$ for the space of bounded functionals (\S2.10).}
 \label{duality:tab:notation}
 \end{table}
 
@@ -1021,8 +1026,11 @@ by a linear transformation (Definition~6.9.1) are the two places where the
 ideas of this chapter surface. The other books of
 \cref{duality:tab:notation} are S.~Axler, \emph{Linear Algebra Done
 Right}, Springer; E.~Kreyszig, \emph{Introductory Functional Analysis with
-Applications}, Wiley, 1978; J.~van Neerven, \emph{Functional Analysis},
-Cambridge University Press; and the manuscript of J.~Gallier and
+Applications}, Wiley, 1978, who defines $X'$ in 2.10-3 and the adjoint
+$T^\times$ in 4.5-1; J.~van Neerven, \emph{Functional Analysis},
+Cambridge University Press, 2022, whose Definition~1.17 gives $X^*$,
+Definition~4.23 the adjoint $T^*$ and Definition~4.29 the Hilbert space
+adjoint $T^\star$; and the manuscript of J.~Gallier and
 J.~Quaintance cited in the sources of \cref{ch:differential}. The
 reference on sharp minima is
 L.~Dinh, R.~Pascanu, S.~Bengio and Y.~Bengio, Sharp minima can generalize
