@@ -534,6 +534,53 @@ integrable in $x$. Differentiability at $\theta_0$ is then needed only
 for almost every $x$, not for all.
 \end{intuition}
 
+\begin{example}[The mean of the cosine of a Gaussian angle]
+\label{lebesgue-integral:ex:gausscos}
+Let $\sigma > 0$, let
+$\phi(x) = e^{-x^2/(2\sigma^2)}/(\sigma\sqrt{2\pi})$ be the density of a
+centred Gaussian of variance $\sigma^2$, and
+\[
+  m(a) = \int_\R\cos(ax)\,\phi(x)\,\dd x , \qquad a\in\R ,
+\]
+for Lebesgue measure. If $\theta$ is a Gaussian error on a heading,
+$m(1)$ is the mean of $\cos\theta$: the mean forward progress, per unit
+of distance driven, of a robot whose heading is off by $\theta$.
+
+\emph{Differentiating.} Put $f(x, a) = \cos(ax)\,\phi(x)$. By the mean
+value inequality, $\abs{f(x, a) - f(x, a_0)}\leq\abs x\,\phi(x)\,
+\abs{a - a_0}$, and $g(x) = \abs x\,\phi(x)$ is integrable (its integral
+is $\sigma\sqrt{2/\pi}$). Both hypotheses of
+\cref{lebesgue-integral:thm:differentiation} hold at every $a_0$, so $m$
+is differentiable and
+\[
+  m'(a) = -\int_\R x\sin(ax)\,\phi(x)\,\dd x .
+\]
+
+\emph{Integrating by parts.} Since $\phi'(x) = -(x/\sigma^2)\,\phi(x)$,
+on a bounded interval (where the integrals are Riemann integrals,
+\cref{lebesgue-integral:thm:riemann})
+\[
+  \int_{-R}^{R}x\sin(ax)\,\phi(x)\,\dd x
+  = -\sigma^2\bigl[\sin(ax)\,\phi(x)\bigr]_{-R}^{R}
+    + \sigma^2a\int_{-R}^{R}\cos(ax)\,\phi(x)\,\dd x .
+\]
+As $R\to\infty$ the bracket tends to $0$, and the two integrals tend to
+the integrals over $\R$ by \cref{lebesgue-integral:thm:dct}, with the
+dominating functions $g$ and $\phi$. So $m'(a) = -\sigma^2a\,m(a)$.
+
+\emph{Solving.} The function $a\mapsto m(a)\,e^{\sigma^2a^2/2}$ has
+derivative $\bigl(m'(a) + \sigma^2a\,m(a)\bigr)e^{\sigma^2a^2/2} = 0$, so
+it is constant, equal to $m(0) = 1$:
+\[
+  m(a) = e^{-\sigma^2a^2/2} .
+\]
+For $\sigma = 0.3$\,rad (about $17^\circ$), $m(1) = e^{-0.045} = 0.956$:
+on average the robot advances $4.4\%$ less than it was told. Since
+$x\mapsto\sin(ax)\,\phi(x)$ is odd and integrable, its integral is $0$,
+and $m$ is also the characteristic function
+$a\mapsto\int e^{iax}\phi(x)\,\dd x$ of the Gaussian.
+\end{example}
+
 \begin{pitfall}[A derivative that vanishes almost everywhere]
 On $X = [0, 1]$ with Lebesgue measure let
 $f(x, \theta) = 1_{\{x\leq\theta\}}$ for $0 < \theta < 1$. For every
