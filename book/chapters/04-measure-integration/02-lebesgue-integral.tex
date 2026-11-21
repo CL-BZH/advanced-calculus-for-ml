@@ -542,43 +542,68 @@ centred Gaussian of variance $\sigma^2$, and
 \[
   m(a) = \int_\R\cos(ax)\,\phi(x)\,\dd x , \qquad a\in\R ,
 \]
-for Lebesgue measure. If $\theta$ is a Gaussian error on a heading,
-$m(1)$ is the mean of $\cos\theta$: the mean forward progress, per unit
-of distance driven, of a robot whose heading is off by $\theta$.
+for Lebesgue measure; the integrand is integrable for every $a$, since
+$\abs{\cos(ax)\,\phi(x)}\leq\phi(x)$. If $\theta$ is a Gaussian error of
+variance $\sigma^2$ on a heading, $m(1)$ is the mean of $\cos\theta$
+(by \cref{lebesgue-integral:thm:transfer} below and
+\cref{fubini:lem:density}): the mean forward progress, per unit of
+distance driven, of a robot whose heading is off by $\theta$.
 
-\emph{Differentiating.} Put $f(x, a) = \cos(ax)\,\phi(x)$. By the mean
-value inequality, $\abs{f(x, a) - f(x, a_0)}\leq\abs x\,\phi(x)\,
-\abs{a - a_0}$, and $g(x) = \abs x\,\phi(x)$ is integrable (its integral
-is $\sigma\sqrt{2/\pi}$). Both hypotheses of
-\cref{lebesgue-integral:thm:differentiation} hold at every $a_0$, so $m$
-is differentiable and
+\emph{Differentiating.} Put $f(x, a) = \cos(ax)\,\phi(x)$. For every
+$x$, $a\mapsto f(x, a)$ is of class $C^1$, with
+\[
+  \abs{\partial_af(x, a)} = \abs{x\sin(ax)}\,\phi(x)\leq g(x) ,
+  \qquad g(x) = \abs x\,\phi(x) ,
+\]
+and $g$ is integrable, with integral $\sigma\sqrt{2/\pi}$. So
+\cref{lebesgue-integral:cor:c1} applies on every ball of $\R$: $m$ is of
+class $C^1$ and
 \[
   m'(a) = -\int_\R x\sin(ax)\,\phi(x)\,\dd x .
 \]
 
 \emph{Integrating by parts.} Since $\phi'(x) = -(x/\sigma^2)\,\phi(x)$,
-on a bounded interval (where the integrals are Riemann integrals,
-\cref{lebesgue-integral:thm:riemann})
+and since on $[-R, R]$ the integrals are Riemann integrals
+(\cref{lebesgue-integral:thm:riemann}),
 \[
   \int_{-R}^{R}x\sin(ax)\,\phi(x)\,\dd x
   = -\sigma^2\bigl[\sin(ax)\,\phi(x)\bigr]_{-R}^{R}
     + \sigma^2a\int_{-R}^{R}\cos(ax)\,\phi(x)\,\dd x .
 \]
-As $R\to\infty$ the bracket tends to $0$, and the two integrals tend to
-the integrals over $\R$ by \cref{lebesgue-integral:thm:dct}, with the
-dominating functions $g$ and $\phi$. So $m'(a) = -\sigma^2a\,m(a)$.
+Let $R_n\to\infty$. The bracket is $2\sin(aR_n)\,\phi(R_n)$, which
+tends to $0$. The integral of an integrable $h$ over $[-R_n, R_n]$ is
+$\int1_{[-R_n, R_n]}h$, and $1_{[-R_n, R_n]}h\to h$ at every point;
+with the dominating functions $g$ and $\phi$,
+\cref{lebesgue-integral:thm:dct} sends both integrals to the integrals
+over $\R$. So $m'(a) = -\sigma^2a\,m(a)$ for every $a$.
 
 \emph{Solving.} The function $a\mapsto m(a)\,e^{\sigma^2a^2/2}$ has
-derivative $\bigl(m'(a) + \sigma^2a\,m(a)\bigr)e^{\sigma^2a^2/2} = 0$, so
-it is constant, equal to $m(0) = 1$:
+derivative $\bigl(m'(a) + \sigma^2a\,m(a)\bigr)e^{\sigma^2a^2/2} = 0$ on
+$\R$, so it is constant, equal to $m(0) = \int\phi = 1$:
 \[
   m(a) = e^{-\sigma^2a^2/2} .
 \]
 For $\sigma = 0.3$\,rad (about $17^\circ$), $m(1) = e^{-0.045} = 0.956$:
-on average the robot advances $4.4\%$ less than it was told. Since
-$x\mapsto\sin(ax)\,\phi(x)$ is odd and integrable, its integral is $0$,
-and $m$ is also the characteristic function
-$a\mapsto\int e^{iax}\phi(x)\,\dd x$ of the Gaussian.
+on average the robot advances $4.4\%$ less than it was told.
+
+\emph{The heading is an angle.} The model puts the error on $\R$, while
+a heading is defined only modulo $2\pi$. Nothing is lost: $\cos$ has
+period $2\pi$, so $\cos\theta$ is the same whether $\theta$ is read in
+$\R$ or modulo $2\pi$, and its mean is $m(1)$ in both readings.
+
+\emph{The characteristic function.} The function
+$x\mapsto\sin(ax)\,\phi(x)$ is odd, continuous and dominated by $\phi$,
+so its Riemann integral over $[-R_n, R_n]$ is $0$, and by
+\cref{lebesgue-integral:thm:dct} as above so is its integral over $\R$.
+The integral of a complex function being the integral of its real part
+plus $i$ times that of its imaginary part,
+\[
+  \int_\R e^{iax}\phi(x)\,\dd x = m(a) = e^{-\sigma^2a^2/2} .
+\]
+This is the characteristic function of the Gaussian in the sense of
+probability: the mean of $e^{iaX}$ when $X$ has density $\phi$. (Some
+texts on measure theory call the indicator $1_A$ the characteristic
+function of $A$; the two uses are unrelated.)
 \end{example}
 
 \begin{pitfall}[A derivative that vanishes almost everywhere]
