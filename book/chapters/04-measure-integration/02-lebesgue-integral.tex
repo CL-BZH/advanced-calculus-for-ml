@@ -543,11 +543,10 @@ centred Gaussian of variance $\sigma^2$, and
   m(a) = \int_\R\cos(ax)\,\phi(x)\,\dd x , \qquad a\in\R ,
 \]
 for Lebesgue measure; the integrand is integrable for every $a$, since
-$\abs{\cos(ax)\,\phi(x)}\leq\phi(x)$. If $\theta$ is a Gaussian error of
-variance $\sigma^2$ on a heading, $m(1)$ is the mean of $\cos\theta$
-(by \cref{lebesgue-integral:thm:transfer} below and
-\cref{fubini:lem:density}): the mean forward progress, per unit of
-distance driven, of a robot whose heading is off by $\theta$.
+$\abs{\cos(ax)\,\phi(x)}\leq\phi(x)$. If $X$ has density $\phi$,
+$m(a)$ is the mean of $\cos(aX)$ (by
+\cref{lebesgue-integral:thm:transfer} below and
+\cref{fubini:lem:density}).
 
 \emph{Differentiating.} Put $f(x, a) = \cos(ax)\,\phi(x)$. For every
 $x$, $a\mapsto f(x, a)$ is of class $C^1$, with
@@ -583,13 +582,6 @@ $\R$, so it is constant, equal to $m(0) = \int\phi = 1$:
 \[
   m(a) = e^{-\sigma^2a^2/2} .
 \]
-For $\sigma = 0.3$\,rad (about $17^\circ$), $m(1) = e^{-0.045} = 0.956$:
-on average the robot advances $4.4\%$ less than it was told.
-
-\emph{The heading is an angle.} The model puts the error on $\R$, while
-a heading is defined only modulo $2\pi$. Nothing is lost: $\cos$ has
-period $2\pi$, so $\cos\theta$ is the same whether $\theta$ is read in
-$\R$ or modulo $2\pi$, and its mean is $m(1)$ in both readings.
 
 \emph{The characteristic function.} The function
 $x\mapsto\sin(ax)\,\phi(x)$ is odd, continuous and dominated by $\phi$,
