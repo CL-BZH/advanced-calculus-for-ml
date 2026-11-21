@@ -598,6 +598,17 @@ texts on measure theory call the indicator $1_A$ the characteristic
 function of $A$; the two uses are unrelated.)
 \end{example}
 
+Evaluating an integral by differentiating it with respect to a
+parameter, as here, often after introducing a parameter that was not in
+the integral, is known as \emph{Feynman's trick}
+(\cref{lebesgue-integral:exr:10} invents one). The informal versions
+leave out the domination hypothesis of \cref{lebesgue-integral:cor:c1},
+which is exactly what makes the trick legitimate. Its best-known
+instance, $\int_0^\infty\frac{\sin x}x\,\dd x = \frac\pi2$, lies outside
+the theorem: as noted after \cref{lebesgue-integral:thm:riemann}, that
+function is not integrable on $[0, \infty)$, and the computation needs
+an extra passage to the limit.
+
 \begin{pitfall}[A derivative that vanishes almost everywhere]
 On $X = [0, 1]$ with Lebesgue measure let
 $f(x, \theta) = 1_{\{x\leq\theta\}}$ for $0 < \theta < 1$. For every
@@ -901,5 +912,22 @@ $\varphi(\mu) = e^{-\mu^2/2}/\sqrt{2\pi}$.
         \cref{lebesgue-integral:thm:differentiation} fails in (1)?
 \end{enumerate}
 \solutionlink{lebesgue-integral:exr:9}
+\end{exercise}
+
+\begin{exercise}\label{lebesgue-integral:exr:10}
+Feynman's trick, with a parameter that has to be introduced.
+\begin{enumerate}[nosep]
+  \item Show that $x\mapsto(x - 1)/\ln x$ extends to a continuous
+        function on $[0, 1]$, so that
+        $J = \int_0^1\frac{x - 1}{\ln x}\,\dd x$ is defined.
+  \item For $t > -1$ put
+        $I(t) = \int_0^1\frac{x^t - 1}{\ln x}\,\dd x$. Show that the
+        integrand is integrable, and that $I$ is of class $C^1$ on
+        $(-1, \infty)$ with $I'(t) = 1/(1 + t)$. Which integrable
+        function dominates the derivative of the integrand for $t$ in
+        $[t_0 - \delta, t_0 + \delta]$?
+  \item Deduce that $I(t) = \ln(1 + t)$, and $J = \ln2$.
+\end{enumerate}
+\solutionlink{lebesgue-integral:exr:10}
 \end{exercise}
 \end{notechapter}

@@ -2298,6 +2298,35 @@ $\int g\,\dd(h_\#P_Z)$, with $g(y) = y^2$.
         $\varepsilon\neq-\mu$.
 \end{enumerate}
 
+\solution{lebesgue-integral:exr:10}
+\begin{enumerate}[nosep]
+  \item As $x\to0^+$ the numerator tends to $-1$ and $\ln x\to-\infty$,
+        so the quotient tends to $0$. As $x\to1$ it tends to $1$, the
+        ratio of the derivatives of $x - 1$ and $\ln x$ at $1$. The
+        extension is continuous on $[0, 1]$, hence integrable
+        (\cref{lebesgue-integral:thm:riemann}).
+  \item For $x\in(0, 1)$, since $\frac{\dd}{\dd s}x^s = x^s\ln x$,
+        \[
+          \frac{x^t - 1}{\ln x} = \int_0^tx^s\,\dd s ,
+        \]
+        so the integrand lies between $0$ and $t$ times the larger of
+        $1$ and $x^t$, and
+        $\abs{(x^t - 1)/\ln x}\leq\abs t\,(1 + x^t)$, which is
+        integrable on $(0, 1)$ because $t > -1$. The function
+        $t\mapsto(x^t - 1)/\ln x$ is of class $C^1$ with derivative
+        $x^t$. Fix $t_0 > -1$ and $\delta > 0$ with $t_0 - \delta > -1$.
+        For $t\in[t_0 - \delta, t_0 + \delta]$ and $x\in(0, 1)$,
+        $0 < x^t\leq x^{t_0 - \delta}$, and $x^{t_0 - \delta}$ is
+        integrable, with integral $1/(1 + t_0 - \delta)$. By
+        \cref{lebesgue-integral:cor:c1} on the ball
+        $(t_0 - \delta, t_0 + \delta)$, $I$ is of class $C^1$ there and
+        $I'(t) = \int_0^1x^t\,\dd x = 1/(1 + t)$.
+  \item The function $t\mapsto I(t) - \ln(1 + t)$ has derivative $0$
+        on the interval $(-1, \infty)$, so it is constant, and its
+        value at $0$ is $0$ since the integrand of $I(0)$ is $0$. Hence
+        $I(t) = \ln(1 + t)$, and $J = I(1) = \ln2$.
+\end{enumerate}
+
 \section{\nameref*{ch:fubini}}
 
 \solution{fubini:exr:1}
