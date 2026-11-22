@@ -41,6 +41,8 @@ ignored by git.
 | S. Amari and H. Nagaoka, *Methods of Information Geometry*, Translations of Mathematical Monographs 191, American Mathematical Society and Oxford University Press, 2000, ISBN 0821805312, translated from the Japanese (Iwanami Shoten, 1993) by D. Harada | Ch. 15 | No publisher page opened | Commercial |
 | M. Capiński and E. Kopp, *Measure, Integral and Probability*, 2nd ed., Springer Undergraduate Mathematics Series, Springer, 2004, ISBN 9781852337810 | Ch. 16, 17, 18, 19, App. A | [Springer](https://www.springer.com/978-1-85233-781-0); DOI 10.1007/978-1-4471-0645-6 | Commercial |
 | W. Rudin, *Real and Complex Analysis*, 3rd ed., McGraw-Hill, 1987, ISBN 9780070542341 | Ch. 19, 20 | [McGraw-Hill](https://www.mheducation.com/highered/product.M0070542341.html) | Commercial |
+| L. Hörmander, *The Analysis of Linear Partial Differential Operators I: Distribution Theory and Fourier Analysis*, 2nd ed., Springer, 1990, ISBN 3540523456 | Ch. 20 | [Springer](https://link.springer.com/book/10.1007/978-3-642-61497-2), the Classics in Mathematics reprint of this edition; DOI 10.1007/978-3-642-61497-2 | Commercial |
+| C. Villani, *Optimal Transport, Old and New*, Grundlehren der mathematischen Wissenschaften 338, Springer, 2009, ISBN 9783540710493 | Ch. 20 | [Springer](https://link.springer.com/book/10.1007/978-3-540-71050-9); DOI 10.1007/978-3-540-71050-9 | Commercial |
 | P. Billingsley, *Probability and Measure*, 3rd ed., Wiley, 1995, ISBN 0471007102 | Ch. 16, 18, App. A | No publisher page found for this edition | Commercial |
 | E. Kreyszig, *Introductory Functional Analysis with Applications*, Wiley, 1978, ISBN 0471507318 | Ch. 2, 4 | No publisher page found for this edition | Commercial |
 | J. van Neerven, *Functional Analysis*, Cambridge Studies in Advanced Mathematics 201, Cambridge University Press, 2022, ISBN 9781009232470 | Ch. 2, 4 | [arXiv:2112.11166](https://arxiv.org/abs/2112.11166), the corrected version the author posts | Commercial in print; the posted version is free to view and download for personal use only, not for redistribution |
@@ -123,6 +125,7 @@ ignored by git.
 | Y. Song, J. Sohl-Dickstein, D. P. Kingma, A. Kumar, S. Ermon and B. Poole, Score-based generative modeling through stochastic differential equations, ICLR, 2021 | Ch. 25 | [arXiv:2011.13456](https://arxiv.org/abs/2011.13456) | Free to read on arXiv |
 | J. M. Cohen, S. Kaur, Y. Li, J. Z. Kolter and A. Talwalkar, Gradient descent on neural networks typically occurs at the edge of stability, ICLR, 2021 | Ch. 25 | [arXiv:2103.00065](https://arxiv.org/abs/2103.00065) | Free to read on arXiv |
 | R. M. Solovay, A model of set-theory in which every set of reals is Lebesgue measurable, *Annals of Mathematics* (2) 92(1), 1–56, 1970 | Ch. App. A | DOI 10.2307/1970696 | Commercial |
+| M. Arjovsky, S. Chintala and L. Bottou, Wasserstein generative adversarial networks, ICML, 2017; *Proceedings of Machine Learning Research* 70, 214–223 | Ch. 20 | [PMLR](https://proceedings.mlr.press/v70/arjovsky17a.html) | Open access |
 
 ## Companion
 

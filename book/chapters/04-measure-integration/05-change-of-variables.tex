@@ -681,9 +681,10 @@ distribution on the quarter circle of \cref{natural-gradient:fig:arc}
 \section{Measures known by their integrals}
 \label{change-of-variables:sec:functionals}
 
-\Cref{change-of-variables:prop:injective} gives a push-forward that has
-no density in $\R^n$ a density with respect to the volume of a
-submanifold. It needs a submanifold and a parametrization of it. There is
+When a push-forward has no density in $\R^n$,
+\cref{change-of-variables:prop:injective} gives it a density with
+respect to the volume of a submanifold. It needs a submanifold and a
+parametrization of it. There is
 another way to handle such measures, which needs neither: describe a
 measure by the integrals $\int\varphi\,\dd\mu$ of enough functions
 $\varphi$. Probability does this whenever it computes $\E[g(X)]$ from the
@@ -755,9 +756,12 @@ The law of the next pose is the push-forward $\psi_\#(\rho\lambda^2)$.
         $\rho(d, \phi)/\sqrt{1 + d^2}$ at the point $\psi(d, \phi)$. At
         the commanded pose $(d, \phi) = (4, 0)$ it is
         $\frac{1}{2\pi\times0.4\times0.03}/\sqrt{17} = 13.26/4.12 = 3.22$
-        per unit of area.
+        per unit of area. That area is measured with the Euclidean
+        metric of $(x, y, \theta)$, which counts a radian as a metre;
+        other units would change the number, though not the law.
   \item \emph{As a functional it needs neither.} For every bounded
-        measurable $g$ on $\R^3$, by the transfer theorem,
+        measurable $g$ on $\R^3$, by the transfer theorem and
+        \cref{fubini:lem:density},
         \[
           \E\bigl[g(\text{next pose})\bigr]
           = \iint g\bigl(\psi(d, \phi)\bigr)\,\rho(d, \phi)\,
@@ -797,13 +801,16 @@ Let $\mathcal D(\R^n)$ be the space of $C^\infty$ functions
 $\R^n\to\R$ that vanish outside a bounded set, the \emph{test
 functions}. A \emph{distribution} is a linear map
 $T:\mathcal D(\R^n)\to\R$, written $\varphi\mapsto\langle T,
-\varphi\rangle$, such that for every bounded set $K$ there are $C$ and
+\varphi\rangle$, such that for every closed ball $K$ there are $C$ and
 $m$ with
 \[
   \abs{\langle T, \varphi\rangle}
   \leq C\sum_{\abs\alpha\leq m}\sup\abs{\partial^\alpha\varphi}
   \qquad\text{for every $\varphi$ that vanishes outside $K$.}
 \]
+Here $\alpha = (\alpha_1,\dots,\alpha_n)$ runs over the $n$-tuples of
+non-negative integers, $\abs\alpha = \alpha_1 + \dots + \alpha_n$ and
+$\partial^\alpha = \partial_1^{\alpha_1}\cdots\partial_n^{\alpha_n}$.
 \end{definition}
 
 \begin{example}\label{change-of-variables:ex:distributions}
@@ -822,7 +829,9 @@ $m$ with
         suggests the definition
         $\langle T', \varphi\rangle = -\langle T, \varphi'\rangle$ for
         every distribution $T$ on $\R$, which agrees with $T_{f'}$ when
-        $f$ is $C^1$. In particular
+        $f$ is $C^1$. It is a distribution: $\varphi'$ vanishes outside
+        $K$ when $\varphi$ does, so if $T$ satisfies the bound with $C$
+        and $m$, then $T'$ satisfies it with $C$ and $m + 1$. In particular
         $\langle\delta_a', \varphi\rangle = -\varphi'(a)$, with
         $m = 1$; it comes from no measure
         (\cref{change-of-variables:exr:10}).
@@ -835,12 +844,13 @@ vanish outside a bounded set, with $L(\varphi)\geq0$ whenever
 $\varphi\geq0$, is $\varphi\mapsto\int\varphi\,\dd\mu$ for a unique Borel
 measure $\mu$ finite on bounded sets: this is the Riesz representation
 theorem (W.~Rudin, \emph{Real and Complex Analysis}, 3rd ed.,
-Theorem~2.14). And a distribution $T$ with $\langle T,
-\varphi\rangle\geq0$ whenever $\varphi\geq0$ is a measure (L.~H\"ormander,
-\emph{The Analysis of Linear Partial Differential Operators~I},
-Theorem~2.1.7). So the probability distributions are exactly the
-positive distributions of total mass $1$; the word was chosen by
-Schwartz with distributions of mass and charge in mind.
+Theorem~2.14), and its uniqueness part is
+\cref{change-of-variables:prop:testfunctions}. And a distribution $T$
+with $\langle T, \varphi\rangle\geq0$ whenever $\varphi\geq0$ is a
+measure (L.~H\"ormander, \emph{The Analysis of Linear Partial
+Differential Operators~I}, 2nd ed., Theorem~2.1.7). So the probability
+distributions are exactly the positive distributions whose measure has
+total mass $1$.
 
 \begin{pitfall}[The delta notation]
 Physics and engineering texts write the robot's law of
@@ -849,8 +859,9 @@ it had a density:
 \[
   p(y) = \int\delta\bigl(y - \psi(z)\bigr)\,\rho(z)\,\dd z .
 \]
-This $p$ is not a function of $y$, and $\delta(y - \psi(z))$ has no value
-at any point. The formula means: for every test function $\varphi$,
+When the push-forward has no density, as for the robot, this $p$ is not
+a function of $y$, and $\delta(y - \psi(z))$ has no value at any point.
+The formula means: for every test function $\varphi$,
 \[
   \int\varphi(y)\,p(y)\,\dd y
   = \int\Bigl(\int\varphi(y)\,\delta\bigl(y - \psi(z)\bigr)\,\dd y\Bigr)
@@ -860,26 +871,35 @@ at any point. The formula means: for every test function $\varphi$,
 which is the transfer theorem, with
 $\langle\delta_{\psi(z)}, \varphi\rangle = \varphi(\psi(z))$ in the
 middle. A computation with $\delta$ is correct when it can be read in
-this way; evaluating $p(y)$, or taking its logarithm, is not.
+this way; evaluating $p(y)$, or taking its logarithm, is not, unless the
+push-forward has a density, which the formula then gives: for a
+diffeomorphism $\psi$ it is the density of
+\cref{change-of-variables:thm:pushforward}.
 \end{pitfall}
 
 \begin{mlthread}[Machine learning: comparing models through test functions]
-The generative models of \cref{measures:sec:ml} have no density, so
-their likelihood cannot be computed; but by
+The generative models of \cref{measures:sec:ml} whose latent space is
+smaller than the data space have no density, so their likelihood
+cannot be computed; but by
 \cref{change-of-variables:prop:testfunctions} a model is equal to the
 data distribution as soon as the two give the same integrals to every
 test function. Training methods that compare a model $\mu_\theta$ with
-the data $\nu$ use exactly this: they look for a test function $\varphi$
+the data $\nu$ use exactly this: they look for a function $\varphi$
 in a class $\mathcal F$ on which $\int\varphi\,\dd\mu_\theta$ and
 $\int\varphi\,\dd\nu$ differ most, and reduce that difference. With
-$\mathcal F$ the functions of Lipschitz constant at most $1$, the
+$\mathcal F$ the functions of Lipschitz constant at most $1$, and for
+laws with a finite first moment, $\int\abs y\,\dd\mu(y) < \infty$, the
 largest difference is the Wasserstein distance $W_1$ (C.~Villani,
 \emph{Optimal Transport, Old and New}, Remark~6.5), the quantity that the
 Wasserstein GAN estimates with a neural network as $\varphi$
 (M.~Arjovsky, S.~Chintala and L.~Bottou, Wasserstein generative
 adversarial networks, ICML, 2017). Both integrals are expectations, so
 they are estimated by averages over samples: no density is ever
-evaluated.
+evaluated. These functions are not test functions, since they need not
+vanish outside a bounded set, but a difference of $0$ still forces
+$\mu_\theta = \nu$: the functions $\varphi_k$ in the proof of
+\cref{change-of-variables:prop:testfunctions} are Lipschitz, with
+constant $k$, so the proof goes through with them.
 \end{mlthread}
 
 \section{Where the chapter leads}\label{change-of-variables:sec:outlook}
@@ -1069,6 +1089,13 @@ $(0, 1)$.
   \item Conclude that there is no measure $\mu$ with
         $\langle\delta_0', \varphi\rangle = \int\varphi\,\dd\mu$ for
         every test function $\varphi$.
+  \item Show that
+        $\langle\delta_0', \varphi\rangle
+        = \lim_{\epsilon\to0}\bigl(\varphi(-\epsilon)
+        - \varphi(\epsilon)\bigr)/(2\epsilon)$ for every test function
+        $\varphi$: $\delta_0'$ is the limit of the charges
+        $1/(2\epsilon)$ at $-\epsilon$ and $-1/(2\epsilon)$ at
+        $\epsilon$, the dipole of physics.
 \end{enumerate}
 \hint{The derivative of $\beta(x)\sin(kx)$ at $0$ is $k\beta(0)$.}
 \solutionlink{change-of-variables:exr:10}
