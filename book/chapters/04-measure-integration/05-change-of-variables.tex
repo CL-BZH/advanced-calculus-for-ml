@@ -678,6 +678,210 @@ distribution on the quarter circle of \cref{natural-gradient:fig:arc}
 (\cref{change-of-variables:exr:9}).
 \end{mlthread}
 
+\section{Measures known by their integrals}
+\label{change-of-variables:sec:functionals}
+
+\Cref{change-of-variables:prop:injective} gives a push-forward that has
+no density in $\R^n$ a density with respect to the volume of a
+submanifold. It needs a submanifold and a parametrization of it. There is
+another way to handle such measures, which needs neither: describe a
+measure by the integrals $\int\varphi\,\dd\mu$ of enough functions
+$\varphi$. Probability does this whenever it computes $\E[g(X)]$ from the
+law of $X$ (the transfer theorem, \cref{lebesgue-integral:thm:transfer}),
+physics does it when it writes Dirac's $\delta$, and L.~Schwartz built on
+it his theory of distributions.
+
+\begin{proposition}[Integrals of test functions determine a measure]
+\label{change-of-variables:prop:testfunctions}
+Let $\mu$ and $\nu$ be Borel measures on $\R^n$ that are finite on
+bounded sets. If $\int\varphi\,\dd\mu = \int\varphi\,\dd\nu$ for every
+continuous $\varphi:\R^n\to\R$ that vanishes outside a bounded set, then
+$\mu = \nu$.
+\end{proposition}
+
+\begin{proof}
+Let $B$ be an open box, a product of open intervals, and
+$\varphi_k(x) = \min\bigl(1, k\operatorname{dist}(x, \R^n\setminus
+B)\bigr)$. Each $\varphi_k$ is continuous and vanishes outside $B$. For
+$x\in B$ the distance is positive, so $\varphi_k(x)$ increases to $1$;
+for $x\notin B$ it is $0$. So $\varphi_k$ increases to $1_B$, and by
+monotone convergence (\cref{lebesgue-integral:thm:mct})
+$\mu(B) = \lim_k\int\varphi_k\,\dd\mu = \lim_k\int\varphi_k\,\dd\nu =
+\nu(B)$. The open boxes, with the empty set, form a $\pi$-system: the
+intersection of two open boxes is an open box or empty. They generate
+$\mathcal B(\R^n)$: every open set $U$ is the union of the countably
+many open boxes with rational corners that lie in $U$, since each point
+of $U$ is in one of them. Finally $\R^n$ is the increasing union of the
+boxes $(-k, k)^n$, of finite measure. \Cref{measures:cor:uniqueness}
+concludes.
+\end{proof}
+
+\begin{intuition}
+A measure is known once its integrals of continuous functions are
+known. A density is one way of writing those integrals,
+$\int\varphi\,p\,\dd\lambda$, but not the only one, and a measure without
+a density is still perfectly described by the map
+$\varphi\mapsto\int\varphi\,\dd\mu$.
+\end{intuition}
+
+\begin{example}[The next pose of a robot]\label{change-of-variables:ex:robot}
+A robot on a lawn has a pose $(x, y, \theta)$: a position and a heading,
+kept here as a real number. It starts at $(0, 0, 0)$, turns by
+$\phi$ and drives a distance $d$, so that its next pose is
+\[
+  \psi(d, \phi) = (d\cos\phi,\ d\sin\phi,\ \phi) .
+\]
+Both commands are executed with independent Gaussian errors:
+$(d, \phi)$ has the density $\rho$ of $N(4, 0.4^2)\otimes N(0, 0.03^2)$.
+The law of the next pose is the push-forward $\psi_\#(\rho\lambda^2)$.
+\begin{enumerate}[nosep]
+  \item \emph{It has no density in $\R^3$.} It is carried by the image
+        $H = \psi(\R^2)$, a helicoid: the closed set of the points with
+        $x\sin\theta - y\cos\theta = 0$. And $\lambda^3(H) = 0$: by Tonelli
+        (\cref{fubini:thm:tonelli}) applied to $1_H$,
+        $\lambda^3(H) = \int\lambda^2(H_\phi)\,\dd\phi$, where the slice
+        $H_\phi = \{(d\cos\phi, d\sin\phi) : d\in\R\}$ at height $\phi$
+        is a line of the plane, of area $0$. A density $p$ would give
+        $1 = \int_Hp\,\dd\lambda^3 = 0$.
+  \item \emph{It has a density with respect to the area of $H$.} The
+        map $\psi$ is a parametrization of $H$: the third coordinate of
+        $\psi(d, \phi)$ gives $\phi$, and then $d = x\cos\phi +
+        y\sin\phi$, so $\psi$ is injective with a continuous inverse;
+        its columns $\partial_d\psi = (\cos\phi, \sin\phi, 0)$ and
+        $\partial_\phi\psi = (-d\sin\phi, d\cos\phi, 1)$ are orthogonal,
+        with $G = \diag(1, 1 + d^2)$. By
+        \cref{change-of-variables:prop:injective} the density with
+        respect to $\operatorname{vol}_H$ is
+        $\rho(d, \phi)/\sqrt{1 + d^2}$ at the point $\psi(d, \phi)$. At
+        the commanded pose $(d, \phi) = (4, 0)$ it is
+        $\frac{1}{2\pi\times0.4\times0.03}/\sqrt{17} = 13.26/4.12 = 3.22$
+        per unit of area.
+  \item \emph{As a functional it needs neither.} For every bounded
+        measurable $g$ on $\R^3$, by the transfer theorem,
+        \[
+          \E\bigl[g(\text{next pose})\bigr]
+          = \iint g\bigl(\psi(d, \phi)\bigr)\,\rho(d, \phi)\,
+            \dd d\,\dd\phi ,
+        \]
+        an ordinary integral in the plane, and by
+        \cref{change-of-variables:prop:testfunctions} these numbers
+        determine the law. This is how filters for robot localization
+        compute with it: they push samples of $(d, \phi)$ through
+        $\psi$.
+\end{enumerate}
+\end{example}
+
+\paragraph{Distributions.} Schwartz kept only the functional, and allowed
+functionals that come from no measure. His test functions are smooth.
+
+\begin{lemma}[A smooth bump]\label{change-of-variables:lem:bump}
+The function $\beta$ equal to $e^{-1/(1 - x^2)}$ for $\abs x < 1$ and to
+$0$ elsewhere is $C^\infty$ on $\R$, vanishes outside $(-1, 1)$, and
+$\beta(0) = e^{-1} > 0$.
+\end{lemma}
+
+\begin{proof}
+Let $h(t) = e^{-1/t}$ for $t > 0$ and $h(t) = 0$ for $t\leq0$. For
+$t > 0$, induction on $k$ gives $h^{(k)}(t) = P_k(1/t)\,e^{-1/t}$ with a
+polynomial $P_k$: differentiating $P_k(1/t)e^{-1/t}$ gives
+$\bigl(P_k(1/t) - P_k'(1/t)\bigr)t^{-2}e^{-1/t}$. With $s = 1/t$,
+$s^me^{-s}\to0$ as $s\to\infty$ for every $m$, so $h^{(k)}(t)\to0$ and
+$h^{(k)}(t)/t\to0$ as $t\to0^+$. By induction every $h^{(k)}(0)$ exists
+and is $0$: the difference quotient $(h^{(k)}(t) - 0)/t$ tends to $0$
+from the right and is $0$ on the left. So $h$ is $C^\infty$, and so is
+$\beta(x) = h(1 - x^2)$ by the chain rule.
+\end{proof}
+
+\begin{definition}[Distribution]\label{change-of-variables:def:distribution}
+Let $\mathcal D(\R^n)$ be the space of $C^\infty$ functions
+$\R^n\to\R$ that vanish outside a bounded set, the \emph{test
+functions}. A \emph{distribution} is a linear map
+$T:\mathcal D(\R^n)\to\R$, written $\varphi\mapsto\langle T,
+\varphi\rangle$, such that for every bounded set $K$ there are $C$ and
+$m$ with
+\[
+  \abs{\langle T, \varphi\rangle}
+  \leq C\sum_{\abs\alpha\leq m}\sup\abs{\partial^\alpha\varphi}
+  \qquad\text{for every $\varphi$ that vanishes outside $K$.}
+\]
+\end{definition}
+
+\begin{example}\label{change-of-variables:ex:distributions}
+\begin{enumerate}[nosep]
+  \item \emph{Functions.} A function $f$ integrable on bounded sets
+        gives $\langle T_f, \varphi\rangle = \int f\varphi\,\dd\lambda$,
+        with $m = 0$ and $C = \int_K\abs f\,\dd\lambda$.
+  \item \emph{Measures.} A Borel measure finite on bounded sets gives
+        $\langle T_\mu, \varphi\rangle = \int\varphi\,\dd\mu$, with
+        $m = 0$ and $C = \mu(K)$. The robot's law above is one.
+  \item \emph{Dirac.} $\langle\delta_a, \varphi\rangle = \varphi(a)$:
+        the measure of mass $1$ at the point $a$, with no density.
+  \item \emph{Derivatives.} For $f$ of class $C^1$, integration by parts
+        on a bounded interval outside which $\varphi$ vanishes gives
+        $\int f'\varphi = -\int f\varphi'$, with no boundary term. This
+        suggests the definition
+        $\langle T', \varphi\rangle = -\langle T, \varphi'\rangle$ for
+        every distribution $T$ on $\R$, which agrees with $T_{f'}$ when
+        $f$ is $C^1$. In particular
+        $\langle\delta_a', \varphi\rangle = -\varphi'(a)$, with
+        $m = 1$; it comes from no measure
+        (\cref{change-of-variables:exr:10}).
+\end{enumerate}
+\end{example}
+
+Two theorems, quoted here without proof, say where measures sit among
+these functionals. A linear map $L$ on the continuous functions that
+vanish outside a bounded set, with $L(\varphi)\geq0$ whenever
+$\varphi\geq0$, is $\varphi\mapsto\int\varphi\,\dd\mu$ for a unique Borel
+measure $\mu$ finite on bounded sets: this is the Riesz representation
+theorem (W.~Rudin, \emph{Real and Complex Analysis}, 3rd ed.,
+Theorem~2.14). And a distribution $T$ with $\langle T,
+\varphi\rangle\geq0$ whenever $\varphi\geq0$ is a measure (L.~H\"ormander,
+\emph{The Analysis of Linear Partial Differential Operators~I},
+Theorem~2.1.7). So the probability distributions are exactly the
+positive distributions of total mass $1$; the word was chosen by
+Schwartz with distributions of mass and charge in mind.
+
+\begin{pitfall}[The delta notation]
+Physics and engineering texts write the robot's law of
+\cref{change-of-variables:ex:robot}, and push-forwards in general, as if
+it had a density:
+\[
+  p(y) = \int\delta\bigl(y - \psi(z)\bigr)\,\rho(z)\,\dd z .
+\]
+This $p$ is not a function of $y$, and $\delta(y - \psi(z))$ has no value
+at any point. The formula means: for every test function $\varphi$,
+\[
+  \int\varphi(y)\,p(y)\,\dd y
+  = \int\Bigl(\int\varphi(y)\,\delta\bigl(y - \psi(z)\bigr)\,\dd y\Bigr)
+    \rho(z)\,\dd z
+  = \int\varphi\bigl(\psi(z)\bigr)\,\rho(z)\,\dd z ,
+\]
+which is the transfer theorem, with
+$\langle\delta_{\psi(z)}, \varphi\rangle = \varphi(\psi(z))$ in the
+middle. A computation with $\delta$ is correct when it can be read in
+this way; evaluating $p(y)$, or taking its logarithm, is not.
+\end{pitfall}
+
+\begin{mlthread}[Machine learning: comparing models through test functions]
+The generative models of \cref{measures:sec:ml} have no density, so
+their likelihood cannot be computed; but by
+\cref{change-of-variables:prop:testfunctions} a model is equal to the
+data distribution as soon as the two give the same integrals to every
+test function. Training methods that compare a model $\mu_\theta$ with
+the data $\nu$ use exactly this: they look for a test function $\varphi$
+in a class $\mathcal F$ on which $\int\varphi\,\dd\mu_\theta$ and
+$\int\varphi\,\dd\nu$ differ most, and reduce that difference. With
+$\mathcal F$ the functions of Lipschitz constant at most $1$, the
+largest difference is the Wasserstein distance $W_1$ (C.~Villani,
+\emph{Optimal Transport, Old and New}, Remark~6.5), the quantity that the
+Wasserstein GAN estimates with a neural network as $\varphi$
+(M.~Arjovsky, S.~Chintala and L.~Bottou, Wasserstein generative
+adversarial networks, ICML, 2017). Both integrals are expectations, so
+they are estimated by averages over samples: no density is ever
+evaluated.
+\end{mlthread}
+
 \section{Where the chapter leads}\label{change-of-variables:sec:outlook}
 
 Part~IV is complete: measures, the integral and its limit theorems,
@@ -739,6 +943,12 @@ with PyTorch in \notebook{20-change-of-variables.ipynb}.
   \item $\sigma(S^{n-1}) = 2\pi^{n/2}/\Gamma(\frac n2)$; in high
         dimension the volume of a ball is near its surface and a
         Gaussian sample is at distance about $\sqrt n$ from the mean.
+  \item A measure is determined by its integrals of continuous test
+        functions, so a law without a density, such as a push-forward
+        onto a submanifold, is handled as the functional
+        $\varphi\mapsto\int\varphi\,\dd\mu$. Schwartz's distributions are
+        such functionals on smooth test functions; the positive ones are
+        measures, and $\delta$ is the simplest.
   \item Flows: $\ln p_\theta(x) = \ln p_Z(z) - \ln\abs{\det Dg_\theta(z)}$.
         The measure $\sqrt{\det F}\,\dd\theta$ of the Fisher metric does
         not depend on the parametrization.
@@ -844,5 +1054,23 @@ $(0, 1)$.
         in $\theta$?
 \end{enumerate}
 \solutionlink{change-of-variables:exr:9}
+\end{exercise}
+
+\begin{exercise}\label{change-of-variables:exr:10}
+\emph{$\delta'$ is not a measure.}
+\begin{enumerate}[nosep]
+  \item Show that if $\mu$ is a Borel measure finite on bounded sets,
+        then $\abs{\int\varphi\,\dd\mu}\leq\mu([-1, 1])\sup\abs\varphi$
+        for every continuous $\varphi$ that vanishes outside $[-1, 1]$.
+  \item With the bump $\beta$ of \cref{change-of-variables:lem:bump},
+        let $\varphi_k(x) = \beta(x)\sin(kx)$. Compute
+        $\langle\delta_0', \varphi_k\rangle$ and bound
+        $\sup\abs{\varphi_k}$.
+  \item Conclude that there is no measure $\mu$ with
+        $\langle\delta_0', \varphi\rangle = \int\varphi\,\dd\mu$ for
+        every test function $\varphi$.
+\end{enumerate}
+\hint{The derivative of $\beta(x)\sin(kx)$ at $0$ is $k\beta(0)$.}
+\solutionlink{change-of-variables:exr:10}
 \end{exercise}
 \end{notechapter}

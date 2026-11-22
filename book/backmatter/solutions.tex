@@ -2748,6 +2748,23 @@ the diagonal.
         = e^\eta/(1 + e^\eta)^2$, the logistic density: far from flat.
 \end{enumerate}
 
+\solution{change-of-variables:exr:10}
+\begin{enumerate}[nosep]
+  \item $\varphi$ vanishes outside $[-1, 1]$, so
+        $\abs{\int\varphi\,\dd\mu}\leq\int_{[-1, 1]}\abs\varphi\,\dd\mu
+        \leq\mu([-1, 1])\sup\abs\varphi$.
+  \item $\varphi_k$ is $C^\infty$ and vanishes outside $(-1, 1)$, so it
+        is a test function. $\varphi_k'(x) = \beta'(x)\sin(kx)
+        + k\beta(x)\cos(kx)$, so $\langle\delta_0', \varphi_k\rangle
+        = -\varphi_k'(0) = -k\beta(0) = -k/e$. And
+        $\abs{\varphi_k}\leq\beta\leq e^{-1}$.
+  \item If such a $\mu$ existed, (1) and (2) would give
+        $k/e = \abs{\int\varphi_k\,\dd\mu}\leq\mu([-1, 1])/e$ for every
+        $k$, which is impossible since $\mu([-1, 1])$ is finite. The
+        functional $\delta_0'$ grows with the slope of $\varphi$, which
+        no integral against a measure can do.
+\end{enumerate}
+
 \section{\nameref*{ch:multilinear-algebra}}
 
 \solution{multilinear-algebra:exr:1}
