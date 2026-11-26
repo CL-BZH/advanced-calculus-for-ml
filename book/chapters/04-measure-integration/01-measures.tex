@@ -240,7 +240,11 @@ $\sigma$-algebra is closed.
         complements, their countable intersections. For instance the
         half-open interval $[a, b) = \bigcap_k(a - \frac1k, b)$ is a
         countable intersection of open sets, and the interval $(a, b]$
-        of $\R$ is a countable union of closed sets.
+        of $\R$ is a countable union of closed sets,
+        $(a, b] = \bigcup_{k\geq k_0}[a + \frac1k, b]$ with
+        $k_0 > 1/(b - a)$: each $[a + \frac1k, b]$ lies in $(a, b]$, and
+        a point $x\in(a, b]$ lies in $[a + \frac1k, b]$ as soon as
+        $\frac1k\leq x - a$.
 \end{itemize}
 The operations can be repeated as often as one likes, and it is hard
 to describe a subset of $\R^n$ that is not a Borel set. Such sets
@@ -373,6 +377,42 @@ and $\mathcal B(\R^n)$.
 \end{itemize}
 So $\sigma(\mathcal D) = \mathcal B(\R^n)$.
 \end{proof}
+
+\begin{remark}[How squares inside a disc can fill it]
+\label{measures:rem:filling}
+It may seem impossible that squares lying inside an open disc cover
+all of it (\cref{measures:fig:dyadic}, right). The point is that the
+disc does not contain its boundary circle.
+\begin{itemize}[nosep]
+  \item \emph{In one dimension.} The open interval $(0, 1)$ is the
+        union of the dyadic intervals $[\frac12, 1)$, $[\frac14,
+        \frac12)$, $[\frac18, \frac14)$, \dots: a point $x\in(0, 1)$
+        lies in $[2^{-k}, 2^{-k+1})$ for the integer $k$ with
+        $2^{-k}\leq x < 2^{-k+1}$. The endpoint $0$ is never reached,
+        but it is not in $(0, 1)$, and $1$ is excluded by the half-open
+        intervals.
+  \item \emph{Every point needs only one square.} A point $x$ of the
+        disc is at a positive distance $r$ from the circle, and the dyadic
+        square that contains $x$ fits in the disc as soon as its side
+        is less than $r/\sqrt2$ (step~1 of the proof). Points close to the circle need small squares, so
+        infinitely many levels are used in all, but each point is
+        covered at a finite level.
+  \item \emph{The squares can be taken disjoint.} Two dyadic cubes are
+        either disjoint or nested, the smaller inside the larger. So
+        the largest dyadic cubes contained in $U$ (of level at least
+        $0$, say) are pairwise disjoint, and they still cover $U$: this
+        is the right half of \cref{measures:fig:dyadic}. Half-open
+        cubes are used for this reason: the cubes of one level tile
+        $\R^n$ without overlapping, so that, once volumes are defined,
+        countable additivity (\cref{measures:def:measure}) makes the
+        volume of $U$ the sum of the volumes of these cubes.
+  \item \emph{Open boxes.} Open dyadic boxes also cover $U$, since
+        dyadic numbers are dense: for $x\in U$ one can choose dyadic
+        $a_i < x_i < b_i$ with $\prod_i(a_i, b_i)\subset U$. But open
+        boxes overlap, and open cubes of one level miss the points of
+        the grid lines, so they no longer tile.
+\end{itemize}
+\end{remark}
 
 \begin{example}[Finite sets and partitions]\label{measures:ex:partition}
 A $\sigma$-algebra can be read as a state of information. Throw a die,
