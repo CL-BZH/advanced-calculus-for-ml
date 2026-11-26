@@ -36,6 +36,12 @@
 \include{chapters/05-forms-flows/05-odes-flows}
 
 \appendix
+% cleveref's own \appendix patch is lost with recent TeX Live; name the
+% types explicitly so that \cref prints "Appendix A", "Appendix A.6"
+\crefalias{chapter}{appendix}
+\crefalias{section}{subappendix}
+\crefalias{subsection}{subsubappendix}
+\crefalias{subsubsection}{subsubsubappendix}
 % the contents line goes before \part*, which ends its page: placed
 % after it, the line is written after the entries of the first
 % appendix chapter
