@@ -179,9 +179,25 @@ Borel sets. It does not, for the following reason.
 \end{itemize}
 So the Borel sets of a finite-dimensional vector or affine space do not
 depend on any norm, inner product or basis
-(\cref{norms-banach:cor:finite}). This is what will allow measures to
-live on an affine space, with no structure chosen but, later, a unit
-of volume (\cref{measures:sec:lebesgue}).
+(\cref{norms-banach:cor:finite}). They are fixed by the space alone:
+to say which subsets of $\Aff$ are Borel sets one chooses no origin, no
+basis, no norm and no inner product. This matters in two steps.
+\begin{itemize}[nosep]
+  \item \emph{The sets that will have a size.} A measure on $\Aff$ is
+        defined on $\mathcal B(\Aff)$, and this family is the same
+        whatever coordinates are used. So one can speak of the
+        measurable sets of $\Aff$ before any choice is made.
+  \item \emph{The size itself.} To give a number to each of these sets,
+        one choice is needed, and only one. Reading Lebesgue measure in
+        a frame of $\Aff$ gives a measure on $\mathcal B(\Aff)$, and
+        two frames give proportional measures
+        (\cref{measures:def:affine,measures:prop:affine}). None of them
+        is preferred: choosing one amounts to deciding which
+        parallelepiped has volume $1$, that is, to choosing a unit of
+        volume. An inner product fixes such a unit, the volume of a
+        cube built on an orthonormal basis, but it gives much more
+        than is needed.
+\end{itemize}
 
 Many sets that are not open are Borel sets. Starting from the open
 sets, each step below uses one of the operations under which a
