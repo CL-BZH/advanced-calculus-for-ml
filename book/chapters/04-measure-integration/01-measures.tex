@@ -65,10 +65,22 @@ adding the Riemann integrable functions does not repair this.
 The cure, due to Lebesgue, is to cut the range of the function instead
 of its domain (\cref{measures:fig:slicing}). The sum
 $\sum_kc_k\cdot\text{size}\{x : c_k\leq f(x) < c_{k+1}\}$ makes sense on
-any set, provided the sets $\{c_k\leq f < c_{k+1}\}$ have a size. For
-the function $f$ above there are two of them, the rationals and the
-irrationals of $[0, 1]$. So the first task is to measure sets much more
-general than intervals.
+any set, provided the sets $\{c_k\leq f < c_{k+1}\}$ have a size. The
+function $f$ above takes only the values $0$ and $1$, so whatever the
+cuts $c_k$, only two of these slices are non-empty: the one containing
+the value $1$ is $f^{-1}(1)$, the set of rationals of $[0, 1]$, and the
+one containing the value $0$ is $f^{-1}(0)$, the set of irrationals of
+$[0, 1]$. With $0$ and $1$ among the cuts, the sum has two terms,
+\[
+  1\cdot\text{size}\bigl(\mathbb Q\cap[0, 1]\bigr)
+  + 0\cdot\text{size}\bigl([0, 1]\setminus\mathbb Q\bigr) ,
+\]
+and makes sense as soon as these two sets have a size. With Lebesgue
+measure, countable sets have size $0$
+(\cref{measures:prop:lebesgue}), so the integral of $f$ is $0$: the
+limit of the integrals of the $f_n$, as it should be. Neither set is
+an interval. So the first task is to measure sets much more general
+than intervals.
 
 \begin{figure}[ht]
 \centering
