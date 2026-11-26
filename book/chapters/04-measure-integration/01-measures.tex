@@ -374,7 +374,33 @@ if $X$ is a countable union of sets of finite measure. A measurable set
 of measure $0$ is a \emph{null set}.
 \end{definition}
 
-Sums of non-negative terms are computed in $[0, \infty]$, in any order.
+Two points of this definition need a word.
+\begin{itemize}[nosep]
+  \item \emph{Why $\infty$ is a value.} Some sets have an infinite
+        size: the length of $\R$, or the number of elements of an
+        infinite set (\cref{measures:ex:measures}). So a measure takes
+        its values in $[0, \infty]$, the half-line $[0, \infty)$
+        together with the point $\infty$; the interval is closed at
+        $\infty$ because $\infty$ is one of the values. One computes
+        there with $a + \infty = \infty + a = \infty$ for every
+        $a\in[0, \infty]$.
+  \item \emph{What the sum means.} The right-hand side
+        $\sum_n\mu(A_n)$ is a series of terms in $[0, \infty]$. Its
+        partial sums increase, so they have a limit in $[0, \infty]$,
+        their supremum: it is $\infty$ if a term is $\infty$ or if the
+        partial sums are unbounded, and finite otherwise. So the series
+        always has a sum, and no convergence has to be assumed.
+  \item \emph{Why the order does not matter.} The sets $A_n$ come in
+        no natural order, and the same family can be numbered in
+        another way. For non-negative terms this does not change the
+        sum. A partial sum of one numbering uses finitely many terms,
+        which all appear among the first $N$ terms of the other
+        numbering for $N$ large; so it is at most a partial sum of the
+        other numbering, and the two suprema are equal. With terms of
+        both signs this fails: the terms of
+        $1 - \frac12 + \frac13 - \cdots$ can be reordered to give any
+        sum, and the definition would depend on the numbering.
+\end{itemize}
 
 \begin{example}\label{measures:ex:measures}
 \begin{enumerate}[nosep]
