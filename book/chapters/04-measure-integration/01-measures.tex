@@ -878,16 +878,23 @@ it contains $\sigma(\mathcal P)$.
 \end{theorem}
 
 \begin{proof}
-A $\lambda$-system has complements and increasing unions, a
-$\pi$-system has intersections, and a family with all three is a
-$\sigma$-algebra (step~1). The work is to show that the smallest
-$\lambda$-system containing $\mathcal P$ inherits stability under
-intersection from $\mathcal P$ (steps~2 to~5).
+The $\lambda$-system $\mathcal L$ of the theorem need not be a
+$\pi$-system: the six events of \cref{measures:ex:coins} form a
+$\lambda$-system that is not one. So the proof does not work with
+$\mathcal L$ directly. It builds a smaller $\lambda$-system
+$\mathcal L_0$, with $\mathcal P\subset\mathcal L_0\subset\mathcal L$,
+shows that $\mathcal L_0$ is a $\pi$-system, hence a $\sigma$-algebra,
+and concludes that $\sigma(\mathcal P)\subset\mathcal L_0\subset
+\mathcal L$. Step~1 is a general fact, used in step~6 for
+$\mathcal L_0$; steps~2 to~5 build $\mathcal L_0$ and show that it
+inherits stability under intersection from $\mathcal P$.
 \begin{enumerate}[nosep]
   \item \emph{A $\lambda$-system that is also a $\pi$-system is a
-        $\sigma$-algebra.} It contains $X$, and the complement
-        $X\setminus A$ of each member $A$, by (1) and~(2) with
-        $A\subset X$. It contains finite unions, since
+        $\sigma$-algebra.} A $\lambda$-system has complements and
+        increasing unions, a $\pi$-system has intersections, and the
+        three together give a $\sigma$-algebra. It contains $X$, and
+        the complement $X\setminus A$ of each member $A$, by (1)
+        and~(2) with $A\subset X$. It contains finite unions, since
         $A\cup B = X\setminus\bigl((X\setminus A)\cap(X\setminus
         B)\bigr)$. And it contains countable unions:
         $\bigcup_nA_n$ is the increasing union of the finite unions
