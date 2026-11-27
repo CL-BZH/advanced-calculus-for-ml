@@ -917,27 +917,28 @@ inherits stability under intersection from $\mathcal P$.
         \[
           \mathcal L_A = \{B\in\mathcal L_0 : A\cap B\in\mathcal L_0\} .
         \]
-        We check that $\mathcal L_A$ is a $\lambda$-system, one axiom at
-        a time, using each time the same axiom for $\mathcal L_0$.
+        We check that $\mathcal L_A$ is a $\lambda$-system, one
+        condition of \cref{measures:def:pilambda} at a time, using each
+        time the same condition for $\mathcal L_0$.
         \begin{itemize}[nosep]
-          \item \emph{Axiom (1).} $X\in\mathcal L_0$, and
+          \item \emph{Condition (1).} $X\in\mathcal L_0$, and
                 $A\cap X = A\in\mathcal L_0$; so $X\in\mathcal L_A$.
-          \item \emph{Axiom (2).} Let $B\subset C$ be in $\mathcal L_A$:
+          \item \emph{Condition (2).} Let $B\subset C$ be in $\mathcal L_A$:
                 $B$, $C$, $A\cap B$ and $A\cap C$ are in $\mathcal L_0$.
-                Then $C\setminus B\in\mathcal L_0$ by axiom~(2) for
+                Then $C\setminus B\in\mathcal L_0$ by condition~(2) for
                 $\mathcal L_0$. Moreover a point lies in
                 $A\cap(C\setminus B)$ if and only if it lies in $A\cap C$
                 and not in $A\cap B$, so
                 $A\cap(C\setminus B) = (A\cap C)\setminus(A\cap B)$.
                 Since $A\cap B\subset A\cap C$ are in $\mathcal L_0$,
-                axiom~(2) for $\mathcal L_0$ puts this difference in
+                condition~(2) for $\mathcal L_0$ puts this difference in
                 $\mathcal L_0$. So $C\setminus B\in\mathcal L_A$.
-          \item \emph{Axiom (3).} Let $B_1\subset B_2\subset\cdots$ be in
+          \item \emph{Condition (3).} Let $B_1\subset B_2\subset\cdots$ be in
                 $\mathcal L_A$. Their union is in $\mathcal L_0$ by
-                axiom~(3) for $\mathcal L_0$. Moreover
+                condition~(3) for $\mathcal L_0$. Moreover
                 $A\cap\bigcup_nB_n = \bigcup_n(A\cap B_n)$, and the sets
                 $A\cap B_n$ are in $\mathcal L_0$ and increase with $n$,
-                since the $B_n$ do; axiom~(3) for $\mathcal L_0$ puts
+                since the $B_n$ do; condition~(3) for $\mathcal L_0$ puts
                 their union in $\mathcal L_0$. So
                 $\bigcup_nB_n\in\mathcal L_A$.
         \end{itemize}
@@ -1064,7 +1065,7 @@ conclusion can fail.
 
 \begin{intuition}
 The sets on which two finite measures agree always form a
-$\lambda$-system (\cref{measures:ex:pilambda}): the three axioms are
+$\lambda$-system (\cref{measures:ex:pilambda}): the three conditions are
 exactly what subtraction and monotone limits give. They need not be
 stable by intersection (\cref{measures:ex:coins,measures:exr:4}). The
 theorem says that agreement on a family that \emph{is} stable by
