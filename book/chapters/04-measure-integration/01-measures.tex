@@ -941,13 +941,29 @@ inherits stability under intersection from $\mathcal P$.
   \item \emph{A $\lambda$-system that is also a $\pi$-system is a
         $\sigma$-algebra.} A $\lambda$-system has complements and
         increasing unions, a $\pi$-system has intersections, and the
-        three together give a $\sigma$-algebra. It contains $X$, and
-        the complement $X\setminus A$ of each member $A$, by (1)
-        and~(2) with $A\subset X$. It contains finite unions, since
-        $A\cup B = X\setminus\bigl((X\setminus A)\cap(X\setminus
-        B)\bigr)$. And it contains countable unions:
-        $\bigcup_nA_n$ is the increasing union of the finite unions
-        $A_1\cup\dots\cup A_N$, so it is in the family by~(3).
+        three together give a $\sigma$-algebra.
+        \begin{itemize}[nosep]
+          \item \emph{Complements} (condition~(2)). The family contains
+                $X$, by~(1), and the complement $X\setminus A$ of each
+                member $A$, by~(2) applied to $A\subset X$.
+          \item \emph{Finite unions} (stability under intersection).
+                For members $A$ and $B$,
+                $A\cup B = X\setminus\bigl((X\setminus A)\cap(X\setminus
+                B)\bigr)$. The complements $X\setminus A$ and
+                $X\setminus B$ are members, their intersection is a
+                member because the family is a $\pi$-system, and its
+                complement is a member. This is the only place where the
+                $\pi$-system property is used, and it cannot be dropped:
+                the subsets of $\{1, 2, 3, 4\}$ with an even number of
+                elements form a $\lambda$-system
+                (\cref{measures:exr:4}), but $\{1, 2\}\cup\{2, 3\} =
+                \{1, 2, 3\}$ is not one of them.
+          \item \emph{Countable unions} (condition~(3)). For members
+                $A_1, A_2, \dots$, the finite unions
+                $A_1\cup\dots\cup A_N$ are members by the previous point,
+                and they increase with $N$; their union is
+                $\bigcup_nA_n$, which is a member by~(3).
+        \end{itemize}
   \item \emph{The smallest $\lambda$-system containing $\mathcal P$.}
         An intersection of $\lambda$-systems is a $\lambda$-system, and
         the family of all subsets of $X$ is one. So the intersection
