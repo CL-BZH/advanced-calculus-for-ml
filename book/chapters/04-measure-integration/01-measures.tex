@@ -431,9 +431,21 @@ disc does not contain its boundary circle.
                 larger, with no largest.
           \item \emph{Two largest cubes are equal or disjoint.} Suppose
                 that $M(x)$ and $M(y)$ meet. By~1 they are nested, say
-                $M(y)\subset M(x)$. Then $M(x)$ is a dyadic cube in $U$
-                that contains $y$, so it is not larger than $M(y)$, and
-                $M(x) = M(y)$.
+                $M(y)\subset M(x)$; it remains to show
+                $M(x)\subset M(y)$.
+                \begin{itemize}[nosep]
+                  \item $M(x)$ contains $M(y)$, hence $y$. At each level
+                        there is exactly one dyadic cube containing $y$,
+                        so $M(x)$, of level $j$ say, is $Q_j(y)$.
+                  \item $M(y) = Q_i(y)$, where $i$ is the first level
+                        at which the cube containing $y$ lies in $U$.
+                        Since $Q_j(y) = M(x)$ lies in $U$, $i\leq j$.
+                  \item The chain $Q_0(y)\supset Q_1(y)\supset\cdots$
+                        decreases, so $i\leq j$ gives
+                        $Q_j(y)\subset Q_i(y)$, that is,
+                        $M(x)\subset M(y)$.
+                \end{itemize}
+                Hence $M(x) = M(y)$.
         \end{enumerate}
         So the distinct cubes $M(x)$, $x\in U$, are pairwise disjoint,
         and they cover $U$, since $x\in M(x)$. In the one-dimensional
