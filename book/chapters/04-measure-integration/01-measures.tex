@@ -602,6 +602,55 @@ sets $B_n = A_n\setminus(A_1\cup\dots\cup A_{n-1})$ are pairwise
 disjoint with the same union, and $\mu(B_n)\leq\mu(A_n)$.
 \end{proof}
 
+The next theorem concerns sequences of sets that grow, or shrink, step
+by step.
+\begin{itemize}[nosep]
+  \item An \emph{increasing} sequence is one with
+        $A_1\subset A_2\subset\cdots$: each set contains the previous
+        one. Its union $\bigcup_nA_n$ is the set it grows to. A point
+        lies in the union when it lies in some $A_n$, and then it lies
+        in all the later ones: once in, it stays in.
+  \item A \emph{decreasing} sequence is one with
+        $A_1\supset A_2\supset\cdots$. Its intersection $\bigcap_nA_n$
+        is the set it shrinks to. A point lies in the intersection when
+        it lies in every $A_n$; a point that leaves at some step never
+        comes back.
+\end{itemize}
+The union of an increasing sequence plays the role of its limit, and so
+does the intersection of a decreasing one. The limit can be of a
+different kind from the sets that approach it, as the examples show.
+
+\begin{example}[Increasing unions and decreasing intersections]
+\label{measures:ex:monotone}
+\leavevmode
+\begin{enumerate}[nosep]
+  \item \emph{Closed intervals growing to an open one.} The intervals
+        $[\frac1n, 1 - \frac1n]$, for $n\geq3$, increase, and their union
+        is the open interval $(0, 1)$: a point $x\in(0, 1)$ lies in
+        $[\frac1n, 1 - \frac1n]$ as soon as $\frac1n\leq\min(x, 1 - x)$,
+        while $0$ and $1$ lie in none of them. Each set is closed, the
+        limit is not.
+  \item \emph{Bounded sets growing to an unbounded one.} The intervals
+        $(-n, n)$ increase to $\R$, and the discs of radius $n$ centred
+        at $0$ increase to $\R^2$.
+  \item \emph{Shrinking to a point, or to nothing.} The intervals
+        $[0, \frac1n)$ decrease to $\{0\}$, the only point lying in all
+        of them. The intervals $(0, \frac1n)$ decrease to $\emptyset$:
+        each is non-empty, but a point $x > 0$ leaves as soon as
+        $\frac1n\leq x$.
+  \item \emph{Large sets shrinking to nothing.} The half-lines
+        $[n, \infty)$ decrease to $\emptyset$, since a real $x$ leaves as
+        soon as $n > x$, although each of them is infinitely long. The
+        same thing with the integers $\{n, n + 1, \dots\}$ is the
+        pitfall after the theorem.
+  \item \emph{Events.} Toss a coin again and again, and let $A_n$ be
+        the event ``a head appears among the first $n$ tosses''. The
+        $A_n$ increase, and their union is ``a head appears at some
+        point''. Their complements, ``no head among the first $n$
+        tosses'', decrease to ``no head ever''.
+\end{enumerate}
+\end{example}
+
 \begin{theorem}[Continuity of measures]\label{measures:thm:continuity}
 Let $\mu$ be a measure and $A_1, A_2, \dots$ measurable sets.
 \begin{enumerate}[nosep]
