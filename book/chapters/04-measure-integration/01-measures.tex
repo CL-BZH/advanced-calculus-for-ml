@@ -442,13 +442,39 @@ A $\sigma$-algebra can be read as a state of information. Throw a die,
 so that $X = \{1, \dots, 6\}$, and suppose that all you are told is
 whether the outcome is even or odd.
 \begin{enumerate}[nosep]
-  \item \emph{The events you can decide.} The information splits $X$
-        into two blocks, $B_1 = \{1, 3, 5\}$ and $B_2 = \{2, 4, 6\}$.
-        Told ``odd'', you know that $B_1$ happened and $B_2$ did not.
-        But you cannot say whether $\{6\}$ happened: told ``even'', the
-        outcome may be $2$, $4$ or $6$. The events you can decide are
-        exactly the unions of blocks: $\emptyset$, $B_1$, $B_2$ and
-        $X$.
+  \item \emph{The events you can decide.} Two things must be kept
+        apart. What you are \emph{told} is one of two answers, ``odd''
+        or ``even'', that is, which of the two blocks
+        $B_1 = \{1, 3, 5\}$ and $B_2 = \{2, 4, 6\}$ contains the
+        outcome. An \emph{event} is a subset $A\subset X$, such as
+        $\{6\}$ (``a six'') or $\{1, 2\}$ (``at most two''), and you
+        can \emph{decide} it if, whichever answer you are told, you
+        can say whether $A$ happened or not. Check the events one at
+        a time:
+        \begin{center}
+        \begin{tabular}{lll}
+          \toprule
+          event $A$ & told ``odd'' & told ``even'' \\
+          \midrule
+          $B_1 = \{1, 3, 5\}$ & happened & did not happen \\
+          $B_2 = \{2, 4, 6\}$ & did not happen & happened \\
+          $X$ (``some face'') & happened & happened \\
+          $\emptyset$ (``no face'') & did not happen & did not happen \\
+          $\{6\}$ & did not happen & cannot say \\
+          $\{1, 2\}$ & cannot say & cannot say \\
+          \bottomrule
+        \end{tabular}
+        \end{center}
+        So $B_1$, $B_2$, $X$ and $\emptyset$ are decided, and $\{6\}$
+        and $\{1, 2\}$ are not: told ``even'', the outcome may be $2$,
+        $4$ or $6$. In general an event is decided exactly when it is
+        a union of blocks: if it contains part of a block but not all
+        of it, the answer that names this block leaves it open. The
+        events $X$ and $\emptyset$ are decided trivially, without any
+        information, but they count: they are the events ``something
+        happened'' and ``nothing happened'', and every
+        $\sigma$-algebra contains them. So the decidable events are
+        $\emptyset$, $B_1$, $B_2$ and $X$.
   \item \emph{They form a $\sigma$-algebra.} In general, let $X$ be the
         disjoint union of non-empty blocks $B_1, \dots, B_m$. A union of
         blocks is fixed by the choice of the blocks it contains, a
