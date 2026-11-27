@@ -989,24 +989,44 @@ $X_k\in\mathcal P$ with $\mu(X_k) < \infty$, then $\mu = \nu$.
 \end{corollary}
 
 \begin{proof}
-The measures may be infinite, so they are first cut down to the sets
-$X_k$, where they are finite.
+The idea fits in the finite case; the general case is reduced to it.
+
+\emph{Case 1: $\mu$ and $\nu$ are finite, with $\mu(X) = \nu(X)$.}
+Let $\mathcal G$ be the family of the \emph{good} sets, the
+$A\in\sigma(\mathcal P)$ with $\mu(A) = \nu(A)$. The goal is
+$\mathcal G = \sigma(\mathcal P)$.
+\begin{itemize}[nosep]
+  \item $\mathcal G$ is a $\lambda$-system, by
+        \cref{measures:ex:pilambda}~(4).
+  \item $\mathcal G$ contains $\mathcal P$, since $\mu$ and $\nu$ agree
+        on $\mathcal P$.
+  \item By the $\pi$--$\lambda$ theorem, $\mathcal G$ contains
+        $\sigma(\mathcal P)$: every set of $\sigma(\mathcal P)$ is good,
+        and $\mu = \nu$.
+\end{itemize}
+
+\emph{Case 2: the general case.} The measures may be infinite, as
+Lebesgue measure is, and then \cref{measures:ex:pilambda}~(4) does not
+apply: subtracting $\infty$ from $\infty$ has no meaning. So they are
+cut down to the sets $X_k$, where they are finite.
 \begin{enumerate}[nosep]
-  \item Fix $k$ and let $\mathcal L$ be the family of the
-        $A\in\sigma(\mathcal P)$ with $\mu(A\cap X_k) = \nu(A\cap X_k)$.
-  \item $\mathcal L$ contains $\mathcal P$: for $A\in\mathcal P$, the set
-        $A\cap X_k$ is in $\mathcal P$, where $\mu$ and $\nu$ agree. It
-        contains $X$, since $X\cap X_k = X_k\in\mathcal P$.
-  \item $\mathcal L$ is a $\lambda$-system, as in
-        \cref{measures:ex:pilambda}~(4) applied to the finite measures
-        $A\mapsto\mu(A\cap X_k)$ and $A\mapsto\nu(A\cap X_k)$.
-  \item By \cref{measures:thm:pilambda}, $\mathcal L$ contains
-        $\sigma(\mathcal P)$: $\mu(A\cap X_k) = \nu(A\cap X_k)$ for every
-        $A\in\sigma(\mathcal P)$ and every $k$.
-  \item The sets $A\cap X_k$ increase to $A$, so by
-        \cref{measures:thm:continuity},
+  \item \emph{Cut down.} Fix $k$ and set $\mu_k(A) = \mu(A\cap X_k)$ and
+        $\nu_k(A) = \nu(A\cap X_k)$ for $A\in\sigma(\mathcal P)$. These
+        are measures: if the $A_n$ are disjoint, so are the
+        $A_n\cap X_k$, and their union is $(\bigcup_nA_n)\cap X_k$.
+  \item \emph{Case 1 applies to $\mu_k$ and $\nu_k$.} They are finite,
+        with $\mu_k(X) = \mu(X_k) = \nu(X_k) = \nu_k(X)$, since
+        $X_k\in\mathcal P$; and they agree on $\mathcal P$: for
+        $A\in\mathcal P$, $A\cap X_k\in\mathcal P$, where $\mu$ and
+        $\nu$ agree. So $\mu_k = \nu_k$, that is,
+        $\mu(A\cap X_k) = \nu(A\cap X_k)$ for every
+        $A\in\sigma(\mathcal P)$.
+  \item \emph{Let $k\to\infty$.} The sets $A\cap X_k$ increase to $A$,
+        so by \cref{measures:thm:continuity},
         $\mu(A) = \lim_k\mu(A\cap X_k) = \lim_k\nu(A\cap X_k) = \nu(A)$.
 \end{enumerate}
+\cref{measures:ex:uniqueness}~(4) shows that without the sets $X_k$ the
+conclusion can fail.
 \end{proof}
 
 \begin{example}[Using the uniqueness of measures]
