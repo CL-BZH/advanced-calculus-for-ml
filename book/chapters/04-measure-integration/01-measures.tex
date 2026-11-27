@@ -736,7 +736,13 @@ approach it. The examples below use it in three ways.
           \item If $t_k < t$ increases to $t$, the sets
                 $(-\infty, t_k]$ increase to the \emph{open} half-line
                 $(-\infty, t)$, which does not contain $t$, so by~(1)
-                $F(t_k)\to\mu((-\infty, t)) = F(t) - \mu(\{t\})$.
+                $F(t_k)\to\mu((-\infty, t))$.
+          \item The half-line $(-\infty, t]$ is the disjoint union of
+                $(-\infty, t)$ and $\{t\}$, so by additivity
+                $F(t) = \mu((-\infty, t)) + \mu(\{t\})$, and, all these
+                numbers being finite,
+                $\mu((-\infty, t)) = F(t) - \mu(\{t\})$
+                (\cref{measures:prop:basic}).
         \end{itemize}
         So $F$ jumps at $t$ by exactly $\mu(\{t\})$, and it is
         continuous at $t$ if and only if $\mu(\{t\}) = 0$. For the Dirac
