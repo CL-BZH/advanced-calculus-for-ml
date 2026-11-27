@@ -690,6 +690,62 @@ the union of all of them is $\bigcup_nA_n$ (dashed).}
 \label{measures:fig:rings}
 \end{figure}
 
+The name says what the theorem is for. When sets $A_n$ grow to a set
+$A$, or shrink to it, their measures tend to $\mu(A)$, just as $f(x_n)$
+tends to $f(x)$ when $x_n$ tends to $x$ for a continuous $f$. So the
+measure of a set can be computed, or estimated, from simpler sets that
+approach it. The examples below use it in three ways.
+
+\begin{example}[Using the continuity of measures]
+\label{measures:ex:continuity}
+\leavevmode
+\begin{enumerate}[nosep]
+  \item \emph{Endpoints have length $0$.} Take Lebesgue measure
+        $\lambda$ on $\R$ (\cref{measures:thm:lebesgue}), which gives
+        $[a, b)$ the length $b - a$. The intervals $[a, a + \frac1n)$
+        decrease to the single point $\{a\}$, and
+        $\lambda([a, a + 1)) = 1$ is finite, so by~(2)
+        \[
+          \lambda(\{a\}) = \lim_n\lambda\bigl([a, a + \tfrac1n)\bigr)
+          = \lim_n\tfrac1n = 0 .
+        \]
+        In the other direction, the intervals $[a + \frac1n, b)$, for
+        $n > 1/(b - a)$, increase to the open interval $(a, b)$, so
+        by~(1)
+        $\lambda((a, b)) = \lim_n(b - a - \frac1n) = b - a$. The length
+        of an interval does not depend on whether its endpoints are
+        included.
+  \item \emph{The tails of a probability vanish.} Let $\mu$ be a
+        probability measure on $\R$, for instance the law of a real
+        random variable (\cref{measures:sec:probability}). The sets
+        $T_n = \{x : \abs x > n\}$ decrease to $\emptyset$, since every
+        $x$ satisfies $\abs x\leq n$ for $n$ large, and $\mu(T_1)\leq1$
+        is finite. By~(2), $\mu(T_n)\to0$. So for every $\epsilon > 0$
+        there is a bounded interval $[-n, n]$ that carries mass at least
+        $1 - \epsilon$: a histogram over a large enough bounded range
+        misses as little of the distribution as one wishes. For the
+        counting measure the conclusion fails, as the pitfall below
+        shows.
+  \item \emph{Distribution functions jump at atoms.} Let $\mu$ be a
+        probability measure on $\R$ and $F(t) = \mu((-\infty, t])$, the
+        distribution function of \cref{measures:sec:probability}.
+        \begin{itemize}[nosep]
+          \item If $t_k$ decreases to $t$, the sets $(-\infty, t_k]$
+                decrease to $(-\infty, t]$, so by~(2)
+                $F(t_k)\to F(t)$: $F$ is continuous from the right.
+          \item If $t_k < t$ increases to $t$, the sets
+                $(-\infty, t_k]$ increase to the \emph{open} half-line
+                $(-\infty, t)$, which does not contain $t$, so by~(1)
+                $F(t_k)\to\mu((-\infty, t)) = F(t) - \mu(\{t\})$.
+        \end{itemize}
+        So $F$ jumps at $t$ by exactly $\mu(\{t\})$, and it is
+        continuous at $t$ if and only if $\mu(\{t\}) = 0$. For the Dirac
+        measure $\delta_0$, $F$ is $0$ on $(-\infty, 0)$ and $1$ on
+        $[0, \infty)$: one jump of size $1$ at $0$, the value at $0$
+        being the one on the right.
+\end{enumerate}
+\end{example}
+
 \begin{pitfall}[Finiteness matters from above]
 For the counting measure on the integers and $A_n = \{n, n + 1, \dots\}$,
 $\mu(A_n) = \infty$ for every $n$, while $\bigcap_nA_n = \emptyset$ has
