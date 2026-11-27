@@ -397,15 +397,56 @@ disc does not contain its boundary circle.
         is less than $r/\sqrt2$ (step~1 of the proof). Points close to
         the circle need small squares, so infinitely many levels are
         used in all, but each point is covered at a finite level.
-  \item \emph{The squares can be taken disjoint.} Two dyadic cubes are
-        either disjoint or nested, the smaller inside the larger. So
-        the largest dyadic cubes contained in $U$ (of level at least
-        $0$, say) are pairwise disjoint, and they still cover $U$: this
-        is the right half of \cref{measures:fig:dyadic}. Half-open
-        cubes are used for this reason: the cubes of one level tile
-        $\R^n$ without overlapping, so that, once volumes are defined,
-        countable additivity (\cref{measures:def:measure}) makes the
-        volume of $U$ the sum of the volumes of these cubes.
+  \item \emph{The squares can be taken disjoint.} The union in the
+        proof uses all the dyadic cubes contained in $U$, and they
+        overlap: a cube of level $1$ in $U$ contains four cubes of level
+        $2$, also in $U$. One can keep only some of them, pairwise
+        disjoint, in three steps.
+        \begin{enumerate}[nosep]
+          \item \emph{Two dyadic cubes are either disjoint or nested.}
+                Let $Q$ have level $k$ and $Q'$ level $k'\geq k$. The
+                grid of level $k$ is part of the finer grid of level
+                $k'$, since a multiple of $2^{-k}$ is a multiple of
+                $2^{-k'}$. So no side of $Q'$ crosses a grid line of
+                level $k$, and $Q'$ lies in a single cube of level $k$.
+                Either that cube is $Q$, and $Q'\subset Q$, or it is
+                another cube of level $k$, which does not meet $Q$, and
+                then $Q'$ does not meet $Q$ either. In $\R$, for
+                instance, $[\frac14, \frac12)\subset[0, \frac12)\subset
+                [0, 1)$ and $[\frac14, \frac12)$ does not meet
+                $[\frac12, 1)$, but no dyadic interval partly overlaps
+                another, as $[0, \frac12)$ and $[\frac14, \frac34)$
+                would. The latter is a dyadic box but not a dyadic
+                cube: a cube of length $\frac12$ has its endpoints at
+                multiples of $\frac12$.
+          \item \emph{Each point has a largest cube.} For $x\in U$, the
+                dyadic cubes containing $x$, one for each level
+                $k = 0, 1, 2, \dots$, are nested by~1:
+                $Q_0(x)\supset Q_1(x)\supset\cdots$. By step~1 of the
+                proof, they lie in $U$ from some level on. Let $M(x)$ be
+                the first of them that lies in $U$: the largest dyadic
+                cube in $U$ containing $x$. Levels are taken
+                $\geq 0$ so that this first cube exists: for $U = \R^n$,
+                the cubes of levels $-1, -2, \dots$ would be larger and
+                larger, with no largest.
+          \item \emph{Two largest cubes are equal or disjoint.} Suppose
+                that $M(x)$ and $M(y)$ meet. By~1 they are nested, say
+                $M(y)\subset M(x)$. Then $M(x)$ is a dyadic cube in $U$
+                that contains $y$, so it is not larger than $M(y)$, and
+                $M(x) = M(y)$.
+        \end{enumerate}
+        So the distinct cubes $M(x)$, $x\in U$, are pairwise disjoint,
+        and they cover $U$, since $x\in M(x)$. In the one-dimensional
+        example, $U = (0, 1)$: for $x = 0.3$, the cubes $[0, 1)$ and
+        $[0, \frac12)$ contain $0\notin U$, and the first one in $U$ is
+        $M(0.3) = [\frac14, \frac12)$; the cubes $M(x)$ are exactly the
+        intervals $[2^{-k}, 2^{-k+1})$ above. In the plane, the right half
+        of \cref{measures:fig:dyadic} shows those of levels $1$ to~$4$.
+        Half-open cubes are used for this reason: the cubes of one
+        level tile $\R^n$ without overlapping, which is what step~1
+        rests on, and once volumes are defined, countable additivity
+        (\cref{measures:def:measure}) makes the volume of $U$ the sum
+        of the volumes of the cubes $M(x)$.
   \item \emph{Open boxes.} Open dyadic boxes also cover $U$, since
         dyadic numbers are dense: for $x\in U$ one can choose dyadic
         $a_i < x_i < b_i$ with $\prod_i(a_i, b_i)\subset U$. But open
