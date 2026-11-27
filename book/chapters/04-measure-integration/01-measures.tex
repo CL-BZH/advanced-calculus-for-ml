@@ -326,9 +326,10 @@ union of $2^n$ cubes of level $k + 1$, obtained by halving every side
 \caption{Dyadic boxes. Left: the dyadic grids of levels $0$, $1$ and
 $2$ (darker to lighter lines), three dyadic boxes, one of which is not a
 square, and a box that is not dyadic (dashed). Right: an open disc
-filled with the largest dyadic squares, of levels $1$ to $4$, that it
-contains; continuing with all levels gives the disc as a countable
-union of dyadic squares (\cref{measures:prop:boxes}).}
+filled with the dyadic squares, of levels $1$ to $4$, kept by the walk
+of \cref{measures:rem:filling}; continuing with all levels gives the
+disc as a countable union of disjoint dyadic squares
+(\cref{measures:prop:boxes}).}
 \label{measures:fig:dyadic}
 \end{figure}
 
@@ -378,93 +379,62 @@ and $\mathcal B(\R^n)$.
 So $\sigma(\mathcal D) = \mathcal B(\R^n)$.
 \end{proof}
 
-\begin{remark}[How squares inside a disc can fill it]
-\label{measures:rem:filling}
-It may seem impossible that squares lying inside an open disc cover
-all of it (\cref{measures:fig:dyadic}, right). The point is that the
-disc does not contain its boundary circle.
-\begin{itemize}[nosep]
-  \item \emph{In one dimension.} The open interval $(0, 1)$ is the
-        union of the dyadic intervals $[\frac12, 1)$, $[\frac14,
-        \frac12)$, $[\frac18, \frac14)$, \dots: a point $x\in(0, 1)$
-        lies in $[2^{-k}, 2^{-k+1})$ for the integer $k$ with
-        $2^{-k}\leq x < 2^{-k+1}$. The endpoint $0$ is never reached,
-        but it is not in $(0, 1)$, and $1$ is excluded by the half-open
-        intervals.
-  \item \emph{Every point needs only one square.} A point $x$ of the
-        disc is at a positive distance $r$ from the circle, and the dyadic
-        square that contains $x$ fits in the disc as soon as its side
-        is less than $r/\sqrt2$ (step~1 of the proof). Points close to
-        the circle need small squares, so infinitely many levels are
-        used in all, but each point is covered at a finite level.
-  \item \emph{The squares can be taken disjoint.} The union in the
-        proof uses all the dyadic cubes contained in $U$, and they
-        overlap: a cube of level $1$ in $U$ contains four cubes of level
-        $2$, also in $U$. One can keep only some of them, pairwise
-        disjoint, in three steps.
-        \begin{enumerate}[nosep]
-          \item \emph{Two dyadic cubes are either disjoint or nested.}
-                Let $Q$ have level $k$ and $Q'$ level $k'\geq k$. The
-                grid of level $k$ is part of the finer grid of level
-                $k'$, since a multiple of $2^{-k}$ is a multiple of
-                $2^{-k'}$. So no side of $Q'$ crosses a grid line of
-                level $k$, and $Q'$ lies in a single cube of level $k$.
-                Either that cube is $Q$, and $Q'\subset Q$, or it is
-                another cube of level $k$, which does not meet $Q$, and
-                then $Q'$ does not meet $Q$ either. In $\R$, for
-                instance, $[\frac14, \frac12)\subset[0, \frac12)\subset
-                [0, 1)$ and $[\frac14, \frac12)$ does not meet
-                $[\frac12, 1)$, but no dyadic interval partly overlaps
-                another, as $[0, \frac12)$ and $[\frac14, \frac34)$
-                would. The latter is a dyadic box but not a dyadic
-                cube: a cube of length $\frac12$ has its endpoints at
-                multiples of $\frac12$.
-          \item \emph{Each point has a largest cube.} For $x\in U$, the
-                dyadic cubes containing $x$, one for each level
-                $k = 0, 1, 2, \dots$, are nested by~1:
-                $Q_0(x)\supset Q_1(x)\supset\cdots$. By step~1 of the
-                proof, they lie in $U$ from some level on. Let $M(x)$ be
-                the first of them that lies in $U$: the largest dyadic
-                cube in $U$ containing $x$. Levels are taken
-                $\geq 0$ so that this first cube exists: for $U = \R^n$,
-                the cubes of levels $-1, -2, \dots$ would be larger and
-                larger, with no largest.
-          \item \emph{Two largest cubes are equal or disjoint.} Suppose
-                that $M(x)$ and $M(y)$ meet. By~1 they are nested, say
-                $M(y)\subset M(x)$; it remains to show
-                $M(x)\subset M(y)$.
-                \begin{itemize}[nosep]
-                  \item $M(x)$ contains $M(y)$, hence $y$. At each level
-                        there is exactly one dyadic cube containing $y$,
-                        so $M(x)$, of level $j$ say, is $Q_j(y)$.
-                  \item $M(y) = Q_i(y)$, where $i$ is the first level
-                        at which the cube containing $y$ lies in $U$.
-                        Since $Q_j(y) = M(x)$ lies in $U$, $i\leq j$.
-                  \item The chain $Q_0(y)\supset Q_1(y)\supset\cdots$
-                        decreases, so $i\leq j$ gives
-                        $Q_j(y)\subset Q_i(y)$, that is,
-                        $M(x)\subset M(y)$.
-                \end{itemize}
-                Hence $M(x) = M(y)$.
-        \end{enumerate}
-        So the distinct cubes $M(x)$, $x\in U$, are pairwise disjoint,
-        and they cover $U$, since $x\in M(x)$. In the one-dimensional
-        example, $U = (0, 1)$: for $x = 0.3$, the cubes $[0, 1)$ and
-        $[0, \frac12)$ contain $0\notin U$, and the first one in $U$ is
-        $M(0.3) = [\frac14, \frac12)$; the cubes $M(x)$ are exactly the
-        intervals $[2^{-k}, 2^{-k+1})$ above. In the plane, the right half
-        of \cref{measures:fig:dyadic} shows those of levels $1$ to~$4$.
-        Half-open cubes are used for this reason: the cubes of one
-        level tile $\R^n$ without overlapping, which is what step~1
-        rests on, and once volumes are defined, countable additivity
-        (\cref{measures:def:measure}) makes the volume of $U$ the sum
-        of the volumes of the cubes $M(x)$.
-  \item \emph{Open boxes.} Open dyadic boxes also cover $U$, since
-        dyadic numbers are dense: for $x\in U$ one can choose dyadic
-        $a_i < x_i < b_i$ with $\prod_i(a_i, b_i)\subset U$. But open
-        boxes overlap, and open cubes of one level miss the points of
-        the grid lines, so they no longer tile.
-\end{itemize}
+\begin{remark}[The tree of dyadic cubes]\label{measures:rem:filling}
+It may seem impossible that squares lying inside an open disc cover all
+of it (\cref{measures:fig:dyadic}, right). The dyadic cubes form a tree,
+the \emph{quadtree} of computer graphics in the plane (an octree in
+$\R^3$, a $2^n$-tree in $\R^n$), and such a covering is obtained by
+walking down this tree. Let $U\subset\R^n$ be open.
+\begin{enumerate}[nosep]
+  \item \emph{The tree.} Halving every side cuts a dyadic cube of level
+        $k$ into $2^n$ cubes of level $k + 1$, its \emph{children}. So
+        every cube of level $k + 1$ has a single \emph{parent} of level
+        $k$, the cube that contains it, and following parents from a
+        cube gives all the coarser dyadic cubes that contain it, one per
+        level. Hence two dyadic cubes $Q$ and $Q'$, of levels
+        $k\leq k'$, are either nested or disjoint: if they meet, the
+        ancestor of $Q'$ at level $k$ is a cube of level $k$ that meets
+        $Q$, so it is $Q$, since the cubes of one level are disjoint,
+        and $Q'\subset Q$. A partial overlap, as between $[0, \frac12)$
+        and $[\frac14, \frac34)$, never occurs; $[\frac14, \frac34)$ is
+        a dyadic box but not a dyadic cube.
+  \item \emph{The walk.} Examine the cubes of level $0$. A cube
+        contained in $U$ is kept and not cut further. A cube that meets
+        $U$ without being contained in it is cut into its children,
+        which are examined in turn. A cube that does not meet $U$ is
+        dropped. The right half of \cref{measures:fig:dyadic} shows the
+        squares kept down to level~$4$.
+  \item \emph{The kept cubes are disjoint.} The walk stops below a kept
+        cube, so no kept cube lies inside another. By~1, two kept cubes
+        are disjoint.
+  \item \emph{The kept cubes cover $U$.} Let $x\in U$. The cubes
+        containing $x$, one per level, all meet $U$, and from some level
+        on they lie in $U$ (step~1 of the proof of
+        \cref{measures:prop:boxes}). The walk goes down this chain,
+        cutting each cube that is not contained in $U$, and keeps the
+        first one that is. So $x$ lies in a kept cube, reached after
+        finitely many steps. Points close to the boundary of $U$ need
+        deep levels, so the walk never ends, but no point of $U$ has to
+        wait for ever. The boundary circle of the disc is never covered,
+        and it need not be: it is not in the open disc.
+  \item \emph{In one dimension.} Take $U = (0, 1)$. The cube $[0, 1)$
+        contains $0\notin U$ and is cut into $[0, \frac12)$ and
+        $[\frac12, 1)$. The second is kept; the first contains $0$ and
+        is cut again, and so on. The kept intervals are
+        $[\frac12, 1)$, $[\frac14, \frac12)$, $[\frac18, \frac14)$,
+        \dots, and $x\in(0, 1)$ lies in the one with
+        $2^{-k}\leq x < 2^{-k+1}$.
+  \item \emph{Why half-open cubes.} The cubes of one level tile $\R^n$,
+        with no overlap and no gap, and 1 and~4 rest on this. Closed
+        cubes would share their faces, and open cubes would miss the
+        points of the grid lines. So $U$ is the disjoint union of the
+        countably many kept cubes, and once volumes are defined,
+        countable additivity (\cref{measures:def:measure}) makes the
+        volume of $U$ the sum of their volumes. The same tree is used
+        again for change of variables
+        (\cref{change-of-variables:lem:borel}) and for dense subspaces
+        of $L^p$ (\cref{lp-spaces:thm:dense}).
+\end{enumerate}
 \end{remark}
 
 \begin{example}[Finite sets and partitions]\label{measures:ex:partition}
