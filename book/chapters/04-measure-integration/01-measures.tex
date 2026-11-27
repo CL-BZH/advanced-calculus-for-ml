@@ -945,16 +945,34 @@ inherits stability under intersection from $\mathcal P$.
         is where the intersections of $\mathcal P$ come in, in two
         rounds.
   \item \emph{Intersections with members of $\mathcal P$.} Let
-        $A\in\mathcal P$. For $B\in\mathcal P$, $A\cap B\in\mathcal P
-        \subset\mathcal L_0$, so $\mathcal L_A$ contains $\mathcal P$.
-        Being a $\lambda$-system containing $\mathcal P$, it contains
-        the smallest one, $\mathcal L_0$; so $\mathcal L_A = \mathcal L_0$.
-        In words: $A\cap B\in\mathcal L_0$ whenever $A\in\mathcal P$ and
+        $A\in\mathcal P$. We show $\mathcal L_A = \mathcal L_0$, one
+        inclusion at a time.
+        \begin{itemize}[nosep]
+          \item $\mathcal L_A\subset\mathcal L_0$ holds by definition:
+                the members of $\mathcal L_A$ are chosen among those of
+                $\mathcal L_0$.
+          \item $\mathcal L_A$ contains $\mathcal P$. Let
+                $B\in\mathcal P$. Then $B\in\mathcal L_0$, since
+                $\mathcal P\subset\mathcal L_0$, and
+                $A\cap B\in\mathcal P$, since $\mathcal P$ is a
+                $\pi$-system, so $A\cap B\in\mathcal L_0$ as well. That
+                is, $B\in\mathcal L_A$.
+          \item $\mathcal L_0\subset\mathcal L_A$. By step~3 and the
+                previous point, $\mathcal L_A$ is a $\lambda$-system
+                containing $\mathcal P$. By step~2, $\mathcal L_0$ is the
+                intersection of all such $\lambda$-systems, so it is
+                contained in each of them, in particular in
+                $\mathcal L_A$.
+        \end{itemize}
+        So $\mathcal L_A = \mathcal L_0$. In words:
+        $A\cap B\in\mathcal L_0$ whenever $A\in\mathcal P$ and
         $B\in\mathcal L_0$.
   \item \emph{Intersections of members of $\mathcal L_0$.} Let
         $B\in\mathcal L_0$. By step~4, every $A\in\mathcal P$ satisfies
         $A\cap B\in\mathcal L_0$, that is, $A\in\mathcal L_B$. So
-        $\mathcal L_B$ contains $\mathcal P$, and as in step~4,
+        $\mathcal L_B$ contains $\mathcal P$. It is a $\lambda$-system by
+        step~3, contained in $\mathcal L_0$ by definition, and so, by the
+        argument of the last point of step~4,
         $\mathcal L_B = \mathcal L_0$: $B\cap C\in\mathcal L_0$ for
         every $C\in\mathcal L_0$. So $\mathcal L_0$ is a $\pi$-system.
   \item \emph{Conclusion.} By steps~1 and~5, $\mathcal L_0$ is a
