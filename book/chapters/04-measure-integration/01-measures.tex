@@ -613,17 +613,82 @@ Let $\mu$ be a measure and $A_1, A_2, \dots$ measurable sets.
 \end{theorem}
 
 \begin{proof}
-(1) Let $B_1 = A_1$ and $B_n = A_n\setminus A_{n-1}$. These sets are
-pairwise disjoint, $A_n = B_1\cup\dots\cup B_n$, and
-\[
-  \mu\Bigl(\bigcup_nA_n\Bigr) = \sum_n\mu(B_n)
-  = \lim_n\sum_{k\leq n}\mu(B_k) = \lim_n\mu(A_n) .
-\]
-(2) The sets $A_1\setminus A_n$ increase to
-$A_1\setminus\bigcap_nA_n$, so by (1) and
-\cref{measures:prop:basic},
-$\mu(A_1) - \mu(A_n)\to\mu(A_1) - \mu\bigl(\bigcap_nA_n\bigr)$.
+\emph{(1) Increasing sets.} The idea is to cut the union into the
+pieces added at each step, which are disjoint, and to use countable
+additivity on them (\cref{measures:fig:rings}).
+\begin{enumerate}[nosep]
+  \item \emph{The pieces.} Let $B_1 = A_1$ and
+        $B_n = A_n\setminus A_{n-1}$ for $n\geq2$: $B_n$ is what $A_n$
+        adds to $A_{n-1}$. Each $B_n$ is measurable, as a difference of
+        measurable sets.
+  \item \emph{They are pairwise disjoint.} Let $k < n$. Then
+        $B_k\subset A_k\subset A_{n-1}$, while $B_n$ lies outside
+        $A_{n-1}$; so $B_k\cap B_n = \emptyset$.
+  \item \emph{They rebuild the $A_n$.} $A_n = B_1\cup\dots\cup B_n$, by
+        induction on $n$: $A_1 = B_1$, and
+        $A_n = A_{n-1}\cup(A_n\setminus A_{n-1})$ since
+        $A_{n-1}\subset A_n$. Hence also
+        $\bigcup_nA_n = \bigcup_nB_n$.
+  \item \emph{Countable additivity} applied to the disjoint $B_n$ gives
+        $\mu\bigl(\bigcup_nA_n\bigr) = \mu\bigl(\bigcup_nB_n\bigr)
+        = \sum_n\mu(B_n)$, and by definition this sum is the limit of
+        the partial sums $\sum_{k\leq n}\mu(B_k)$.
+  \item \emph{The partial sums are the $\mu(A_n)$.} By finite
+        additivity and step~3,
+        $\sum_{k\leq n}\mu(B_k) = \mu(B_1\cup\dots\cup B_n) = \mu(A_n)$.
+        So $\mu\bigl(\bigcup_nA_n\bigr) = \lim_n\mu(A_n)$. The limit
+        exists in $[0, \infty]$ since the $\mu(A_n)$ increase
+        (\cref{measures:prop:basic}); it may be $\infty$.
+\end{enumerate}
+\emph{(2) Decreasing sets.} The idea is to turn the decreasing $A_n$
+into increasing sets by taking complements in $A_1$, and to apply~(1).
+\begin{enumerate}[nosep]
+  \item \emph{Increasing complements.} Let $C_n = A_1\setminus A_n$.
+        Since the $A_n$ decrease, the $C_n$ increase, and
+        $\bigcup_nC_n = A_1\setminus\bigcap_nA_n$: a point of $A_1$ lies
+        outside some $A_n$ exactly when it is not in all of them.
+  \item \emph{Apply (1).} $\mu(C_n)\to\mu\bigl(A_1\setminus
+        \bigcap_nA_n\bigr)$.
+  \item \emph{Subtract.} Since $A_n\subset A_1$ and
+        $\mu(A_n)\leq\mu(A_1) < \infty$, \cref{measures:prop:basic}
+        gives $\mu(C_n) = \mu(A_1) - \mu(A_n)$, and in the same way
+        $\mu\bigl(A_1\setminus\bigcap_nA_n\bigr) = \mu(A_1) -
+        \mu\bigl(\bigcap_nA_n\bigr)$. So
+        $\mu(A_1) - \mu(A_n)\to\mu(A_1) - \mu\bigl(\bigcap_nA_n\bigr)$,
+        and subtracting both sides from the finite number $\mu(A_1)$
+        gives $\mu(A_n)\to\mu\bigl(\bigcap_nA_n\bigr)$.
+\end{enumerate}
+The hypothesis $\mu(A_1) < \infty$ is used in step~3 only: with
+$\mu(A_1) = \infty$ the differences would be $\infty - \infty$, which
+has no meaning. The pitfall below shows that the conclusion can then
+fail.
 \end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.1]
+  \fill[bookdef!12] (0,0) circle (1.5);
+  \fill[bookdef!25] (0,0) circle (1.1);
+  \fill[bookdef!45] (0,0) circle (0.6);
+  \draw[bookdef] (0,0) circle (0.6) (0,0) circle (1.1)
+    (0,0) circle (1.5);
+  \draw[bookdef, dashed] (0,0) circle (1.8);
+  \node at (0,0) {$B_1$};
+  \node at (0,0.85) {$B_2$};
+  \node at (0,1.3) {$B_3$};
+  \draw[gray] (-30:0.6) -- (2.4,-0.3) node[right, black] {$A_1$};
+  \draw[gray] (-30:1.1) -- (2.4,-0.75) node[right, black] {$A_2$};
+  \draw[gray] (-30:1.5) -- (2.4,-1.2) node[right, black] {$A_3$};
+  \draw[gray] (30:1.8) -- (2.4,1.2) node[right, black]
+    {$\bigcup_nA_n$};
+\end{tikzpicture}
+\caption{The proof of \cref{measures:thm:continuity}~(1): increasing
+sets $A_1\subset A_2\subset A_3\subset\cdots$ and the rings
+$B_n = A_n\setminus A_{n-1}$ that each one adds, with $B_1 = A_1$. The
+rings are disjoint, $A_n$ is the union of the first $n$ of them, and
+the union of all of them is $\bigcup_nA_n$ (dashed).}
+\label{measures:fig:rings}
+\end{figure}
 
 \begin{pitfall}[Finiteness matters from above]
 For the counting measure on the integers and $A_n = \{n, n + 1, \dots\}$,
