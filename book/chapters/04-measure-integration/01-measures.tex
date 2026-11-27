@@ -903,7 +903,8 @@ $\mathcal L$ is a \emph{$\lambda$-system} if
   \item \emph{Where two measures agree.} Let $\mu$ and $\nu$ be finite
         measures with $\mu(X) = \nu(X)$. The family $\mathcal L$ of the
         sets $A$ with $\mu(A) = \nu(A)$ is a $\lambda$-system.
-        It contains $X$. If $A\subset B$ are in $\mathcal L$, then
+        It contains $X$. If $A$ and $B$ are in $\mathcal L$, with
+        $A\subset B$, then
         $\mu(B\setminus A) = \mu(B) - \mu(A) = \nu(B) - \nu(A)
         = \nu(B\setminus A)$ (\cref{measures:prop:basic}). If
         $A_1\subset A_2\subset\cdots$ are in $\mathcal L$, then
@@ -988,16 +989,17 @@ inherits stability under intersection from $\mathcal P$.
         \begin{itemize}[nosep]
           \item \emph{Condition (1).} $X\in\mathcal L_0$, and
                 $A\cap X = A\in\mathcal L_0$; so $X\in\mathcal L_A$.
-          \item \emph{Condition (2).} Let $B\subset C$ be in $\mathcal L_A$:
-                $B$, $C$, $A\cap B$ and $A\cap C$ are in $\mathcal L_0$.
+          \item \emph{Condition (2).} Let $B$ and $C$ be in
+                $\mathcal L_A$, with $B\subset C$: so $B$, $C$, $A\cap B$
+                and $A\cap C$ are in $\mathcal L_0$.
                 Then $C\setminus B\in\mathcal L_0$ by condition~(2) for
                 $\mathcal L_0$. Moreover a point lies in
                 $A\cap(C\setminus B)$ if and only if it lies in $A\cap C$
                 and not in $A\cap B$, so
                 $A\cap(C\setminus B) = (A\cap C)\setminus(A\cap B)$.
-                Since $A\cap B\subset A\cap C$ are in $\mathcal L_0$,
-                condition~(2) for $\mathcal L_0$ puts this difference in
-                $\mathcal L_0$. So $C\setminus B\in\mathcal L_A$.
+                Since $A\cap B$ and $A\cap C$ are in $\mathcal L_0$, with
+                $A\cap B\subset A\cap C$, condition~(2) for $\mathcal L_0$
+                puts this difference in $\mathcal L_0$. So $C\setminus B\in\mathcal L_A$.
           \item \emph{Condition (3).} Let $B_1\subset B_2\subset\cdots$ be in
                 $\mathcal L_A$. Their union is in $\mathcal L_0$ by
                 condition~(3) for $\mathcal L_0$. Moreover
