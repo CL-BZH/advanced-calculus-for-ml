@@ -763,9 +763,59 @@ limits pass through integrals in \cref{ch:lebesgue-integral}.
 
 \section{Proving that two measures are equal}\label{measures:sec:pilambda}
 
-A measure is a function of very many sets, most of which cannot be
-described. It is determined by its values on a small family, provided
-that family is closed under intersection.
+A measure is usually given by its values on a small family of sets only.
+Lebesgue measure (\cref{measures:thm:lebesgue}) is specified by the
+volumes of boxes; the law of a real random variable is described by its
+distribution function, that is, by the probabilities $P(Z\leq t)$ of the
+half-lines $(-\infty, t]$ (\cref{measures:sec:probability}). In both
+cases one needs to know that these values determine the measure on all
+Borel sets. Most Borel sets cannot be described, so they cannot be
+checked one by one: the argument has to work with the family of all
+sets on which two measures agree, and show that it contains every Borel
+set. The following example shows that this can fail, and what is
+missing when it does.
+
+\begin{example}[Agreement need not spread]\label{measures:ex:coins}
+Toss two coins, so that $X = \{HH, HT, TH, TT\}$, and let
+$A = \{HH, HT\}$ (``the first coin shows heads'') and
+$B = \{HH, TH\}$ (``the second coin shows heads''). Compare two
+probability measures.
+\begin{itemize}[nosep]
+  \item $\mu$: fair coins tossed independently, each outcome having
+        probability $\frac14$.
+  \item $\nu$: fair coins that always disagree,
+        $\nu(\{HT\}) = \nu(\{TH\}) = \frac12$ and
+        $\nu(\{HH\}) = \nu(\{TT\}) = 0$.
+\end{itemize}
+They agree on $A$ and on $B$: $\mu(A) = \nu(A) = \frac12$ and
+$\mu(B) = \nu(B) = \frac12$. Each coin, looked at alone, is fair under
+both. But $\mu(A\cap B) = \mu(\{HH\}) = \frac14$ while
+$\nu(A\cap B) = 0$. Listing the sixteen events, $\mu$ and $\nu$ agree
+on exactly six of them,
+\[
+  \emptyset,\quad X,\quad A,\quad B,\quad
+  X\setminus A = \{TH, TT\},\quad X\setminus B = \{HT, TT\},
+\]
+although $A$ and $B$ generate all sixteen. Knowing $P(A)$ and $P(B)$
+does not determine $P(A\cap B)$: in the language of statistics, the
+marginal distributions do not determine the joint distribution.
+
+What is missing is the intersection. If two probability measures agree
+on the family $\{X, A, B, A\cap B\}$, which is closed under
+intersection, then they agree on every event, because the four numbers
+$\mu(X)$, $\mu(A)$, $\mu(B)$ and $\mu(A\cap B)$ give the probability of
+each outcome:
+\[
+  \mu(\{HH\}) = \mu(A\cap B),\quad
+  \mu(\{HT\}) = \mu(A) - \mu(A\cap B),\quad
+  \mu(\{TH\}) = \mu(B) - \mu(A\cap B),
+\]
+and $\mu(\{TT\}) = \mu(X) - \mu(A) - \mu(B) + \mu(A\cap B)$. This
+section proves the same thing for any measures and any family closed
+under intersection.
+\end{example}
+
+The two kinds of families that appear in this example get names.
 
 \begin{definition}\label{measures:def:pilambda}
 A family $\mathcal P$ of subsets of $X$ is a \emph{$\pi$-system} if
@@ -780,34 +830,99 @@ $\mathcal L$ is a \emph{$\lambda$-system} if
 \end{enumerate}
 \end{definition}
 
+\begin{example}[$\pi$-systems and $\lambda$-systems]
+\label{measures:ex:pilambda}
+\leavevmode
+\begin{enumerate}[nosep]
+  \item \emph{Boxes.} The half-open boxes of $\R^n$, together with
+        $\emptyset$, form a $\pi$-system: the intersection of
+        $\prod_i[a_i, b_i)$ and $\prod_i[a'_i, b'_i)$ is
+        $\prod_i[\max(a_i, a'_i), \min(b_i, b'_i))$, a box or the empty
+        set. It generates $\mathcal B(\R^n)$
+        (\cref{measures:prop:boxes}).
+  \item \emph{Half-lines.} The half-lines $(-\infty, t]$, $t\in\R$,
+        form a $\pi$-system:
+        $(-\infty, s]\cap(-\infty, t] = (-\infty, \min(s, t)]$. It
+        generates $\mathcal B(\R)$: it gives the intervals
+        $(s, t] = (-\infty, t]\setminus(-\infty, s]$, and every open set
+        of $\R$ is a countable union of such intervals, by the proof of
+        \cref{measures:prop:boxes} with the dyadic intervals
+        $(m2^{-k}, (m + 1)2^{-k}]$.
+  \item \emph{Two coins.} The family $\{X, A, B, A\cap B\}$ of
+        \cref{measures:ex:coins} is a $\pi$-system; the family
+        $\{A, B\}$ is not.
+  \item \emph{Where two measures agree.} Let $\mu$ and $\nu$ be finite
+        measures with $\mu(X) = \nu(X)$. The family $\mathcal L$ of the
+        sets $A$ with $\mu(A) = \nu(A)$ is a $\lambda$-system.
+        It contains $X$. If $A\subset B$ are in $\mathcal L$, then
+        $\mu(B\setminus A) = \mu(B) - \mu(A) = \nu(B) - \nu(A)
+        = \nu(B\setminus A)$ (\cref{measures:prop:basic}). If
+        $A_1\subset A_2\subset\cdots$ are in $\mathcal L$, then
+        $\mu(\bigcup_nA_n) = \lim_n\mu(A_n) = \lim_n\nu(A_n)
+        = \nu(\bigcup_nA_n)$ (\cref{measures:thm:continuity}). The six
+        sets of \cref{measures:ex:coins} form such a family: a
+        $\lambda$-system that is not a $\pi$-system, since $A\cap B$ is
+        missing.
+\end{enumerate}
+\end{example}
+
+So the sets where two measures agree always form a $\lambda$-system,
+and the trouble in \cref{measures:ex:coins} is only that they need not
+form a $\pi$-system. The theorem below says that this is enough:
+agreement on a $\pi$-system spreads to the whole $\sigma$-algebra it
+generates.
+
 \begin{theorem}[$\pi$--$\lambda$ theorem]\label{measures:thm:pilambda}
 If a $\lambda$-system $\mathcal L$ contains a $\pi$-system $\mathcal P$,
 it contains $\sigma(\mathcal P)$.
 \end{theorem}
 
 \begin{proof}
-\emph{A $\lambda$-system that is also a $\pi$-system is a
-$\sigma$-algebra.} It contains complements by (1) and (2), hence finite
-unions, which are complements of intersections of complements; and a
-countable union is the increasing union of its finite partial unions.
-
-\emph{The smallest $\lambda$-system $\mathcal L_0$ containing
-$\mathcal P$ is a $\pi$-system.} It exists, as an intersection. For
-$A\in\mathcal L_0$ let
-$\mathcal L_A = \{B\in\mathcal L_0 : A\cap B\in\mathcal L_0\}$. It is a
-$\lambda$-system: $A\cap X = A$; if $B\subset C$ are in $\mathcal L_A$,
-then $A\cap(C\setminus B) = (A\cap C)\setminus(A\cap B)$ is a difference
-of nested elements of $\mathcal L_0$; and $A\cap\bigcup_nB_n$ is the
-increasing union of the $A\cap B_n$. If $A\in\mathcal P$, then
-$\mathcal L_A$ contains $\mathcal P$, so $\mathcal L_A = \mathcal L_0$:
-the intersection of an element of $\mathcal P$ and an element of
-$\mathcal L_0$ is in $\mathcal L_0$. This says that for every
-$B\in\mathcal L_0$ the $\lambda$-system $\mathcal L_B$ contains
-$\mathcal P$, so $\mathcal L_B = \mathcal L_0$ as well: $\mathcal L_0$
-is closed under intersection.
-
-By the first step $\mathcal L_0$ is a $\sigma$-algebra containing
-$\mathcal P$, so $\sigma(\mathcal P)\subset\mathcal L_0\subset\mathcal L$.
+A $\lambda$-system has complements and increasing unions, a
+$\pi$-system has intersections, and a family with all three is a
+$\sigma$-algebra (step~1). The work is to show that the smallest
+$\lambda$-system containing $\mathcal P$ inherits stability under
+intersection from $\mathcal P$ (steps~2 to~5).
+\begin{enumerate}[nosep]
+  \item \emph{A $\lambda$-system that is also a $\pi$-system is a
+        $\sigma$-algebra.} It contains $X$, and the complement
+        $X\setminus A$ of each member $A$, by (1) and~(2) with
+        $A\subset X$. It contains finite unions, since
+        $A\cup B = X\setminus\bigl((X\setminus A)\cap(X\setminus
+        B)\bigr)$. And it contains countable unions:
+        $\bigcup_nA_n$ is the increasing union of the finite unions
+        $A_1\cup\dots\cup A_N$, so it is in the family by~(3).
+  \item \emph{The smallest $\lambda$-system containing $\mathcal P$.}
+        An intersection of $\lambda$-systems is a $\lambda$-system, and
+        the family of all subsets of $X$ is one. So the intersection
+        $\mathcal L_0$ of all $\lambda$-systems containing $\mathcal P$
+        is the smallest of them, and $\mathcal L_0\subset\mathcal L$.
+  \item \emph{A tool.} For $A\in\mathcal L_0$, let
+        $\mathcal L_A = \{B\in\mathcal L_0 : A\cap B\in\mathcal L_0\}$,
+        the members of $\mathcal L_0$ whose intersection with $A$ stays
+        in $\mathcal L_0$. It is a $\lambda$-system: $X\in\mathcal L_A$
+        since $A\cap X = A$; if $B\subset C$ are in $\mathcal L_A$, then
+        $A\cap(C\setminus B) = (A\cap C)\setminus(A\cap B)$ is a
+        difference of nested members of $\mathcal L_0$; and
+        $A\cap\bigcup_nB_n$ is the increasing union of the members
+        $A\cap B_n$ of $\mathcal L_0$.
+  \item \emph{Intersections with members of $\mathcal P$.} Let
+        $A\in\mathcal P$. For $B\in\mathcal P$, $A\cap B\in\mathcal P
+        \subset\mathcal L_0$, so $\mathcal L_A$ contains $\mathcal P$.
+        Being a $\lambda$-system containing $\mathcal P$, it contains
+        the smallest one, $\mathcal L_0$; so $\mathcal L_A = \mathcal L_0$.
+        In words: $A\cap B\in\mathcal L_0$ whenever $A\in\mathcal P$ and
+        $B\in\mathcal L_0$.
+  \item \emph{Intersections of members of $\mathcal L_0$.} Let
+        $B\in\mathcal L_0$. By step~4, every $A\in\mathcal P$ satisfies
+        $A\cap B\in\mathcal L_0$, that is, $A\in\mathcal L_B$. So
+        $\mathcal L_B$ contains $\mathcal P$, and as in step~4,
+        $\mathcal L_B = \mathcal L_0$: $B\cap C\in\mathcal L_0$ for
+        every $C\in\mathcal L_0$. So $\mathcal L_0$ is a $\pi$-system.
+  \item \emph{Conclusion.} By steps~1 and~5, $\mathcal L_0$ is a
+        $\sigma$-algebra containing $\mathcal P$, so
+        $\sigma(\mathcal P)\subset\mathcal L_0\subset\mathcal L$.
+\end{enumerate}
 \end{proof}
 
 \begin{corollary}[Uniqueness of measures]\label{measures:cor:uniqueness}
@@ -818,23 +933,66 @@ $X_k\in\mathcal P$ with $\mu(X_k) < \infty$, then $\mu = \nu$.
 \end{corollary}
 
 \begin{proof}
-Fix $k$ and let $\mathcal L$ be the family of the
-$A\in\sigma(\mathcal P)$ with $\mu(A\cap X_k) = \nu(A\cap X_k)$. It
-contains $X$, and $\mathcal P$, because $A\cap X_k\in\mathcal P$. It is
-stable by nested differences, since the measures involved are finite
-(\cref{measures:prop:basic}), and by increasing unions
-(\cref{measures:thm:continuity}). So $\mathcal L = \sigma(\mathcal P)$
-by \cref{measures:thm:pilambda}. Letting $k\to\infty$,
-$\mu(A) = \lim_k\mu(A\cap X_k) = \lim_k\nu(A\cap X_k) = \nu(A)$.
+The measures may be infinite, so they are first cut down to the sets
+$X_k$, where they are finite.
+\begin{enumerate}[nosep]
+  \item Fix $k$ and let $\mathcal L$ be the family of the
+        $A\in\sigma(\mathcal P)$ with $\mu(A\cap X_k) = \nu(A\cap X_k)$.
+  \item $\mathcal L$ contains $\mathcal P$: for $A\in\mathcal P$, the set
+        $A\cap X_k$ is in $\mathcal P$, where $\mu$ and $\nu$ agree. It
+        contains $X$, since $X\cap X_k = X_k\in\mathcal P$.
+  \item $\mathcal L$ is a $\lambda$-system, as in
+        \cref{measures:ex:pilambda}~(4) applied to the finite measures
+        $A\mapsto\mu(A\cap X_k)$ and $A\mapsto\nu(A\cap X_k)$.
+  \item By \cref{measures:thm:pilambda}, $\mathcal L$ contains
+        $\sigma(\mathcal P)$: $\mu(A\cap X_k) = \nu(A\cap X_k)$ for every
+        $A\in\sigma(\mathcal P)$ and every $k$.
+  \item The sets $A\cap X_k$ increase to $A$, so by
+        \cref{measures:thm:continuity},
+        $\mu(A) = \lim_k\mu(A\cap X_k) = \lim_k\nu(A\cap X_k) = \nu(A)$.
+\end{enumerate}
 \end{proof}
+
+\begin{example}[Using the uniqueness of measures]
+\label{measures:ex:uniqueness}
+\leavevmode
+\begin{enumerate}[nosep]
+  \item \emph{Lebesgue measure is unique.} Two measures on
+        $\mathcal B(\R^n)$ that give every half-open box its volume agree
+        on the $\pi$-system of boxes, which generates $\mathcal B(\R^n)$,
+        and the boxes $X_k = [-k, k)^n$ increase to $\R^n$ with finite
+        volume $(2k)^n$. So they are equal. This is the uniqueness part
+        of \cref{measures:thm:lebesgue}.
+  \item \emph{A law is determined by its distribution function.} Two
+        probability measures on $\R$ with the same distribution function
+        agree on the half-lines $(-\infty, t]$, a $\pi$-system that
+        generates $\mathcal B(\R)$, and $X_k = (-\infty, k]$ increases to
+        $\R$. So they are equal. To identify a law, as in
+        \cref{measures:ex:inverse}, it is enough to compute $P(Z\leq t)$
+        for every $t$.
+  \item \emph{Two coins.} With $\mathcal P = \{X, A, B, A\cap B\}$ and
+        $X_k = X$, the corollary gives again the conclusion of
+        \cref{measures:ex:coins}, without listing outcomes.
+  \item \emph{Why the sets $X_k$ are needed.} On $\mathcal B(\R)$, let
+        $\mu(A)$ be the number of rational points in $A$ and
+        $\nu = 2\mu$. Every non-empty interval $[a, b)$ contains
+        infinitely many rationals, so $\mu$ and $\nu$ both give it the
+        value $\infty$: they agree on the $\pi$-system of half-open
+        intervals, which generates $\mathcal B(\R)$. Yet
+        $\mu(\{0\}) = 1$ and $\nu(\{0\}) = 2$. The corollary does not
+        apply, because no interval of the $\pi$-system has finite
+        measure. The values $\infty$ hide the difference, as in the
+        pitfall of \cref{measures:sec:measures}.
+\end{enumerate}
+\end{example}
 
 \begin{intuition}
 The sets on which two finite measures agree always form a
-$\lambda$-system: the three axioms are exactly what subtraction and
-monotone limits give. They need not be stable by intersection
-(\cref{measures:exr:4}). The theorem says that agreement on a family
-that \emph{is} stable by intersection spreads to everything that family
-generates.
+$\lambda$-system (\cref{measures:ex:pilambda}): the three axioms are
+exactly what subtraction and monotone limits give. They need not be
+stable by intersection (\cref{measures:ex:coins,measures:exr:4}). The
+theorem says that agreement on a family that \emph{is} stable by
+intersection spreads to everything that family generates.
 \end{intuition}
 
 \section{Measurable maps and push-forwards}\label{measures:sec:maps}
