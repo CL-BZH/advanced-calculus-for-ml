@@ -1262,36 +1262,85 @@ cut down to the sets $X_k$, where they are finite.
 conclusion can fail.
 \end{proof}
 
+In practice, to prove that two measures $\mu$ and $\nu$ on a
+$\sigma$-algebra $\mathcal F$ are equal, the corollary asks for three
+checks.
+\begin{enumerate}[nosep, label=(\alph*)]
+  \item \emph{Generators.} Find a $\pi$-system $\mathcal P$ with
+        $\sigma(\mathcal P) = \mathcal F$.
+  \item \emph{Agreement.} Check that $\mu(A) = \nu(A)$ for every
+        $A\in\mathcal P$.
+  \item \emph{Finiteness.} Find sets $X_1\subset X_2\subset\cdots$ in
+        $\mathcal P$, with union $X$ and $\mu(X_k) < \infty$. For finite
+        measures with $\mu(X) = \nu(X)$, as probability measures, this
+        costs nothing: add $X$ to $\mathcal P$, which remains a
+        $\pi$-system, since $A\cap X = A$, and generates the same
+        $\sigma$-algebra; then take $X_k = X$ for every $k$.
+\end{enumerate}
+Then $\mu = \nu$ on all of $\mathcal F$. Each example below goes
+through the three checks.
+
 \begin{example}[Using the uniqueness of measures]
 \label{measures:ex:uniqueness}
 \leavevmode
 \begin{enumerate}[nosep]
-  \item \emph{Lebesgue measure is unique.} Two measures on
-        $\mathcal B(\R^n)$ that give every half-open box its volume agree
-        on the $\pi$-system of boxes, which generates $\mathcal B(\R^n)$,
-        and the boxes $X_k = [-k, k)^n$ increase to $\R^n$ with finite
-        volume $(2k)^n$. So they are equal. This is the uniqueness part
-        of \cref{measures:thm:lebesgue}.
-  \item \emph{A law is determined by its distribution function.} Two
-        probability measures on $\R$ with the same distribution function
-        agree on the half-lines $(-\infty, t]$, a $\pi$-system that
-        generates $\mathcal B(\R)$, and $X_k = (-\infty, k]$ increases to
-        $\R$. So they are equal. To identify a law, as in
-        \cref{measures:ex:inverse}, it is enough to compute $P(Z\leq t)$
-        for every $t$.
-  \item \emph{Two coins.} With $\mathcal P = \{X, A, B, A\cap B\}$ and
-        $X_k = X$, the corollary gives again the conclusion of
-        \cref{measures:ex:coins}, without listing outcomes.
+  \item \emph{Lebesgue measure is unique.} Let $\mu$ and $\nu$ be two
+        measures on $\mathcal B(\R^n)$ that give every half-open box its
+        volume. (a)~The half-open boxes, with $\emptyset$, form a
+        $\pi$-system that generates $\mathcal B(\R^n)$
+        (\cref{measures:ex:pilambda}). (b)~$\mu$ and $\nu$ agree on it
+        by assumption. (c)~The boxes $X_k = [-k, k)^n$ increase to
+        $\R^n$, with finite volume $(2k)^n$. So $\mu = \nu$. This is the
+        uniqueness part of \cref{measures:thm:lebesgue}.
+  \item \emph{A law is determined by its distribution function.} Let
+        $\mu$ and $\nu$ be two probability measures on $\R$ with the same
+        distribution function. (a)~The half-lines $(-\infty, t]$ form a
+        $\pi$-system that generates $\mathcal B(\R)$
+        (\cref{measures:ex:pilambda}). (b)~$\mu$ and $\nu$ agree on it,
+        since $\mu((-\infty, t])$ is the value at $t$ of the distribution
+        function. (c)~$X_k = (-\infty, k]$ increases to $\R$, with
+        $\mu(X_k)\leq1$. So $\mu = \nu$. To identify a law, as in
+        \cref{measures:ex:inverse}, it is enough to compute
+        $P(Z\leq t)$ for every $t$.
+  \item \emph{Two coins.} Return to \cref{measures:ex:coins}:
+        $X = \{HH, HT, TH, TT\}$, $\mathcal F$ is the family of all
+        sixteen events, $A$ is ``the first coin shows heads'' and $B$
+        ``the second coin shows heads''. Let $\mu$ and $\nu$ be any two
+        probability measures on $\mathcal F$.
+        \begin{itemize}[nosep]
+          \item[(a)] $\mathcal P = \{X, A, B, A\cap B\}$ is a
+                $\pi$-system: the intersection of two of its members is
+                again one of them, since $X\cap C = C$ and
+                $A\cap(A\cap B) = B\cap(A\cap B) = A\cap B$. It
+                generates $\mathcal F$: $\sigma(\mathcal P)$ contains
+                the four outcomes, $\{HH\} = A\cap B$,
+                $\{HT\} = A\setminus(A\cap B)$,
+                $\{TH\} = B\setminus(A\cap B)$ and
+                $\{TT\} = X\setminus(A\cup B)$, and every event is a
+                union of outcomes.
+          \item[(b)] $\mu$ and $\nu$ agree on $\mathcal P$ when they give
+                the same probability to ``the first coin shows heads'',
+                ``the second coin shows heads'' and ``both show heads'';
+                both give $X$ the probability $1$.
+          \item[(c)] $X_k = X$, with $\mu(X) = 1$.
+        \end{itemize}
+        So two probability measures on two coins are equal as soon as
+        they agree on these three events. \Cref{measures:ex:coins}
+        reached the same conclusion by computing each outcome; here no
+        computation is needed. The two measures of that example differ
+        because check~(b) fails at $A\cap B$: they agree on $A$ and
+        on $B$ only, and $\{A, B\}$ is not a $\pi$-system.
   \item \emph{Why the sets $X_k$ are needed.} On $\mathcal B(\R)$, let
         $\mu(A)$ be the number of rational points in $A$ and
-        $\nu = 2\mu$. Every non-empty interval $[a, b)$ contains
+        $\nu = 2\mu$. (a)~The half-open intervals $[a, b)$, with
+        $\emptyset$, form a $\pi$-system that generates
+        $\mathcal B(\R)$. (b)~Every non-empty interval $[a, b)$ contains
         infinitely many rationals, so $\mu$ and $\nu$ both give it the
-        value $\infty$: they agree on the $\pi$-system of half-open
-        intervals, which generates $\mathcal B(\R)$. Yet
-        $\mu(\{0\}) = 1$ and $\nu(\{0\}) = 2$. The corollary does not
-        apply, because no interval of the $\pi$-system has finite
-        measure. The values $\infty$ hide the difference, as in the
-        pitfall of \cref{measures:sec:measures}.
+        value $\infty$: they agree on the $\pi$-system. (c)~fails: no
+        non-empty interval has finite measure. And indeed
+        $\mu(\{0\}) = 1$ while $\nu(\{0\}) = 2$. The values $\infty$
+        hide the difference, as in the pitfall of
+        \cref{measures:sec:measures}.
 \end{enumerate}
 \end{example}
 
