@@ -1008,9 +1008,29 @@ stability under intersection from $\mathcal P$.
   \item \emph{Why one set is frozen.} The goal is to show that
         $A\cap B\in\lambda(\mathcal P)$ for all
         $A, B\in\lambda(\mathcal P)$. There is no formula for the
-        members of $\lambda(\mathcal P)$: it is defined from above, as
-        an intersection, not built from below. The only thing known is
-        its minimality, and the way to use it is this: if the members of
+        members of $\lambda(\mathcal P)$, because of the way it is
+        defined.
+        \begin{itemize}[nosep]
+          \item \emph{From above.} $\lambda(\mathcal P)$ is the
+                intersection of all the $\lambda$-systems containing
+                $\mathcal P$. This defines it at once, but says nothing
+                about what its members look like: to know that a set is
+                one of them, one would have to check that it lies in
+                every $\lambda$-system containing $\mathcal P$.
+          \item \emph{Not from below.} Building it from below would mean
+                starting from $\mathcal P$, adding the sets obtained by
+                the operations of \cref{measures:def:pilambda}, and
+                repeating; each member would then come with a
+                construction, as a linear combination comes with its
+                coefficients in the span of some vectors. For the span,
+                one round of linear combinations is enough. Here it is
+                not: the new sets give new differences and new
+                increasing unions, and even countably many rounds do not
+                always produce a family stable under these operations.
+                So $\lambda(\mathcal P)$ is not described this way.
+        \end{itemize}
+        The only thing known is its minimality, and the way to use it
+        is this: if the members of
         $\lambda(\mathcal P)$ that have some property form a
         $\lambda$-system containing $\mathcal P$, then they are all of
         $\lambda(\mathcal P)$. This works for a property of \emph{one}
