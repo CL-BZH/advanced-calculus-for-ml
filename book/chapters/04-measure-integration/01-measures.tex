@@ -1007,46 +1007,53 @@ stability under intersection from $\mathcal P$.
         $\lambda$-systems, $\lambda(\mathcal P)\subset\mathcal L$.
   \item \emph{Why one set is frozen.} The goal is to show that
         $A\cap B\in\lambda(\mathcal P)$ for all
-        $A, B\in\lambda(\mathcal P)$. There is no formula for the
-        members of $\lambda(\mathcal P)$, because of the way it is
-        defined.
+        $A, B\in\lambda(\mathcal P)$.
         \begin{itemize}[nosep]
-          \item \emph{From above.} $\lambda(\mathcal P)$ is the
-                intersection of all the $\lambda$-systems containing
-                $\mathcal P$. This defines it at once, but says nothing
-                about what its members look like: to know that a set is
-                one of them, one would have to check that it lies in
-                every $\lambda$-system containing $\mathcal P$.
-          \item \emph{Not from below.} Building it from below would mean
-                starting from $\mathcal P$, adding the sets obtained by
-                the operations of \cref{measures:def:pilambda}, and
-                repeating; each member would then come with a
-                construction, as a linear combination comes with its
-                coefficients in the span of some vectors. For the span,
-                one round of linear combinations is enough. Here it is
-                not: the new sets give new differences and new
-                increasing unions, and even countably many rounds do not
-                always produce a family stable under these operations.
-                So $\lambda(\mathcal P)$ is not described this way.
+          \item \emph{What is known about $\lambda(\mathcal P)$.} It is
+                defined as the intersection of all the
+                $\lambda$-systems containing $\mathcal P$. This says
+                which family it is, but gives no description of its
+                members: for a member $C$, nothing says how $C$ is
+                obtained from the members of $\mathcal P$. So nothing can
+                be proved about $C$ by looking at how it is made.
+          \item \emph{The tool: minimality.} What can be used is that
+                $\lambda(\mathcal P)$ is the smallest $\lambda$-system
+                containing $\mathcal P$. To show that every member of
+                $\lambda(\mathcal P)$ has some property, (a)~let
+                $\mathcal G$ be the family of the members of
+                $\lambda(\mathcal P)$ that have the property; (b)~show
+                that $\mathcal G$ is a $\lambda$-system containing
+                $\mathcal P$; (c)~conclude that $\mathcal G$ contains
+                $\lambda(\mathcal P)$, by minimality, so that every
+                member has the property. This is the pattern of the
+                good sets in the corollary below.
+          \item \emph{The difficulty.} In~(a) the property must be a
+                property of \emph{a single set} $C$, such as
+                ``$\mu(C) = \nu(C)$'': each set has it or not, and the
+                sets that have it form a family $\mathcal G$ whose
+                conditions~(1) to~(3) can be checked. The statement
+                ``$A\cap B\in\lambda(\mathcal P)$'' is not of this kind:
+                it is true or false for a \emph{pair} of sets $(A, B)$,
+                and there is no family of sets to check.
+          \item \emph{The way out: freeze $A$.} Fix
+                $A\in\lambda(\mathcal P)$. Then
+                ``$A\cap B\in\lambda(\mathcal P)$'' is a property of $B$
+                alone, $A$ being part of the property, like the number
+                $5$ in ``$B$ contains $5$''. Call $B$ a \emph{good
+                partner} of $A$ if it has the property, and let
+                \[
+                  \mathcal G_A = \{B\in\lambda(\mathcal P) :
+                  A\cap B\in\lambda(\mathcal P)\}
+                \]
+                be the family of the good partners of $A$. The pattern
+                applies to $\mathcal G_A$: if it is a $\lambda$-system
+                containing $\mathcal P$, every member of
+                $\lambda(\mathcal P)$ is a good partner of $A$.
         \end{itemize}
-        The only thing known is its minimality, and the way to use it
-        is this: if the members of
-        $\lambda(\mathcal P)$ that have some property form a
-        $\lambda$-system containing $\mathcal P$, then they are all of
-        $\lambda(\mathcal P)$. This works for a property of \emph{one}
-        set, while ``$A\cap B\in\lambda(\mathcal P)$'' is a property of
-        two. So one of them is frozen: for a fixed
-        $A\in\lambda(\mathcal P)$, call $B$ a \emph{good partner} of $A$
-        if $A\cap B\in\lambda(\mathcal P)$, and let
-        \[
-          \mathcal G_A = \{B\in\lambda(\mathcal P) :
-          A\cap B\in\lambda(\mathcal P)\}
-        \]
-        be the family of the good partners of $A$. Being a good partner
-        of $A$ is a property of $B$ alone, with $A$ as a spectator. The
-        proof extends it in two passes, pictured in
-        \cref{measures:fig:passes}: first to the $A$ in $\mathcal P$,
-        then to all $A$.
+        Step~4 shows that $\mathcal G_A$ is a $\lambda$-system, for
+        every $A$. That $\mathcal G_A$ contains $\mathcal P$ is shown
+        first for the $A$ in $\mathcal P$ (step~5), then for all $A$
+        (step~6), as pictured in \cref{measures:fig:passes}.
   \item \emph{The good partners of $A$ form a $\lambda$-system.} Fix
         $A\in\lambda(\mathcal P)$. We check the conditions of
         \cref{measures:def:pilambda} for $\mathcal G_A$ one at a time,
