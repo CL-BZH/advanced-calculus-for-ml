@@ -879,6 +879,37 @@ $\mathcal L$ is a \emph{$\lambda$-system} if
 \end{enumerate}
 \end{definition}
 
+\begin{remark}[Another definition of $\lambda$-systems]
+\label{measures:rem:dynkin}
+$\lambda$-systems are also called \emph{Dynkin systems}, and many books
+define them by other conditions: $X\in\mathcal L$, $X\setminus A\in\mathcal L$
+for $A\in\mathcal L$, and $\bigcup_nB_n\in\mathcal L$ for pairwise disjoint
+$B_n\in\mathcal L$. The two definitions give the same families.
+\begin{itemize}[nosep]
+  \item \emph{From the definition above to the other.} Complements are
+        the differences $X\setminus A$. For pairwise disjoint $B_n$, the
+        sets $B_1\cup\dots\cup B_N$ are in $\mathcal L$: by induction,
+        if $C = B_1\cup\dots\cup B_{N-1}$ is in $\mathcal L$ and $B_N$
+        does not meet it, then $B_N\subset X\setminus C$, so
+        $(X\setminus C)\setminus B_N$ is in $\mathcal L$, and so is its
+        complement $C\cup B_N$. These finite unions increase, and their
+        union is $\bigcup_nB_n$.
+  \item \emph{From the other definition to the one above.} If
+        $A\subset B$, then $A$ and $X\setminus B$ are disjoint, so
+        $A\cup(X\setminus B)$ is in $\mathcal L$, and so is its
+        complement $B\setminus A$. If $A_1\subset A_2\subset\cdots$, the
+        rings $A_1$, $A_2\setminus A_1$, $A_3\setminus A_2$, \dots{} of
+        \cref{measures:fig:rings} are disjoint members of $\mathcal L$
+        with union $\bigcup_nA_n$.
+\end{itemize}
+Complements and increasing unions alone would not be enough. On
+$X = \{1, 2, 3, 4\}$, the family
+$\{\emptyset, X, \{1\}, \{2, 3, 4\}, \{2\}, \{1, 3, 4\}\}$ contains the
+complements of its members and the unions of its increasing sequences,
+but not $\{1, 3, 4\}\setminus\{1\} = \{3, 4\}$, nor the disjoint union
+$\{1\}\cup\{2\}$.
+\end{remark}
+
 \begin{example}[$\pi$-systems and $\lambda$-systems]
 \label{measures:ex:pilambda}
 \leavevmode
@@ -932,12 +963,14 @@ The $\lambda$-system $\mathcal L$ of the theorem need not be a
 $\pi$-system: the six events of \cref{measures:ex:coins} form a
 $\lambda$-system that is not one. So the proof does not work with
 $\mathcal L$ directly. It builds a smaller $\lambda$-system
-$\mathcal L_0$, with $\mathcal P\subset\mathcal L_0\subset\mathcal L$,
-shows that $\mathcal L_0$ is a $\pi$-system, hence a $\sigma$-algebra,
-and concludes that $\sigma(\mathcal P)\subset\mathcal L_0\subset
-\mathcal L$. Step~1 is a general fact, used in step~6 for
-$\mathcal L_0$; steps~2 to~5 build $\mathcal L_0$ and show that it
-inherits stability under intersection from $\mathcal P$.
+$\lambda(\mathcal P)$, with
+$\mathcal P\subset\lambda(\mathcal P)\subset\mathcal L$, shows that
+$\lambda(\mathcal P)$ is a $\pi$-system, hence a $\sigma$-algebra, and
+concludes that
+$\sigma(\mathcal P)\subset\lambda(\mathcal P)\subset\mathcal L$.
+Step~1 is a general fact, used in step~7 for $\lambda(\mathcal P)$;
+steps~2 to~6 build $\lambda(\mathcal P)$ and show that it inherits
+stability under intersection from $\mathcal P$.
 \begin{enumerate}[nosep]
   \item \emph{A $\lambda$-system that is also a $\pi$-system is a
         $\sigma$-algebra.} A $\lambda$-system has complements and
@@ -967,88 +1000,146 @@ inherits stability under intersection from $\mathcal P$.
         \end{itemize}
   \item \emph{The smallest $\lambda$-system containing $\mathcal P$.}
         An intersection of $\lambda$-systems is a $\lambda$-system, and
-        the family of all subsets of $X$ is one. So the intersection
-        $\mathcal L_0$ of all $\lambda$-systems containing $\mathcal P$
-        is the smallest of them, and $\mathcal L_0\subset\mathcal L$.
-  \item \emph{A tool.} The goal is to show that $A\cap B\in\mathcal L_0$
-        for all $A, B\in\mathcal L_0$. Little is known about a member of
-        $\mathcal L_0$, except that $\mathcal L_0$ is the smallest
-        $\lambda$-system containing $\mathcal P$. The way to use this is
-        the following: if the members of $\mathcal L_0$ that have some
-        property form a $\lambda$-system containing $\mathcal P$, then,
-        by minimality, they are all of $\mathcal L_0$, and every member
-        of $\mathcal L_0$ has the property. The property used here is
-        ``its intersection with $A$ stays in $\mathcal L_0$''. So, for
-        $A\in\mathcal L_0$, let
+        the family of all subsets of $X$ is one. So the intersection of
+        all $\lambda$-systems containing $\mathcal P$ is the smallest of
+        them. Write it $\lambda(\mathcal P)$, by analogy with
+        $\sigma(\mathcal P)$. Since $\mathcal L$ is one of these
+        $\lambda$-systems, $\lambda(\mathcal P)\subset\mathcal L$.
+  \item \emph{Why one set is frozen.} The goal is to show that
+        $A\cap B\in\lambda(\mathcal P)$ for all
+        $A, B\in\lambda(\mathcal P)$. There is no formula for the
+        members of $\lambda(\mathcal P)$: it is defined from above, as
+        an intersection, not built from below. The only thing known is
+        its minimality, and the way to use it is this: if the members of
+        $\lambda(\mathcal P)$ that have some property form a
+        $\lambda$-system containing $\mathcal P$, then they are all of
+        $\lambda(\mathcal P)$. This works for a property of \emph{one}
+        set, while ``$A\cap B\in\lambda(\mathcal P)$'' is a property of
+        two. So one of them is frozen: for a fixed
+        $A\in\lambda(\mathcal P)$, call $B$ a \emph{good partner} of $A$
+        if $A\cap B\in\lambda(\mathcal P)$, and let
         \[
-          \mathcal L_A = \{B\in\mathcal L_0 : A\cap B\in\mathcal L_0\} .
+          \mathcal G_A = \{B\in\lambda(\mathcal P) :
+          A\cap B\in\lambda(\mathcal P)\}
         \]
-        We check that $\mathcal L_A$ is a $\lambda$-system, one
-        condition of \cref{measures:def:pilambda} at a time, using each
-        time the same condition for $\mathcal L_0$.
+        be the family of the good partners of $A$. Being a good partner
+        of $A$ is a property of $B$ alone, with $A$ as a spectator. The
+        proof extends it in two passes, pictured in
+        \cref{measures:fig:passes}: first to the $A$ in $\mathcal P$,
+        then to all $A$.
+  \item \emph{The good partners of $A$ form a $\lambda$-system.} Fix
+        $A\in\lambda(\mathcal P)$. We check the conditions of
+        \cref{measures:def:pilambda} for $\mathcal G_A$ one at a time,
+        using each time the same condition for $\lambda(\mathcal P)$.
         \begin{itemize}[nosep]
-          \item \emph{Condition (1).} $X\in\mathcal L_0$, and
-                $A\cap X = A\in\mathcal L_0$; so $X\in\mathcal L_A$.
+          \item \emph{Condition (1).} $X\in\lambda(\mathcal P)$, and
+                $A\cap X = A\in\lambda(\mathcal P)$; so
+                $X\in\mathcal G_A$.
           \item \emph{Condition (2).} Let $B$ and $C$ be in
-                $\mathcal L_A$, with $B\subset C$: so $B$, $C$, $A\cap B$
-                and $A\cap C$ are in $\mathcal L_0$.
-                Then $C\setminus B\in\mathcal L_0$ by condition~(2) for
-                $\mathcal L_0$. Moreover a point lies in
+                $\mathcal G_A$, with $B\subset C$: so $B$, $C$, $A\cap B$
+                and $A\cap C$ are in $\lambda(\mathcal P)$. Then
+                $C\setminus B\in\lambda(\mathcal P)$ by condition~(2) for
+                $\lambda(\mathcal P)$. Moreover a point lies in
                 $A\cap(C\setminus B)$ if and only if it lies in $A\cap C$
                 and not in $A\cap B$, so
                 $A\cap(C\setminus B) = (A\cap C)\setminus(A\cap B)$.
-                Since $A\cap B$ and $A\cap C$ are in $\mathcal L_0$, with
-                $A\cap B\subset A\cap C$, condition~(2) for
-                $\mathcal L_0$ puts this difference in $\mathcal L_0$. So
-                $C\setminus B\in\mathcal L_A$.
-          \item \emph{Condition (3).} Let $B_1\subset B_2\subset\cdots$ be in
-                $\mathcal L_A$. Their union is in $\mathcal L_0$ by
-                condition~(3) for $\mathcal L_0$. Moreover
+                Since $A\cap B$ and $A\cap C$ are in
+                $\lambda(\mathcal P)$, with $A\cap B\subset A\cap C$,
+                condition~(2) for $\lambda(\mathcal P)$ puts this
+                difference in $\lambda(\mathcal P)$. So
+                $C\setminus B\in\mathcal G_A$.
+          \item \emph{Condition (3).} Let $B_1\subset B_2\subset\cdots$
+                be in $\mathcal G_A$. Their union is in
+                $\lambda(\mathcal P)$ by condition~(3) for
+                $\lambda(\mathcal P)$. Moreover
                 $A\cap\bigcup_nB_n = \bigcup_n(A\cap B_n)$, and the sets
-                $A\cap B_n$ are in $\mathcal L_0$ and increase with $n$,
-                since the $B_n$ do; condition~(3) for $\mathcal L_0$ puts
-                their union in $\mathcal L_0$. So
-                $\bigcup_nB_n\in\mathcal L_A$.
+                $A\cap B_n$ are in $\lambda(\mathcal P)$ and increase
+                with $n$, since the $B_n$ do; condition~(3) for
+                $\lambda(\mathcal P)$ puts their union in
+                $\lambda(\mathcal P)$. So
+                $\bigcup_nB_n\in\mathcal G_A$.
         \end{itemize}
-        It remains to see that $\mathcal L_A$ contains $\mathcal P$; this
-        is where the intersections of $\mathcal P$ come in, in two
-        rounds.
-  \item \emph{Intersections with members of $\mathcal P$.} Let
-        $A\in\mathcal P$. We show $\mathcal L_A = \mathcal L_0$, one
-        inclusion at a time.
+        What remains is to see that $\mathcal G_A$ contains
+        $\mathcal P$; this is where the intersections of $\mathcal P$
+        come in.
+  \item \emph{First pass: $A$ in $\mathcal P$.} Let $A\in\mathcal P$. We
+        show $\mathcal G_A = \lambda(\mathcal P)$, one inclusion at a
+        time.
         \begin{itemize}[nosep]
-          \item $\mathcal L_A\subset\mathcal L_0$ holds by definition:
-                the members of $\mathcal L_A$ are chosen among those of
-                $\mathcal L_0$.
-          \item $\mathcal L_A$ contains $\mathcal P$. Let
-                $B\in\mathcal P$. Then $B\in\mathcal L_0$, since
-                $\mathcal P\subset\mathcal L_0$, and
+          \item $\mathcal G_A\subset\lambda(\mathcal P)$ holds by
+                definition: the good partners are chosen among the
+                members of $\lambda(\mathcal P)$.
+          \item $\mathcal G_A$ contains $\mathcal P$. Let
+                $B\in\mathcal P$. Then $B\in\lambda(\mathcal P)$, since
+                $\mathcal P\subset\lambda(\mathcal P)$, and
                 $A\cap B\in\mathcal P$, since $\mathcal P$ is a
-                $\pi$-system, so $A\cap B\in\mathcal L_0$ as well. That
-                is, $B\in\mathcal L_A$.
-          \item $\mathcal L_0\subset\mathcal L_A$. By step~3 and the
-                previous point, $\mathcal L_A$ is a $\lambda$-system
-                containing $\mathcal P$. By step~2, $\mathcal L_0$ is the
-                intersection of all such $\lambda$-systems, so it is
-                contained in each of them, in particular in
-                $\mathcal L_A$.
+                $\pi$-system, so $A\cap B\in\lambda(\mathcal P)$ as
+                well. That is, $B\in\mathcal G_A$.
+          \item $\lambda(\mathcal P)\subset\mathcal G_A$. By step~4 and
+                the previous point, $\mathcal G_A$ is a $\lambda$-system
+                containing $\mathcal P$. By step~2,
+                $\lambda(\mathcal P)$ is the intersection of all such
+                $\lambda$-systems, so it is contained in each of them, in
+                particular in $\mathcal G_A$.
         \end{itemize}
-        So $\mathcal L_A = \mathcal L_0$. In words:
-        $A\cap B\in\mathcal L_0$ whenever $A\in\mathcal P$ and
-        $B\in\mathcal L_0$.
-  \item \emph{Intersections of members of $\mathcal L_0$.} Let
-        $B\in\mathcal L_0$. By step~4, every $A\in\mathcal P$ satisfies
-        $A\cap B\in\mathcal L_0$, that is, $A\in\mathcal L_B$. So
-        $\mathcal L_B$ contains $\mathcal P$. It is a $\lambda$-system by
-        step~3, contained in $\mathcal L_0$ by definition, and so, by the
-        argument of the last point of step~4,
-        $\mathcal L_B = \mathcal L_0$: $B\cap C\in\mathcal L_0$ for
-        every $C\in\mathcal L_0$. So $\mathcal L_0$ is a $\pi$-system.
-  \item \emph{Conclusion.} By steps~1 and~5, $\mathcal L_0$ is a
+        So $\mathcal G_A = \lambda(\mathcal P)$. In words:
+        $A\cap B\in\lambda(\mathcal P)$ whenever $A\in\mathcal P$ and
+        $B\in\lambda(\mathcal P)$.
+  \item \emph{Second pass: all $A$.} Now freeze any
+        $A\in\lambda(\mathcal P)$. For $P\in\mathcal P$, the first pass,
+        with $P$ frozen, gives $P\cap A\in\lambda(\mathcal P)$; since
+        $A\cap P = P\cap A$, every member of $\mathcal P$ is a good
+        partner of $A$. So $\mathcal G_A$ contains $\mathcal P$. It is a
+        $\lambda$-system by step~4, contained in $\lambda(\mathcal P)$
+        by definition, and so, by the argument of the last point of
+        step~5, $\mathcal G_A = \lambda(\mathcal P)$:
+        $A\cap B\in\lambda(\mathcal P)$ for every
+        $B\in\lambda(\mathcal P)$. So $\lambda(\mathcal P)$ is a
+        $\pi$-system.
+  \item \emph{Conclusion.} By steps~1 and~6, $\lambda(\mathcal P)$ is a
         $\sigma$-algebra containing $\mathcal P$, so
-        $\sigma(\mathcal P)\subset\mathcal L_0\subset\mathcal L$.
+        $\sigma(\mathcal P)\subset\lambda(\mathcal P)\subset\mathcal L$.
 \end{enumerate}
 \end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \foreach \i/\t in {0/{start},
+                     1/{first pass (step~5)},
+                     2/{symmetry},
+                     3/{second pass (step~6)}} {
+    \begin{scope}[xshift=\i*3.6cm]
+      \ifcase\i
+        \fill[bookdef!45] (0,0) rectangle (0.7,0.7);
+      \or
+        \fill[bookdef!45] (0,0) rectangle (0.7,2.4);
+      \or
+        \fill[bookdef!45] (0,0) rectangle (0.7,2.4);
+        \fill[bookdef!45] (0,0) rectangle (2.4,0.7);
+      \or
+        \fill[bookdef!45] (0,0) rectangle (2.4,2.4);
+      \fi
+      \draw (0,0) rectangle (2.4,2.4);
+      \draw[gray, dashed] (0.7,0) -- (0.7,2.4) (0,0.7) -- (2.4,0.7);
+      \node[below] at (0.35,0) {\small$\mathcal P$};
+      \node[left] at (0,0.35) {\small$\mathcal P$};
+      \node[below] at (1.2,-0.35) {\small$A$};
+      \node[left] at (-0.35,1.4) {\small$B$};
+      \node[below] at (1.2,-0.8) {\small\t};
+    \end{scope}
+  }
+\end{tikzpicture}
+\caption{The pairs $(A, B)$ of members of $\lambda(\mathcal P)$, with
+the members of $\mathcal P$ near the corner; shaded, those for which
+$A\cap B\in\lambda(\mathcal P)$ is known. At the start, only the pairs
+from $\mathcal P$, since $\mathcal P$ is a $\pi$-system. The first pass
+freezes $A\in\mathcal P$ and extends to every partner $B$. Since
+$A\cap B = B\cap A$, the same holds with the roles of $A$ and $B$
+exchanged. The second pass freezes any $A$ and extends from the
+partners in $\mathcal P$ to every partner.}
+\label{measures:fig:passes}
+\end{figure}
 
 \begin{keyidea}[What the theorem is for]
 After the details of the proof, here is the point again.
