@@ -1050,6 +1050,38 @@ inherits stability under intersection from $\mathcal P$.
 \end{enumerate}
 \end{proof}
 
+\begin{keyidea}[What the theorem is for]
+After the details of the proof, here is the point again.
+\begin{itemize}[nosep]
+  \item \emph{The problem.} Two measures are known to agree on a small
+        family $\mathcal P$ of sets, such as the boxes or the half-lines,
+        and one wants them to agree on every set of $\sigma(\mathcal P)$,
+        most of which cannot be described.
+  \item \emph{What comes for free.} The sets where two finite measures
+        agree always form a $\lambda$-system
+        (\cref{measures:ex:pilambda}~(4)): subtraction gives
+        condition~(2) and continuity gives condition~(3). Nothing has to
+        be checked.
+  \item \emph{What has to be checked.} That $\mathcal P$ is a
+        $\pi$-system. This is a question about $\mathcal P$ only, and
+        usually a one-line one: two boxes meet in a box, two half-lines
+        in a half-line.
+  \item \emph{What the theorem gives.} A $\lambda$-system that contains
+        a $\pi$-system contains the $\sigma$-algebra it generates. So the
+        sets where the two measures agree contain $\sigma(\mathcal P)$:
+        agreement on $\mathcal P$ spreads to all of $\sigma(\mathcal P)$.
+        The two coins of \cref{measures:ex:coins} show that stability
+        under intersection cannot be dropped.
+\end{itemize}
+The corollary below states this for measures that may be infinite. The
+same pattern, ``the good sets form a $\lambda$-system and contain a
+$\pi$-system'', is used again for product measures
+(\cref{fubini:thm:product}), for approximating sets by finite unions of
+boxes (\cref{lp-spaces:thm:dense}), and to show that a measure is
+determined by its integrals of test functions
+(\cref{change-of-variables:prop:testfunctions}).
+\end{keyidea}
+
 \begin{corollary}[Uniqueness of measures]\label{measures:cor:uniqueness}
 Let $\mu$ and $\nu$ be two measures on $\sigma(\mathcal P)$, where
 $\mathcal P$ is a $\pi$-system. If $\mu$ and $\nu$ agree on
