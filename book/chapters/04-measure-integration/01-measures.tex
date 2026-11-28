@@ -1136,7 +1136,7 @@ stability under intersection from $\mathcal P$.
                      1/{first pass (step~5)},
                      2/{symmetry},
                      3/{second pass (step~6)}} {
-    \begin{scope}[xshift=\i*3.6cm]
+    \begin{scope}[xshift=\i*3.8cm]
       \ifcase\i
         \fill[bookdef!45] (0,0) rectangle (0.7,0.7);
       \or
@@ -1151,14 +1151,17 @@ stability under intersection from $\mathcal P$.
       \draw[gray, dashed] (0.7,0) -- (0.7,2.4) (0,0.7) -- (2.4,0.7);
       \node[below] at (0.35,0) {\small$\mathcal P$};
       \node[left] at (0,0.35) {\small$\mathcal P$};
-      \node[below] at (1.2,-0.35) {\small$A$};
-      \node[left] at (-0.35,1.4) {\small$B$};
+      \node[below] at (1.55,-0.35) {\small$A\in\lambda(\mathcal P)$};
+      \node[left, rotate=90, anchor=south] at (-0.35,1.55)
+        {\small$B\in\lambda(\mathcal P)$};
       \node[below] at (1.2,-0.8) {\small\t};
     \end{scope}
   }
 \end{tikzpicture}
-\caption{The pairs $(A, B)$ of members of $\lambda(\mathcal P)$, with
-the members of $\mathcal P$ near the corner; shaded, those for which
+\caption{Each square stands for $\lambda(\mathcal P)\times
+\lambda(\mathcal P)$, the pairs $(A, B)$ of members of
+$\lambda(\mathcal P)$; the members of $\mathcal P$ are drawn, schematically,
+as the part of each side near the corner. Shaded, the pairs for which
 $A\cap B\in\lambda(\mathcal P)$ is known. At the start, only the pairs
 from $\mathcal P$, since $\mathcal P$ is a $\pi$-system. The first pass
 freezes $A\in\mathcal P$ and extends to every partner $B$. Since
