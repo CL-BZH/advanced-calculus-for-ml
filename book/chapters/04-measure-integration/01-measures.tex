@@ -1104,25 +1104,35 @@ stability under intersection from $\mathcal P$.
                 well. That is, $B\in\mathcal G_A$.
           \item $\lambda(\mathcal P)\subset\mathcal G_A$. By step~4 and
                 the previous point, $\mathcal G_A$ is a $\lambda$-system
-                containing $\mathcal P$. By step~2,
-                $\lambda(\mathcal P)$ is the intersection of all such
-                $\lambda$-systems, so it is contained in each of them, in
-                particular in $\mathcal G_A$.
+                containing $\mathcal P$, and $\lambda(\mathcal P)$ is the
+                smallest such $\lambda$-system (step~2).
         \end{itemize}
         So $\mathcal G_A = \lambda(\mathcal P)$. In words:
         $A\cap B\in\lambda(\mathcal P)$ whenever $A\in\mathcal P$ and
         $B\in\lambda(\mathcal P)$.
   \item \emph{Second pass: all $A$.} Now freeze any
-        $A\in\lambda(\mathcal P)$. For $P\in\mathcal P$, the first pass,
-        with $P$ frozen, gives $P\cap A\in\lambda(\mathcal P)$; since
-        $A\cap P = P\cap A$, every member of $\mathcal P$ is a good
-        partner of $A$. So $\mathcal G_A$ contains $\mathcal P$. It is a
-        $\lambda$-system by step~4, contained in $\lambda(\mathcal P)$
-        by definition, and so, by the argument of the last point of
-        step~5, $\mathcal G_A = \lambda(\mathcal P)$:
-        $A\cap B\in\lambda(\mathcal P)$ for every
-        $B\in\lambda(\mathcal P)$. So $\lambda(\mathcal P)$ is a
-        $\pi$-system.
+        $A\in\lambda(\mathcal P)$, not necessarily in $\mathcal P$. As in
+        step~5, it is enough to show that $\mathcal G_A$ contains
+        $\mathcal P$; this is where symmetry is used (third square of
+        \cref{measures:fig:passes}).
+        \begin{itemize}[nosep]
+          \item \emph{Symmetry.} Let $P\in\mathcal P$. The first pass,
+                applied with $P$ as the frozen set, says that every
+                member of $\lambda(\mathcal P)$ is a good partner of $P$;
+                in particular $P\cap A\in\lambda(\mathcal P)$. Since
+                $A\cap P = P\cap A$, this says that $P$ is a good partner
+                of $A$. So $\mathcal G_A$ contains $\mathcal P$.
+          \item \emph{Minimality again} (fourth square). $\mathcal G_A$
+                is a $\lambda$-system by step~4 and contains
+                $\mathcal P$; since $\lambda(\mathcal P)$ is the smallest
+                such $\lambda$-system, $\lambda(\mathcal P)\subset
+                \mathcal G_A$, and $\mathcal G_A\subset\lambda(\mathcal P)$
+                by definition. So $\mathcal G_A = \lambda(\mathcal P)$:
+                $A\cap B\in\lambda(\mathcal P)$ for every
+                $B\in\lambda(\mathcal P)$.
+        \end{itemize}
+        Since $A$ was any member of $\lambda(\mathcal P)$,
+        $\lambda(\mathcal P)$ is a $\pi$-system.
   \item \emph{Conclusion.} By steps~1 and~6, $\lambda(\mathcal P)$ is a
         $\sigma$-algebra containing $\mathcal P$, so
         $\sigma(\mathcal P)\subset\lambda(\mathcal P)\subset\mathcal L$.
